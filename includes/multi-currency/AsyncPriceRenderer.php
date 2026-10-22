@@ -58,7 +58,6 @@ class AsyncPriceRenderer {
 		add_filter( 'woocommerce_format_sale_price', [ $this, 'annotate_sale_price_sr_text' ], 999, 3 );
 		add_filter( 'woocommerce_format_price_range', [ $this, 'annotate_price_range_sr_text' ], 999, 3 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_async_renderer' ] );
-		add_action( 'wp_footer', [ $this, 'print_geolocation_notice_template' ] );
 	}
 
 	/**
@@ -71,25 +70,6 @@ class AsyncPriceRenderer {
 		remove_filter( 'woocommerce_format_sale_price', [ $this, 'annotate_sale_price_sr_text' ], 999 );
 		remove_filter( 'woocommerce_format_price_range', [ $this, 'annotate_price_range_sr_text' ], 999 );
 		remove_action( 'wp_enqueue_scripts', [ $this, 'enqueue_async_renderer' ] );
-		remove_action( 'wp_footer', [ $this, 'print_geolocation_notice_template' ] );
-	}
-
-	/**
-	 * Prints the geolocation notice template for the async renderer to fill in.
-	 *
-	 * A <template>'s content is inert, so WooCommerce's store notice script doesn't find it and
-	 * show it before the renderer knows the visitor's country.
-	 *
-	 * @return void
-	 */
-	public function print_geolocation_notice_template() {
-		if ( $this->multi_currency->get_compatibility()->should_disable_currency_switching() ) {
-			return;
-		}
-
-		// The markup is escaped as it's built.
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo '<template id="wcpay-geolocation-notice">' . $this->multi_currency->get_geolocation_notice_template() . '</template>';
 	}
 
 	/**

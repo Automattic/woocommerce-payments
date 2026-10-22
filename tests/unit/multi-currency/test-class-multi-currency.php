@@ -782,6 +782,17 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
+	public function test_update_selected_currency_by_geolocation_displays_notice_in_cache_mode_without_session() {
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( 'wcpay_multi_currency_rendering_mode', 'cache' );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->init_multi_currency();
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		$this->assertNotFalse( has_action( 'wp_footer', [ $this->multi_currency, 'display_geolocation_currency_update_notice' ] ) );
+	}
+
 	public function test_update_selected_currency_by_geolocation_persists_in_cache_mode_with_active_session() {
 		// Enable cache-optimized mode and auto currency switching.
 		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
@@ -885,7 +896,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->expectOutputString( '' );
 	}
 
-	public function test_get_geolocation_notice_template_leaves_country_and_currency_slots_empty() {
+	public function test_display_geolocation_currency_update_notice_prints_a_template_in_cache_mode_without_session() {
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( 'wcpay_multi_currency_rendering_mode', 'cache' );
+		$this->init_multi_currency();
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
@@ -893,8 +907,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			}
 		);
 
-		$template = $this->multi_currency->get_geolocation_notice_template();
+		ob_start();
+		$this->multi_currency->display_geolocation_currency_update_notice();
+		$template = ob_get_clean();
 
+		$this->assertStringStartsWith( '<template id="wcpay-geolocation-notice"><p class="woocommerce-store-notice', $template );
 		$this->assertStringContainsString( 'visiting from <span data-wcpay-notice-country></span>.', $template );
 		$this->assertStringContainsString( 'prices to <span data-wcpay-notice-currency></span> for', $template );
 		$this->assertStringContainsString( 'href="?currency=USD">Use United States (US) dollar instead.</a>', $template );
@@ -930,7 +947,6 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_public_config_applies_notice_name_filters() {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
-		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
@@ -953,6 +969,25 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'Great White North', $config['geolocation_notice']['country_name'] );
 		$this->assertSame( 'loonies', $config['geolocation_notice']['currency_name'] );
+	}
+
+	public function test_get_public_config_turns_a_null_notice_name_into_an_empty_string() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+		add_filter( 'wcpay_multi_currency_override_notice_country', '__return_null' );
+
+		try {
+			$config = $this->multi_currency->get_public_config();
+		} finally {
+			remove_filter( 'wcpay_multi_currency_override_notice_country', '__return_null' );
+		}
+
+		$this->assertSame( '', $config['geolocation_notice']['country_name'] );
 	}
 
 	public function test_get_public_config_decodes_notice_names_without_changing_the_notice_id() {
@@ -986,6 +1021,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_public_config_has_no_geolocation_notice_when_auto_switching_is_off() {
+		// WooCommerce counts a logged-in user as having a session, so the config reads the stored
+		// CAD and only the auto-switching check keeps the notice out.
+		wp_set_current_user( self::LOGGED_IN_USER_ID );
 		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
 		add_filter(
 			'woocommerce_geolocate_ip',

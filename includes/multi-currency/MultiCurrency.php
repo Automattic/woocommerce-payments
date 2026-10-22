@@ -982,15 +982,16 @@ class MultiCurrency {
 			return;
 		}
 
+		// Display notice, prevent duplicates in simulation. Registered before the async check below,
+		// so unhooking this one callback hides the notice in both rendering modes.
+		if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
+			add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
+		}
+
 		// When async rendering handles pricing, currency switching is done
 		// client-side via the JS renderer. Skip server-side geolocation.
 		if ( $this->should_use_async_rendering() ) {
 			return;
-		}
-
-		// Display notice, prevent duplicates in simulation.
-		if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
-			add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
 		}
 
 		// Update currency only if it's already not set.
@@ -1162,6 +1163,16 @@ class MultiCurrency {
 	 * automatic currency switch.
 	 */
 	public function display_geolocation_currency_update_notice() {
+		// A cached page is shared by visitors from every country, so it only carries a template for
+		// the async renderer to fill in. A <template>'s content is inert, so WooCommerce's store
+		// notice script doesn't find it and show it before the renderer knows the visitor's country.
+		if ( $this->should_use_async_rendering() ) {
+			// The markup is escaped as it's built.
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '<template id="wcpay-geolocation-notice">' . $this->get_geolocation_notice_template() . '</template>';
+			return;
+		}
+
 		$current_currency = $this->get_selected_currency();
 
 		// Don't run next checks if simulation is enabled.
@@ -1179,12 +1190,9 @@ class MultiCurrency {
 	/**
 	 * Gets the geolocation notice markup with empty slots for the country and currency names.
 	 *
-	 * Cache-optimized mode prints this inside a <template> and fills the slots client-side, since a
-	 * cached page is shared by visitors from every country.
-	 *
 	 * @return string
 	 */
-	public function get_geolocation_notice_template(): string {
+	private function get_geolocation_notice_template(): string {
 		$message = $this->get_geolocation_notice_message(
 			'<span data-wcpay-notice-country></span>',
 			'<span data-wcpay-notice-currency></span>'
@@ -1215,6 +1223,9 @@ class MultiCurrency {
 	private function get_geolocation_notice( Currency $currency ): array {
 		$country = $this->geolocation->get_country_by_customer_location();
 
+		// Cast the filtered names: a callback that forgets to return gives null, which the typed
+		// helpers below reject.
+
 		/**
 		 * Filters the country name shown in the currency switch notice.
 		 *
@@ -1222,7 +1233,7 @@ class MultiCurrency {
 		 *
 		 * @param string $country_name The geolocated country name.
 		 */
-		$country_name = apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] );
+		$country_name = (string) apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] );
 
 		/**
 		 * Filters the currency name shown in the currency switch notice.
@@ -1231,7 +1242,7 @@ class MultiCurrency {
 		 *
 		 * @param string $currency_name The current currency name.
 		 */
-		$currency_name = apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $currency->get_name() );
+		$currency_name = (string) apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $currency->get_name() );
 
 		$message = $this->get_geolocation_notice_message( $country_name, $currency_name );
 

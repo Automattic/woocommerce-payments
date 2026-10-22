@@ -649,10 +649,10 @@ class WCPayAsyncPriceRenderer {
 	 * Show the "We noticed you're visiting from…" notice.
 	 *
 	 * The cached page only carries a <template> with empty slots for the
-	 * country and currency names. WooCommerce's store notice script runs
-	 * before the config arrives, so this takes over its show and dismiss
-	 * logic, and reuses its cookie: a dismissal here also hides the notice
-	 * the server prints once the visitor has a session.
+	 * country and currency names. WooCommerce's store notice script binds on
+	 * DOM ready, usually before the config arrives, so this handles show and
+	 * dismiss itself. It reuses WooCommerce's cookie, so a dismissal here also
+	 * hides the notice the server prints once the visitor has a session.
 	 */
 	showGeolocationNotice(): void {
 		const notice = this.config?.geolocation_notice;

@@ -6,7 +6,6 @@
  */
 
 use WCPay\MultiCurrency\AsyncPriceRenderer;
-use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -86,57 +85,6 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 		$this->assertNotFalse(
 			has_action( 'wp_enqueue_scripts', [ $this->renderer, 'enqueue_async_renderer' ] )
 		);
-		$this->assertNotFalse(
-			has_action( 'wp_footer', [ $this->renderer, 'print_geolocation_notice_template' ] )
-		);
-	}
-
-	/**
-	 * Test that remove_hooks also drops the geolocation notice template, so a request that
-	 * switches to server-side prices doesn't print it.
-	 */
-	public function test_remove_hooks_removes_geolocation_notice_template() {
-		$this->mock_multi_currency
-			->method( 'is_cache_optimized_mode' )
-			->willReturn( true );
-		$this->mock_multi_currency
-			->method( 'has_active_session' )
-			->willReturn( false );
-		$this->renderer->init_hooks();
-
-		$this->renderer->remove_hooks();
-
-		$this->assertFalse(
-			has_action( 'wp_footer', [ $this->renderer, 'print_geolocation_notice_template' ] )
-		);
-	}
-
-	/**
-	 * Test that the geolocation notice template is printed inside a <template> element.
-	 */
-	public function test_print_geolocation_notice_template_prints_template() {
-		$mock_compatibility = $this->createMock( Compatibility::class );
-		$mock_compatibility->method( 'should_disable_currency_switching' )->willReturn( false );
-		$this->mock_multi_currency->method( 'get_compatibility' )->willReturn( $mock_compatibility );
-		$this->mock_multi_currency->method( 'get_geolocation_notice_template' )->willReturn( '<p>notice</p>' );
-
-		$this->renderer->print_geolocation_notice_template();
-
-		$this->expectOutputString( '<template id="wcpay-geolocation-notice"><p>notice</p></template>' );
-	}
-
-	/**
-	 * Test that the geolocation notice template isn't printed where currency switching is disabled.
-	 */
-	public function test_print_geolocation_notice_template_prints_nothing_when_currency_switching_is_disabled() {
-		$mock_compatibility = $this->createMock( Compatibility::class );
-		$mock_compatibility->method( 'should_disable_currency_switching' )->willReturn( true );
-		$this->mock_multi_currency->method( 'get_compatibility' )->willReturn( $mock_compatibility );
-		$this->mock_multi_currency->method( 'get_geolocation_notice_template' )->willReturn( '<p>notice</p>' );
-
-		$this->renderer->print_geolocation_notice_template();
-
-		$this->expectOutputString( '' );
 	}
 
 	/**
