@@ -629,6 +629,13 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 				return $hpos_option_value;
 			}
 		);
+		// Older WooCommerce versions also need the HPOS feature flag to be on.
+		add_filter(
+			'pre_option_woocommerce_feature_custom_order_tables_enabled',
+			function () {
+				return 'yes';
+			}
+		);
 
 		// Use reflection to test protected method.
 		$reflection = new ReflectionMethod( WC_Payments_Remediate_Canceled_Auth_Fees::class, 'is_hpos_enabled' );
