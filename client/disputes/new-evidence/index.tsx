@@ -624,7 +624,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				'uncategorized_file',
 			];
 
-			// Filter evidence: include shipping and document fields even if empty (to clear them),
+			// Filter evidence: include shipping, document and cover letter fields even if empty (to clear them),
 			// but filter out other empty fields
 			const evidenceToSend = Object.fromEntries(
 				Object.entries( baseEvidence ).filter( ( [ key, value ] ) => {
@@ -635,6 +635,10 @@ export default ( { query }: { query: { id: string } } ) => {
 					// Always include document fields (even if empty) to ensure they're cleared on Stripe
 					// when a document is removed by the user
 					if ( documentFieldKeys.includes( key ) ) {
+						return true;
+					}
+					// Stripe submits a saved draft letter unless an empty one replaces it
+					if ( key === 'uncategorized_text' ) {
 						return true;
 					}
 					// For other fields, only include if they have a value
@@ -829,6 +833,21 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Reset the manual edit flag so the cover letter regenerates with the new product type
 		// This ensures attachment labels are updated to match the selected product type
 		setIsCoverLetterManuallyEdited( false );
+	};
+
+	const handleRestoreCoverLetter = () => {
+		if (
+			coverLetter.trim() === '' ||
+			window.confirm(
+				__(
+					'Replace your cover letter with the generated one? Your edits will be lost.',
+					'woocommerce-payments'
+				)
+			)
+		) {
+			// Clearing the flag lets the cover letter effect regenerate the letter.
+			setIsCoverLetterManuallyEdited( false );
+		}
 	};
 
 	const updateProductDescription = ( value: string ) => {
@@ -1246,6 +1265,20 @@ export default ( { query }: { query: { id: string } } ) => {
 							isDismissible={ false }
 							status="warning"
 							className="wcpay-dispute-evidence-new__cover-letter-warning"
+							actions={
+								readOnly
+									? undefined
+									: [
+											{
+												label: __(
+													'Restore generated letter',
+													'woocommerce-payments'
+												),
+												onClick:
+													handleRestoreCoverLetter,
+											},
+										]
+							}
 						>
 							{ __(
 								"You've made some manual edits to your cover letter. If you update your evidence again, those changes won't be reflected here automatically — but you can always make further edits yourself.",
@@ -1293,22 +1326,6 @@ export default ( { query }: { query: { id: string } } ) => {
 									shipping_address: shippingAddress,
 								},
 							};
-
-							// If the value is empty, regenerate the content
-							if ( newValue.trim() === '' ) {
-								const generatedContent = generateCoverLetter(
-									disputeWithCurrentEvidence,
-									getBusinessDetails(),
-									settings,
-									bankName,
-									refundStatus,
-									duplicateStatus,
-									productType
-								);
-								setCoverLetter( generatedContent );
-								setIsCoverLetterManuallyEdited( false );
-								return;
-							}
 
 							// Compare with what would be auto-generated
 							const generatedContent = generateCoverLetter(
@@ -1505,10 +1522,15 @@ export default ( { query }: { query: { id: string } } ) => {
 							onClick={ () => {
 								// Show browser confirmation dialog first
 								const confirmed = window.confirm(
-									__(
-										"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
-										'woocommerce-payments'
-									)
+									coverLetter.trim() === ''
+										? __(
+												"Your cover letter is empty. Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+												'woocommerce-payments'
+											)
+										: __(
+												"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+												'woocommerce-payments'
+											)
 								);
 
 								if ( confirmed ) {
