@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button } from '@wordpress/components';
+import { Button, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -10,18 +10,30 @@ import { __ } from '@wordpress/i18n';
  */
 import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
 import { recordEvent } from 'wcpay/tracks';
+import InlineNotice from 'wcpay/components/inline-notice';
 
-/** Explains why test mode is locked on for a test account, with a way to activate payments. */
+/** Tells a test account's owner, above the settings, how to start taking real payments. */
 const TestAccountNotice = () => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	return (
-		<p className="wcpay-settings-screen__card-description">
-			{ __(
-				'You’re using a test account. Activate payments to start taking real payments.',
-				'woocommerce-payments'
-			) }{ ' ' }
+		<InlineNotice
+			status="info"
+			isDismissible={ false }
+			icon
+			className="wcpay-settings-screen__test-account-notice"
+		>
+			<strong>
+				{ __( 'You’re using a test account', 'woocommerce-payments' ) }
+			</strong>
+			<p>
+				{ __(
+					'Provide additional details about your business so you can begin accepting real payments.',
+					'woocommerce-payments'
+				) }
+			</p>
 			<Button
-				variant="link"
+				variant="primary"
+				size="compact"
 				onClick={ () => {
 					recordEvent( 'wcpay_settings_setup_live_payments_click', {
 						source: 'wcadmin-settings-screen',
@@ -31,6 +43,9 @@ const TestAccountNotice = () => {
 			>
 				{ __( 'Activate payments', 'woocommerce-payments' ) }
 			</Button>
+			<ExternalLink href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/">
+				{ __( 'Learn more', 'woocommerce-payments' ) }
+			</ExternalLink>
 			{ isModalOpen && (
 				<SetupLivePaymentsModal
 					from="WCPAY_SETTINGS_SCREEN"
@@ -38,7 +53,7 @@ const TestAccountNotice = () => {
 					onClose={ () => setModalOpen( false ) }
 				/>
 			) }
-		</p>
+		</InlineNotice>
 	);
 };
 
