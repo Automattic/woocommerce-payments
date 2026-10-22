@@ -283,8 +283,10 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$this->status->render_status_report_section();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Dev Mode', $output );
-		$this->assertStringContainsString( 'Disabled', $output );
+		$this->assertMatchesRegularExpression(
+			'#data-export-label="Dev Mode">(?:(?!</tr>).)*<td>\s*Disabled\s*</td>\s*</tr>#s',
+			$output
+		);
 	}
 
 	/**

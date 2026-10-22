@@ -438,6 +438,10 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_show_woopay_button_page_not_supported() {
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+
 		$this->mock_woopay_utilities
 			->expects( $this->never() )
 			->method( 'is_country_available' );

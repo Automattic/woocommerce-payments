@@ -177,10 +177,14 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$order->add_meta_data( '_wcpay_mode', 'foo', true ); // Random value so we are sure that env will be changed.
 		$order->save_meta_data();
 
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( 'pm_13153513253' );
+
 		$this->mock_api_client->expects( $this->never() )
 			->method( 'track_order' );
 
-		$this->action_scheduler_service->track_update_order_action( $order->get_id() );
+		$this->assertFalse( $this->action_scheduler_service->track_update_order_action( $order->get_id() ) );
 	}
 
 	public function test_track_update_order_action_with_no_payment_method() {
