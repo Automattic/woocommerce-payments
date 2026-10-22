@@ -885,6 +885,124 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->expectOutputString( '' );
 	}
 
+	public function test_get_geolocation_notice_template_leaves_country_and_currency_slots_empty() {
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+
+		$template = $this->multi_currency->get_geolocation_notice_template();
+
+		$this->assertStringContainsString( 'visiting from <span data-wcpay-notice-country></span>.', $template );
+		$this->assertStringContainsString( 'prices to <span data-wcpay-notice-currency></span> for', $template );
+		$this->assertStringContainsString( 'href="?currency=USD">Use United States (US) dollar instead.</a>', $template );
+		$this->assertStringContainsString( 'data-notice-id=""', $template );
+		$this->assertStringNotContainsString( 'Canada', $template );
+	}
+
+	public function test_get_public_config_includes_geolocation_notice_with_the_server_rendered_notice_id() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+
+		ob_start();
+		$this->multi_currency->display_geolocation_currency_update_notice();
+		preg_match( '/data-notice-id="([^"]+)"/', ob_get_clean(), $matches );
+		$config = $this->multi_currency->get_public_config();
+
+		$this->assertSame( 'CAD', $config['selected_currency'] );
+		$this->assertSame(
+			[
+				'country_name'  => 'Canada',
+				'currency_name' => 'Canadian dollar',
+				'id'            => $matches[1],
+			],
+			$config['geolocation_notice']
+		);
+	}
+
+	public function test_get_public_config_applies_notice_name_filters() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+		$override_country  = function () {
+			return 'Great White North';
+		};
+		$override_currency = function () {
+			return 'loonies';
+		};
+		add_filter( 'wcpay_multi_currency_override_notice_country', $override_country );
+		add_filter( 'wcpay_multi_currency_override_notice_currency_name', $override_currency );
+
+		$config = $this->multi_currency->get_public_config();
+
+		remove_filter( 'wcpay_multi_currency_override_notice_country', $override_country );
+		remove_filter( 'wcpay_multi_currency_override_notice_currency_name', $override_currency );
+
+		$this->assertSame( 'Great White North', $config['geolocation_notice']['country_name'] );
+		$this->assertSame( 'loonies', $config['geolocation_notice']['currency_name'] );
+	}
+
+	public function test_get_public_config_has_no_geolocation_notice_when_auto_switching_is_off() {
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+
+		$config = $this->multi_currency->get_public_config();
+
+		$this->assertNull( $config['geolocation_notice'] );
+	}
+
+	public function test_get_public_config_has_no_geolocation_notice_for_the_store_currency() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'US';
+			}
+		);
+
+		$config = $this->multi_currency->get_public_config();
+
+		$this->assertSame( 'USD', $config['selected_currency'] );
+		$this->assertNull( $config['geolocation_notice'] );
+	}
+
+	public function test_get_public_config_has_no_geolocation_notice_for_a_currency_other_than_the_geolocated_one() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		// WooCommerce counts a logged-in user as having a session, so the config reads the
+		// currency the visitor picked instead of the geolocated one.
+		wp_set_current_user( self::LOGGED_IN_USER_ID );
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+
+		$config = $this->multi_currency->get_public_config();
+
+		$this->assertSame( 'GBP', $config['selected_currency'] );
+		$this->assertNull( $config['geolocation_notice'] );
+	}
+
 	public function test_get_price_returns_price_in_default_currency() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 

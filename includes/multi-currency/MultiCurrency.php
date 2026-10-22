@@ -1162,55 +1162,123 @@ class MultiCurrency {
 	 * automatic currency switch.
 	 */
 	public function display_geolocation_currency_update_notice() {
-		$current_currency    = $this->get_selected_currency();
-		$store_currency      = get_option( 'woocommerce_currency' );
-		$country             = $this->geolocation->get_country_by_customer_location();
-		$geolocated_currency = $this->geolocation->get_currency_by_customer_location();
-		$currencies          = get_woocommerce_currencies();
+		$current_currency = $this->get_selected_currency();
 
 		// Don't run next checks if simulation is enabled.
-		if ( ! $this->is_simulation_enabled() ) {
-			// Do not display notice if using the store's default currency.
-			if ( $store_currency === $current_currency->get_code() ) {
-				return;
-			}
-
-			// Do not display notice for other currencies than geolocated.
-			if ( $current_currency->get_code() !== $geolocated_currency ) {
-				return;
-			}
+		if ( ! $this->is_simulation_enabled() && ! $this->is_geolocated_currency_switch( $current_currency->get_code() ) ) {
+			return;
 		}
 
-		$message = sprintf(
+		$notice = $this->get_geolocation_notice( $current_currency );
+
+		// The markup is escaped as it's built.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->get_geolocation_notice_markup( $notice['message'], $notice['id'] );
+	}
+
+	/**
+	 * Gets the geolocation notice markup with empty slots for the country and currency names.
+	 *
+	 * Cache-optimized mode prints this inside a <template> and fills the slots client-side, since a
+	 * cached page is shared by visitors from every country.
+	 *
+	 * @return string
+	 */
+	public function get_geolocation_notice_template(): string {
+		$message = $this->get_geolocation_notice_message(
+			'<span data-wcpay-notice-country></span>',
+			'<span data-wcpay-notice-currency></span>'
+		);
+
+		return $this->get_geolocation_notice_markup( $message, '' );
+	}
+
+	/**
+	 * Whether the visitor sees a currency other than the store's because of their location.
+	 *
+	 * @param string $currency_code The visitor's selected currency code.
+	 *
+	 * @return bool
+	 */
+	private function is_geolocated_currency_switch( string $currency_code ): bool {
+		return get_option( 'woocommerce_currency' ) !== $currency_code
+			&& $this->geolocation->get_currency_by_customer_location() === $currency_code;
+	}
+
+	/**
+	 * Builds the geolocation notice for the visitor's country and the given currency.
+	 *
+	 * @param Currency $currency The currency the visitor was switched to.
+	 *
+	 * @return array{country_name: string, currency_name: string, message: string, id: string}
+	 */
+	private function get_geolocation_notice( Currency $currency ): array {
+		$country = $this->geolocation->get_country_by_customer_location();
+
+		/**
+		 * Filters the country name shown in the currency switch notice.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param string $country_name The geolocated country name.
+		 */
+		$country_name = apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] );
+
+		/**
+		 * Filters the currency name shown in the currency switch notice.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param string $currency_name The current currency name.
+		 */
+		$currency_name = apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $currency->get_name() );
+
+		$message = $this->get_geolocation_notice_message( $country_name, $currency_name );
+
+		return [
+			'country_name'  => $country_name,
+			'currency_name' => $currency_name,
+			'message'       => $message,
+			// WooCommerce's store notice script names the dismissal cookie after this ID, so it
+			// must stay the same wherever the notice renders for a dismissal to stick.
+			'id'            => md5( $message ) . '2',
+		];
+	}
+
+	/**
+	 * Builds the geolocation notice sentence.
+	 *
+	 * @param string $country_name  The visitor's country name.
+	 * @param string $currency_name The selected currency name.
+	 *
+	 * @return string
+	 */
+	private function get_geolocation_notice_message( string $country_name, string $currency_name ): string {
+		$store_currency = get_option( 'woocommerce_currency' );
+		$currencies     = get_woocommerce_currencies();
+
+		return sprintf(
 		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name, %4 Link to switch currency */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a href="%4$s">Use %3$s instead.</a>', 'woocommerce-payments' ),
-			/**
-			 * Filters the country name shown in the currency switch notice.
-			 *
-			 * @since 3.1.0
-			 *
-			 * @param string $country_name The geolocated country name.
-			 */
-			apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] ),
-			/**
-			 * Filters the currency name shown in the currency switch notice.
-			 *
-			 * @since 3.1.0
-			 *
-			 * @param string $currency_name The current currency name.
-			 */
-			apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $current_currency->get_name() ),
+			$country_name,
+			$currency_name,
 			esc_html( $currencies[ $store_currency ] ),
 			esc_url( '?currency=' . $store_currency )
 		);
+	}
 
-		$notice_id = md5( $message );
-
-		echo '<p class="woocommerce-store-notice demo_store" data-notice-id="' . esc_attr( $notice_id . 2 ) . '" style="display:none;">';
-		// No need to escape here as the contents of $message is already escaped.
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo $message;
-		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
+	/**
+	 * Wraps the geolocation notice sentence in WooCommerce's store notice markup.
+	 *
+	 * @param string $message   The notice sentence.
+	 * @param string $notice_id The notice ID.
+	 *
+	 * @return string
+	 */
+	private function get_geolocation_notice_markup( string $message, string $notice_id ): string {
+		return '<p class="woocommerce-store-notice demo_store" data-notice-id="' . esc_attr( $notice_id ) . '" style="display:none;">'
+			. $message
+			. ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
 	}
 
 	/**
@@ -1437,11 +1505,22 @@ class MultiCurrency {
 			];
 		}
 
+		$geolocation_notice = null;
+		if ( $this->is_using_auto_currency_switching() && $this->is_geolocated_currency_switch( $selected_code ) ) {
+			$notice             = $this->get_geolocation_notice( $enabled_currencies[ $selected_code ] );
+			$geolocation_notice = [
+				'country_name'  => $notice['country_name'],
+				'currency_name' => $notice['currency_name'],
+				'id'            => $notice['id'],
+			];
+		}
+
 		return [
 			'default_currency'    => $default_currency->get_code(),
 			'selected_currency'   => $selected_code,
 			'charm_only_products' => (bool) $charm_only_products,
 			'currencies'          => $currencies_data,
+			'geolocation_notice'  => $geolocation_notice,
 		];
 	}
 
