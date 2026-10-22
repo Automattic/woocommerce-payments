@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop express checkout buttons on product pages from giving shoppers a session cookie on page load, which kept them off cached pages when Multi-Currency is optimized for caching.
