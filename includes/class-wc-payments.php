@@ -1036,7 +1036,6 @@ class WC_Payments {
 				}
 			}
 
-			$new_ordering = [];
 			if ( null === $main_gateway_position ) {
 				$new_ordering = array_merge( $woopayments_payment_methods, $before, $after );
 			} else {

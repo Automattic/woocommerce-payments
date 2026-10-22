@@ -581,7 +581,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	public function checkout_order_processed( $order_id ) {
 
 		$payment_gateway = wc_get_payment_gateway_by_order( $order_id );
-		$properties      = [ 'payment_title' => 'other' ];
 
 		// If the order was placed using WooCommerce Payments, record the payment title using Tracks.
 		if ( isset( $payment_gateway->id ) && strpos( $payment_gateway->id, 'woocommerce_payments' ) === 0 ) {

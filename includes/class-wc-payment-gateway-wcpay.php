@@ -2255,7 +2255,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge_id     = '';
 			$charge        = null;
 			$client_secret = $intent->get_client_secret();
-			$currency      = $order->get_currency();
 			$next_action   = $intent->get_next_action();
 			$processing    = [];
 		}
@@ -4258,7 +4257,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
-		$http_code                = null;
 		$error_code               = null;
 
 		try {
@@ -4312,7 +4310,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} catch ( API_Exception $ge ) {
 				// Ignore any errors during the intent retrieval, and add the failed capture note below with the
 				// original error message.
-				$status        = null;
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
 				$error_code    = $e->get_error_code();
@@ -4382,7 +4379,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} catch ( API_Exception $ge ) {
 				// Ignore any errors during the intent retrieval, and add the failed cancellation note below with the
 				// original error message.
-				$status        = null;
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
 			}

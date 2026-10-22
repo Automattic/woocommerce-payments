@@ -230,10 +230,10 @@ class WC_Payments_Webhook_Processing_Service {
 				$this->process_webhook_payment_intent_succeeded( $event_body );
 				break;
 			case 'payment_intent.canceled':
-				$this->process_webhook_payment_intent_canceled( $event_body );
+				$this->process_webhook_payment_intent_canceled();
 				break;
 			case 'payment_intent.amount_capturable_updated':
-				$this->process_webhook_payment_intent_amount_capturable_updated( $event_body );
+				$this->process_webhook_payment_intent_amount_capturable_updated();
 				break;
 			case 'invoice.upcoming':
 			case 'invoice.paid':
@@ -410,11 +410,9 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent canceled event.
 	 *
-	 * @param array $_unused_event_body The event that triggered the webhook.
-	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_canceled( $_unused_event_body ) {
+	private function process_webhook_payment_intent_canceled() {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
@@ -423,11 +421,9 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent amount capturable updated event.
 	 *
-	 * @param array $_unused_event_body The event that triggered the webhook.
-	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_amount_capturable_updated( $_unused_event_body ) {
+	private function process_webhook_payment_intent_amount_capturable_updated() {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
