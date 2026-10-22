@@ -407,23 +407,28 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that get_payment_method_definitions_json() returns valid JSON.
 	 */
 	public function test_get_payment_method_definitions_json_returns_valid_json() {
-		$registry = PaymentMethodDefinitionRegistry::instance();
-		$registry->register_payment_method( MockPaymentMethodDefinition::class );
-		$registry->register_payment_method( SecondMockPaymentMethodDefinition::class );
+		// The JSON is built from the available definitions, not the registered ones.
+		$available_definitions = ( new ReflectionClass( PaymentMethodDefinitionRegistry::class ) )->getProperty( 'available_definitions' );
+		$available_definitions->setAccessible( true );
+		$available_definitions->setValue(
+			PaymentMethodDefinitionRegistry::instance(),
+			[ MockPaymentMethodDefinition::class, SecondMockPaymentMethodDefinition::class ]
+		);
 
 		$json = PaymentMethodUtils::get_payment_method_definitions_json();
 
 		// Verify it's valid JSON.
 		$decoded = json_decode( $json, true );
 		$this->assertNotNull( $decoded, 'Should return valid JSON' );
-		$this->assertIsArray( $decoded, 'Decoded JSON should be an array' );
+		$this->assertSame( [ 'mock_method', 'second_mock_method' ], array_keys( $decoded ) );
+		$this->assertSame( 'Mock Method', $decoded['mock_method']['title'] );
 
 		// Verify required fields are present.
-		foreach ( $decoded as $method ) {
-			$this->assertArrayHasKey( 'id', $method );
+		foreach ( $decoded as $id => $method ) {
+			$this->assertSame( $id, $method['id'] );
 			$this->assertArrayHasKey( 'title', $method );
 			$this->assertArrayHasKey( 'description', $method );
-			$this->assertArrayHasKey( 'icon', $method );
+			$this->assertArrayHasKey( 'settings_icon_url', $method );
 			$this->assertArrayHasKey( 'currencies', $method );
 			$this->assertArrayHasKey( 'allows_manual_capture', $method );
 			$this->assertArrayHasKey( 'allows_pay_later', $method );

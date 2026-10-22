@@ -98,9 +98,13 @@ class WC_Payments_Abstract_Admin_Notice_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_show_memoizes_compute_within_request(): void {
-		$this->notice->should_show();
-		$this->notice->should_show();
-		$this->notice->should_show();
+		$this->assertTrue( $this->notice->should_show() );
+
+		// Drop the eligibility transient and flip the predicate so only the memo can keep the answer.
+		delete_transient( 'wcpay_fixture_eligible' );
+		$this->notice->eligibility = false;
+
+		$this->assertTrue( $this->notice->should_show() );
 		$this->assertSame( 1, $this->notice->compute_calls );
 	}
 

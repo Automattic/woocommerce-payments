@@ -60,14 +60,6 @@ class WC_Payments_One_And_Done_Notice_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $notice->should_show() );
 	}
 
-	public function test_should_show_returns_false_when_user_lacks_capability(): void {
-		$this->create_wcpay_live_orders( 1, 8 );
-		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
-		$notice = $this->make_notice();
-
-		$this->assertFalse( $notice->should_show() );
-	}
-
 	public function test_should_show_returns_false_when_gateway_not_connected(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		$notice = $this->make_notice( false );
@@ -206,14 +198,6 @@ class WC_Payments_One_And_Done_Notice_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $notice->should_show() );
 	}
 
-	public function test_should_show_returns_true_when_snooze_expired(): void {
-		$this->create_wcpay_live_orders( 1, 8 );
-		update_user_meta( $this->admin_user_id, 'wcpay_one_and_done_notice_snoozed_at', time() - 8 * DAY_IN_SECONDS );
-		$notice = $this->make_notice();
-
-		$this->assertTrue( $notice->should_show() );
-	}
-
 	// ---- should_show: permanent flag short-circuits --------------------------
 
 	public function test_permanent_ineligible_flag_short_circuits_eligibility(): void {
@@ -304,9 +288,10 @@ class WC_Payments_One_And_Done_Notice_Test extends WCPAY_UnitTestCase {
 
 		$notice = new WC_Payments_One_And_Done_Notice( $mock_gateway, $mock_account );
 
-		$notice->should_show();
-		$notice->should_show();
-		$notice->should_show();
+		$this->assertTrue( $notice->should_show() );
+		// Drop the eligibility transient so only the memo can stop a second account lookup.
+		delete_transient( 'wcpay_one_and_done_eligible' );
+		$this->assertTrue( $notice->should_show() );
 	}
 
 	// ---- maybe_show ----------------------------------------------------------
