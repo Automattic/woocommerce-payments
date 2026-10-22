@@ -1509,8 +1509,8 @@ class MultiCurrency {
 		if ( $this->is_using_auto_currency_switching() && $this->is_geolocated_currency_switch( $selected_code ) ) {
 			$notice             = $this->get_geolocation_notice( $enabled_currencies[ $selected_code ] );
 			$geolocation_notice = [
-				'country_name'  => $notice['country_name'],
-				'currency_name' => $notice['currency_name'],
+				'country_name'  => \WC_Payments_Utils::decode_html_entities( $notice['country_name'] ),
+				'currency_name' => \WC_Payments_Utils::decode_html_entities( $notice['currency_name'] ),
 				'id'            => $notice['id'],
 			];
 		}

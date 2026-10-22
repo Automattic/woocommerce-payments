@@ -955,6 +955,36 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( 'loonies', $config['geolocation_notice']['currency_name'] );
 	}
 
+	public function test_get_public_config_decodes_notice_names_without_changing_the_notice_id() {
+		update_option( self::ENABLED_CURRENCIES_OPTION, array_merge( $this->mock_enabled_currencies, [ Currency_Code::EURO ] ) );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->init_multi_currency();
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, Currency_Code::EURO );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'BL';
+			}
+		);
+		$override_currency = function () {
+			return 'Euro &amp; cents';
+		};
+		add_filter( 'wcpay_multi_currency_override_notice_currency_name', $override_currency );
+
+		try {
+			ob_start();
+			$this->multi_currency->display_geolocation_currency_update_notice();
+			preg_match( '/data-notice-id="([^"]+)"/', ob_get_clean(), $matches );
+			$config = $this->multi_currency->get_public_config();
+		} finally {
+			remove_filter( 'wcpay_multi_currency_override_notice_currency_name', $override_currency );
+		}
+
+		$this->assertSame( 'Saint Barthélemy', $config['geolocation_notice']['country_name'] );
+		$this->assertSame( 'Euro & cents', $config['geolocation_notice']['currency_name'] );
+		$this->assertSame( $matches[1], $config['geolocation_notice']['id'] );
+	}
+
 	public function test_get_public_config_has_no_geolocation_notice_when_auto_switching_is_off() {
 		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
 		add_filter(
