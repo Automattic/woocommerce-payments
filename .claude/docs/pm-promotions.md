@@ -1,6 +1,6 @@
 # Payment Method (PM) Promotions
 
-**Last updated:** 2026-08-21
+**Last updated:** 2026-10-21
 
 ## Overview
 
@@ -308,7 +308,6 @@ const mockPromotion: PmPromotion = {
 - `client/components/promotional-badge/__tests__/index.test.tsx`
 - `client/data/pm-promotions/__tests__/*.test.ts`
 - `tests/unit/test-class-wc-payments-pm-promotions-service.php`
-- `tests/unit/admin/test-class-wc-rest-payments-pm-promotions-controller.php`
 - `tests/unit/admin/test-class-wc-rest-payments-pm-promotions-controller-integration.php`
 
 ### Test Mock Setup
