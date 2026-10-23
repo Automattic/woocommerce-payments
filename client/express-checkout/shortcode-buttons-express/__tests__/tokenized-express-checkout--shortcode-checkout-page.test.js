@@ -94,6 +94,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			submit: jest.fn(),
 			mount: jest.fn(),
 			unmount: jest.fn(),
+			destroy: jest.fn(),
 			__getRegisteredEvent: ( eventName ) =>
 				stripeElementRegisteredEventCallbacks[ eventName ],
 			on: jest.fn( ( event, callback ) => {
@@ -234,7 +235,6 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			expressPaymentType: 'google_pay',
 		} );
 		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
-		stripeElementMock.__getRegisteredEvent( 'cancel' )();
 
 		apiFetch.mockImplementation( async () =>
 			Promise.resolve( {
@@ -595,79 +595,64 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
-	it( 'should not rebuild Elements under an open wallet sheet, and refresh once the shopper closes it', async () => {
-		global.jQuery.blockUI = jest.fn();
-		global.jQuery.unblockUI = jest.fn();
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
+	describe( 'replacing the button during a refresh', () => {
+		beforeEach( async () => {
+			global.jQuery.unblockUI = jest.fn();
+			await jest.isolateModulesAsync( async () => {
+				await import( '..' );
+			} );
+
+			$( document.body ).trigger( 'updated_checkout' );
+			await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 		} );
 
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		const refresh = async () => {
+			$( document.body ).trigger( 'updated_checkout' );
+			await waitFor( () =>
+				expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
+			);
+		};
 
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: jest.fn(),
-			reject: jest.fn(),
-			expressPaymentType: 'google_pay',
-		} );
-		expect( global.jQuery.blockUI ).toHaveBeenCalledTimes( 1 );
+		const openWallet = () =>
+			stripeElementMock.__getRegisteredEvent( 'click' )( {
+				resolve: jest.fn(),
+				reject: jest.fn(),
+				expressPaymentType: 'google_pay',
+			} );
 
-		// WooCommerce finishes an order-review refresh while the sheet is open.
-		$( document.body ).trigger( 'updated_checkout' );
-		await act( async () => {
-			await Promise.resolve();
-		} );
+		it( 'should end an open wallet session and lift the page overlay', async () => {
+			openWallet();
 
-		// A new generation would close the sheet without a `cancel` event,
-		// leaving the page blocked.
-		expect( stripeInstance.elements ).toHaveBeenCalledTimes( 1 );
-		expect( stripeElementMock.mount ).toHaveBeenCalledTimes( 1 );
-		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+			await refresh();
 
-		stripeElementMock.__getRegisteredEvent( 'cancel' )();
-
-		expect( global.jQuery.unblockUI ).toHaveBeenCalledTimes( 1 );
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
-		await waitFor( () =>
-			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
-		);
-		expect( stripeElementMock.mount ).toHaveBeenCalledTimes( 2 );
-	} );
-
-	it( 'should run the refresh deferred by an open wallet sheet once the payment is aborted', async () => {
-		global.jQuery.unblockUI = jest.fn();
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
+			// Destroying the Element removes Stripe's overlay, but Stripe sends
+			// no `cancel` for it.
+			expect( stripeElementMock.destroy ).toHaveBeenCalledTimes( 1 );
+			expect( global.jQuery.unblockUI ).toHaveBeenCalledTimes( 1 );
 		} );
 
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-		stripeInstance.elements.mockReturnValue( {
-			create: jest.fn( () => stripeElementMock ),
+		it( 'should not touch the page overlay when no wallet is open', async () => {
+			openWallet();
+			stripeElementMock.__getRegisteredEvent( 'cancel' )();
+			global.jQuery.unblockUI.mockClear();
+
+			await refresh();
+
+			expect( stripeElementMock.destroy ).toHaveBeenCalledTimes( 1 );
+			expect( global.jQuery.unblockUI ).not.toHaveBeenCalled();
 		} );
 
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: jest.fn(),
-			reject: jest.fn(),
-			expressPaymentType: 'google_pay',
-		} );
-		$( document.body ).trigger( 'updated_checkout' );
-		await act( async () => {
-			await Promise.resolve();
-		} );
-		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+		it( 'should keep the page overlay while the payment is being confirmed', async () => {
+			stripeInstance.elements.mock.results[ 0 ].value.submit = jest.fn(
+				() => new Promise( () => {} )
+			);
+			openWallet();
+			stripeElementMock.__getRegisteredEvent( 'confirm' )( {} );
 
-		// The first generation's `elements` failing to submit aborts the payment.
-		stripeInstance.elements.mock.results[ 0 ].value.submit = jest.fn(
-			async () => ( { error: { message: 'Card declined.' } } )
-		);
-		await stripeElementMock.__getRegisteredEvent( 'confirm' )( {} );
+			await refresh();
 
-		expect( global.jQuery.unblockUI ).toHaveBeenCalledTimes( 1 );
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
-		await waitFor( () =>
-			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
-		);
+			expect( global.jQuery.unblockUI ).not.toHaveBeenCalled();
+		} );
 	} );
 
 	it( 'should leave the button available while WooCommerce refreshes its order review', async () => {
