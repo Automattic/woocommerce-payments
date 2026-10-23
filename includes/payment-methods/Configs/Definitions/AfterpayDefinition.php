@@ -66,10 +66,6 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 			return __( 'Clearpay', 'woocommerce-payments' );
 		}
 
-		if ( Country_Code::UNITED_STATES === $account_country ) {
-			return __( 'Cash App Afterpay', 'woocommerce-payments' );
-		}
-
 		return __( 'Afterpay', 'woocommerce-payments' );
 	}
 
@@ -105,10 +101,6 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	public static function get_description( ?string $account_country = null ): string {
 		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
 			return __( 'Allow customers to pay over time with Clearpay.', 'woocommerce-payments' );
-		}
-
-		if ( Country_Code::UNITED_STATES === $account_country ) {
-			return __( 'Allow customers to pay over time with Cash App Afterpay.', 'woocommerce-payments' );
 		}
 
 		return __( 'Allow customers to pay over time with Afterpay.', 'woocommerce-payments' );
@@ -178,6 +170,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
 		}
 
+		// US stores show plain "Afterpay" text, but Block asked us to keep the Cash App Afterpay logos.
 		if ( Country_Code::UNITED_STATES === $account_country ) {
 			return plugins_url( 'assets/images/payment-methods/afterpay-cashapp-logo.svg', WCPAY_PLUGIN_FILE );
 		}
