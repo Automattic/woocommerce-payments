@@ -1,0 +1,10 @@
+<h1 id='introduction'>Introduction</h1>
+<p>WooPayments REST APIs build upon the WooCommerce REST API, which extends the WordPress REST API. They use the same authentication and request methods.</p>
+
+<p>For requirements and other general details, refer to the <a href="https://developer.woocommerce.com/docs/apis/rest-api/">WooCommerce REST API docs</a>.</p>
+<h2 id='monetary-amounts'>Monetary amounts</h2>
+<p>Monetary values in Authorization, Payment intents, Reports, and Payouts responses, such as <code>amount</code>, <code>application_fee_amount</code>, <code>fees</code>, <code>net</code>, and <code>net_amount</code>, are integers in the currency&#39;s smallest unit (minor units). The <code>minimum_amount</code> value in order capture errors also uses minor units.</p>
+
+<p>For GBP, <code>1234</code> means £12.34; for a zero-decimal currency such as JPY, <code>1234</code> means ¥1,234. Use the relevant currency when displaying these amounts rather than always dividing by 100.</p>
+
+<p>This differs from WooCommerce REST API monetary amounts, which are returned as decimal strings such as <code>&quot;12.34&quot;</code>. Percentage and exchange-rate fields are not monetary amounts.</p>
