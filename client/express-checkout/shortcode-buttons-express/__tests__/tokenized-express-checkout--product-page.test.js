@@ -801,7 +801,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		} );
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 
-		// Two variation changes in a row: `woocommerce_variation_has_changed` is
+		// Two variation changes in a row: `show_variation` is
 		// not debounced, so both refetches are in flight at the same time.
 		doAction( 'wcpay.express-checkout.update-button-data' );
 		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 1 ) );

@@ -18,8 +18,26 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 jQuery( ( $ ) => {
-	// Classic shortcode: listen for jQuery variation-change event.
-	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {
+	// Classic shortcode: WooCommerce fires `woocommerce_variation_has_changed`
+	// before it applies the new selection to the add to cart button, which it
+	// enables on `show_variation` (300ms after `found_variation`) and disables
+	// on `hide_variation`. Refreshing on the change would read the previous
+	// selection's button state, so refresh on those two events instead, and
+	// keep the button blocked while a found variation waits to be shown.
+	// Before the shopper changes anything, they only replay the selection the
+	// page was priced with, so they just lift the block.
+	let hasVariationChanged = false;
+	$( document.body ).on( 'woocommerce_variation_has_changed', () => {
+		hasVariationChanged = true;
+	} );
+	$( document.body ).on( 'found_variation', () => {
+		expressCheckoutButtonUi.blockButton();
+	} );
+	$( document.body ).on( 'show_variation hide_variation', () => {
+		if ( ! hasVariationChanged ) {
+			expressCheckoutButtonUi.unblock();
+			return;
+		}
 		doAction( 'wcpay.express-checkout.update-button-data' );
 	} );
 

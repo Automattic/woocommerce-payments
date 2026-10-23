@@ -5,6 +5,7 @@
  */
 import { applyFilters } from '@wordpress/hooks';
 import { render } from '@testing-library/react';
+import $ from 'jquery';
 
 /**
  * Internal dependencies
@@ -348,6 +349,75 @@ describe( 'ECE product page compatibility', () => {
 				id: 100,
 				variation: [ { attribute: 'Color', value: 'red' } ],
 			} );
+		} );
+	} );
+
+	describe( 'Classic variation refresh', () => {
+		let refreshMock, buttonUi;
+
+		beforeEach( async () => {
+			global.$ = global.jQuery = $;
+			// Invoke document.ready callbacks immediately.
+			$.fn.ready = ( callback ) => callback( $ );
+			global.wcpayExpressCheckoutParams = { button_context: 'product' };
+
+			// The listeners must be attached by, and dispatch to, the same
+			// module registry the test spies on.
+			await jest.isolateModulesAsync( async () => {
+				( { default: buttonUi } = await import( '../../button-ui' ) );
+				const { addAction } = await import( '@wordpress/hooks' );
+				refreshMock = jest.fn();
+				addAction(
+					'wcpay.express-checkout.update-button-data',
+					'test',
+					refreshMock
+				);
+				jest.spyOn( buttonUi, 'blockButton' ).mockImplementation();
+				jest.spyOn( buttonUi, 'unblock' ).mockImplementation();
+				await import( '../wc-product-page' );
+			} );
+		} );
+
+		afterEach( () => {
+			$( document.body ).off();
+			global.jQuery = jest.fn();
+			delete global.$;
+			delete global.wcpayExpressCheckoutParams;
+		} );
+
+		it( 'refreshes once WooCommerce shows the picked variation, not on the change itself', () => {
+			// WooCommerce's order: the add to cart button only changes state on
+			// `show_variation`, 300ms after the change events.
+			$( document.body ).trigger( 'found_variation' );
+			$( document.body ).trigger( 'woocommerce_variation_has_changed' );
+
+			expect( buttonUi.blockButton ).toHaveBeenCalled();
+			expect( refreshMock ).not.toHaveBeenCalled();
+
+			$( document.body ).trigger( 'show_variation' );
+
+			expect( refreshMock ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'refreshes when clearing the selection hides the variation', () => {
+			$( document.body ).trigger( 'woocommerce_variation_has_changed' );
+			$( document.body ).trigger( 'show_variation' );
+			refreshMock.mockClear();
+
+			// A cleared selection resolves synchronously, so WooCommerce hides
+			// the variation before it reports the change.
+			$( document.body ).trigger( 'hide_variation' );
+
+			expect( refreshMock ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'only lifts the block for the selection WooCommerce replays on page load', () => {
+			$( document.body ).trigger( 'hide_variation' );
+			$( document.body ).trigger( 'found_variation' );
+			$( document.body ).trigger( 'show_variation' );
+
+			expect( refreshMock ).not.toHaveBeenCalled();
+			expect( buttonUi.unblock ).toHaveBeenCalledTimes( 2 );
 		} );
 	} );
 } );
