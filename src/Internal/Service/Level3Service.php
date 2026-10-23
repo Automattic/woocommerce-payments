@@ -146,7 +146,7 @@ class Level3Service {
 	private function process_item( WC_Order_Item $item, string $currency ): array {
 		$quantity = ceil( $item->get_quantity() );
 		// A line with no units has no unit cost. Leaving it out is safe: if it still carries money,
-		// reconcile_with_order_total() drops the Level 3 data and the payment goes ahead without it.
+		// reconcile_with_order_total() covers a small gap with a rounding fix, or drops the Level 3 data.
 		if ( $quantity <= 0 ) {
 			return [];
 		}

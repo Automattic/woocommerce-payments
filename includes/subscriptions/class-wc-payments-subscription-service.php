@@ -871,7 +871,8 @@ class WC_Payments_Subscription_Service {
 		$data = [];
 
 		foreach ( $subscription->get_items() as $item ) {
-			// A line with no units has no unit price. It stays in the data so invoice repairs set its WCPay quantity to 0 too.
+			// A line with no units has no unit price. It stays in the data so invoice repairs set its WCPay price to 0;
+			// skipping it would leave Stripe billing the old amount.
 			$unit_amount = $item->get_quantity() ? $item->get_subtotal() / $item->get_quantity() : 0;
 			$data[]      = [
 				'metadata'   => $this->get_item_metadata( $item ),
