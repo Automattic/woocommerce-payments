@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep the prefetched WooPay session and checkout buttons current after cart changes from the Interactivity API cart, classic add-to-cart buttons and the mini-cart.
