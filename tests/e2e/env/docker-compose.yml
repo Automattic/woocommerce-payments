@@ -1,6 +1,10 @@
 services:
   wordpress:
-    build: ./wordpress-xdebug
+    build:
+      context: ./wordpress-xdebug
+      # Check for a newer base image on every build, so PHP security releases
+      # land with the next E2E setup instead of waiting on a manual pull.
+      pull: true
     image: wcp_e2e_wordpress
     container_name: wcp_e2e_wordpress
     depends_on:

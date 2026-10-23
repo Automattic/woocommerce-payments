@@ -1,7 +1,9 @@
-FROM wordpress:php8.1
+# Keep PHP and Xdebug in step with transact-local-dev's local/Dockerfile, so the
+# plugin and the server it talks to run the same PHP locally.
+FROM wordpress:php8.4
 # pecl.php.net is deprecated upstream (PIE is the successor) and unreachable
 # since early June 2026, so build Xdebug from a pinned GitHub release tarball
-# instead of `pecl install xdebug`. Xdebug 3.4.x is the last line supporting PHP 8.1.
+# instead of `pecl install xdebug`.
 RUN curl -fsSL https://github.com/xdebug/xdebug/archive/refs/tags/3.4.7.tar.gz -o /tmp/xdebug.tar.gz \
 	&& tar -xzf /tmp/xdebug.tar.gz -C /tmp \
 	&& cd /tmp/xdebug-3.4.7 \
