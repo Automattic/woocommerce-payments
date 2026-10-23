@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix classic checkout staying blocked when the cart updates while a Google Pay or Apple Pay window is open.
