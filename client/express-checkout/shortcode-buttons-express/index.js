@@ -63,6 +63,11 @@ let cachedCartData = null;
 // Forced refreshes are numbered so that a slower, superseded one never publishes
 // its cart data, remounts Elements, or lifts the overlay over a newer one.
 let latestForcedRefreshId = 0;
+// A wallet sheet belongs to the Element that opened it. Mounting a new one closes
+// the sheet without a `cancel` event, which would leave the page blocked, so
+// forced refreshes wait until the sheet's payment attempt settles.
+let isWalletSheetOpen = false;
+let hasDeferredRefresh = false;
 
 // The overlay says nothing to screen-reader users, so a rejected tap is announced.
 // Leading-edge debounce: one announcement per burst of taps.
@@ -209,6 +214,7 @@ jQuery( ( $ ) => {
 		 */
 		abortPayment: ( message ) => {
 			onAbortPaymentHandler();
+			wcpayECE.onWalletSheetClosed();
 
 			$( '.woocommerce-error' ).remove();
 
@@ -238,6 +244,15 @@ jQuery( ( $ ) => {
 		completePayment: ( url ) => {
 			onCompletePaymentHandler();
 			window.location = url;
+		},
+
+		onWalletSheetClosed: () => {
+			isWalletSheetOpen = false;
+
+			if ( hasDeferredRefresh ) {
+				hasDeferredRefresh = false;
+				refreshExpressCheckoutElement();
+			}
 		},
 
 		/**
@@ -405,6 +420,7 @@ jQuery( ( $ ) => {
 						: options.shippingRates;
 
 				onClickHandler( event );
+				isWalletSheetOpen = true;
 				event.resolve( {
 					// `options.displayItems`, `options.shippingAddressRequired`, `options.requestPhone`, `options.shippingRates`,
 					// are all coming from prior of the initialization.
@@ -483,6 +499,7 @@ jQuery( ( $ ) => {
 				}
 
 				onCancelHandler();
+				wcpayECE.onWalletSheetClosed();
 			} );
 
 			eceButton.on( 'ready', ( onReadyParams ) => {
@@ -756,6 +773,11 @@ jQuery( ( $ ) => {
 	};
 
 	const refreshExpressCheckoutElement = async () => {
+		if ( isWalletSheetOpen ) {
+			hasDeferredRefresh = true;
+			return;
+		}
+
 		const refreshId = ++latestForcedRefreshId;
 
 		expressCheckoutButtonUi.blockButton();
