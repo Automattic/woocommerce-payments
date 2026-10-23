@@ -94,6 +94,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			submit: jest.fn(),
 			mount: jest.fn(),
 			unmount: jest.fn(),
+			destroy: jest.fn(),
 			__getRegisteredEvent: ( eventName ) =>
 				stripeElementRegisteredEventCallbacks[ eventName ],
 			on: jest.fn( ( event, callback ) => {
@@ -592,6 +593,66 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		releases[ 1 ]();
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
+	describe( 'replacing the button during a refresh', () => {
+		beforeEach( async () => {
+			global.jQuery.unblockUI = jest.fn();
+			await jest.isolateModulesAsync( async () => {
+				await import( '..' );
+			} );
+
+			$( document.body ).trigger( 'updated_checkout' );
+			await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		} );
+
+		const refresh = async () => {
+			$( document.body ).trigger( 'updated_checkout' );
+			await waitFor( () =>
+				expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
+			);
+		};
+
+		const openWallet = () =>
+			stripeElementMock.__getRegisteredEvent( 'click' )( {
+				resolve: jest.fn(),
+				reject: jest.fn(),
+				expressPaymentType: 'google_pay',
+			} );
+
+		it( 'should end an open wallet session and lift the page overlay', async () => {
+			openWallet();
+
+			await refresh();
+
+			// Destroying the Element removes Stripe's overlay, but Stripe sends
+			// no `cancel` for it.
+			expect( stripeElementMock.destroy ).toHaveBeenCalledTimes( 1 );
+			expect( global.jQuery.unblockUI ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'should not touch the page overlay when no wallet is open', async () => {
+			openWallet();
+			stripeElementMock.__getRegisteredEvent( 'cancel' )();
+			global.jQuery.unblockUI.mockClear();
+
+			await refresh();
+
+			expect( stripeElementMock.destroy ).toHaveBeenCalledTimes( 1 );
+			expect( global.jQuery.unblockUI ).not.toHaveBeenCalled();
+		} );
+
+		it( 'should keep the page overlay while the payment is being confirmed', async () => {
+			stripeInstance.elements.mock.results[ 0 ].value.submit = jest.fn(
+				() => new Promise( () => {} )
+			);
+			openWallet();
+			stripeElementMock.__getRegisteredEvent( 'confirm' )( {} );
+
+			await refresh();
+
+			expect( global.jQuery.unblockUI ).not.toHaveBeenCalled();
+		} );
 	} );
 
 	it( 'should leave the button available while WooCommerce refreshes its order review', async () => {
