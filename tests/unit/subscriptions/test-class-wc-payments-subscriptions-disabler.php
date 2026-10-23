@@ -182,10 +182,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Ensure related subscriptions section is removed from order detail view.
 	 */
 	public function test_remove_related_subscriptions_section() {
-		if ( ! class_exists( 'WC_Subscriptions_Order' ) ) {
-			$this->markTestSkipped( 'Subscriptions core not available.' );
-		}
-
 		add_action(
 			'woocommerce_order_details_after_order_table',
 			[ 'WC_Subscriptions_Order', 'add_subscriptions_to_view_order_templates' ],
@@ -342,10 +338,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Verify that editing a subscription product is blocked.
 	 */
 	public function test_block_subscription_product_edit() {
-		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Product_Subscription class not available.' );
-		}
-
 		require_once ABSPATH . 'wp-admin/includes/screen.php';
 		require_once ABSPATH . 'wp-admin/includes/template.php';
 
@@ -750,10 +742,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Verify that subscription products cannot be purchased.
 	 */
 	public function test_make_subscription_products_unpurchasable() {
-		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Product_Subscription class not available.' );
-		}
-
 		$this->disabler->init_hooks();
 
 		// Create subscription product.
@@ -789,13 +777,17 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Verify that variable subscription products cannot be purchased.
 	 */
 	public function test_make_variable_subscription_products_unpurchasable() {
-		if ( ! class_exists( 'WC_Product_Variable_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Product_Variable_Subscription class not available.' );
-		}
+		add_filter(
+			'woocommerce_data_stores',
+			function ( $stores ) {
+				$stores['product-variable-subscription'] = 'WC_Product_Variable_Data_Store_CPT';
+				return $stores;
+			}
+		);
 
 		$this->disabler->init_hooks();
 
-		// Create variable subscription product.
+		// Create variable subscription product with a priced variation.
 		$variable_subscription = new WC_Product_Variable_Subscription();
 		$variable_subscription->set_props(
 			[
@@ -803,6 +795,17 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 			]
 		);
 		$variable_subscription->save();
+
+		$variation = new WC_Product_Variation();
+		$variation->set_props(
+			[
+				'parent_id'     => $variable_subscription->get_id(),
+				'regular_price' => 10,
+			]
+		);
+		$variation->save();
+		WC_Product_Variable::sync( $variable_subscription->get_id() );
+		$variable_subscription = wc_get_product( $variable_subscription->get_id() );
 
 		// Verify variable subscription is not purchasable.
 		$this->assertFalse(
@@ -818,10 +821,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Verify that subscription products are filtered from admin product search.
 	 */
 	public function test_filter_admin_product_search() {
-		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Product_Subscription class not available.' );
-		}
-
 		$this->disabler->init_hooks();
 
 		// Create subscription product.
@@ -870,10 +869,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Verify that adding subscription products to admin orders is blocked with validation error.
 	 */
 	public function test_validate_admin_order_item_blocks_subscriptions() {
-		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Product_Subscription class not available.' );
-		}
-
 		$this->disabler->init_hooks();
 
 		// Create subscription product.
@@ -1140,6 +1135,12 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Verify that the Related Orders meta box is removed from order edit screens.
+	 *
+	 * Runs in a separate process because it defines wcs_get_page_screen_id(), which
+	 * test_remove_related_orders_meta_box_does_nothing_without_wcs() needs to be absent.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
 	 */
 	public function test_remove_related_orders_meta_box_removes_subscription_meta_box() {
 		global $wp_meta_boxes;
