@@ -143,6 +143,41 @@ describe( 'Grouped Select Control', () => {
 		expect( screen.getByText( 'Option 5' ) ).toBeInTheDocument();
 	} );
 
+	it( 'shows matching groups as headings instead of options while searching', async () => {
+		renderControl( { searchable: true } );
+
+		const select = screen.getByRole( 'button' );
+		await userEvent.click( select );
+
+		const input = screen.getByRole( 'textbox' );
+		await userEvent.type( input, 'Option 1' );
+
+		expect( screen.getByText( 'Group 1' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'option', { name: 'Group 1' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'option', { name: 'Option 1' } )
+		).toHaveAccessibleDescription( 'Group 1' );
+	} );
+
+	it( 'skips group headings when navigating search results with the keyboard', async () => {
+		renderControl( { searchable: true } );
+
+		const select = screen.getByRole( 'button' );
+		await userEvent.click( select );
+
+		const input = screen.getByRole( 'textbox' );
+		await userEvent.type( input, 'Option' );
+		await userEvent.keyboard( '{ArrowDown}{Enter}' );
+
+		expect( onChange ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				selectedItem: options[ 1 ],
+			} )
+		);
+	} );
+
 	it( 'restores visibility state after clearing search', async () => {
 		renderControl( { searchable: true } );
 
