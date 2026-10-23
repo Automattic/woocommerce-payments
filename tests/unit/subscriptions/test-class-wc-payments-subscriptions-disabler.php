@@ -298,10 +298,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Verify that direct post.php?post=X&action=edit URLs are blocked for subscriptions.
 	 */
 	public function test_block_subscription_edit_via_post_id() {
-		if ( ! class_exists( 'WC_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Subscription class not available.' );
-		}
-
 		require_once ABSPATH . 'wp-admin/includes/screen.php';
 		require_once ABSPATH . 'wp-admin/includes/template.php';
 
@@ -611,10 +607,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * This simulates what happens during a Stripe webhook when invoice.paid is received.
 	 */
 	public function test_renewal_order_creation_works_with_disabler_active() {
-		if ( ! class_exists( 'WC_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Subscription class not available.' );
-		}
-
 		// Initialize the disabler (simulating production state).
 		$this->disabler->init_hooks();
 
@@ -675,10 +667,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Verify that the redirect URL includes the notice query parameter.
 	 */
 	public function test_redirect_includes_notice_parameter() {
-		if ( ! class_exists( 'WC_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Subscription class not available.' );
-		}
-
 		require_once ABSPATH . 'wp-admin/includes/screen.php';
 		require_once ABSPATH . 'wp-admin/includes/template.php';
 
@@ -966,10 +954,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * Verify that order-pay endpoint redirects when given a subscription ID.
 	 */
 	public function test_order_pay_redirects_for_subscription_id() {
-		if ( ! class_exists( 'WC_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Subscription class not available.' );
-		}
-
 		global $wp;
 
 		// Create a subscription post.
@@ -1030,10 +1014,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	 * /my-account/subscription-payment-method/765 to /checkout/order-pay/765/?change_payment_method=765
 	 */
 	public function test_order_pay_redirects_for_change_payment_method_with_subscription_id() {
-		if ( ! class_exists( 'WC_Subscription' ) ) {
-			$this->markTestSkipped( 'WC_Subscription class not available.' );
-		}
-
 		global $wp;
 
 		// Create a subscription post.
