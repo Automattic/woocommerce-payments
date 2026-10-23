@@ -418,10 +418,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $this->return_url, $result['redirect'] );
 	}
 
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->mock_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
-	}
-
 	public function test_process_redirect_payment_intent_processing() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
