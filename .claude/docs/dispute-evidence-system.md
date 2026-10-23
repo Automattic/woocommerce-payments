@@ -1,6 +1,6 @@
 # Dispute Evidence System — Architecture Reference
 
-**Last updated:** 2026-04-15
+**Last updated:** 2026-10-22
 
 Reference for the dispute challenge UI in `client/disputes/new-evidence/`. Covers how recommended document fields are resolved, how the evidence matrix is structured, how the cover letter stays in sync with the form, and how to add a new reason × product type combination.
 
@@ -282,6 +282,8 @@ When the spec requires more conceptual documents than available Stripe fields, a
 ### Cover Letter Regeneration
 
 - Cover letter regenerates when `productType` changes (resets `isCoverLetterManuallyEdited` flag).
+- Clearing the cover letter counts as a manual edit, so the field stays empty. The **Restore generated letter** action on the manual-edits notice resets the flag to bring the generated letter back.
+- `doSave` always sends `uncategorized_text`, even when empty. Otherwise Stripe keeps the last saved draft and submits it.
 - Evidence is filtered by `getRecommendedDocumentFields()` before generating the cover letter.
 - Only documents for fields visible in the current UI appear in the cover letter.
 
