@@ -16,10 +16,10 @@ RUN XDEBUG_VERSION=$([ "$PHP_VERSION" = "7.4" ] && echo 3.1.6 || echo 3.4.7) \
 	&& make --quiet -j"$(nproc)" \
 	&& make --quiet install \
 	&& rm -rf /tmp/xdebug.tar.gz "/tmp/xdebug-${XDEBUG_VERSION}" \
-	&& echo 'xdebug.remote_enable=1' >> $PHP_INI_DIR/php.ini \
-	&& echo 'xdebug.remote_port=9000' >> $PHP_INI_DIR/php.ini \
-	&& echo 'xdebug.remote_host=host.docker.internal' >> $PHP_INI_DIR/php.ini \
-	&& echo 'xdebug.remote_autostart=0' >> $PHP_INI_DIR/php.ini \
+	&& echo 'xdebug.mode=develop,debug' >> $PHP_INI_DIR/php.ini \
+	&& echo 'xdebug.client_port=9000' >> $PHP_INI_DIR/php.ini \
+	&& echo 'xdebug.client_host=host.docker.internal' >> $PHP_INI_DIR/php.ini \
+	&& echo 'xdebug.start_with_request=trigger' >> $PHP_INI_DIR/php.ini \
 	&& docker-php-ext-enable xdebug > /dev/null
 # wordpress:php7.4 is frozen on Debian 11, whose packages moved to
 # archive.debian.org once its support ended.
