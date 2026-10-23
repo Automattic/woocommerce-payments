@@ -664,99 +664,10 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await stripeElementMock.__getRegisteredEvent( 'confirm' )( {} );
 
 		expect( global.jQuery.unblockUI ).toHaveBeenCalledTimes( 1 );
-		// One fetch to compare the sheet's total at confirm, one for the refresh.
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
 		await waitFor( () =>
 			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
 		);
-	} );
-
-	describe( 'confirming a wallet sheet that a refresh waited behind', () => {
-		const CART_TOTAL_CHANGED_NOTICE =
-			'Your order total changed while the payment window was open. Please check the new total and try again.';
-		const CHANGED_CART = {
-			...cartWithItemsMock,
-			totals: { ...cartWithItemsMock.totals, total_price: '5000' },
-		};
-		const respondWithCart = ( cart ) =>
-			apiFetch.mockImplementation( async () => ( {
-				json: () => Promise.resolve( cart ),
-				headers: new Map(),
-			} ) );
-		let elementsMock;
-
-		beforeEach( async () => {
-			await jest.isolateModulesAsync( async () => {
-				await import( '..' );
-			} );
-
-			$( document.body ).trigger( 'updated_checkout' );
-			await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-			elementsMock = stripeInstance.elements.mock.results[ 0 ].value;
-			elementsMock.update = jest.fn();
-			// Stops `onConfirmHandler` before it places the order.
-			elementsMock.submit = jest.fn( async () => ( {
-				error: { message: 'Card declined.' },
-			} ) );
-
-			stripeElementMock.__getRegisteredEvent( 'click' )( {
-				resolve: jest.fn(),
-				reject: jest.fn(),
-				expressPaymentType: 'google_pay',
-			} );
-		} );
-
-		const deferRefreshAndConfirm = async () => {
-			$( document.body ).trigger( 'updated_checkout' );
-			await act( async () => {
-				await Promise.resolve();
-			} );
-			await stripeElementMock.__getRegisteredEvent( 'confirm' )( {} );
-		};
-
-		it( 'should not place the order when the cart total no longer matches the sheet', async () => {
-			respondWithCart( CHANGED_CART );
-
-			await deferRefreshAndConfirm();
-
-			expect( elementsMock.submit ).not.toHaveBeenCalled();
-			expect(
-				document.querySelector( '.woocommerce-error' )
-			).toHaveTextContent( CART_TOTAL_CHANGED_NOTICE );
-			// The deferred refresh rebuilds the button at the new total.
-			await waitFor( () =>
-				expect( stripeInstance.elements ).toHaveBeenLastCalledWith(
-					expect.objectContaining( { amount: 5000 } )
-				)
-			);
-		} );
-
-		it( 'should place the order when the cart total still matches the sheet', async () => {
-			await deferRefreshAndConfirm();
-
-			expect( elementsMock.submit ).toHaveBeenCalledTimes( 1 );
-			expect(
-				document.querySelector( '.woocommerce-error' )
-			).toHaveTextContent( 'Card declined.' );
-		} );
-
-		it( 'should compare against the total a shipping change pushed to the sheet', async () => {
-			respondWithCart( CHANGED_CART );
-			await stripeElementMock.__getRegisteredEvent(
-				'shippingaddresschange'
-			)( {
-				address: { country: 'US', postal_code: '94043' },
-				resolve: jest.fn(),
-				reject: jest.fn(),
-			} );
-			expect( elementsMock.update ).toHaveBeenCalledWith(
-				expect.objectContaining( { amount: 5000 } )
-			);
-
-			await deferRefreshAndConfirm();
-
-			expect( elementsMock.submit ).toHaveBeenCalledTimes( 1 );
-		} );
 	} );
 
 	it( 'should leave the button available while WooCommerce refreshes its order review', async () => {

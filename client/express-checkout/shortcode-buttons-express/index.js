@@ -68,9 +68,6 @@ let latestForcedRefreshId = 0;
 // forced refreshes wait until the sheet's payment attempt settles.
 let isWalletSheetOpen = false;
 let hasDeferredRefresh = false;
-// The total the open sheet shows. A deferred refresh can't update it, so confirm
-// compares it with the cart before placing the order.
-let walletSheetTotal = null;
 
 // The overlay says nothing to screen-reader users, so a rejected tap is announced.
 // Leading-edge debounce: one announcement per burst of taps.
@@ -102,17 +99,17 @@ const fetchNewCartData = async () => {
 	return await temporaryCart.addProductToCart();
 };
 
-const getTotalAmount = ( cartData = cachedCartData ) => {
-	if ( cartData ) {
+const getTotalAmount = () => {
+	if ( cachedCartData ) {
 		// Apply filter to allow modifications (e.g., for trial subscriptions)
 		return applyFilters(
 			'wcpay.express-checkout.total-amount',
 			transformPrice(
-				parseInt( cartData.totals.total_price, 10 ) -
-					parseInt( cartData.totals.total_refund || 0, 10 ),
-				cartData.totals
+				parseInt( cachedCartData.totals.total_price, 10 ) -
+					parseInt( cachedCartData.totals.total_refund || 0, 10 ),
+				cachedCartData.totals
 			),
-			cartData
+			cachedCartData
 		);
 	}
 
@@ -247,30 +244,6 @@ jQuery( ( $ ) => {
 		completePayment: ( url ) => {
 			onCompletePaymentHandler();
 			window.location = url;
-		},
-
-		/**
-		 * Records the total a shipping handler pushed to the open sheet.
-		 *
-		 * @param {Object|undefined} cartData Cart the sheet was updated with, if any.
-		 */
-		trackWalletSheetTotal: ( cartData ) => {
-			if ( cartData ) {
-				walletSheetTotal = getTotalAmount( cartData );
-			}
-		},
-
-		hasCartTotalChangedUnderWalletSheet: async () => {
-			try {
-				return (
-					getTotalAmount( await getCartApiHandler().getCart() ) !==
-					walletSheetTotal
-				);
-			} catch ( e ) {
-				// Unverifiable: let the order go through as before, since the
-				// server charges the cart total either way.
-				return false;
-			}
 		},
 
 		onWalletSheetClosed: () => {
@@ -448,7 +421,6 @@ jQuery( ( $ ) => {
 
 				onClickHandler( event );
 				isWalletSheetOpen = true;
-				walletSheetTotal = getTotalAmount();
 				event.resolve( {
 					// `options.displayItems`, `options.shippingAddressRequired`, `options.requestPhone`, `options.shippingRates`,
 					// are all coming from prior of the initialization.
@@ -479,23 +451,19 @@ jQuery( ( $ ) => {
 					return event.resolve();
 				}
 
-				wcpayECE.trackWalletSheetTotal(
-					await shippingAddressChangeHandler(
-						event,
-						elements,
-						wcpayECE.abortPayment
-					)
+				return shippingAddressChangeHandler(
+					event,
+					elements,
+					wcpayECE.abortPayment
 				);
 			} );
 
 			eceButton.on( 'shippingratechange', async ( event ) =>
-				wcpayECE.trackWalletSheetTotal(
-					await shippingRateChangeHandler(
-						event,
-						elements,
-						cachedCartData,
-						wcpayECE.abortPayment
-					)
+				shippingRateChangeHandler(
+					event,
+					elements,
+					cachedCartData,
+					wcpayECE.abortPayment
 				)
 			);
 
@@ -503,19 +471,6 @@ jQuery( ( $ ) => {
 				if ( addToCartErrorMessage ) {
 					// the message should have already been displayed earlier, but this will also remove any additional overlays.
 					wcpayECE.abortPayment( addToCartErrorMessage );
-					return;
-				}
-
-				if (
-					hasDeferredRefresh &&
-					( await wcpayECE.hasCartTotalChangedUnderWalletSheet() )
-				) {
-					wcpayECE.abortPayment(
-						__(
-							'Your order total changed while the payment window was open. Please check the new total and try again.',
-							'woocommerce-payments'
-						)
-					);
 					return;
 				}
 

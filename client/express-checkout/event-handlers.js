@@ -127,9 +127,6 @@ export const shippingAddressChangeHandler = async (
 			shippingRates,
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
-
-		// The cart the sheet now shows, so callers can track its total.
-		return cartData;
 	} catch ( error ) {
 		event.reject();
 	}
@@ -173,9 +170,6 @@ export const shippingRateChangeHandler = async (
 		event.resolve( {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
-
-		// The cart the sheet now shows, so callers can track its total.
-		return cartData;
 	} catch ( error ) {
 		event.reject();
 	}
