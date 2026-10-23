@@ -4,6 +4,14 @@
 includes:
     - vendor/phpstan/phpstan/conf/bleedingEdge.neon
     - phpstan-baseline.neon
+    # Plugins we integrate with. We don't declare a minimum version for any of them, so check against their latest release.
+    - vendor/woocommerce/php-stubs/stubs/automatewoo/latest.neon
+    - vendor/woocommerce/php-stubs/stubs/mailpoet/latest.neon
+    - vendor/woocommerce/php-stubs/stubs/woocommerce-bookings/latest.neon
+    - vendor/woocommerce/php-stubs/stubs/woocommerce-deposits/latest.neon
+    - vendor/woocommerce/php-stubs/stubs/woocommerce-points-and-rewards/latest.neon
+    - vendor/woocommerce/php-stubs/stubs/woocommerce-pre-orders/latest.neon
+    - vendor/woocommerce/php-stubs/stubs/woocommerce-product-addons/latest.neon
 
 parameters:
     level: 5
@@ -15,6 +23,7 @@ parameters:
         - 'WCPAY_VERSION_NUMBER'
         - 'WC_ADMIN_VERSION_NUMBER'
         - 'MAILPOET_VERSION'
+        - 'WC_DEPOSITS_VERSION'
         - 'Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION'
 
     # Files and directories to analyze

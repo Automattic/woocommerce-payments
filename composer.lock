@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63ea7132443db6bbf7dea4326f4fbfc1",
+    "content-hash": "38f9fd0142ea838c61cda3d91e5f690d",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -5711,6 +5711,40 @@
                 "source": "https://github.com/woocommerce/action-scheduler/tree/4.2.0"
             },
             "time": "2026-09-16T21:40:40+00:00"
+        },
+        {
+            "name": "woocommerce/php-stubs",
+            "version": "v2026.10.23.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/woocommerce/php-stubs.git",
+                "reference": "71b58e28da692342af5d3ca78d9d60e72eb450b5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/71b58e28da692342af5d3ca78d9d60e72eb450b5",
+                "reference": "71b58e28da692342af5d3ca78d9d60e72eb450b5",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "description": "PHP stub declarations of WooCommerce extensions, for static analysis of code that integrates with them.",
+            "homepage": "https://github.com/woocommerce/php-stubs",
+            "keywords": [
+                "PHPStan",
+                "static analysis",
+                "stubs",
+                "woocommerce",
+                "wordpress"
+            ],
+            "support": {
+                "issues": "https://github.com/woocommerce/php-stubs/issues",
+                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.10.23.4"
+            },
+            "time": "2026-10-23T21:12:23+00:00"
         },
         {
             "name": "woocommerce/qit-cli",
