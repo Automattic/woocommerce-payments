@@ -557,6 +557,18 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected_result, $actual_result );
 	}
 
+	public function test_zero_quantity_item_is_kept_with_a_zero_unit_amount() {
+		$mock_order = WC_Helper_Order::create_order();
+		array_values( $mock_order->get_items() )[0]->set_quantity( 0 );
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+
+		$recurring_items = $this->subscription_service->get_recurring_item_data_for_subscription( $mock_subscription );
+
+		$this->assertSame( 0, $recurring_items[0]['quantity'] );
+		$this->assertSame( 0.0, $recurring_items[0]['price_data']['unit_amount_decimal'] );
+	}
+
 	/**
 	 * Test WC_Payments_Subscription_Service->update_subscription()
 	 */
