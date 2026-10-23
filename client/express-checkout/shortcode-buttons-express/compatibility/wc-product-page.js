@@ -18,8 +18,21 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 jQuery( ( $ ) => {
-	// Classic shortcode: listen for jQuery variation-change event.
-	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {
+	// Classic shortcode: WooCommerce updates the add to cart button on
+	// `show_variation`/`hide_variation`, not on the change event, so refresh
+	// then. Until the shopper changes the selection, they replay the load state.
+	let hasVariationChanged = false;
+	$( document.body ).on( 'woocommerce_variation_has_changed', () => {
+		hasVariationChanged = true;
+	} );
+	$( document.body ).on( 'found_variation', () => {
+		expressCheckoutButtonUi.blockButton();
+	} );
+	$( document.body ).on( 'show_variation hide_variation', () => {
+		if ( ! hasVariationChanged ) {
+			expressCheckoutButtonUi.unblock();
+			return;
+		}
 		doAction( 'wcpay.express-checkout.update-button-data' );
 	} );
 
