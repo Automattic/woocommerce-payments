@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Merge trunk into the release branch at code freeze, so the release PR opens without conflicts and CI runs on it.

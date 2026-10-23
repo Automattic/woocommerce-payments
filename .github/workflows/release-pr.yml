@@ -71,8 +71,11 @@ jobs:
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
 
     steps:
+      # Full history, so the release branch can merge trunk.
       - name: "Checkout repository"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
@@ -84,6 +87,36 @@ jobs:
           version: ${{ env.RELEASE_VERSION }}
           is-pre-release: 'false'
           push: ${{ inputs.dry-run == true && 'false' || 'true' }}
+
+      # trunk is no longer merged back into develop, so the release PR conflicts
+      # with trunk on the version files, and GitHub runs no CI on a PR with
+      # conflicts. Merging trunk while keeping the release side clears them.
+      # "Commit and push changes" pushes the merge along with the version bump.
+      - name: "Merge trunk into the release branch"
+        run: |
+          # `-s ours` drops anything only trunk has, such as a patch-release fix
+          # that never reached develop. A normal merge keeps it, so stop if one
+          # would change more than the files the release rewrites anyway.
+          # Exit code 1 means conflicts that -X ours can't settle, such as trunk
+          # editing a file develop deleted; the diff still lists those files.
+          MERGED=$(git merge-tree --write-tree --no-messages -X ours HEAD origin/trunk) || [ $? -eq 1 ]
+          TRUNK_ONLY=$(git diff --name-status HEAD "$(head -n1 <<< "$MERGED")" -- \
+            ':!changelog/' ':!changelog.txt' ':!readme.txt' ':!package.json' ':!woocommerce-payments.php')
+          if [ -n "$TRUNK_ONLY" ]; then
+            {
+              echo "## :x: trunk has changes that develop lacks"
+              echo ''
+              echo "Bring them into develop, then start a new run of this workflow."
+              echo ''
+              echo '```'
+              echo "$TRUNK_ONLY"
+              echo '```'
+            } | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge -s ours --no-edit origin/trunk
 
       - name: "Define the release date"
         id: define_var
