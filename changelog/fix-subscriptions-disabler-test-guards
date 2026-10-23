@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Make five subscriptions disabler tests fail instead of skipping when the WC_Subscription test helper is missing.
+Make subscriptions disabler tests fail instead of skipping when the WC_Subscription test helper is missing.
