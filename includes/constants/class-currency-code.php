@@ -13,8 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Currency Code constants
- *
- * @psalm-immutale
  */
 class Currency_Code extends Base_Constant {
 	const UNITED_STATES_DOLLAR                    = 'USD'; // United States Dollar.

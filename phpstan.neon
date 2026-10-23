@@ -1,5 +1,4 @@
 # PHPStan configuration for WooCommerce Payments
-# This replaces the previous Psalm configuration
 
 includes:
     - vendor/phpstan/phpstan/conf/bleedingEdge.neon

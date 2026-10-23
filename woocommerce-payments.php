@@ -78,11 +78,6 @@ if ( ! $is_autoloading_ready ) {
 
 /**
  * Initialize the Jetpack functionalities: connection, identity crisis, etc.
- *
- * PSR-11 containers declares to throw an un-throwable interface
- * (it does not extend Throwable), and Psalm does not accept it.
- *
- * @psalm-suppress MissingThrowsDocblock
  */
 function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
@@ -471,11 +466,6 @@ function wcpay_tasks_init() {
 
 add_action( 'plugins_loaded', 'wcpay_tasks_init' );
 
-/**
- * As the class is defined in later versions of WC, Psalm infers error.
- *
- * @psalm-suppress UndefinedClass
- */
 add_action(
 	'before_woocommerce_init',
 	function () {
