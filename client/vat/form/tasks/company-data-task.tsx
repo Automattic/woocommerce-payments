@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -52,20 +52,22 @@ export const CompanyDataTask = ( {
 	);
 
 	// Reset local drafts when the VAT lookup props change (parent updates
-	// placeholders after the VAT-number step). Render-time state adjustment
-	// avoids a cascading render from a sync effect.
-	const prevPlaceholdersRef = useRef( {
+	// placeholders after the VAT-number step). The previous placeholders live
+	// in state (not a ref) so the comparison is a plain render-time read; the
+	// render-time setState keeps the single-pass semantics and avoids a
+	// cascading render from a sync effect.
+	const [ prevPlaceholders, setPrevPlaceholders ] = useState( {
 		name: placeholderCompanyName,
 		address: placeholderCompanyAddress,
 	} );
 	if (
-		prevPlaceholdersRef.current.name !== placeholderCompanyName ||
-		prevPlaceholdersRef.current.address !== placeholderCompanyAddress
+		prevPlaceholders.name !== placeholderCompanyName ||
+		prevPlaceholders.address !== placeholderCompanyAddress
 	) {
-		prevPlaceholdersRef.current = {
+		setPrevPlaceholders( {
 			name: placeholderCompanyName,
 			address: placeholderCompanyAddress,
-		};
+		} );
 		setCompanyName( placeholderCompanyName );
 		setCompanyAddress( placeholderCompanyAddress );
 	}
