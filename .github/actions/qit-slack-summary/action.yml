@@ -75,6 +75,9 @@ runs:
           [ -z "$name" ] && continue
           FAILED_LINES+="• <${url}|${name}>"$'\n'
           COUNT=$((COUNT + 1))
+          # Lists the job even when its report has no failed tests, so a
+          # different failing job never matches the previous signature.
+          printf '%s\n' "$name" >> "$SIGNATURE_FILE"
 
           # The job name and the results artifact name are both built from the
           # matrix values in qit-e2e-run.yml's callers.

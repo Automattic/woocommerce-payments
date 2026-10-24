@@ -93,6 +93,7 @@ jobs:
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   qit-e2e:
+    # qit-slack-summary parses this name to find the job's results artifact.
     name: "${{ matrix.project }} | WP ${{ matrix.wordpress }} | WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
     needs: [build, generate-matrix]
     strategy:
