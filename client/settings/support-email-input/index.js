@@ -12,7 +12,7 @@ import {
 	useGetSavingError,
 } from 'wcpay/data/settings';
 import { isEmail } from 'wcpay/utils/email-validation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const SupportEmailInput = ( { setInputValid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
@@ -22,7 +22,11 @@ const SupportEmailInput = ( { setInputValid } ) => {
 		useGetSavingError()?.data?.details?.account_business_support_email
 			?.message;
 
-	const currentEmail = useRef( supportEmail ).current;
+	// Snapshot the first-render support email so we can detect when the
+	// stored value has been cleared after being set. `useState(initial)[0]`
+	// gives us a stable baseline captured on mount without a render-time ref
+	// read.
+	const [ currentEmail ] = useState( supportEmail );
 	if ( supportEmail === '' && currentEmail !== '' ) {
 		supportEmailError = __(
 			'Support email cannot be empty once it has been set before, please specify.',
