@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Lint: fix react-hooks/refs in notifications email input (WOOPMNT-6292)
