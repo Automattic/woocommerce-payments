@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Upgrade the development and test stack to React 19 to match WordPress 6.8+.

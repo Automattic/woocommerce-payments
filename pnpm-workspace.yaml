@@ -42,6 +42,12 @@ overrides:
   'd3-interpolate': '^3.0.1'
   'd3-scale': '^4.0.2'
   'd3-scale-chromatic': '^3.1.0'
+  # Many @wordpress/* packages still pin react ^18; force one React 19 copy so tests match what WP 6.8+ hosts load.
+  'react': '19.2.9'
+  'react-dom': '19.2.9'
+  'react-is': '19.2.9'
+  '@types/react': '19.2.18'
+  '@types/react-dom': '19.2.7'
 
 packageExtensions:
   # dataviews' `wp` build bundles @wordpress/components' date pickers, which import react-day-picker, but dataviews doesn't declare it.

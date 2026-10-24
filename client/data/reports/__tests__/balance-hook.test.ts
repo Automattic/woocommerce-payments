@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { useSelect } from '@wordpress/data';
 
 /**
