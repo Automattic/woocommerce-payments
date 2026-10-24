@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix the dispute challenge page crashing after submitting an edited cover letter on WooCommerce versions before 9.5.
