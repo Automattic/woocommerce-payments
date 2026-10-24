@@ -68,6 +68,23 @@ class WC_Payments_DB {
 	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
 	public function order_from_intent_id( $intent_id ) {
+		if ( ! $intent_id ) {
+			return false;
+		}
+
+		// Try the HPOS transaction_id column first — avoids a slow meta table JOIN.
+		$orders = wc_get_orders(
+			[
+				'limit'          => 1,
+				'transaction_id' => $intent_id,
+			]
+		);
+
+		if ( ! empty( $orders ) ) {
+			return $orders[0];
+		}
+
+		// Fallback to _intent_id meta for historical orders where transaction_id may not be populated.
 		$order_id = $this->order_id_from_meta_key_value( self::META_KEY_INTENT_ID, $intent_id );
 
 		if ( $order_id ) {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Optimize order lookup by intent ID to use the HPOS transaction_id column instead of _intent_id meta query, improving webhook processing performance for high-volume stores.
