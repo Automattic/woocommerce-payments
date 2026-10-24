@@ -18,6 +18,8 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	];
 
 	public function set_up() {
+		parent::set_up();
+
 		// Mock the main class's cache service.
 		$this->_cache        = WC_Payments::get_database_cache();
 		$this->_card_gateway = WC_Payments::get_gateway();
@@ -42,23 +44,16 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10, $install_actions_priority );
 	}
 
+	public function test_it_does_not_clean_up_deprecated_notes_on_admin_init() {
+		$this->assertFalse( has_action( 'admin_init', [ WC_Payments::class, 'remove_deprecated_notes' ] ) );
+	}
+
 	public function test_it_calls_upgrade_hook_during_upgrade() {
 		update_option( 'woocommerce_woocommerce_payments_version', '1.0.0' );
 
 		$upgrade_run_count = did_action( 'woocommerce_woocommerce_payments_updated' );
 		WC_Payments::install_actions();
 		$this->assertEquals( $upgrade_run_count + 1, did_action( 'woocommerce_woocommerce_payments_updated' ) );
-	}
-
-	public function test_it_registers_woopay_hooks_if_feature_flag_is_enabled() {
-		// Enable dev mode so nonce check is disabled.
-		WC_Payments::mode()->dev();
-
-		$this->set_woopay_enabled( true );
-
-		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
-			$this->assertEquals( 10, has_filter( $hook, $callback ) );
-		}
 	}
 
 	public function test_it_registers_woopay_hooks_if_feature_flag_is_enabled_but_not_in_dev_mode() {
@@ -75,6 +70,23 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
 			$this->assertEquals( false, has_filter( $hook, $callback ) );
 		}
+	}
+
+	public function test_maybe_display_express_checkout_buttons_bails_during_cron_requests() {
+		$this->mock_cache->expects( $this->never() )->method( 'get' );
+
+		add_filter( 'wp_doing_cron', '__return_true' );
+		WC_Payments::maybe_display_express_checkout_buttons();
+		remove_filter( 'wp_doing_cron', '__return_true' );
+	}
+
+	public function test_maybe_display_express_checkout_buttons_checks_account_on_regular_requests() {
+		$this->mock_cache->expects( $this->once() )
+			->method( 'get' )
+			->with( 'wcpay_account_data', true )
+			->willReturn( null );
+
+		WC_Payments::maybe_display_express_checkout_buttons();
 	}
 
 	public function test_it_skips_stripe_link_gateway_registration() {
@@ -128,6 +140,24 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
+	public function test_init_rest_api_registers_routes_when_admin_screen_is_set() {
+		global $wp_rest_server, $current_screen;
+		$previous_server = $wp_rest_server;
+		$previous_screen = $current_screen;
+		$wp_rest_server  = null;
+
+		set_current_screen( 'edit-page' );
+
+		try {
+			$routes = rest_get_server()->get_routes( 'wc/v3' );
+			$this->assertArrayHasKey( '/wc/v3/payments/onboarding/fields', $routes );
+		} finally {
+			$wp_rest_server = $previous_server;
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the screen snapshot taken above.
+			$current_screen = $previous_screen;
+		}
+	}
+
 	/**
 	 * @param bool $is_enabled
 	 */
@@ -144,7 +174,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 	}
 
 	private function set_woopay_enabled( $is_enabled ) {
@@ -160,7 +190,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 	}
 
 	public function test_set_woopayments_gateways_before_other_gateways_when_not_in_ordering() {

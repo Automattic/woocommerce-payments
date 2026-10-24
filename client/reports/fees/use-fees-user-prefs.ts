@@ -46,9 +46,7 @@ export const useFeesUserPrefs = (): UseFeesUserPrefsResult => {
 	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
 	const prefs = userPrefs as unknown as Record< string, unknown >;
 	const rawPersisted = prefs[ feesViewUserMetaKey ] as
-		| PersistedFeesView
-		| null
-		| undefined;
+		PersistedFeesView | null | undefined;
 	const persisted = normalizePersistedFeesView( rawPersisted );
 	// `undefined` means user_meta hasn't loaded yet; `null`-ish empty string is
 	// what wp-data returns once the resolver finishes with no stored value.

@@ -22,7 +22,7 @@ function wcs_get_subscriptions_for_order( $order ) {
 
 function wcs_get_subscriptions_for_renewal_order( $order ) {
 	if ( ! WC_Subscriptions::$wcs_get_subscriptions_for_renewal_order ) {
-		return;
+		return [];
 	}
 	return ( WC_Subscriptions::$wcs_get_subscriptions_for_renewal_order )( $order );
 }

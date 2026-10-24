@@ -4,12 +4,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, ExternalLink } from '@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 import React from 'react';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import CardBody from '../card-body';
 import NotificationsEmailInput from './notifications-email-input';
 import './style.scss';

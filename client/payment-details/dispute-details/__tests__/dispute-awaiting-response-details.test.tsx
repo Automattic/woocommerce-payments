@@ -16,6 +16,7 @@ import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import { recordEvent } from 'tracks';
 
 const mockDisputeDoAccept = jest.fn();
+const mockOnIssueRefund = jest.fn();
 
 jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeAccept: jest.fn( () => ( {
@@ -124,9 +125,6 @@ const renderWithContext = ( component: React.ReactElement ) => {
 };
 
 describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
-	// eslint-disable-next-line
-	const originalWarn = console.warn;
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 
@@ -136,25 +134,6 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				country: 'US',
 			},
 		};
-
-		// Suppress the List component deprecation warning
-		// eslint-disable-next-line
-		console.warn = ( ...args ) => {
-			const warningMessage = args[ 0 ];
-			if (
-				typeof warningMessage === 'string' &&
-				warningMessage.includes( 'List with items prop is deprecated' )
-			) {
-				return; // Suppress this specific warning
-			}
-			originalWarn( ...args ); // Pass through other warnings
-		};
-	} );
-
-	afterEach( () => {
-		// Restore original console.warn after each test
-		// eslint-disable-next-line
-		console.warn = originalWarn;
 	} );
 
 	test( 'renders Visa compliance dispute with NonCompliantDisputeSteps', () => {
@@ -166,7 +145,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -199,7 +178,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -231,7 +210,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -254,7 +233,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -276,7 +255,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -315,7 +294,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -344,7 +323,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -361,6 +340,56 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		);
 	} );
 
+	test( 'Accept dispute modal names the fee that will be forfeited', async () => {
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ getBaseDispute() }
+				customer={ getBaseBillingDetails() }
+				chargeCreated={ 1693453017 }
+				onIssueRefund={ mockOnIssueRefund }
+				paymentMethod="card"
+				bankName="Chase Bank"
+			/>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Accept dispute/i } )
+		);
+
+		// The copy is split by an <em>, so assert on the dialog's text.
+		expect( screen.getByRole( 'dialog' ).textContent ).toContain(
+			'The disputed amount and the $15.00 dispute fee will not be returned to you.'
+		);
+	} );
+
+	test( 'Accept dispute modal drops the fee clause when no fee was charged', async () => {
+		// Previously rendered as "the - dispute fee will not be returned to
+		// you" at the moment the merchant is about to forfeit funds.
+		const dispute = { ...getBaseDispute(), effective_fee: null };
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ getBaseBillingDetails() }
+				chargeCreated={ 1693453017 }
+				onIssueRefund={ mockOnIssueRefund }
+				paymentMethod="card"
+				bankName="Chase Bank"
+			/>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Accept dispute/i } )
+		);
+
+		const modalText = screen.getByRole( 'dialog' ).textContent ?? '';
+
+		expect( modalText ).toContain(
+			'The disputed amount will not be returned to you.'
+		);
+		expect( modalText ).not.toContain( 'dispute fee' );
+	} );
+
 	test( 'Accept dispute button works correctly for Visa compliance disputes', async () => {
 		const dispute = getBaseDispute();
 		const customer = getBaseBillingDetails();
@@ -370,7 +399,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -435,7 +464,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -461,7 +490,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -489,7 +518,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -511,7 +540,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -534,9 +563,6 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 } );
 
 describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
-	// eslint-disable-next-line
-	const originalWarn = console.warn;
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 
@@ -546,24 +572,6 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				country: 'US',
 			},
 		};
-
-		// Suppress the List component deprecation warning
-		// eslint-disable-next-line
-		console.warn = ( ...args ) => {
-			const warningMessage = args[ 0 ];
-			if (
-				typeof warningMessage === 'string' &&
-				warningMessage.includes( 'List with items prop is deprecated' )
-			) {
-				return;
-			}
-			originalWarn( ...args );
-		};
-	} );
-
-	afterEach( () => {
-		// eslint-disable-next-line
-		console.warn = originalWarn;
 	} );
 
 	test( 'renders disabled Challenge dispute button with tooltip for Klarna inquiry', () => {
@@ -580,7 +588,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -615,7 +623,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -653,7 +661,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -662,7 +670,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
 	} );
 
-	test( 'fires inquiry refund modal tracks event with dispute identifiers', async () => {
+	test( 'opens the refund modal and fires tracks event when issuing an inquiry refund', async () => {
 		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			reason: 'credit_not_processed' as const,
@@ -676,7 +684,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl=""
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -686,24 +694,14 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 			screen.getByRole( 'button', { name: /Issue refund/i } )
 		);
 
+		// The inquiry "Issue refund" button opens the refund modal inline.
+		expect( mockOnIssueRefund ).toHaveBeenCalledTimes( 1 );
+
+		// Inquiries don't show the local confirmation dialog.
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+
 		expect( recordEvent ).toHaveBeenCalledWith(
 			'wcpay_dispute_inquiry_refund_modal_view',
-			{
-				dispute_id: dispute.id,
-				dispute_status: dispute.status,
-				dispute_reason: dispute.reason,
-				on_page: 'transaction_details',
-			}
-		);
-
-		await userEvent.click(
-			within( screen.getByRole( 'dialog' ) ).getByRole( 'button', {
-				name: /View order to issue refund/i,
-			} )
-		);
-
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_dispute_inquiry_refund_click',
 			{
 				dispute_id: dispute.id,
 				dispute_status: dispute.status,

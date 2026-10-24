@@ -79,6 +79,7 @@ jest.mock( '@wordpress/data', () => ( {
 
 const mockHistoryReplace = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
+	getPersistedQuery: () => ( {} ),
 	getQuery: () => {
 		return {
 			status_is: '',
@@ -186,8 +187,6 @@ global.wcpaySettings = {
 };
 
 describe( 'Payment details page', () => {
-	const { location } = window;
-
 	const chargeQuery = { id: 'ch_mock' };
 	const paymentIntentQuery = { id: 'pi_mock' };
 	const redirectUrl =
@@ -199,17 +198,7 @@ describe( 'Payment details page', () => {
 	} );
 
 	beforeEach( () => {
-		Object.defineProperty( window, 'location', {
-			value: { href: 'http://example.com' },
-		} );
 		mockHistoryReplace.mockReset();
-	} );
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: location,
-		} );
 	} );
 
 	it( 'should match the snapshot - Payment Intent query param', () => {
@@ -218,12 +207,6 @@ describe( 'Payment details page', () => {
 		);
 
 		expect( container ).toMatchSnapshot();
-
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		expect( console ).toHaveWarnedWith(
-			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
-		);
 	} );
 
 	it( 'should match the snapshot - Charge query param', () => {

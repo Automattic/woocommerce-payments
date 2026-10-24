@@ -53,28 +53,24 @@ class WC_Payments_Explicit_Price_Formatter {
 	 * @return  bool  Whether if it should return explicit price or not
 	 */
 	public static function should_output_explicit_price() {
-		// If customer Multi-Currency is disabled, don't use explicit currencies.
-		// Because it'll have only the store currency active, same as count == 1.
-		if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
-			return false;
-		}
+		$should_output_explicit_price = self::is_explicit_price_required();
 
-		// If the MultiCurrency instance hasn't been defined yet, fetch the instance.
-		if ( null === self::$multi_currency_instance ) {
-			self::$multi_currency_instance = WC_Payments_Multi_Currency();
-		}
-
-		// If the instance isn't initialized yet, skip the checks.
-		if ( ! self::$multi_currency_instance->is_initialized() ) {
-			return false;
-		}
-
-		// If no additional currencies are enabled, skip it.
-		if ( ! self::$multi_currency_instance->has_additional_currencies_enabled() ) {
-			return false;
-		}
-
-		return true;
+		/**
+		 * Filters whether the explicit price (currency code suffix) should be
+		 * displayed alongside the currency symbol on total amounts.
+		 *
+		 * By default, when Multi-Currency is enabled with additional currencies,
+		 * totals are rendered with an explicit currency code (e.g. "765 Kč CZK")
+		 * to make the charged currency unambiguous. Merchants who only use
+		 * currencies with distinct symbols can return `false` to display the
+		 * symbol only (e.g. "765 Kč"). Returning `true` forces the explicit
+		 * price on regardless of the default checks.
+		 *
+		 * @since 10.9.0
+		 *
+		 * @param bool $should_output_explicit_price Whether the explicit currency code suffix should be output.
+		 */
+		return (bool) apply_filters( 'wcpay_multi_currency_should_output_explicit_price', $should_output_explicit_price );
 	}
 
 	/**
@@ -160,5 +156,36 @@ class WC_Payments_Explicit_Price_Formatter {
 			$args['price_format'] = sprintf( '%s&nbsp;%s', $args['price_format'], $args['currency'] );
 		}
 		return $args;
+	}
+
+	/**
+	 * Determines, based on the Multi-Currency configuration, whether the explicit
+	 * price should be output by default (before the filter is applied).
+	 *
+	 * @return  bool  Whether the explicit price is required by the current configuration.
+	 */
+	private static function is_explicit_price_required() {
+		// If customer Multi-Currency is disabled, don't use explicit currencies.
+		// Because it'll have only the store currency active, same as count == 1.
+		if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			return false;
+		}
+
+		// If the MultiCurrency instance hasn't been defined yet, fetch the instance.
+		if ( null === self::$multi_currency_instance ) {
+			self::$multi_currency_instance = WC_Payments_Multi_Currency();
+		}
+
+		// If the instance isn't initialized yet, skip the checks.
+		if ( ! self::$multi_currency_instance->is_initialized() ) {
+			return false;
+		}
+
+		// If no additional currencies are enabled, skip it.
+		if ( ! self::$multi_currency_instance->has_additional_currencies_enabled() ) {
+			return false;
+		}
+
+		return true;
 	}
 }

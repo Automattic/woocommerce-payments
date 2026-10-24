@@ -14,7 +14,8 @@ import { RECOMMENDATIONS_CATALOG } from 'wcpay/disputes/new-evidence/recommendat
 // Map dispute status to the outcome framing used for catalog matching.
 // warning_* statuses have no entry: inquiries carry no merchant-submitted
 // evidence, so neither outcome's recommendations have a behavioral hook.
-const outcomeByStatus: Partial<
+// Exported so the card can reframe the coaching heading by outcome.
+export const outcomeByStatus: Partial<
 	Record< ChargeDispute[ 'status' ], RecommendationOutcome >
 > = {
 	lost: 'could_help',

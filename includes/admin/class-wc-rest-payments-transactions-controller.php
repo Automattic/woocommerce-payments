@@ -7,6 +7,7 @@
 
 use WCPay\Core\Server\Request\List_Transactions;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
+use WCPay\Fraud_Prevention\Models\Rule;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -78,6 +79,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_fraud_outcome_transactions' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => $this->get_fraud_outcome_args(),
 			]
 		);
 		register_rest_route(
@@ -87,6 +89,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_fraud_outcome_transactions_summary' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => $this->get_fraud_outcome_args(),
 			]
 		);
 		register_rest_route(
@@ -96,6 +99,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_fraud_outcome_transactions_search_autocomplete' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => $this->get_fraud_outcome_args(),
 			]
 		);
 		register_rest_route(
@@ -105,8 +109,29 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_fraud_outcome_transactions_export' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => $this->get_fraud_outcome_args(),
 			]
 		);
+	}
+
+	/**
+	 * Returns the shared arguments for the fraud outcome routes.
+	 *
+	 * The status is required and validated here so a missing or unknown value is a 400 from
+	 * WordPress, rather than reaching List_Fraud_Outcome_Transactions::get_api(), which throws
+	 * when the request is sent.
+	 *
+	 * @return array
+	 */
+	private function get_fraud_outcome_args(): array {
+		return [
+			'status' => [
+				'required'    => true,
+				'type'        => 'string',
+				'enum'        => Rule::FRAUD_OUTCOME_STATUSES,
+				'description' => __( 'Fraud outcome status to list transactions for.', 'woocommerce-payments' ),
+			],
+		];
 	}
 
 	/**

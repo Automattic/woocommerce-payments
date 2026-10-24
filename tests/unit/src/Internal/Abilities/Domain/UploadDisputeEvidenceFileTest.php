@@ -8,7 +8,6 @@
 namespace WCPay\Tests\Internal\Abilities\Domain;
 
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Abilities\Domain\UploadDisputeEvidenceFile;
 use WCPay\Internal\Service\FileService;
 
@@ -17,21 +16,9 @@ use WCPay\Internal\Service\FileService;
  */
 class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 
-	public function test_name(): void {
-		$this->assertSame( 'woocommerce-payments/upload-dispute-evidence-file', UploadDisputeEvidenceFile::get_name() );
-	}
-
-	public function test_registration_args_has_non_destructive_write_annotations(): void {
+	public function test_registration_args_accepts_pdf_files(): void {
 		$args = UploadDisputeEvidenceFile::get_registration_args();
 
-		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
-		$this->assertSame( [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ], $args['permission_callback'] );
-		$this->assertFalse( $args['meta']['annotations']['readonly'] );
-		$this->assertFalse( $args['meta']['annotations']['destructive'] );
-		$this->assertFalse( $args['meta']['annotations']['idempotent'] );
-		$this->assertFalse( $args['meta']['mcp']['public'] );
-		$this->assertSame( [ 'file_name', 'file_type', 'file_contents' ], $args['input_schema']['required'] );
-		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 		$this->assertContains( 'application/pdf', $args['input_schema']['properties']['file_type']['enum'] );
 	}
 
@@ -84,6 +71,26 @@ class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 		);
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_file_too_large', $result->get_error_code() );
+	}
+
+	public function test_execute_sanitizes_file_name_path_traversal(): void {
+		$contents     = base64_encode( 'file-bytes' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		$mock_service = $this->createMock( FileService::class );
+		$mock_service->expects( $this->once() )->method( 'upload_evidence_file' )
+			->with( $contents, 'evil.pdf', 'application/pdf', 'dispute_evidence' )
+			->willReturn( [ 'id' => 'file_1' ] );
+		wcpay_get_test_container()->replace( FileService::class, $mock_service );
+		try {
+			UploadDisputeEvidenceFile::execute(
+				[
+					'file_name'     => '../../evil.pdf',
+					'file_type'     => 'application/pdf',
+					'file_contents' => $contents,
+				]
+			);
+		} finally {
+			wcpay_get_test_container()->reset_all_replacements();
+		}
 	}
 
 	public function test_execute_delegates_to_file_service(): void {

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
+
 /**
  * WC_Payments_Captured_Event_Note_Test unit tests.
  */
@@ -42,11 +44,11 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 			'amount_captured'     => 1000,
 			'fee'                 => 57,
 			'transaction_details' => [
-				'customer_currency'        => 'USD',
+				'customer_currency'        => Currency_Code::UNITED_STATES_DOLLAR,
 				'customer_amount'          => 1000,
 				'customer_amount_captured' => 1000,
 				'customer_fee'             => 57,
-				'store_currency'           => 'USD',
+				'store_currency'           => Currency_Code::UNITED_STATES_DOLLAR,
 				'store_amount'             => 1000,
 				'store_amount_captured'    => 1000,
 				'store_fee'                => 57,
@@ -54,7 +56,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 			'fee_rates'           => [
 				'percentage'     => 0.0425,
 				'fixed'          => 28,
-				'fixed_currency' => 'USD',
+				'fixed_currency' => Currency_Code::UNITED_STATES_DOLLAR,
 				'history'        => [
 					[
 						'type'            => 'base',
@@ -192,7 +194,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 			'fee_rates'           => [
 				'percentage'     => 0.029,
 				'fixed'          => 30,
-				'fixed_currency' => 'USD',
+				'fixed_currency' => Currency_Code::UNITED_STATES_DOLLAR,
 				'history'        => [
 					[
 						'type'            => 'base',
@@ -205,11 +207,11 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'transaction_details' => [
-				'customer_currency'        => 'USD',
+				'customer_currency'        => Currency_Code::UNITED_STATES_DOLLAR,
 				'customer_amount'          => 1000,
 				'customer_amount_captured' => 1000,
 				'customer_fee'             => 59,
-				'store_currency'           => 'USD',
+				'store_currency'           => Currency_Code::UNITED_STATES_DOLLAR,
 				'store_amount'             => 1000,
 				'store_amount_captured'    => 1000,
 				'store_fee'                => 59,
@@ -237,11 +239,11 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 					'label'          => null,
 					'amount'         => 59,
 					'display_amount' => -59,
-					'currency'       => 'USD',
+					'currency'       => Currency_Code::UNITED_STATES_DOLLAR,
 					'rate'           => [
 						'percentage'         => 0.029,
 						'fixed'              => 30,
-						'fixed_currency'     => 'USD',
+						'fixed_currency'     => Currency_Code::UNITED_STATES_DOLLAR,
 						'percentage_display' => '2.9%',
 					],
 					'meta'           => null,
@@ -251,31 +253,31 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 				'fee'         => [
 					'amount'         => 59,
 					'display_amount' => -59,
-					'currency'       => 'USD',
+					'currency'       => Currency_Code::UNITED_STATES_DOLLAR,
 					'key'            => null,
 					'rate'           => [
 						'percentage'         => 0.029,
 						'fixed'              => 30,
-						'fixed_currency'     => 'USD',
+						'fixed_currency'     => Currency_Code::UNITED_STATES_DOLLAR,
 						'percentage_display' => '2.9%',
 					],
 				],
 				'tax'         => [
 					'amount'         => 0,
 					'display_amount' => 0,
-					'currency'       => 'USD',
+					'currency'       => Currency_Code::UNITED_STATES_DOLLAR,
 				],
 				'net'         => [
 					'amount'   => 941,
-					'currency' => 'USD',
+					'currency' => Currency_Code::UNITED_STATES_DOLLAR,
 				],
 				'capture_net' => [
 					'amount'   => 941,
-					'currency' => 'USD',
+					'currency' => Currency_Code::UNITED_STATES_DOLLAR,
 				],
 				'gross'       => [
 					'amount'   => 1000,
-					'currency' => 'USD',
+					'currency' => Currency_Code::UNITED_STATES_DOLLAR,
 				],
 			],
 			'notes'  => [],
@@ -314,7 +316,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 			'severity' => 'info',
 			'meta'     => [
 				'refunded_amount'   => 41,
-				'refunded_currency' => 'USD',
+				'refunded_currency' => Currency_Code::UNITED_STATES_DOLLAR,
 				'reason'            => 'amazon_pay_non_card_double_fee',
 			],
 		];
@@ -336,7 +338,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 				// No `refunded_amount` — defensive path for old envelopes
 				// or a server-side omission. Renderer drops the amount and
 				// uses the generic copy.
-				'refunded_currency' => 'USD',
+				'refunded_currency' => Currency_Code::UNITED_STATES_DOLLAR,
 				'reason'            => 'amazon_pay_non_card_double_fee',
 			],
 		];
@@ -359,7 +361,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 			'label'          => 'IT VAT',
 			'amount'         => 13,
 			'display_amount' => -13,
-			'currency'       => 'USD',
+			'currency'       => Currency_Code::UNITED_STATES_DOLLAR,
 			'rate'           => [
 				'percentage'         => 0.22,
 				'percentage_display' => '22.00%',
@@ -369,7 +371,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 		$envelope['totals']['tax'] = [
 			'amount'         => 13,
 			'display_amount' => -13,
-			'currency'       => 'USD',
+			'currency'       => Currency_Code::UNITED_STATES_DOLLAR,
 		];
 		$event                     = $this->build_captured_event_with_envelope( $envelope );
 		$html                      = ( new WC_Payments_Captured_Event_Note( $event ) )->generate_html_note();
@@ -394,7 +396,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 			'label'          => '<script>alert("row")</script>',
 			'amount'         => 10,
 			'display_amount' => -10,
-			'currency'       => 'USD',
+			'currency'       => Currency_Code::UNITED_STATES_DOLLAR,
 			'rate'           => null,
 			'meta'           => null,
 		];
@@ -436,7 +438,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 			'totals' => [
 				'fee' => [
 					'amount'   => 59,
-					'currency' => 'USD',
+					'currency' => Currency_Code::UNITED_STATES_DOLLAR,
 					'key'      => 'processing_fee',
 				],
 				'tax' => [ 'amount' => 0 ],

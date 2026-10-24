@@ -125,6 +125,84 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 		}
 	}
 
+	public function test_render_block_widget_adds_aria_label() {
+		$this->mock_compatibility->expects( $this->once() )
+			->method( 'should_disable_currency_switching' )
+			->willReturn( false );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_enabled_currencies' )
+			->willReturn( $this->mock_currencies );
+
+		$result = $this->currency_switcher_block->render_block_widget( [], '' );
+
+		$this->assertStringContainsString( 'aria-label="Select your currency"', $result );
+	}
+
+	/**
+	 * @dataProvider transparent_background_provider
+	 */
+	public function test_render_block_widget_gives_options_system_colors_when_background_is_transparent( $attributes ) {
+		$this->mock_compatibility->method( 'should_disable_currency_switching' )->willReturn( false );
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( $this->mock_currencies );
+
+		$result = $this->currency_switcher_block->render_block_widget( array_merge( [ 'fontColor' => '#ffffff' ], $attributes ) );
+
+		$this->assertMatchesRegularExpression( '/<select [^>]*style="[^"]*color-scheme: light dark;[^"]*"/', $result );
+		$this->assertSame( 4, substr_count( $result, 'style="background-color: Canvas; color: CanvasText;"' ) );
+
+		if ( ! empty( $attributes['flag'] ) ) {
+			$this->assertStringContainsString(
+				'<option value="USD" style="background-color: Canvas; color: CanvasText;" >🇺🇸 $ USD</option>',
+				html_entity_decode( $result )
+			);
+		}
+	}
+
+	public function transparent_background_provider(): array {
+		return [
+			'transparent'                 => [ [ 'backgroundColor' => 'transparent' ] ],
+			'uppercase transparent'       => [ [ 'backgroundColor' => 'TRANSPARENT' ] ],
+			'transparent with whitespace' => [ [ 'backgroundColor' => ' transparent ' ] ],
+			'empty string'                => [ [ 'backgroundColor' => '' ] ],
+			'transparent with flags'      => [
+				[
+					'backgroundColor' => 'transparent',
+					'flag'            => true,
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider opaque_background_provider
+	 */
+	public function test_render_block_widget_leaves_options_unstyled_when_background_is_opaque( $attributes ) {
+		$this->mock_compatibility->method( 'should_disable_currency_switching' )->willReturn( false );
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( $this->mock_currencies );
+
+		$result = $this->currency_switcher_block->render_block_widget( $attributes );
+
+		$this->assertStringNotContainsString( 'color-scheme', $result );
+		$this->assertStringNotContainsString( 'Canvas', $result );
+	}
+
+	public function opaque_background_provider(): array {
+		return [
+			'black background'             => [
+				[
+					'fontColor'       => '#ffffff',
+					'backgroundColor' => '#000000',
+				],
+			],
+			'background attribute missing' => [
+				[
+					'fontColor' => '#ffffff',
+				],
+			],
+		];
+	}
+
 	public function block_widget_attributes_provider(): array {
 		return [
 			'with_defaults'                 => [

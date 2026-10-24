@@ -19,14 +19,6 @@ describe( 'acceptDispute action', () => {
 		payment_intent: 'payment_intent',
 	};
 
-	beforeEach( () => {
-		Object.defineProperty( window, 'location', {
-			value: {
-				replace: jest.fn(),
-			},
-		} );
-	} );
-
 	test( 'should close dispute and update state with dispute data', () => {
 		const generator = acceptDispute( mockDispute );
 

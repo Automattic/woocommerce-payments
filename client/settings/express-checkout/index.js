@@ -3,12 +3,12 @@
 /**
  * External dependencies
  */
-import { Card } from '@wordpress/components';
 import { useContext } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import CardBody from '../card-body';
 import './style.scss';
 import WooPayExpressCheckoutItem from './woopay-item';

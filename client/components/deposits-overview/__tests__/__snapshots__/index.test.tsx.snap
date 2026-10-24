@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`DepositFailureNotice Renders Renders DepositFailureNotice component correctly 1`] = `
 .emotion-2 {
@@ -289,7 +289,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
 
 <div>
   <div
-    class="components-surface components-card wcpay-deposits-overview emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card wcpay-deposits-overview emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -297,14 +297,14 @@ exports[`Deposits Overview information Component Renders 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+        class="components-flex components-card__header components-card-header wcpay-card__header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Payouts
       </div>
       <div
-        class="components-card__body components-card-body wcpay-deposits-overview__schedule__container emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-deposits-overview__schedule__container emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -343,12 +343,12 @@ exports[`Deposits Overview information Component Renders 1`] = `
         </button>
       </div>
       <div
-        class="components-card__body components-card-body wcpay-deposits-overview__notices__container emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-deposits-overview__notices__container emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       />
       <div
-        class="components-card__body components-card-body wcpay-deposits-overview__heading emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-deposits-overview__heading emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -359,7 +359,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
         </span>
       </div>
       <div
-        class="components-card__body components-card-body wcpay-deposits-overview__table__container emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-deposits-overview__table__container emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -399,7 +399,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
         role="separator"
       />
       <div
-        class="components-card__body components-card-body wcpay-deposits-overview__table__container emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-deposits-overview__table__container emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -416,8 +416,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
             <svg
               aria-hidden="true"
               focusable="false"
-              size="17"
+              height="17"
               viewBox="0 0 24 24"
+              width="17"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
@@ -463,8 +464,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
             <svg
               aria-hidden="true"
               focusable="false"
-              size="17"
+              height="17"
               viewBox="0 0 24 24"
+              width="17"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
@@ -510,8 +512,9 @@ exports[`Deposits Overview information Component Renders 1`] = `
             <svg
               aria-hidden="true"
               focusable="false"
-              size="17"
+              height="17"
               viewBox="0 0 24 24"
+              width="17"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path

@@ -6,12 +6,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import {
-	Card,
-	CheckboxControl,
-	Notice,
-	TextControl,
-} from '@wordpress/components';
+import { Card } from 'wcpay/components/card';
+import { CheckboxControl, Notice, TextControl } from '@wordpress/components';
 import CardBody from '../card-body';
 import {
 	store as settingsStore,
@@ -113,6 +109,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 						value={ accountStatementDescriptor }
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
+						id="account-statement-descriptor-input"
 						data-testid={ 'store-name-bank-statement' }
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize

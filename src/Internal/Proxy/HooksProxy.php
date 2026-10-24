@@ -51,7 +51,7 @@ class HooksProxy {
 	 * @param mixed  ...$args   Optional. Additional parameters to pass to the callback functions.
 	 * @return mixed The filtered value after all hooked functions are applied to it.
 	 */
-	public function apply_filters( $hook_name, $value, ...$args ) {
-		return apply_filters( $hook_name, $value, ...$args );
+	public function apply_filters( $hook_name, $value, ...$args ) { // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- Generic proxy method; the hook name is dynamic so no fixed @since applies.
+		return apply_filters( $hook_name, $value, ...$args ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Generic proxy dispatching a dynamic hook name; documented by the caller.
 	}
 }

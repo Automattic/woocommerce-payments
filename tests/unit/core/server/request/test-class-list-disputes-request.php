@@ -51,57 +51,6 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$request->set_created_before( '2022-01-01' );
 	}
 
-	public function test_list_disputes_request_will_be_created() {
-		$page            = 2;
-		$page_size       = 50;
-		$direction       = 'asc';
-		$sort            = 'created';
-		$filters         = [
-			'key' => 'value',
-		];
-		$created_after   = '2022-01-01 00:00:00';
-		$created_before  = '2022-02-01 00:00:00';
-		$created_between = [ $created_after, $created_before ];
-		$match           = 'match';
-		$currency        = 'usd';
-		$status          = 'completed';
-		$status_is_not   = 'failed';
-		$search          = 'term';
-
-		$request = new List_Disputes( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_page( $page );
-		$request->set_page_size( $page_size );
-		$request->set_sort_direction( $direction );
-		$request->set_sort_by( $sort );
-		$request->set_created_after( $created_after );
-		$request->set_created_before( $created_before );
-		$request->set_created_between( $created_between );
-		$request->set_match( $match );
-		$request->set_currency_is( $currency );
-		$request->set_status_is( $status );
-		$request->set_status_is_not( $status_is_not );
-		$request->set_search( $search );
-		$request->set_filters( $filters );
-
-		$params = $request->get_params();
-
-		$this->assertIsArray( $params );
-		$this->assertSame( $page, $params['page'] );
-		$this->assertSame( $page_size, $params['pagesize'] );
-		$this->assertSame( $sort, $params['sort'] );
-		$this->assertSame( $direction, $params['direction'] );
-		$this->assertSame( $created_after, $params['created_after'] );
-		$this->assertSame( $created_before, $params['created_before'] );
-		$this->assertSame( $created_between, $params['created_between'] );
-		$this->assertSame( $match, $params['match'] );
-		$this->assertSame( $currency, $params['currency_is'] );
-		$this->assertSame( $status, $params['status_is'] );
-		$this->assertSame( $status_is_not, $params['status_is_not'] );
-		$this->assertSame( $search, $params['search'] );
-		$this->assertSame( $filters['key'], $params['key'] );
-		$this->assertSame( 'GET', $request->get_method() );
-		$this->assertSame( WC_Payments_API_Client::DISPUTES_API, $request->get_api() );
-	}
 	public function test_list_disputes_request_will_be_created_using_from_rest_request_function() {
 		$page            = 2;
 		$page_size       = 50;

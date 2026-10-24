@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Payment details page should match the snapshot - Charge query param 1`] = `
 .emotion-0 {
@@ -155,7 +155,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
     style="max-width: 1032px;"
   >
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -163,7 +163,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-card__body components-card-body emotion-4 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -262,7 +262,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
           role="separator"
         />
         <div
-          class="components-card__body components-card-body emotion-4 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -293,7 +293,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
       />
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -301,7 +301,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-20 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header emotion-20 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
@@ -313,7 +313,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
           </span>
         </div>
         <div
-          class="components-card__body components-card-body emotion-22 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-22 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -815,7 +815,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
     style="max-width: 1032px;"
   >
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -823,7 +823,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-card__body components-card-body emotion-4 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -924,8 +924,9 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                   <svg
                     aria-hidden="true"
                     focusable="false"
-                    size="24"
+                    height="24"
                     viewBox="0 0 24 24"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
@@ -945,30 +946,29 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
           role="separator"
         />
         <div
-          class="components-card__body components-card-body emotion-4 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
           <ul
-            class="woocommerce-list woocommerce-list--horizontal"
-            role="menu"
+            class="wcpay-horizontal-list"
           >
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Date
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     Jun 22, 2022, 2:16pm
                   </span>
@@ -976,21 +976,21 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Sales channel
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     <span>
                       Online store
@@ -1000,21 +1000,21 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Customer
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     <a
                       data-link-type="wc-admin"
@@ -1027,21 +1027,21 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Order
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     <span>
                       –
@@ -1051,21 +1051,21 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Payment method
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     <span
                       class="payment-method-details"
@@ -1091,21 +1091,21 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Risk evaluation
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     –
                   </span>
@@ -1155,7 +1155,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
       />
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -1163,14 +1163,14 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-22 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header emotion-22 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Timeline
         </div>
         <div
-          class="components-card__body components-card-body emotion-24 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-24 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -1199,7 +1199,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
       />
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -1207,14 +1207,14 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-22 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header emotion-22 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Payment method
         </div>
         <div
-          class="components-card__body components-card-body emotion-24 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-24 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >

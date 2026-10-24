@@ -15,16 +15,10 @@ import type {
 } from './types';
 
 export type SingleDatePreset =
-	| 'today'
-	| 'yesterday'
-	| 'past_week'
-	| 'past_month';
+	'today' | 'yesterday' | 'past_week' | 'past_month';
 
 export type RangePreset =
-	| 'last_month'
-	| 'month_to_date'
-	| 'last_year'
-	| 'year_to_date';
+	'last_month' | 'month_to_date' | 'last_year' | 'year_to_date';
 
 export type CustomPreset = 'custom';
 
@@ -47,11 +41,14 @@ const singleDatePresetLabels = (): Record< SingleDatePreset, string > => ( {
 } );
 
 const rangePresetLabels = (): Record< RangePreset, string > => ( {
-	last_month: __( 'Last month', 'woocommerce-payments' ),
+	last_month: __( 'Previous month', 'woocommerce-payments' ),
 	month_to_date: __( 'Month to date', 'woocommerce-payments' ),
-	last_year: __( 'Last year', 'woocommerce-payments' ),
+	last_year: __( 'Previous year', 'woocommerce-payments' ),
 	year_to_date: __( 'Year to date', 'woocommerce-payments' ),
 } );
+
+export const getRangePresetLabel = ( preset: RangePreset ): string =>
+	rangePresetLabels()[ preset ];
 
 /**
  * Return the preset chip list for the given operator. `between` operates on
@@ -145,6 +142,8 @@ const singleDatePresets: SingleDatePreset[] = [
 ];
 
 const rangePresets: RangePreset[] = [
+	// Keep these keys stable: they are emitted in analytics even when labels use
+	// "Previous month" / "Previous year" for merchant-facing copy.
 	'last_month',
 	'month_to_date',
 	'last_year',

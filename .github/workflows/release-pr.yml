@@ -1,4 +1,4 @@
-name: "Release - Create PR to trunk"
+name: "Release - Create release PRs"
 
 # This action will run inside the release code freeze workflow or when it is triggered manually
 on:
@@ -22,6 +22,9 @@ on:
       release-pr-id:
         description: "ID of the release PR created"
         value: ${{ jobs.prepare-release.outputs.release-pr-id }}
+      develop-pr-url:
+        description: "URL of the develop sync PR created"
+        value: ${{ jobs.sync-develop.outputs.develop-pr-url }}
 
 
   workflow_dispatch:
@@ -61,6 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
+      version: ${{ steps.create_branch.outputs.trimmed-version }}
       release-pr-id: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
@@ -68,7 +72,7 @@ jobs:
 
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
@@ -129,7 +133,7 @@ jobs:
             echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
           fi
 
-      - name: Add comment to PR
+      - name: "Add comment to PR to trunk"
         if: ${{ ! inputs.dry-run }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -153,10 +157,10 @@ jobs:
             git --no-pager diff -- woocommerce-payments.php package.json readme.txt
             echo '```'
             echo ''
-            echo '### package-lock.json'
+            echo '### pnpm-lock.yaml'
             echo ''
             echo '```'
-            git --no-pager diff --stat -- package-lock.json
+            git --no-pager diff --stat -- pnpm-lock.yaml
             echo '```'
             echo ''
             echo '### Untracked files'
@@ -165,6 +169,15 @@ jobs:
             git status --short
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  sync-develop:
+    name: "Sync develop"
+    needs: prepare-release
+    if: ${{ ! inputs.dry-run }}
+    uses: ./.github/workflows/release-sync-develop.yml
+    with:
+      releaseVersion: ${{ needs.prepare-release.outputs.version }}
+    secrets: inherit
 
   build-zip-and-run-smoke-tests:
     name: "Build zip & Run smoke tests"

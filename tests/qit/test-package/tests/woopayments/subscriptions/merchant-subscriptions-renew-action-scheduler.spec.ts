@@ -45,15 +45,13 @@ test.describe(
 			// Go to Action Scheduler
 			await goToActionScheduler( adminPage, 'pending' );
 
+			// Target WP's list-table search box by its element IDs: Action Scheduler
+			// rewords the label between releases, which silently breaks copy-based locators.
 			await adminPage
-				.getByLabel( 'Search hook, args and claim' )
+				.locator( '#plugin-search-input' )
 				.fill( actionSchedulerHook );
 
-			await adminPage
-				.getByRole( 'button', {
-					name: 'Search hook, args and claim ID',
-				} )
-				.click();
+			await adminPage.locator( '#search-submit' ).click();
 
 			// The pending-actions list can contain more than one "Run" link; scope to
 			// the first so the click is deterministic instead of throwing a strict-mode

@@ -99,6 +99,34 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			);
 		} );
 
+		it( 'shows the geolocation notice after fetching config', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () =>
+					Promise.resolve( {
+						...mockConfig,
+						geolocation_notice: {
+							country_name: 'Germany',
+							currency_name: 'Euro',
+							id: 'def4562',
+						},
+					} ),
+			} );
+			const template = document.createElement( 'template' );
+			template.id = 'wcpay-geolocation-notice';
+			template.innerHTML =
+				'<p class="woocommerce-store-notice" style="display:none;"><span data-wcpay-notice-country></span></p>';
+			document.body.appendChild( template );
+
+			await renderer.init();
+
+			const notice = document.querySelector(
+				'.woocommerce-store-notice'
+			);
+			expect( notice.textContent ).toBe( 'Germany' );
+			expect( notice.style.display ).toBe( 'block' );
+		} );
+
 		it( 'syncs the currency switcher after converting prices', async () => {
 			global.fetch = jest.fn().mockResolvedValue( {
 				ok: true,
@@ -746,6 +774,136 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 	} );
 
+	describe( 'convertBlockScreenReaderText', () => {
+		// Mirrors the markup WooCommerce's product-price block renders for a
+		// range-priced product: the visible prices carry the per-product Store
+		// API currency, the screen-reader label the (store) global currency.
+		const renderBlockPriceRange = ( { srText, min, max } ) => {
+			const wrapper = document.createElement( 'span' );
+			wrapper.className = 'price wc-block-components-product-price';
+			wrapper.innerHTML =
+				`<span class="screen-reader-text">${ srText }</span>` +
+				'<span aria-hidden="true">' +
+				`<span class="wc-block-components-product-price__value">${ min }</span>` +
+				'&nbsp;&mdash;&nbsp;' +
+				`<span class="wc-block-components-product-price__value">${ max }</span>` +
+				'</span>';
+			document.body.appendChild( wrapper );
+			return wrapper;
+		};
+
+		beforeEach( () => {
+			document.body.textContent = '';
+		} );
+
+		it( 'rebuilds the label from the visible prices', () => {
+			const wrapper = renderBlockPriceRange( {
+				srText: 'Price between $14.00 and $18.00',
+				min: '14,00 €',
+				max: '18,00 €',
+			} );
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price between 14,00 € and 18,00 €' );
+		} );
+
+		it( 'picks up a re-rendered block on a second pass', () => {
+			const wrapper = renderBlockPriceRange( {
+				srText: 'Price between $14.00 and $18.00',
+				min: '14,00 €',
+				max: '18,00 €',
+			} );
+
+			renderer.convertBlockScreenReaderText();
+
+			wrapper.querySelector( '.screen-reader-text' ).textContent =
+				'Price between $20.00 and $30.00';
+			wrapper.querySelectorAll(
+				'.wc-block-components-product-price__value'
+			)[ 0 ].textContent = '20,00 €';
+			wrapper.querySelectorAll(
+				'.wc-block-components-product-price__value'
+			)[ 1 ].textContent = '30,00 €';
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price between 20,00 € and 30,00 €' );
+		} );
+
+		it( 'leaves the label alone when the selected currency is the default', () => {
+			renderer.config = { ...mockConfig, selected_currency: 'USD' };
+			const wrapper = renderBlockPriceRange( {
+				srText: 'Price between $14.00 and $18.00',
+				min: '$14.00',
+				max: '$18.00',
+			} );
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price between $14.00 and $18.00' );
+		} );
+
+		it( 'leaves sale-price labels alone', () => {
+			const wrapper = document.createElement( 'span' );
+			wrapper.className = 'price wc-block-components-product-price';
+			wrapper.innerHTML =
+				'<span class="screen-reader-text">Previous price:</span>' +
+				'<del class="wc-block-components-product-price__regular">18,00 €</del>' +
+				'<span class="screen-reader-text">Discounted price:</span>' +
+				'<ins class="wc-block-components-product-price__value">14,00 €</ins>';
+			document.body.appendChild( wrapper );
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Previous price:' );
+		} );
+
+		it( 'leaves server-rendered annotated labels to convertScreenReaderText', () => {
+			const wrapper = document.createElement( 'span' );
+			wrapper.className = 'price wc-block-components-product-price';
+			wrapper.innerHTML =
+				'<span class="screen-reader-text" data-wcpay-sr-type="range" ' +
+				'data-wcpay-sr-price-from="10" data-wcpay-sr-price-to="30">' +
+				'Price range: $10.00 through $30.00</span>' +
+				'<span aria-hidden="true">' +
+				'<span class="wc-block-components-product-price__value">8,99 €</span>' +
+				'<span class="wc-block-components-product-price__value">25,99 €</span>' +
+				'</span>';
+			document.body.appendChild( wrapper );
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price range: $10.00 through $30.00' );
+		} );
+
+		it( 'does nothing when the config has not loaded', () => {
+			renderer.config = null;
+			const wrapper = renderBlockPriceRange( {
+				srText: 'Price between $14.00 and $18.00',
+				min: '14,00 €',
+				max: '18,00 €',
+			} );
+
+			expect( () =>
+				renderer.convertBlockScreenReaderText()
+			).not.toThrow();
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price between $14.00 and $18.00' );
+		} );
+	} );
+
 	describe( 'convertAllPrices calls convertScreenReaderText', () => {
 		beforeEach( () => {
 			document.body.textContent = '';
@@ -1022,7 +1180,10 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	} );
 
 	describe( 'syncCurrencySwitchers', () => {
-		const createSwitcher = ( selected = 'USD', codes = [ 'USD', 'EUR' ] ) => {
+		const createSwitcher = (
+			selected = 'USD',
+			codes = [ 'USD', 'EUR' ]
+		) => {
 			const select = document.createElement( 'select' );
 			select.name = 'currency';
 			select.className = 'js-woopayments-currency-switcher';
@@ -1087,6 +1248,132 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			const select = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
 			renderer.syncCurrencySwitchers();
 			expect( select.value ).toBe( 'USD' );
+		} );
+	} );
+
+	describe( 'showGeolocationNotice', () => {
+		const NOTICE_ID = 'abc1232';
+		const DISMISSAL_COOKIE = `store_notice${ NOTICE_ID }`;
+
+		const createTemplate = () => {
+			const template = document.createElement( 'template' );
+			template.id = 'wcpay-geolocation-notice';
+			template.innerHTML =
+				'<p class="woocommerce-store-notice demo_store" data-notice-id="" style="display:none;">' +
+				"We noticed you're visiting from <span data-wcpay-notice-country></span>. " +
+				"We've updated our prices to <span data-wcpay-notice-currency></span> for your shopping convenience. " +
+				'<a href="?currency=USD">Use United States (US) dollar instead.</a>' +
+				' <a href="#" class="woocommerce-store-notice__dismiss-link">Dismiss</a></p>';
+			document.body.appendChild( template );
+		};
+
+		const getNotice = () =>
+			document.querySelector( '.woocommerce-store-notice' );
+
+		beforeEach( () => {
+			document.body.textContent = '';
+			renderer.config = {
+				...mockConfig,
+				geolocation_notice: {
+					country_name: 'Germany',
+					currency_name: 'Euro',
+					id: NOTICE_ID,
+				},
+			};
+		} );
+
+		afterEach( () => {
+			document.cookie = `${ DISMISSAL_COOKIE }=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+		} );
+
+		it( 'fills in the country and currency and shows the notice', () => {
+			createTemplate();
+
+			renderer.showGeolocationNotice();
+
+			expect( getNotice().textContent ).toContain(
+				"We noticed you're visiting from Germany. We've updated our prices to Euro for your shopping convenience."
+			);
+			expect( getNotice().dataset.noticeId ).toBe( 'abc1232' );
+			expect( getNotice().style.display ).toBe( 'block' );
+		} );
+
+		it( 'inserts the names as text, not markup', () => {
+			createTemplate();
+			renderer.config.geolocation_notice.country_name =
+				'<img src="x" onerror="alert(1)">';
+
+			renderer.showGeolocationNotice();
+
+			expect( getNotice().querySelector( 'img' ) ).toBeNull();
+			expect(
+				getNotice().querySelector( '[data-wcpay-notice-country]' )
+					.textContent
+			).toBe( '<img src="x" onerror="alert(1)">' );
+		} );
+
+		it( 'does nothing when the config has no notice', () => {
+			createTemplate();
+			renderer.config.geolocation_notice = null;
+
+			renderer.showGeolocationNotice();
+
+			expect( getNotice() ).toBeNull();
+		} );
+
+		it( 'does nothing when the page has no template', () => {
+			expect( () => renderer.showGeolocationNotice() ).not.toThrow();
+
+			expect( getNotice() ).toBeNull();
+		} );
+
+		it( 'keeps the notice hidden after the visitor dismissed it', () => {
+			createTemplate();
+			document.cookie = `${ DISMISSAL_COOKIE }=hidden; path=/`;
+
+			renderer.showGeolocationNotice();
+
+			expect( getNotice() ).toBeNull();
+		} );
+
+		it( 'sets the dismissal cookie and hides the notice on click', () => {
+			createTemplate();
+			renderer.showGeolocationNotice();
+
+			getNotice()
+				.querySelector( '.woocommerce-store-notice__dismiss-link' )
+				.click();
+
+			expect( document.cookie ).toContain( 'store_noticeabc1232=hidden' );
+			expect( getNotice().style.display ).toBe( 'none' );
+		} );
+
+		it.each( [ 'Enter', ' ' ] )( 'dismisses the notice on %p', ( key ) => {
+			createTemplate();
+			renderer.showGeolocationNotice();
+
+			getNotice()
+				.querySelector( '.woocommerce-store-notice__dismiss-link' )
+				.dispatchEvent(
+					new KeyboardEvent( 'keydown', { key, cancelable: true } )
+				);
+
+			expect( document.cookie ).toContain( 'store_noticeabc1232=hidden' );
+			expect( getNotice().style.display ).toBe( 'none' );
+		} );
+
+		it( 'ignores other keys on the dismiss link', () => {
+			createTemplate();
+			renderer.showGeolocationNotice();
+
+			getNotice()
+				.querySelector( '.woocommerce-store-notice__dismiss-link' )
+				.dispatchEvent(
+					new KeyboardEvent( 'keydown', { key: 'Tab' } )
+				);
+
+			expect( document.cookie ).not.toContain( 'store_noticeabc1232' );
+			expect( getNotice().style.display ).toBe( 'block' );
 		} );
 	} );
 

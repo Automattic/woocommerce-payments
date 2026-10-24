@@ -27,6 +27,11 @@ class Refund_Charge extends Request {
 	const REQUIRED_PARAMS = [ 'charge' ];
 
 	/**
+	 * Maximum length of a Stripe metadata value.
+	 */
+	private const METADATA_VALUE_MAX_LENGTH = 500;
+
+	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
 	 * @var string
@@ -92,6 +97,7 @@ class Refund_Charge extends Request {
 	 * Stripe's `reason` only accepts a fixed enum, so a matching value is forwarded
 	 * there. Any reason (including free text) is also stored as `merchant_refund_reason`
 	 * metadata so it survives the round trip and shows up in the payment timeline.
+	 * The metadata copy is limited to 500 characters to satisfy Stripe's value limit.
 	 *
 	 * @param string|null $reason The reason the merchant provided, enum or free text.
 	 * @throws Invalid_Request_Parameter_Exception
@@ -106,7 +112,7 @@ class Refund_Charge extends Request {
 				'metadata',
 				array_merge(
 					$this->get_params()['metadata'] ?? [],
-					[ 'merchant_refund_reason' => $reason ]
+					[ 'merchant_refund_reason' => mb_substr( $reason, 0, self::METADATA_VALUE_MAX_LENGTH ) ]
 				)
 			);
 		}

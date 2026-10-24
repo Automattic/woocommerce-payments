@@ -96,6 +96,45 @@ describe( 'VAT form', () => {
 	);
 } );
 
+describe( 'VAT form requirement hint copy', () => {
+	it( 'should show a region-neutral hint with a docs link for default countries', () => {
+		global.wcpaySettings = {
+			accountStatus: { country: 'GB' },
+		};
+
+		render( <VatForm onCompleted={ mockOnCompleted } /> );
+
+		expect(
+			screen.getByText( /Tax registration rules vary by region\./ )
+		).toBeInTheDocument();
+
+		const learnMoreLink = screen.getByRole( 'link', {
+			name: /Learn more about tax documents/,
+		} );
+		expect( learnMoreLink ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/taxes/documents/'
+		);
+	} );
+
+	it( 'should not show the requirement hint for Japan', () => {
+		global.wcpaySettings = {
+			accountStatus: { country: 'JP' },
+		};
+
+		render( <VatForm onCompleted={ mockOnCompleted } /> );
+
+		expect(
+			screen.queryByText( /Tax registration rules vary by region/ )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'link', {
+				name: /Learn more about tax documents/,
+			} )
+		).not.toBeInTheDocument();
+	} );
+} );
+
 describe( 'VAT form error messages use correct tax ID name per country', () => {
 	beforeAll( () => {
 		jest.spyOn( console, 'error' ).mockImplementation( () => null );

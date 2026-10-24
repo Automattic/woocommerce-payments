@@ -13,6 +13,32 @@ use WCPay\Exceptions\API_Exception;
  * WC_Payments_Utils unit tests.
  */
 class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
+
+	/**
+	 * Restored after each test. A leaked /wp-json/ REQUEST_URI makes
+	 * WC()->is_rest_api_request() return true for all later tests.
+	 *
+	 * @var string|null
+	 */
+	private $original_request_uri;
+
+	public function set_up() {
+		parent::set_up();
+
+		$this->original_request_uri = $_SERVER['REQUEST_URI'] ?? null;
+	}
+
+	public function tear_down() {
+		if ( null === $this->original_request_uri ) {
+			unset( $_SERVER['REQUEST_URI'] );
+		} else {
+			$_SERVER['REQUEST_URI'] = $this->original_request_uri;
+		}
+		unset( $_REQUEST['rest_route'] );
+
+		parent::tear_down();
+	}
+
 	public function test_esc_interpolated_html_returns_raw_string() {
 		$result = WC_Payments_Utils::esc_interpolated_html(
 			'hello world',
@@ -176,7 +202,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$charge_ids = [ 'ch_test_charge_1', 'ch_test_charge_2' ];
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $charge_ids ) {
+			function ( $_unused_id ) use ( $charge_ids ) {
 				$subscription = new WC_Subscription();
 
 				$order1 = WC_Helper_Order::create_order();
@@ -207,7 +233,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_charge_ids_from_search_term_handles_invalid_subscription() {
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) {
+			function ( $_unused_id ) {
 				return false;
 			}
 		);
@@ -230,7 +256,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$charge_ids = [ 'ch_test_charge_1', 'ch_test_charge_2' ];
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $charge_ids ) {
+			function ( $_unused_id ) use ( $charge_ids ) {
 				$subscription = new WC_Subscription();
 
 				$order1 = WC_Helper_Order::create_order();
@@ -933,8 +959,8 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_last_refund_from_order_id_returns_correct_refund() {
-		$order    = WC_Helper_Order::create_order();
-		$refund_1 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+		$order = WC_Helper_Order::create_order();
+		wc_create_refund( [ 'order_id' => $order->get_id() ] );
 		$refund_2 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
 
 		$result = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
@@ -1482,5 +1508,49 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 				]
 			)
 		);
+	}
+
+	/**
+	 * @dataProvider provider_get_dev_mode_reason
+	 */
+	public function test_get_dev_mode_reason( array $triggers, string $expected ) {
+		$this->assertSame( $expected, WC_Payments_Utils::get_dev_mode_reason( $triggers ) );
+	}
+
+	public function provider_get_dev_mode_reason(): array {
+		return [
+			'WCPAY_DEV_MODE constant'      => [
+				[ 'WCPAY_DEV_MODE' ],
+				'The WCPAY_DEV_MODE constant is set.',
+			],
+			'staging environment'          => [
+				[ 'WP_ENVIRONMENT_TYPE=staging' ],
+				'This site is set up as a staging site.',
+			],
+			'development environment'      => [
+				[ 'WP_ENVIRONMENT_TYPE=development' ],
+				'This site is set up as a development site.',
+			],
+			'WP_DEVELOPMENT_MODE constant' => [
+				[ 'WP_DEVELOPMENT_MODE=plugin' ],
+				'The WP_DEVELOPMENT_MODE constant is set.',
+			],
+			'wcpay_dev_mode filter'        => [
+				[ 'wcpay_dev_mode filter' ],
+				'A plugin or custom code turned it on using the wcpay_dev_mode filter.',
+			],
+			'first of several triggers'    => [
+				[ 'WCPAY_DEV_MODE', 'WP_ENVIRONMENT_TYPE=staging' ],
+				'The WCPAY_DEV_MODE constant is set.',
+			],
+			'mode switched on in code'     => [
+				[ 'manual' ],
+				'',
+			],
+			'no triggers'                  => [
+				[],
+				'',
+			],
+		];
 	}
 }

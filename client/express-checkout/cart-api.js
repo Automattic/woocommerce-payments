@@ -10,10 +10,61 @@ import { isNil, omitBy } from 'lodash';
  * Internal dependencies
  */
 import { getExpressCheckoutData } from './utils';
+import { getResolvedCurrency } from './utils/resolved-currency-cache';
+import { getElementCurrency } from './utils/element-currency-cache';
 import {
 	getProductId,
 	getQuantity,
 } from 'wcpay/utils/wc-product-page-selectors';
+
+// Every Store API response carries fresh nonces for the current shopper, and they can differ from the page's:
+// the shopper may log in mid-checkout (their account gets created), or a full-page cache may serve expired ones.
+// Kept at module level because product pages use more than one cart API instance.
+let refreshedNonces = {};
+
+const rememberNonces = ( headers ) => {
+	if ( ! headers?.get( 'Nonce' ) ) {
+		return;
+	}
+
+	refreshedNonces = {
+		...refreshedNonces,
+		...omitBy(
+			{
+				store_api_nonce: headers.get( 'Nonce' ),
+				tokenized_cart_nonce: headers.get(
+					'X-WooPayments-Tokenized-Cart-Nonce'
+				),
+				tokenized_cart_session_nonce: headers.get(
+					'X-WooPayments-Tokenized-Cart-Session-Nonce'
+				),
+			},
+			isNil
+		),
+	};
+
+	// The WooCommerce Blocks nonce middleware, when loaded, overwrites the `Nonce` header of every Store API request
+	// with the value it stores, so it has to learn about the fresh one too.
+	apiFetch.setNonce?.( headers );
+};
+
+export const __resetRefreshedNoncesForTests = () => {
+	refreshedNonces = {};
+};
+
+const isInvalidNonceError = async ( error ) => {
+	if ( error?.status !== 403 || typeof error.clone !== 'function' ) {
+		return false;
+	}
+
+	try {
+		// Cloned, so callers can still read the body when there's no retry.
+		const body = await error.clone().json();
+		return body?.code === 'woocommerce_rest_invalid_nonce';
+	} catch ( e ) {
+		return false;
+	}
+};
 
 export default class ExpressCheckoutCartApi {
 	// Used on product pages to interact with an anonymous cart.
@@ -23,12 +74,35 @@ export default class ExpressCheckoutCartApi {
 	cartRequestHeaders = {};
 
 	/**
-	 * Makes a request to the API.
+	 * Makes a request to the API, retrying once if the page's nonces expired.
 	 *
 	 * @param {Object} options The options to pass to `apiFetch`.
 	 * @return {Promise} Result from `apiFetch`.
 	 */
 	async _request( options ) {
+		try {
+			return await this._sendRequest( options );
+		} catch ( error ) {
+			// The rejection already gave us fresh nonces, so one retry is enough.
+			if ( ! ( await isInvalidNonceError( error ) ) ) {
+				throw error;
+			}
+
+			return this._sendRequest( options );
+		}
+	}
+
+	/**
+	 * Sends a single request to the API.
+	 *
+	 * @param {Object} options The options to pass to `apiFetch`.
+	 * @return {Promise} Result from `apiFetch`.
+	 */
+	async _sendRequest( options ) {
+		const nonces = {
+			...getExpressCheckoutData( 'nonce' ),
+			...refreshedNonces,
+		};
 		// Drop nullish values so we never serialize `undefined` / `null` to
 		// the literal strings "undefined" / "null" on the wire (which breaks
 		// server-side nonce verification).
@@ -36,20 +110,21 @@ export default class ExpressCheckoutCartApi {
 			...options,
 			parse: false,
 			path: addQueryArgs( options.path, {
+				// The resolver fires before any Store API call on product
+				// pages. Cart/checkout/pay-for-order fall back to the
+				// localized value (the resolver doesn't run there).
 				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
-				currency:
-					getExpressCheckoutData(
-						'checkout'
-					).currency_code.toUpperCase(),
+				currency: getResolvedCurrency(
+					getExpressCheckoutData( 'checkout' ).currency_code
+				).toUpperCase(),
 			} ),
 			headers: omitBy(
 				{
-					// the Store API nonce, which could later be overwritten in subsequent requests.
-					Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
+					Nonce: nonces.store_api_nonce,
 					// needed for validation of address data, etc.
 					'X-WooPayments-Tokenized-Cart-Nonce':
-						getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce,
+						nonces.tokenized_cart_nonce,
 					// The session nonce is only meaningful on PDP, where the
 					// custom session handler is intended to engage and create
 					// an isolated tokenized cart. Sending it on shortcode
@@ -57,24 +132,24 @@ export default class ExpressCheckoutCartApi {
 					// with an empty one.
 					'X-WooPayments-Tokenized-Cart-Session-Nonce':
 						getExpressCheckoutData( 'button_context' ) === 'product'
-							? getExpressCheckoutData( 'nonce' )
-									.tokenized_cart_session_nonce
+							? nonces.tokenized_cart_session_nonce
 							: undefined,
 					...this.cartRequestHeaders,
 					...options.headers,
 				},
 				isNil
 			),
+		} ).catch( ( error ) => {
+			// With `parse: false`, error responses are thrown as they are, and they carry fresh nonces too.
+			rememberNonces( error?.headers );
+			throw error;
 		} );
 
-		// Only carry forward response headers we actually received. Reading
-		// an absent header returns `null`, and assigning that null over the
-		// `Nonce` default on the next request would serialize as "null" and
-		// trigger `woocommerce_rest_missing_nonce`.
+		rememberNonces( response.headers );
+
+		// Only carry forward the cart token if we actually received one: reading an absent header returns `null`.
 		this.cartRequestHeaders = omitBy(
 			{
-				// used as a reference on shortcode cart/checkout pages, where the Nonce might not be automatically added to the request.
-				Nonce: response.headers.get( 'Nonce' ),
 				// saving the received value as a cart reference for future usage. This value could be updated multiple times.
 				'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
 					'X-WooPayments-Tokenized-Cart-Session'
@@ -101,11 +176,18 @@ export default class ExpressCheckoutCartApi {
 	 * @return {Promise} Result of the order creation request.
 	 */
 	async placeOrder( paymentData ) {
+		const elementCurrency = getElementCurrency();
+
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
 			headers: {
 				'X-WooPayments-Tokenized-Cart': true,
+				// Lets the server reject placement when the cart's currency
+				// drifted away from the one the Element booted with.
+				...( elementCurrency && {
+					'X-WooPayments-Payment-Currency': elementCurrency,
+				} ),
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,

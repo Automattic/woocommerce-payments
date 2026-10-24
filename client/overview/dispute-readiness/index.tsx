@@ -7,9 +7,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
-	Card,
-	CardBody,
-	CardHeader,
 	DropdownMenu,
 	ExternalLink,
 	MenuGroup,
@@ -24,12 +21,14 @@ import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 /**
  * Internal dependencies
  */
+import { Card, CardBody, CardHeader } from 'wcpay/components/card';
 import {
 	useDisputeReadiness,
 	useDisputeReadinessActions,
 } from 'wcpay/data/dispute-readiness';
 import { recordEvent } from 'wcpay/tracks';
 import { DisputeReadinessSignal } from 'wcpay/data/dispute-readiness/types';
+import { redirectTo } from 'wcpay/utils';
 import './style.scss';
 
 const learnMoreUrl =
@@ -118,7 +117,7 @@ const DisputeReadinessCard = () => {
 		}
 
 		if ( signal.actionUrl ) {
-			window.location.href = signal.actionUrl;
+			redirectTo( signal.actionUrl );
 		}
 	};
 
@@ -203,6 +202,8 @@ const DisputeReadinessCard = () => {
 									data-status={ signal.status }
 									title={ signal.label }
 									completed={ isComplete }
+									inProgress={ false }
+									inProgressLabel=""
 									content={ signal.description || '' }
 									expanded
 									showActionButton={ hasAction }

@@ -11,10 +11,14 @@
 class WC_Payments_Notes_Set_Https_For_Checkout_Test extends WCPAY_UnitTestCase {
 	public function test_removes_note_on_extension_deactivation() {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
+			$note_id = WC_Payments_Notes_Set_Https_For_Checkout::NOTE_NAME;
+			WC_Payments_Notes_Set_Https_For_Checkout::get_note()->save();
+			$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+
 			// Trigger WCPay extension deactivation callback.
 			wcpay_deactivated();
 
-			$note_id = WC_Payments_Notes_Set_Https_For_Checkout::NOTE_NAME;
 			$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
 		} else {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );

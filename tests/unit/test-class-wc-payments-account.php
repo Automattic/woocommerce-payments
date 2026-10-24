@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Currency_Code;
 use WCPay\Database_Cache;
 use WCPay\Onboarding_Experiment;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -1068,6 +1069,81 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
 	}
 
+	public function test_maybe_activate_woopay_does_not_enable_when_link_is_enabled() {
+		$_GET['wcpay-connection-success'] = '1';
+		set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card', 'link' ] );
+
+		$this->wcpay_account->maybe_activate_woopay();
+
+		$this->assertSame( 'no', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_maybe_activate_woopay_enables_when_link_not_enabled() {
+		$_GET['wcpay-connection-success'] = '1';
+		set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->maybe_activate_woopay();
+
+		$this->assertSame( 'yes', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_restores_link_and_forces_woopay_off() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[ 'enabled_payment_methods' => [ 'card', 'link' ] ],
+			HOUR_IN_SECONDS
+		);
+
+		$gateway = WC_Payments::get_gateway();
+		// WooPay starting on simulates a live default; Link wins, so it must end off.
+		$gateway->update_option( 'platform_checkout', 'yes' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertContains( 'link', $gateway->get_upe_enabled_payment_method_ids() );
+		$this->assertSame( 'no', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_noop_when_transient_has_no_methods() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[ 'capabilities' => [ 'woopay_payments' => [ 'requested' => 'true' ] ] ],
+			HOUR_IN_SECONDS
+		);
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertSame( [ 'card' ], $gateway->get_upe_enabled_payment_method_ids() );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_noop_when_no_transient() {
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'yes' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertSame( [ 'card' ], $gateway->get_upe_enabled_payment_method_ids() );
+		$this->assertSame( 'yes', $gateway->get_option( 'platform_checkout' ) );
+	}
+
 	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
 		// Arrange.
 		// We need to be in the WP admin dashboard.
@@ -1222,6 +1298,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$gateway->update_option( 'enabled', '' );
 		$gateway->update_option( 'test_mode', '' );
 
+		// No retired reminder clock has started.
+		delete_option( 'wcpay_kyc_submitted_date' );
+
 		// Assert.
 		// We should redirect to the Overview page, not the Connect page.
 		$this->mock_redirect_service
@@ -1252,6 +1331,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// The state transient is deleted.
 		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT ) );
+
+		// The retired reminder clock is not started.
+		$this->assertFalse( get_option( 'wcpay_kyc_submitted_date' ) );
 	}
 
 	public function test_maybe_handle_onboarding_finalize_connection_via_non_connect_link_success_live_account() {
@@ -1557,13 +1639,16 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				new Exception()
 			);
 
-		$this->expectException( Exception::class );
+		try {
+			$this->wcpay_account->maybe_redirect_after_plugin_activation();
+		} catch ( Exception $e ) {
+			remove_filter( 'user_has_cap', $cb );
+			// The option should be updated even though the account check failed.
+			$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+			return;
+		}
 
-		$this->assertTrue( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
-		// The option should be updated.
-		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
-
-		remove_filter( 'user_has_cap', $cb );
+		$this->fail( 'The account error should be rethrown.' );
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_account_valid() {
@@ -1842,6 +1927,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				[
 					'page' => 'wc-admin',
+					'path' => '',
 				],
 			],
 			'incorrect_path_param'                      => [
@@ -2073,6 +2159,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				[
 					'page' => 'wc-admin',
+					'path' => '',
 				],
 			],
 			'incorrect_path_param'                     => [
@@ -2385,6 +2472,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				[
 					'page' => 'wc-admin',
+					'path' => '',
 				],
 			],
 			'incorrect_path_param'                     => [
@@ -2632,6 +2720,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Server exception is masked by generic exception.
 		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Failed to detect connection status' );
 
 		$this->wcpay_account->try_is_stripe_connected();
 	}
@@ -2677,7 +2766,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
-	public function test_is_stripe_connected_returns_false_on_error() {
+	/**
+	 * @dataProvider provider_is_stripe_connected_on_error
+	 */
+	public function test_is_stripe_connected_returns_on_error_value_on_error( bool $on_error, bool $expected ) {
 		// The WPCOM/Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
@@ -2690,7 +2782,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				new API_Exception( 'test', 'server_error', 500 )
 			);
 
-		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
+		$this->assertSame( $expected, $this->wcpay_account->is_stripe_connected( $on_error ) );
+	}
+
+	public function provider_is_stripe_connected_on_error(): array {
+		return [
+			'on_error false' => [ false, false ],
+			'on_error true'  => [ true, true ],
+		];
 	}
 
 	public function test_is_stripe_connected_returns_false_when_not_connected() {
@@ -2966,6 +3065,37 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->assertNull( $this->wcpay_account->get_stripe_account_id() );
+	}
+
+	public function test_get_account_status_data_includes_business_name_and_account_id() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->cache_account_details(
+			[
+				'account_id'       => 'acct_wcpay_123',
+				'is_live'          => true,
+				'status'           => 'complete',
+				'payments_enabled' => true,
+				'business_profile' => [
+					'name' => 'Aperture Science LLC',
+				],
+			]
+		);
+
+		$account_status_data = $this->wcpay_account->get_account_status_data();
+
+		$this->assertSame( 'Aperture Science LLC', $account_status_data['businessName'] );
+		$this->assertSame( 'acct_wcpay_123', $account_status_data['accountId'] );
+	}
+
+	public function test_get_account_status_data_returns_only_error_for_missing_account() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->cache_account_details( [] );
+
+		$this->assertSame( [ 'error' => true ], $this->wcpay_account->get_account_status_data() );
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_test_account_in_dev_mode() {
@@ -3257,6 +3387,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 * Test get_cached_account_data when we have already cached the "no account connected" response.
 	 */
 	public function test_get_cached_account_data_when_no_account_connected_and_result_cached() {
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
 		// Setup the cache with expired account information.
 		$this->cache_account_details( [] );
 
@@ -3271,16 +3405,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_note() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
 		$action_hook = 'wcpay_instant_deposit_reminder';
 		$this->mock_action_scheduler_service
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'pending_action_exists' )
-			->withConsecutive( [ $action_hook ], [ $action_hook ] )
-			->willReturnOnConsecutiveCalls( false, true );
+			->with( $action_hook )
+			->willReturn( false );
 
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
@@ -3303,19 +3433,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
 
-		// Test to see if scheduled action was created.
-		$this->assertTrue( $this->mock_action_scheduler_service->pending_action_exists( $action_hook ) );
-
 		// Test that the previously eligible option is set.
 		$this->assertTrue( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$account = [
 			'is_live'                   => true,
 			'instant_deposits_eligible' => false,
@@ -3334,11 +3456,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder_will_not_schedule_job_if_pending_action_exist() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
@@ -3362,11 +3479,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
@@ -3385,9 +3497,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
 			->method( 'schedule_job' )
-			->willReturn(
+			->with(
 				$this->greaterThan( time() ),
-				WC_Payments_Account::INSTANT_DEPOSITS_REMINDER_ACTION
+				'wcpay_instant_deposit_reminder'
 			);
 
 		$this->wcpay_account->handle_instant_deposits_inbox_reminder();
@@ -3406,11 +3518,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_handle_loan_approved_inbox_note_not_created( $account ) {
 
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$this->wcpay_account->handle_loan_approved_inbox_note( $account );
 		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
@@ -3423,11 +3530,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_throws_exception() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$request = $this->mock_wcpay_request( Get_Request::class );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -3439,11 +3541,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_returns_invalid_data() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$request = $this->mock_wcpay_request( Get_Request::class );
 		$request->expects( $this->once() )
 			->method( 'set_api' )
@@ -3459,14 +3556,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
-		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
-		$time                     = time();
+		$advance_amount = 1234567;
+		$time           = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
 
@@ -3477,7 +3568,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 					],
 				]
 			);
@@ -3492,18 +3583,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( '$12,345.67', html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
-		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
-		$time                     = time();
+		$advance_amount = 1234567;
+		$time           = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
 		$request->expects( $this->once() )
@@ -3513,7 +3598,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
-						'currency'            => 'CHF',
+						'currency'            => Currency_Code::SWISS_FRANC,
 					],
 				]
 			);
@@ -3528,7 +3613,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( 'CHF12,345.67', html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_get_tracking_info() {
@@ -4080,17 +4165,17 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'eligible when flag is true'        => [
 				[
-					'account_id'                        => 'acc_test',
-					'is_live'                           => true,
-					'eligibility_review_prompt_phase_0' => true,
+					'account_id'                => 'acc_test',
+					'is_live'                   => true,
+					'eligibility_review_prompt' => true,
 				],
 				true,
 			],
 			'not eligible when flag is false'   => [
 				[
-					'account_id'                        => 'acc_test',
-					'is_live'                           => true,
-					'eligibility_review_prompt_phase_0' => false,
+					'account_id'                => 'acc_test',
+					'is_live'                   => true,
+					'eligibility_review_prompt' => false,
 				],
 				false,
 			],
@@ -4098,6 +4183,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				[
 					'account_id' => 'acc_test',
 					'is_live'    => true,
+				],
+				false,
+			],
+			'old phase_0 field is ignored'      => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => true,
 				],
 				false,
 			],
@@ -4111,6 +4204,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test is_review_prompt_eligible method with various account data scenarios.
 	 *
+	 * @testdox The deprecated method still reports review prompt eligibility.
 	 * @dataProvider provider_is_review_prompt_eligible
 	 *
 	 * @param array $account_data The account data to cache.
@@ -4189,13 +4283,25 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->get_cached_account_data();
 	}
 
-	// -------------------------------------------------------------------------
-	// maybe_record_kyc_completion_date tests
-	// -------------------------------------------------------------------------
+	public function test_get_cached_account_data_does_not_force_refresh_by_default() {
+		$this->mock_jetpack_connection();
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->with(
+				Database_Cache::ACCOUNT_KEY,
+				$this->isType( 'callable' ),
+				$this->isType( 'callable' ),
+				false
+			);
 
-	public function test_maybe_record_kyc_completion_date_uses_current_time_for_post_launch_merchant(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		update_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION, time() );
+		$this->wcpay_account->get_cached_account_data();
+	}
+
+	public function test_retired_kyc_recorder_does_not_start_a_new_timer(): void {
+		$this->setExpectedDeprecated( 'WC_Payments_Account::maybe_record_kyc_completion_date' );
+		delete_option( 'wcpay_kyc_completion_date' );
+		update_option( 'wcpay_kyc_submitted_date', time() );
 
 		$this->wcpay_account->maybe_record_kyc_completion_date(
 			[
@@ -4206,112 +4312,22 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$completion_date = (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		$this->assertGreaterThan( time() - 60, $completion_date );
-
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+		$this->assertFalse( get_option( 'wcpay_kyc_completion_date' ) );
 	}
 
-	public function test_maybe_record_kyc_completion_date_falls_back_to_account_created_for_pre_existing_merchant(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
-
-		$account_created = time() - 90 * DAY_IN_SECONDS;
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => true,
-				'is_test_drive'    => false,
-				'created'          => $account_created,
-			]
-		);
-
-		$this->assertSame( $account_created, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-	}
-
-	public function test_maybe_record_kyc_completion_date_bails_when_no_submitted_date_and_no_created(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+	public function test_retired_kyc_recorder_preserves_history(): void {
+		$this->setExpectedDeprecated( 'WC_Payments_Account::maybe_record_kyc_completion_date' );
+		update_option( 'wcpay_kyc_completion_date', 12345 );
+		update_option( 'wcpay_kyc_submitted_date', 12300 );
 
 		$this->wcpay_account->maybe_record_kyc_completion_date(
 			[
 				'payments_enabled' => true,
 				'is_live'          => true,
-				'is_test_drive'    => false,
 			]
 		);
 
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_preserves_existing_date(): void {
-		$original_date = time() - 10 * DAY_IN_SECONDS;
-		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, $original_date );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => true,
-				'is_test_drive'    => false,
-				'created'          => time() - 90 * DAY_IN_SECONDS,
-			]
-		);
-
-		$this->assertSame( $original_date, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-	}
-
-	public function test_maybe_record_kyc_completion_date_skips_empty_account(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date( [] );
-
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_skips_test_drive_account(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => true,
-				'is_test_drive'    => true,
-			]
-		);
-
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_skips_when_payments_not_enabled(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => false,
-				'is_live'          => true,
-				'is_test_drive'    => false,
-			]
-		);
-
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_skips_when_not_live(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => false,
-				'is_test_drive'    => false,
-			]
-		);
-
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+		$this->assertEquals( 12345, get_option( 'wcpay_kyc_completion_date' ) );
+		$this->assertEquals( 12300, get_option( 'wcpay_kyc_submitted_date' ) );
 	}
 }

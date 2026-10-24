@@ -16,7 +16,6 @@ use WCPay\Constants\Order_Status;
  */
 class WC_Payments_Order_Success_Page {
 
-
 	/**
 	 * Whether to hide the blocks status description.
 	 *
@@ -29,6 +28,7 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function init_hooks() {
 		add_filter( 'woocommerce_order_received_verify_known_shoppers', [ $this, 'determine_woopay_order_received_verify_known_shoppers' ], 11 );
+		add_filter( 'woocommerce_order_email_verification_required', [ $this, 'maybe_skip_email_verification_after_payment' ], 10, 3 );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'maybe_render_multibanco_payment_instructions' ] );
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
@@ -203,17 +203,18 @@ class WC_Payments_Order_Success_Page {
 		$payment_method = $gateway->get_payment_method( $order );
 
 		// Link payments go through the card gateway (woocommerce_payments), so the gateway's
-		// payment method is 'card'. Detect Link by checking the order's payment tokens.
+		// payment method is 'card'. Detect Link from the stored payment method details, or from
+		// the order's last payment token for orders without them.
 		if ( Payment_Method::CARD === $payment_method->get_id() ) {
-			$token_ids = $order->get_payment_tokens();
-			if ( ! empty( $token_ids ) ) {
-				$last_token = \WC_Payment_Tokens::get( end( $token_ids ) );
-				if ( $last_token instanceof \WC_Payment_Token_WCPay_Link ) {
-					$link_pm = WC_Payments::get_payment_method_by_id( Payment_Method::LINK );
-					if ( $link_pm ) {
-						$payment_method = $link_pm;
-					}
-				}
+			$payment_method_details = WC_Payments::get_order_service()->get_payment_method_details( $order );
+			$is_link                = Payment_Method::LINK === ( $payment_method_details['type'] ?? null );
+			$token_ids              = $order->get_payment_tokens();
+			if ( ! $is_link && ! empty( $token_ids ) ) {
+				$is_link = \WC_Payment_Tokens::get( end( $token_ids ) ) instanceof \WC_Payment_Token_WCPay_Link;
+			}
+			$link_pm = $is_link ? WC_Payments::get_payment_method_by_id( Payment_Method::LINK ) : null;
+			if ( $link_pm ) {
+				$payment_method = $link_pm;
 			}
 		}
 
@@ -248,14 +249,15 @@ class WC_Payments_Order_Success_Page {
 			return 'Payment Request';
 		}
 
-		$icon_url      = $payment_method->get_icon();
-		$dark_icon_url = $payment_method->get_dark_icon();
-		$dark_attr     = $dark_icon_url !== $icon_url ? ' data-dark-src="' . esc_url_raw( $dark_icon_url ) . '"' : '';
+		$account_country = $this->get_account_country();
+		$icon_url        = $payment_method->get_icon( $account_country );
+		$dark_icon_url   = $payment_method->get_dark_icon( $account_country );
+		$dark_attr       = $dark_icon_url !== $icon_url ? ' data-dark-src="' . esc_url_raw( $dark_icon_url ) . '"' : '';
 
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $icon_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<img alt="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" src="<?php echo esc_url_raw( $icon_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
@@ -278,15 +280,16 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function show_card_payment_method_name( $order, $payment_method ) {
 		$card_brand = $order->get_meta( '_card_brand' );
+		$title      = $payment_method->get_title( $this->get_account_country() );
 
 		if ( ! $card_brand ) {
-			return $payment_method->get_title();
+			return $title;
 		}
 
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( plugins_url( "assets/images/cards/{$card_brand}.svg", WCPAY_PLUGIN_FILE ) ); ?>">
+			<img alt="<?php echo esc_attr( $title ); ?>" src="<?php echo esc_url_raw( plugins_url( "assets/images/cards/{$card_brand}.svg", WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
@@ -341,6 +344,14 @@ class WC_Payments_Order_Success_Page {
 			'8.5.0',
 			'wc_payments_thank_you_page_lpm_payment_method_logo_url'
 		);
+		/**
+		 * Filters the payment method logo URL shown on the thank you page for local payment methods.
+		 *
+		 * @since 8.5.0
+		 *
+		 * @param string $method_logo_url   The payment method logo URL.
+		 * @param string $payment_method_id The payment method ID.
+		 */
 		$method_logo_url = apply_filters(
 			'wc_payments_thank_you_page_lpm_payment_method_logo_url',
 			$method_logo_url,
@@ -358,7 +369,7 @@ class WC_Payments_Order_Success_Page {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-lpm-logo wc-payment-lpm-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" title="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<img alt="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" title="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 		</div>
 		<?php
 		return ob_get_clean();
@@ -407,8 +418,8 @@ class WC_Payments_Order_Success_Page {
 	public function replace_order_received_text_for_failed_orders( $text ) {
 		global $wp;
 
-		$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ?? 0 ) );
-		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ?? 0 ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment, WordPress.Security.NonceVerification.Recommended -- WooCommerce core hook, not defined by WooPayments.
 
 		$order = false;
 		if ( $order_id > 0 ) {
@@ -518,14 +529,14 @@ class WC_Payments_Order_Success_Page {
 		global $wp;
 
 		$order_id  = $wp->query_vars['order-received'];
-		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) );
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		$order     = wc_get_order( $order_id );
 
 		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) ) {
 			return $value;
 		}
 
-		$verification_grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order );
+		$verification_grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		$date_created              = $order->get_date_created();
 
 		// We do not need to verify the email address if we are within the grace period immediately following order creation.
@@ -533,6 +544,45 @@ class WC_Payments_Order_Success_Page {
 			&& time() - $date_created->getTimestamp() <= $verification_grace_period;
 
 		return ! $is_within_grace_period;
+	}
+
+	/**
+	 * Waive guest email verification on the order confirmation page right after a WooPayments payment.
+	 *
+	 * A merchant can create a pay-for-order without a billing email; the shopper supplies it through
+	 * the express wallet at payment time, which stamps it on the order and trips core's guest email
+	 * verification even though the shopper just paid. We waive it only for the session that actually
+	 * completed the payment: at payment time we stored the paid intent id in the WC session, and here
+	 * we waive verification only when it matches the order's intent. A leaked order key in another
+	 * browser carries no such session, so it still has to verify.
+	 * See https://github.com/woocommerce/woocommerce/issues/48540
+	 *
+	 * @param bool|mixed     $required Whether email verification is required.
+	 * @param WC_Order|mixed $order    The order being viewed.
+	 * @param string|mixed   $context  The verification context (e.g. 'order-received', 'order-pay').
+	 * @return bool|mixed
+	 */
+	public function maybe_skip_email_verification_after_payment( $required, $order, $context ) {
+		if ( true !== $required || 'order-received' !== $context || ! $order instanceof WC_Order ) {
+			return $required;
+		}
+
+		if ( 'woocommerce_payments' !== $order->get_payment_method() ) {
+			return $required;
+		}
+
+		$session = WC()->session;
+		if ( null === $session ) {
+			return $required;
+		}
+
+		$session_intent_id = (string) $session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY );
+		$order_intent_id   = (string) $order->get_meta( '_intent_id', true );
+		if ( '' === $session_intent_id || '' === $order_intent_id || ! hash_equals( $order_intent_id, $session_intent_id ) ) {
+			return $required;
+		}
+
+		return false;
 	}
 
 	/**
@@ -724,5 +774,15 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return sprintf( '<div class="woocommerce-info">%s</div>', $additional_text );
+	}
+
+	/**
+	 * Returns the merchant's account country, which drives country-specific payment method branding
+	 * (e.g. "Onelink" for GB accounts). All WooPayments gateways share the same account.
+	 *
+	 * @return string
+	 */
+	private function get_account_country(): string {
+		return WC_Payments::get_gateway()->get_account_country();
 	}
 }

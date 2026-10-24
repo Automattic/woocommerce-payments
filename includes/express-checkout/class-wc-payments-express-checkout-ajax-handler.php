@@ -50,6 +50,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+		add_filter( 'rest_post_dispatch', [ $this, 'add_tokenized_cart_nonce_headers' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
 
@@ -85,7 +86,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		$product_type = $product->get_type();
 
-		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity );
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 
 		if ( ! $is_add_to_cart_valid ) {
 			// Some extensions error messages needs to be
@@ -163,7 +164,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		// header added as additional layer of security.
 		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
-		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) ) {
 			return $response;
 		}
 
@@ -197,6 +198,32 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			}
 			$request->set_param( 'billing_address', $billing_address );
 		}
+
+		return $response;
+	}
+
+	/**
+	 * Sends the express checkout nonces with every response, the way the Store API sends its own `Nonce`.
+	 * The page's nonces can stop working mid-flow: the Store API logs the shopper in when it creates their account,
+	 * and full-page caches can serve the page after its nonces expired.
+	 *
+	 * @param \WP_REST_Response $response The response.
+	 * @param \WP_REST_Server   $server Server instance.
+	 * @param \WP_REST_Request  $request Request used to generate the response.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function add_tokenized_cart_nonce_headers( $response, $server, $request ) {
+		if ( 0 !== strpos( $request->get_route(), '/wc/store/' ) ) {
+			return $response;
+		}
+
+		if ( ! $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' ) ) {
+			return $response;
+		}
+
+		$response->header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) );
+		$response->header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( WC_Payments_Payment_Request_Session::TOKENIZED_CART_SESSION_NONCE_ACTION ) );
 
 		return $response;
 	}
@@ -373,8 +400,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$sanitized_state_string = $this->express_checkout_button_helper->sanitize_string( $state );
 			// Checks if input state matches with Express Checkout state code (0), name (1) or localName (2).
 			if (
-				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[0] ) ) ||
-				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[1] ) ) ||
+				( $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[0] ) ) ||
+				( $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[1] ) ) ||
 				( ! empty( $pr_state[2] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[2] ) )
 			) {
 				return $wc_state_abbr;
@@ -509,7 +536,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		// Verify the nonce from the 'X-WooPayments-Tokenized-Cart-Nonce' header using superglobals.
 		$nonce = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_NONCE'] ?? '' ) );
-		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) ) {
 			return false;
 		}
 

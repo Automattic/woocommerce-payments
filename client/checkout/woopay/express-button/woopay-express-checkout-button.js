@@ -388,7 +388,7 @@ export const WoopayExpressCheckoutButton = ( {
 		normalizedBrand && measuredWidth >= CARD_DISPLAY_WIDTH_THRESHOLD
 			? wooPayCardBrands.find(
 					( brand ) => brand.name === normalizedBrand
-			  )
+				)
 			: null;
 
 	const renderButtonContent = () => {
@@ -439,7 +439,7 @@ export const WoopayExpressCheckoutButton = ( {
 				__( 'WooPay with %1$s ending in %2$s', 'woocommerce-payments' ),
 				brandDisplayName,
 				preferredCard.last4
-		  )
+			)
 		: buttonText;
 
 	const sharedProps = {

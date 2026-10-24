@@ -242,7 +242,7 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	public function test_get_styles_cache_version_recomputes_after_invalidation() {
 		// Populate the cache.
 		delete_option( 'wcpay_styles_cache_version' );
-		$first_version = WC_Payments_Styles_Cache::get_styles_cache_version();
+		WC_Payments_Styles_Cache::get_styles_cache_version();
 
 		// Invalidate.
 		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
@@ -598,49 +598,7 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'extract_block_colors' );
 		$method->setAccessible( true );
 
-		// Ensure core/group is a registered block type so theme.json schema
-		// validation accepts block-level style data for it.
-		$registered_group = WP_Block_Type_Registry::get_instance()->is_registered( 'core/group' );
-		if ( ! $registered_group ) {
-			register_block_type( 'core/group', [] );
-		}
-
-		// Register the block style variation so WP_Theme_JSON::sanitize()
-		// doesn't strip it during schema validation.
-		register_block_style(
-			'core/group',
-			[
-				'name'  => 'test-variation',
-				'label' => 'Test',
-			]
-		);
-
-		// Clear any cached theme.json data before injecting our variation.
-		WP_Theme_JSON_Resolver::clean_cached_data();
-
-		// Inject a style variation via the wp_theme_json_data_default filter.
-		$filter = function ( $theme_json ) {
-			return $theme_json->update_with(
-				[
-					'version' => 3,
-					'styles'  => [
-						'blocks' => [
-							'core/group' => [
-								'variations' => [
-									'test-variation' => [
-										'color' => [
-											'background' => '#112233',
-											'text'       => '#aabbcc',
-										],
-									],
-								],
-							],
-						],
-					],
-				]
-			);
-		};
-		add_filter( 'wp_theme_json_data_default', $filter );
+		$cleanup = $this->register_group_test_variation();
 
 		try {
 			$block = [
@@ -656,23 +614,23 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			$this->assertSame( '#112233', $colors['background'] );
 			$this->assertSame( '#aabbcc', $colors['text'] );
 		} finally {
-			remove_filter( 'wp_theme_json_data_default', $filter );
-			unregister_block_style( 'core/group', 'test-variation' );
-			WP_Theme_JSON_Resolver::clean_cached_data();
-			if ( ! $registered_group ) {
-				unregister_block_type( 'core/group' );
-			}
+			$cleanup();
 		}
 	}
 
 	public function test_extract_block_colors_inline_attrs_take_precedence_over_variation() {
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' )
+			|| version_compare( get_bloginfo( 'version' ), '6.6', '<' ) ) {
+			$this->markTestSkipped( 'Block style variations require WordPress 6.6+.' );
+		}
+
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'extract_block_colors' );
 		$method->setAccessible( true );
 
 		$block = [
 			'blockName'    => 'core/group',
 			'attrs'        => [
-				'className' => 'is-style-some-variation',
+				'className' => 'is-style-test-variation',
 				'style'     => [
 					'color' => [
 						'background' => '#inline-bg',
@@ -685,10 +643,15 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			'innerContent' => [],
 		];
 
-		$colors = $method->invoke( null, $block );
+		$cleanup = $this->register_group_test_variation();
 
-		// Inline attributes should win — style variation lookup only runs
-		// when no inline colors were found (empty($colors) guard).
+		try {
+			$colors = $method->invoke( null, $block );
+		} finally {
+			$cleanup();
+		}
+
+		// The variation provides colors for both keys, so the inline ones only win if they take precedence.
 		$this->assertSame( '#inline-bg', $colors['background'] );
 		$this->assertSame( '#inline-text', $colors['text'] );
 	}
@@ -1028,6 +991,136 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			remove_filter( 'wp_theme_json_data_default', $filter );
 			WP_Theme_JSON_Resolver::clean_cached_data();
 		}
+	}
+
+	public function test_currentcolor_link_resolves_to_text_color_in_appearance() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// Modern block themes (e.g. Assembler) declare the link color as the
+		// `currentColor` keyword. It is relative to the rendering element's
+		// color, so it must be resolved to a concrete hex before storage —
+		// otherwise it resolves against WooPay's wrapper, not the theme.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color'    => [
+							'background' => '#ffffff',
+							'text'       => '#1e1e1e',
+						],
+						'elements' => [
+							'link' => [
+								'color' => [
+									'text' => 'currentColor',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			// currentColor must become the resolved theme text color, never be
+			// stored verbatim, for both the link and footer-link rules.
+			$this->assertSame( '#1e1e1e', $result['rules']['.Link']['color'] );
+			$this->assertSame( '#1e1e1e', $result['rules']['.Footer-link']['color'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_concrete_link_color_is_unchanged_in_appearance() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// A theme with a normal hex link color must be unaffected by the
+		// currentColor resolution — no regression for the common case.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color'    => [
+							'background' => '#ffffff',
+							'text'       => '#000000',
+						],
+						'elements' => [
+							'link' => [
+								'color' => [
+									'text' => '#0066cc',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			$this->assertSame( '#0066cc', $result['rules']['.Link']['color'] );
+			$this->assertSame( '#0066cc', $result['rules']['.Footer-link']['color'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_resolve_current_color_substitutes_text_color() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_current_color' );
+		$method->setAccessible( true );
+
+		$this->assertSame( '#1e1e1e', $method->invoke( null, 'currentColor', '#1e1e1e' ) );
+	}
+
+	public function test_resolve_current_color_is_case_insensitive() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_current_color' );
+		$method->setAccessible( true );
+
+		$this->assertSame( '#333333', $method->invoke( null, 'currentcolor', '#333333' ) );
+		$this->assertSame( '#333333', $method->invoke( null, 'CURRENTCOLOR', '#333333' ) );
+		$this->assertSame( '#333333', $method->invoke( null, ' currentColor ', '#333333' ) );
+	}
+
+	public function test_resolve_current_color_falls_back_to_black_when_text_unresolved() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_current_color' );
+		$method->setAccessible( true );
+
+		// When the substitute text color is itself currentColor (degenerate
+		// theme), fall back to black rather than store a relative keyword.
+		// The fallback check is case-insensitive and trimmed, like the color one.
+		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', 'currentColor' ) );
+		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', 'CURRENTCOLOR' ) );
+		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', ' currentColor ' ) );
+	}
+
+	public function test_resolve_current_color_passes_through_concrete_values() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_current_color' );
+		$method->setAccessible( true );
+
+		$this->assertSame( '#0066cc', $method->invoke( null, '#0066cc', '#1e1e1e' ) );
+		$this->assertSame( 'rgb(0, 102, 204)', $method->invoke( null, 'rgb(0, 102, 204)', '#1e1e1e' ) );
 	}
 
 	public function test_input_background_falls_back_to_white_when_undefined_on_light_theme() {
@@ -1460,5 +1553,65 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			remove_filter( 'wp_theme_json_data_default', $filter );
 			WP_Theme_JSON_Resolver::clean_cached_data();
 		}
+	}
+
+	/**
+	 * Registers a "test-variation" style variation for core/group with background #112233 and text #aabbcc.
+	 *
+	 * @return callable Removes the variation again.
+	 */
+	private function register_group_test_variation(): callable {
+		// Ensure core/group is a registered block type so theme.json schema
+		// validation accepts block-level style data for it.
+		$registered_group = WP_Block_Type_Registry::get_instance()->is_registered( 'core/group' );
+		if ( ! $registered_group ) {
+			register_block_type( 'core/group', [] );
+		}
+
+		// Register the block style variation so WP_Theme_JSON::sanitize()
+		// doesn't strip it during schema validation.
+		register_block_style(
+			'core/group',
+			[
+				'name'  => 'test-variation',
+				'label' => 'Test',
+			]
+		);
+
+		// Clear any cached theme.json data before injecting our variation.
+		WP_Theme_JSON_Resolver::clean_cached_data();
+
+		// Inject a style variation via the wp_theme_json_data_default filter.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'blocks' => [
+							'core/group' => [
+								'variations' => [
+									'test-variation' => [
+										'color' => [
+											'background' => '#112233',
+											'text'       => '#aabbcc',
+										],
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		return function () use ( $filter, $registered_group ) {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			unregister_block_style( 'core/group', 'test-variation' );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			if ( ! $registered_group ) {
+				unregister_block_type( 'core/group' );
+			}
+		};
 	}
 }

@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Stop posting pull-request E2E runs to the #wcpay-bots Slack channel so it surfaces only develop/trunk, release, and manual-dispatch failures

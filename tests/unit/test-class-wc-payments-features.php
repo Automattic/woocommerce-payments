@@ -30,6 +30,8 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	];
 
 	public function set_up() {
+		parent::set_up();
+
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
@@ -52,10 +54,9 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$constants    = $reflection->getConstants();
 		$option_array = array_filter(
 			$constants,
-			function ( $key ) {
-				return strpos( $key, '_wcpay_feature_' ) === 0;
-			},
-			ARRAY_FILTER_USE_KEY
+			function ( $value ) {
+				return is_string( $value ) && strpos( $value, '_wcpay_feature_' ) === 0;
+			}
 		);
 
 		$this->clear_feature_flag_options( $option_array );
@@ -76,6 +77,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		// Explicitly disable flags that default to ON so they don't appear
 		// in to_array() output unless included in $enabled_flags above.
 		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
 		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '0' );
 
 		$expected = [];
@@ -103,6 +105,15 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
 	}
 
+	public function test_is_mc_cache_optimized_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_mc_cache_optimized_enabled() );
+	}
+
+	public function test_is_mc_cache_optimized_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+		$this->assertFalse( WC_Payments_Features::is_mc_cache_optimized_enabled() );
+	}
+
 	public function test_is_dispute_additional_evidence_types_enabled_by_default() {
 		$this->assertTrue( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
 	}
@@ -112,13 +123,13 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
 	}
 
-	public function test_is_dispute_outcome_view_disabled_by_default() {
-		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	public function test_is_dispute_outcome_view_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
-	public function test_is_dispute_outcome_view_can_be_enabled() {
-		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '1' );
-		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	public function test_is_dispute_outcome_view_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
+		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
 	public function test_is_woopay_eligible_returns_true() {
@@ -318,6 +329,54 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_frt_review_feature_active_returns_false_when_flag_is_not_set() {
 		$this->assertFalse( WC_Payments_Features::is_frt_review_feature_active() );
+	}
+
+	public function test_is_reports_area_enabled_returns_true_when_server_enables_it() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'reports_area_enabled' => true ] );
+
+		$this->assertTrue( WC_Payments_Features::is_reports_area_enabled() );
+	}
+
+	public function test_is_reports_area_enabled_returns_false_when_server_disables_it_despite_local_flag() {
+		// The per-account kill switch must beat the merchant's own opt-in.
+		$this->mock_cache->method( 'get' )->willReturn( [ 'reports_area_enabled' => false ] );
+		$this->set_feature_flag_option( WC_Payments_Features::REPORTS_AREA_FLAG_NAME, '1' );
+
+		$this->assertFalse( WC_Payments_Features::is_reports_area_enabled() );
+
+		$this->clear_feature_flag_options( [ WC_Payments_Features::REPORTS_AREA_FLAG_NAME ] );
+	}
+
+	public function test_is_reports_area_enabled_falls_back_to_local_flag_when_server_has_no_opinion() {
+		// Server sends null - the documented snippet / WP CLI opt-in must still work.
+		$this->mock_cache->method( 'get' )->willReturn( [ 'reports_area_enabled' => null ] );
+		$this->set_feature_flag_option( WC_Payments_Features::REPORTS_AREA_FLAG_NAME, '1' );
+
+		$this->assertTrue( WC_Payments_Features::is_reports_area_enabled() );
+
+		$this->clear_feature_flag_options( [ WC_Payments_Features::REPORTS_AREA_FLAG_NAME ] );
+	}
+
+	public function test_is_reports_area_enabled_falls_back_to_local_flag_when_key_is_missing() {
+		// Older server / account payload without the key - behaves exactly as it does today.
+		$this->mock_cache->method( 'get' )->willReturn( [] );
+		$this->set_feature_flag_option( WC_Payments_Features::REPORTS_AREA_FLAG_NAME, '1' );
+
+		$this->assertTrue( WC_Payments_Features::is_reports_area_enabled() );
+
+		$this->clear_feature_flag_options( [ WC_Payments_Features::REPORTS_AREA_FLAG_NAME ] );
+	}
+
+	public function test_is_reports_area_enabled_returns_false_by_default() {
+		$this->mock_cache->method( 'get' )->willReturn( [] );
+
+		$this->assertFalse( WC_Payments_Features::is_reports_area_enabled() );
+	}
+
+	public function test_is_reports_area_enabled_returns_false_when_account_cache_is_not_set() {
+		$this->mock_cache->method( 'get' )->willReturn( null );
+
+		$this->assertFalse( WC_Payments_Features::is_reports_area_enabled() );
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {

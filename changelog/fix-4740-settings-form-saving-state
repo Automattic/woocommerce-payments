@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: showing saving state on settings forms and discard edits made while a save is in progress.

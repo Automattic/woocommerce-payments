@@ -20,6 +20,7 @@ import {
 	getFingerprint,
 } from 'wcpay/checkout/utils/fingerprint';
 import {
+	getLinkEmail,
 	getPaymentMethodTypes,
 	getTerms,
 	isLinkEnabled,
@@ -147,7 +148,10 @@ function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
 		}
 	}
 
-	if ( paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM && ! params.name ) {
+	if (
+		paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM &&
+		! params.billing_details?.name
+	) {
 		// Name is required for Affirm.
 		return true;
 	}
@@ -279,8 +283,9 @@ async function createStripePaymentElement(
 	const stripe = await api.getStripeForUPE( paymentMethodType );
 
 	const elements = stripe.elements( options );
+	const upeSettings = getUpeSettings( paymentMethodType );
 	const createdStripePaymentElement = elements.create( 'payment', {
-		...getUpeSettings( paymentMethodType ),
+		...upeSettings,
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
@@ -295,6 +300,8 @@ async function createStripePaymentElement(
 	gatewayUPEComponents[ paymentMethodType ].elements = elements;
 	gatewayUPEComponents[ paymentMethodType ].upeElement =
 		createdStripePaymentElement;
+	gatewayUPEComponents[ paymentMethodType ].linkEmail =
+		upeSettings.defaultValues?.billingDetails?.email;
 	return createdStripePaymentElement;
 }
 
@@ -393,9 +400,11 @@ export async function mountStripePaymentElement(
  * @return {Promise} A promise that resolves when the setup intent is confirmed and appended to the form.
  */
 export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
-	return api.setupIntent( id ).then( function ( confirmedSetupIntent ) {
-		appendSetupIntentToForm( $form, confirmedSetupIntent );
-	} );
+	return api
+		.setupIntent( id, fingerprint ?? '' )
+		.then( function ( confirmedSetupIntent ) {
+			appendSetupIntentToForm( $form, confirmedSetupIntent );
+		} );
 };
 
 /**
@@ -416,6 +425,29 @@ export async function renderTerms( event ) {
 			terms: getTerms( getUPEConfig( 'paymentMethodsConfig' ), value ),
 		} );
 	}
+}
+
+/**
+ * Passes the checkout email to the card Payment Element so Link can recognize returning customers.
+ *
+ * @param {string} email The email entered at checkout.
+ */
+export async function updateLinkEmail( email ) {
+	const cardComponents = gatewayUPEComponents.card;
+	const linkEmail = getLinkEmail( email );
+	if (
+		! cardComponents?.upeElement ||
+		! linkEmail ||
+		linkEmail === cardComponents.linkEmail ||
+		! isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+	) {
+		return;
+	}
+
+	cardComponents.linkEmail = linkEmail;
+	await cardComponents.upeElement.update( {
+		defaultValues: getUpeSettings( 'card' ).defaultValues,
+	} );
 }
 
 /**
@@ -464,6 +496,15 @@ export const processPayment = (
 				$form,
 				paymentMethodType
 			);
+
+			// There is no order on the add payment method page, so a submission
+			// has nothing to record: show the error without leaving the page.
+			if (
+				paymentMethodObject.error &&
+				$form.attr( 'id' ) === 'add_payment_method'
+			) {
+				throw paymentMethodObject.error;
+			}
 
 			if ( paymentMethodObject.error ) {
 				appendPaymentMethodIdToForm( $form, PAYMENT_METHOD_ERROR );
@@ -515,6 +556,7 @@ export function __resetHasCheckoutCompleted() {
 export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
 	if ( gatewayUPEComponents[ paymentMethodType ]?.upeElement ) {
 		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
+		delete gatewayUPEComponents[ paymentMethodType ].linkEmail;
 	}
 }
 

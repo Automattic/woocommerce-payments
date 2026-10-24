@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -16,8 +16,11 @@ declare const global: {
 		accountStatus: {
 			detailsSubmitted: boolean;
 		};
+		devModeReason?: string;
 	};
 };
+
+const devModeReason = 'This site is set up as a staging site.';
 
 jest.mock( 'utils', () => ( {
 	isInDevMode: jest.fn(),
@@ -82,31 +85,57 @@ describe( 'Test mode notification', () => {
 		expect( testModeNotice ).toMatchSnapshot();
 	} );
 
-	test( 'Shows dev mode explanation on overview page when dev mode forces test', () => {
+	test( 'directs development-mode Overview users to the live store', () => {
 		mockIsInTestMode.mockReturnValue( true );
 		mockIsInDevMode.mockReturnValue( true );
+		global.wcpaySettings.devModeReason = devModeReason;
 
 		const { container } = render(
 			<TestModeNotice currentPage="overview" />
 		);
 
-		expect( container.textContent ).toContain(
-			'development or staging environment'
+		expect( container ).toHaveTextContent(
+			'Your store is in development mode, so payments are simulated. ' +
+				'This site is set up as a staging site. Real payments only work on your live store. Learn more'
+		);
+		expect(
+			screen.getByRole( 'link', { name: /Learn more/ } )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
 		);
 	} );
 
-	test( 'Shows dev mode explanation on list pages when dev mode forces test', () => {
-		mockIsInTestMode.mockReturnValue( true );
-		mockIsInDevMode.mockReturnValue( true );
+	test.each( [
+		[ 'payments', 'transactions' ],
+		[ 'deposits', 'payouts' ],
+		[ 'disputes', 'disputes' ],
+		[ 'documents', 'documents' ],
+		[ 'loans', 'loans' ],
+		[ 'transactions', 'transactions' ],
+	] as [ CurrentPage, string ][] )(
+		'names the test %s and explains development mode on list pages',
+		( page, plural ) => {
+			mockIsInTestMode.mockReturnValue( true );
+			mockIsInDevMode.mockReturnValue( true );
+			global.wcpaySettings.devModeReason = devModeReason;
 
-		const { container } = render(
-			<TestModeNotice currentPage="transactions" />
-		);
+			const { container } = render(
+				<TestModeNotice currentPage={ page } />
+			);
 
-		expect( container.textContent ).toContain(
-			'development or staging environment'
-		);
-	} );
+			expect( container ).toHaveTextContent(
+				`Viewing test ${ plural }. Your store is in development mode, so payments are simulated. ` +
+					'This site is set up as a staging site. Real payments only work on your live store. Learn more'
+			);
+			expect(
+				screen.getByRole( 'link', { name: /Learn more/ } )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
+			);
+		}
+	);
 
 	test( 'Does not show dev mode explanation when dev mode is not active', () => {
 		mockIsInTestMode.mockReturnValue( true );
@@ -116,8 +145,48 @@ describe( 'Test mode notification', () => {
 			<TestModeNotice currentPage="overview" />
 		);
 
-		expect( container.textContent ).not.toContain(
-			'development or staging environment'
+		expect( container.textContent ).not.toContain( 'development mode' );
+	} );
+
+	describe( 'Details view', () => {
+		test.each( [
+			[ 'payments', 'transactions' ],
+			[ 'deposits', 'payouts' ],
+			[ 'disputes', 'disputes' ],
+			[ 'documents', 'documents' ],
+			[ 'loans', 'loans' ],
+			[ 'transactions', 'transactions' ],
+		] as [ CurrentPage, string ][] )(
+			'states the store mode and what the %s view is scoped to',
+			( page, plural ) => {
+				mockIsInTestMode.mockReturnValue( true );
+				mockIsInDevMode.mockReturnValue( false );
+
+				const { container } = render(
+					<TestModeNotice
+						currentPage={ page }
+						isDetailsView={ true }
+					/>
+				);
+
+				expect( container.textContent ).toBe(
+					`WooPayments is in test mode, so only test ${ plural } are shown. ` +
+						`To view live ${ plural }, disable test mode in WooPayments settings.`
+				);
+			}
 		);
+
+		test( 'dev mode still takes precedence over the details-view copy', () => {
+			mockIsInTestMode.mockReturnValue( true );
+			mockIsInDevMode.mockReturnValue( true );
+
+			const { container } = render(
+				<TestModeNotice currentPage="payments" isDetailsView={ true } />
+			);
+
+			expect( container.textContent ).toContain(
+				'Viewing test transactions. Your store is in development mode, so payments are simulated.'
+			);
+		} );
 	} );
 } );

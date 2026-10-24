@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa compliance dispute with NonCompliantDisputeSteps 1`] = `
 .emotion-2 {
@@ -145,25 +145,24 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
         class="dispute-summary-row"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
-          role="menu"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Dispute Amount
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   $50.00
                 </span>
@@ -171,21 +170,21 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Disputed On
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   000000830f36830
                 </span>
@@ -193,21 +192,21 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Reason
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Non-compliant
                   <button
@@ -243,21 +242,21 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Respond By
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="dispute-steps__steps__response-date"
@@ -298,8 +297,9 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                     aria-hidden="true"
                     class="wcpay-accordion__arrow"
                     focusable="false"
-                    size="24"
+                    height="24"
                     viewBox="0 0 24 24"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
@@ -338,8 +338,9 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                       <svg
                         aria-hidden="true"
                         focusable="false"
-                        size="24"
+                        height="24"
                         viewBox="0 0 24 24"
+                        width="24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
@@ -388,8 +389,9 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                       <svg
                         aria-hidden="true"
                         focusable="false"
-                        size="24"
+                        height="24"
                         viewBox="0 0 24 24"
+                        width="24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path

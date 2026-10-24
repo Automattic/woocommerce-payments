@@ -19,6 +19,7 @@ import {
 	processPayment,
 	mountStripePaymentElement,
 	renderTerms,
+	updateLinkEmail,
 	createAndConfirmSetupIntent,
 	blockUI,
 	unblockUI,
@@ -84,6 +85,11 @@ jQuery( function ( $ ) {
 				.forEach( restrictPaymentMethodToLocation );
 		}
 	);
+
+	// Each update re-renders the Link section, so wait until the shopper leaves the field.
+	$( document.body ).on( 'change', '#billing_email', function () {
+		updateLinkEmail( this.value );
+	} );
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
 		if ( isBillingInformationMissing() ) {

@@ -62,7 +62,7 @@ class WC_Helper_Intention {
 			]
 		);
 
-		return new WC_Payments_API_Charge(
+		$charge = new WC_Payments_API_Charge(
 			$charge_data['id'],
 			$charge_data['amount'],
 			$charge_data['created'],
@@ -85,6 +85,12 @@ class WC_Helper_Intention {
 			$charge_data['refunds'],
 			$charge_data['status']
 		);
+
+		if ( isset( $charge_data['captured'] ) ) {
+			$charge->set_captured( $charge_data['captured'] );
+		}
+
+		return $charge;
 	}
 
 	/**

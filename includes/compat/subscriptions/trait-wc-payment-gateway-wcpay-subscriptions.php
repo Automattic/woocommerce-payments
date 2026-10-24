@@ -19,6 +19,7 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 
 /**
  * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
@@ -64,6 +65,18 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param WC_Payment_Token $token The token to save.
 	 */
 	abstract public function add_token_to_order( $order, $token );
+
+	/**
+	 * Ensures a payment method is saved as a WooCommerce token and attached to the order/subscription.
+	 *
+	 * @param WC_Order     $order             The order.
+	 * @param string       $payment_method_id The payment method ID.
+	 * @param WP_User|null $user              The user to attach the token to.
+	 * @return WC_Payment_Token The saved token.
+	 *
+	 * @throws Exception When the payment method cannot be saved for the order customer.
+	 */
+	abstract public function ensure_payment_method_token_for_order( $order, $payment_method_id, $user = null );
 
 	/**
 	 * Returns a formatted token list for a user.
@@ -170,9 +183,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$email = $token->get_redacted_email();
 			// Avoid duplication if the title already contains the email.
 			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
-				// Link uses the card gateway, so $default_title is "Card". Use "Stripe Link" instead.
-				// translators: 1: payment method (Stripe Link), 2: redacted customer email.
-				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), __( 'Stripe Link', 'woocommerce-payments' ), $email );
+				// Link uses the card gateway, so $default_title is "Card". Use the Link brand name instead,
+				// which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
+				// translators: 1: payment method (Stripe Link or Onelink), 2: redacted customer email.
+				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), LinkDefinition::get_title( $this->get_account_country() ), $email );
 			}
 		}
 
@@ -303,8 +317,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// Used to filter out unwanted metadata on new renewal orders.
 		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
 			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+			add_filter( 'wcs_subscription_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
 		} else {
 			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
+			add_filter( 'wc_subscriptions_object_data', [ $this, 'remove_single_payment_data' ] );
 		}
 
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
@@ -333,10 +349,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * @param bool            $update_payment_method Whether to update the payment method.
 	 * @param string          $new_payment_method The new payment method.
-	 * @param WC_Subscription $subscription The subscription.
+	 * @param WC_Subscription $_unused_subscription The subscription.
 	 * @return bool
 	 */
-	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $subscription ) {
+	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $_unused_subscription ) {
 		// Skip if the change payment method request was not made yet.
 		if ( ! isset( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce'] ), 'wcs_change_payment_method' ) ) {
 			return $update_payment_method;
@@ -395,6 +411,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$token = $this->get_payment_token( $renewal_order );
+		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
+			$token = $this->maybe_repair_renewal_order_payment_token( $renewal_order );
+		}
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
 			$renewal_order->add_order_note( 'Subscription renewal failed: No saved payment method found.' );
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
@@ -469,6 +488,60 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 				$renewal_order->add_order_note( $note );
 			}
+		}
+	}
+
+	/**
+	 * Attempts to repair a renewal order that is missing a token by using its subscription parent order.
+	 *
+	 * @param WC_Order $renewal_order The renewal order.
+	 * @return WC_Payment_Token|null The repaired token, or null when repair is not possible.
+	 */
+	private function maybe_repair_renewal_order_payment_token( $renewal_order ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
+			return null;
+		}
+
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
+		$subscription  = reset( $subscriptions );
+		if ( ! $subscription instanceof WC_Subscription ) {
+			return null;
+		}
+
+		$parent_order = wc_get_order( $subscription->get_parent_id() );
+		if ( ! $parent_order ) {
+			return null;
+		}
+
+		$payment_method_id = $this->order_service->get_payment_method_id_for_order( $parent_order );
+		if ( empty( $payment_method_id ) ) {
+			return null;
+		}
+
+		try {
+			// The parent order is only a source for the payment method ID, never a write target:
+			// attaching the token to it would fan the token out to every subscription that order
+			// created (see maybe_add_token_to_subscription_order()), silently re-pointing sibling
+			// subscriptions the customer has since moved to a different card.
+			$token = $this->ensure_payment_method_token_for_order( $renewal_order, $payment_method_id, get_user_by( 'id', $subscription->get_customer_id() ) );
+
+			$subscription_token = $this->get_payment_token( $subscription );
+			if ( is_null( $subscription_token ) || $token->get_id() !== $subscription_token->get_id() ) {
+				$subscription->add_payment_token( $token );
+				$subscription->add_order_note(
+					sprintf(
+						/* translators: %s: the recovered payment method, e.g. "Visa ending in 4242 (expires 01/26)" */
+						__( 'The saved payment method for this subscription was missing, so WooPayments restored %s from the original order to complete the renewal.', 'woocommerce-payments' ),
+						$token->get_display_name()
+					)
+				);
+			}
+
+			$renewal_order->add_order_note( __( 'Recovered missing subscription payment method token from the parent order.', 'woocommerce-payments' ) );
+			return $token;
+		} catch ( Exception $e ) {
+			Logger::error( 'Error repairing subscription renewal payment token for order #' . $renewal_order->get_id() . ': ' . $e->getMessage() );
+			return null;
 		}
 	}
 
@@ -1015,9 +1088,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['amazon_pay']['email'] );
 				}
 				if ( ! empty( $payment_method['link']['email'] ) ) {
-					// Link uses the card gateway, so $new_payment_method_title is "Card". Use "Stripe Link" instead.
-					// translators: 1: payment method (Stripe Link), 2: customer email.
-					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), __( 'Stripe Link', 'woocommerce-payments' ), $payment_method['link']['email'] );
+					// Link uses the card gateway, so $new_payment_method_title is "Card". Use the Link brand name
+					// instead, which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
+					// translators: 1: payment method (Stripe Link or Onelink), 2: customer email.
+					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), LinkDefinition::get_title( $this->get_account_country() ), $payment_method['link']['email'] );
 				}
 			} catch ( Exception $e ) {
 				Logger::error( $e );
@@ -1094,13 +1168,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * want it to inherit from the parent order.
 	 *
 	 * @param string $order_meta_query The metadata query (a valid SQL query).
-	 * @param int    $to_order         The renewal order.
-	 * @param int    $from_order       The source (parent) order.
+	 * @param int    $_unused_to_order         The renewal order.
+	 * @param int    $_unused_from_order       The source (parent) order.
 	 *
 	 * @return string
 	 */
-	public function update_renewal_meta_data( $order_meta_query, $to_order, $from_order ) {
-		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
+	public function update_renewal_meta_data( $order_meta_query, $_unused_to_order, $_unused_from_order ) {
+		$excluded_keys     = array_merge( [ '_new_order_tracking_complete' ], $this->get_single_payment_meta_keys() );
+		$order_meta_query .= " AND `meta_key` NOT IN ('" . implode( "', '", $excluded_keys ) . "')";
 
 		return $order_meta_query;
 	}
@@ -1118,6 +1193,44 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Keeps a single payment's details out of anything Subscriptions copies from an order or subscription.
+	 *
+	 * A retried checkout would otherwise pass the earlier attempt's intent to every renewal.
+	 *
+	 * @param array $data The data Subscriptions is about to copy.
+	 *
+	 * @return array
+	 */
+	public function remove_single_payment_data( $data ) {
+		if ( ! is_array( $data ) ) {
+			return $data;
+		}
+
+		foreach ( $this->get_single_payment_meta_keys() as $meta_key ) {
+			unset( $data[ $meta_key ] );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Meta keys tied to one payment, unlike the reusable payment method renewals need.
+	 *
+	 * @return string[]
+	 */
+	private function get_single_payment_meta_keys(): array {
+		return [
+			WC_Payments_Order_Service::INTENT_ID_META_KEY,
+			WC_Payments_Order_Service::INTENTION_STATUS_META_KEY,
+			WC_Payments_Order_Service::CHARGE_ID_META_KEY,
+			WC_Payments_Order_Service::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY,
+			WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY,
+			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
+			'_wcpay_net',
+		];
+	}
+
+	/**
 	 * Adds the failed SCA auth email to WooCommerce.
 	 *
 	 * @param WC_Email[] $email_classes All existing emails.
@@ -1126,8 +1239,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function add_emails( $email_classes ) {
 		include_once __DIR__ . '/class-wc-payments-email-failed-renewal-authentication.php';
 		include_once __DIR__ . '/class-wc-payments-email-failed-authentication-retry.php';
-		$email_classes['WC_Payments_Email_Failed_Renewal_Authentication'] = new WC_Payments_Email_Failed_Renewal_Authentication( $email_classes );
-		$email_classes['WC_Payments_Email_Failed_Authentication_Retry']   = new WC_Payments_Email_Failed_Authentication_Retry();
+		$failed_renewal_authentication = new WC_Payments_Email_Failed_Renewal_Authentication( $email_classes );
+		$failed_renewal_authentication->init_hooks();
+		$email_classes['WC_Payments_Email_Failed_Renewal_Authentication'] = $failed_renewal_authentication;
+
+		$failed_authentication_retry = new WC_Payments_Email_Failed_Authentication_Retry();
+		$failed_authentication_retry->init_hooks();
+		$email_classes['WC_Payments_Email_Failed_Authentication_Retry'] = $failed_authentication_retry;
+
 		return $email_classes;
 	}
 
@@ -1345,6 +1464,31 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				$payment_method_type
 			)
 		);
+	}
+
+	/**
+	 * Replaces a missing Stripe customer on a renewal's subscriptions, so the next renewal uses the right one.
+	 *
+	 * @param WC_Order $renewal_order     The renewal order.
+	 * @param string   $payment_method_id The saved payment method Stripe accepted with the customer.
+	 * @param string   $stale_customer_id The customer Stripe couldn't find.
+	 * @param string   $customer_id       The customer Stripe accepted.
+	 */
+	private function replace_stale_subscription_customer_id( $renewal_order, string $payment_method_id, string $stale_customer_id, string $customer_id ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
+			return;
+		}
+
+		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
+			// The payment only proves the customer for the card it charged.
+			$token = $this->get_payment_token( $subscription );
+			if ( ! $token || $token->get_token() !== $payment_method_id
+				|| $subscription->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true ) !== $stale_customer_id ) {
+				continue;
+			}
+			$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, $customer_id );
+			$subscription->save_meta_data();
+		}
 	}
 
 	/**

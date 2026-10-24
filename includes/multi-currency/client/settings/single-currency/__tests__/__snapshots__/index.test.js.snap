@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Single currency settings screen Page renders correctly 1`] = `
 .emotion-0 {
@@ -311,7 +311,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }

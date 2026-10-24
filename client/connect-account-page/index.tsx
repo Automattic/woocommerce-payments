@@ -8,17 +8,12 @@ import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { Loader } from '@woocommerce/onboarding';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	Card,
-	CardBody,
-	Panel,
-	PanelBody,
-} from '@wordpress/components';
+import { Button, Panel, PanelBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card, CardBody } from 'wcpay/components/card';
 import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
@@ -33,9 +28,10 @@ import InlineNotice from 'components/inline-notice';
 import { WooPaymentsMethodsLogos } from 'components/payment-method-logos';
 import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
-import { isInTestModeOnboarding } from 'wcpay/utils';
+import { isInDevMode, isInTestModeOnboarding, redirectTo } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
+import DevModeMessage from 'wcpay/components/dev-mode-message';
 import { decodeEntities } from '@wordpress/html-entities';
 import { createRoot } from 'react-dom/client';
 
@@ -43,9 +39,14 @@ interface AccountData {
 	status: string;
 }
 
+// Development mode forces test mode onboarding and can't be switched off here, so it gets its own message.
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
-		{ strings.sandboxModeNotice }
+		{ isInDevMode() ? (
+			<DevModeMessage isOnboarding />
+		) : (
+			strings.sandboxModeNotice
+		) }
 	</BannerNotice>
 );
 
@@ -98,7 +99,7 @@ const ConnectAccountPage: React.FC = () => {
 	loaderProgressRef.current = testDriveLoaderProgress;
 
 	// Use a timer to track the elapsed time for the test drive mode setup.
-	let testDriveSetupStartTime: number;
+	const testDriveSetupStartTimeRef = useRef< number >( 0 );
 	// The test drive setup will be forced finished after 40 seconds
 	// (10 seconds for the initial calls plus 30 for checking the account status in a loop).
 	const testDriveSetupMaxDuration = 40;
@@ -198,7 +199,8 @@ const ConnectAccountPage: React.FC = () => {
 						'pending'
 					) ) ||
 				loaderProgressRef.current > 95 ||
-				elapsed( testDriveSetupStartTime ) > testDriveSetupMaxDuration
+				elapsed( testDriveSetupStartTimeRef.current ) >
+					testDriveSetupMaxDuration
 			) {
 				setTestDriveLoaderProgress( 100 );
 				const queryArgs = {
@@ -211,10 +213,12 @@ const ConnectAccountPage: React.FC = () => {
 				};
 
 				// Redirect to the Connect URL and let it figure it out where to point the merchant.
-				window.location.href = addQueryArgs( connectUrl, {
-					...queryArgs,
-					...extraQueryArgs,
-				} );
+				redirectTo(
+					addQueryArgs( connectUrl, {
+						...queryArgs,
+						...extraQueryArgs,
+					} )
+				);
 			} else {
 				// Schedule another check after 2.5 seconds.
 				// 2.5 seconds plus 0.5 seconds for the fetch request is 3 seconds.
@@ -226,7 +230,7 @@ const ConnectAccountPage: React.FC = () => {
 
 	const handleSetupTestDriveMode = async () => {
 		// Record the start time of the test drive setup.
-		testDriveSetupStartTime = Date.now();
+		testDriveSetupStartTimeRef.current = Date.now();
 		// Initialize the progress bar.
 		setTestDriveLoaderProgress( 5 );
 		setTestDriveModeSubmitted( true );
@@ -265,11 +269,10 @@ const ConnectAccountPage: React.FC = () => {
 					) {
 						// If we didn't get a redirect_to URL,
 						// refresh the page with an error flag to show the error message.
-						window.location.href = addQueryArgs(
-							window.location.href,
-							{
+						redirectTo(
+							addQueryArgs( window.location.href, {
 								test_drive_error: 'true',
-							}
+							} )
 						);
 						return;
 					}
@@ -295,26 +298,29 @@ const ConnectAccountPage: React.FC = () => {
 					} else {
 						// Redirect to the response URL, but attach our test drive flags.
 						// This URL is generally a Connect page URL.
-						window.location.href = addQueryArgs(
-							response.data.redirect_to,
-							{
+						redirectTo(
+							addQueryArgs( response.data.redirect_to, {
 								test_drive: 'true',
 								test_drive_error: 'true',
-							}
+							} )
 						);
 					}
 				} )
 				.catch( () => {
 					// If the fetch request fails, refresh the page with an error flag to show the error message.
-					window.location.href = addQueryArgs( window.location.href, {
-						test_drive_error: 'true',
-					} );
+					redirectTo(
+						addQueryArgs( window.location.href, {
+							test_drive_error: 'true',
+						} )
+					);
 				} );
 		} else {
 			// Redirect to the connect URL to set up the Jetpack connection.
-			window.location.href = addQueryArgs( customizedConnectUrl, {
-				auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
-			} );
+			redirectTo(
+				addQueryArgs( customizedConnectUrl, {
+					auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
+				} )
+			);
 		}
 	};
 
@@ -339,7 +345,13 @@ const ConnectAccountPage: React.FC = () => {
 			source: determineTrackingSource(),
 		} );
 
-		// Maybe auto-start the test drive onboarding.
+		// URL-parameter-triggered mount workflow: when the page loads with
+		// `?auto_start_test_drive_onboarding=…`, kick off the same async
+		// workflow as the sandbox CTA. It ultimately calls setState (via
+		// handleSetupTestDriveMode) before starting a fetch and navigating,
+		// so the rule fires even though this is a legitimate URL-triggered
+		// mount side effect with no cleaner React 18.3 primitive.
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		autoStartTestDriveOnboarding();
 
 		// We only want to run this once.
@@ -353,10 +365,12 @@ const ConnectAccountPage: React.FC = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			window.location.href = addQueryArgs( connectUrl, {
-				source: determineTrackingSource(),
-				from: 'WCPAY_CONNECT',
-			} );
+			redirectTo(
+				addQueryArgs( connectUrl, {
+					source: determineTrackingSource(),
+					from: 'WCPAY_CONNECT',
+				} )
+			);
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
@@ -406,18 +420,22 @@ const ConnectAccountPage: React.FC = () => {
 			return handleLocationCheck();
 		}
 
-		window.location.href = addQueryArgs( connectUrl, {
-			source: determineTrackingSource(),
-			from: 'WCPAY_CONNECT',
-		} );
+		redirectTo(
+			addQueryArgs( connectUrl, {
+				source: determineTrackingSource(),
+				from: 'WCPAY_CONNECT',
+			} )
+		);
 	};
 
 	const handleReset = () => {
-		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-			'wcpay-reset-account': 'true',
-			from: 'WCPAY_CONNECT',
-			source: determineTrackingSource(),
-		} );
+		redirectTo(
+			addQueryArgs( wcpaySettings.connectUrl, {
+				'wcpay-reset-account': 'true',
+				from: 'WCPAY_CONNECT',
+				source: determineTrackingSource(),
+			} )
+		);
 	};
 
 	let isAccountSetupSessionError = false;
@@ -510,6 +528,7 @@ const ConnectAccountPage: React.FC = () => {
 								<SandboxModeSwitchToLiveNotice
 									from="WCPAY_CONNECT"
 									source="wcpay-connect-page"
+									isOnboarding
 								/>
 							)
 						)

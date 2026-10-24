@@ -60,6 +60,7 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {
+	getPersistedQuery: () => ( {} ),
 	getQuery: () => mockGetQuery(),
 } ) );
 

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Recognize returning Stripe Link customers from the checkout email field.

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent caching invalid address autocomplete token for 12 hours after a transient API failure.
