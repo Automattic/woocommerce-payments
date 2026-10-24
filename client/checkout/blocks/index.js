@@ -28,6 +28,7 @@ import {
 
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { recordUserEvent } from 'tracks';
+import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
 import { maybePersistAdminWoopayAppearance } from '../woopay/appearance/persist-admin';
 import '../utils/copy-test-number';
@@ -117,9 +118,8 @@ const addCheckoutTracking = () => {
 	}
 };
 
-// Dynamically load and initialize WooPay functionality if enabled.
+// Call handleWooPayEmailInput if woopay is enabled and this is the checkout page.
 if ( getUPEConfig( 'isWooPayEnabled' ) ) {
-	// Email input handling
 	if (
 		document.querySelector( '[data-block-name="woocommerce/checkout"]' ) &&
 		getUPEConfig( 'isWooPayEmailInputEnabled' ) &&
@@ -132,15 +132,8 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 		} );
 	}
 
-	// Express button registration
 	if ( getUPEConfig( 'shouldShowWooPayButton' ) ) {
-		import(
-			/* webpackChunkName: "woopay-express-checkout-method" */ '../woopay/express-button/woopay-express-checkout-payment-method'
-		).then( ( { default: wooPayExpressCheckoutPaymentMethod } ) => {
-			registerExpressPaymentMethod(
-				wooPayExpressCheckoutPaymentMethod()
-			);
-		} );
+		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
 	}
 }
 

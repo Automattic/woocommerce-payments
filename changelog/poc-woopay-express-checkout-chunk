@@ -1,4 +1,4 @@
 Significance: patch
-Type: dev
+Type: update
 
-POC: use a different chunk for WooPay
+perf: load WooPay checkout code only on stores that use WooPay.

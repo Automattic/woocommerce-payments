@@ -167,7 +167,6 @@ jQuery( function ( $ ) {
 		return processPaymentIfNotUsingSavedMethod( $payForOrderForm );
 	} );
 
-	// Preload and initialize WooPay email input if enabled
 	if (
 		getUPEConfig( 'isWooPayEnabled' ) &&
 		getUPEConfig( 'isWooPayEmailInputEnabled' ) &&
