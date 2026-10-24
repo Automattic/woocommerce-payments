@@ -120,6 +120,12 @@ export const ClickTooltip: React.FC<
 	// For interactive tooltips, we pass the tooltip button as the tooltip content's parent element.
 	// This will allow the tooltip content to render with the correct tab index, aiding keyboard navigation.
 	// Otherwise, the tooltip will be appended to the end of the document with an incorrect tab index.
+	// A callback-ref state write triggers a re-render whose parentElement change
+	// causes TooltipPortal (memoized, keyed on parentElement) to tear down the
+	// DOM-mounted node and re-portal into a detached node for the same render
+	// pass. We therefore keep the ref read with a focused eslint-disable; the
+	// render-time read is only used for the parentElement prop, which stays
+	// stable for the lifetime of this component (the button never remounts).
 	const tooltipParentRef = useRef< HTMLButtonElement | null >( null );
 
 	const handleMouseClick = () => {
@@ -142,6 +148,7 @@ export const ClickTooltip: React.FC<
 		>
 			<TooltipBase
 				{ ...props }
+				// eslint-disable-next-line react-hooks/refs
 				parentElement={ tooltipParentRef.current || undefined }
 				onHide={ handleHide }
 				maxWidth={ maxWidth }

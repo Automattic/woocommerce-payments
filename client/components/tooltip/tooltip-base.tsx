@@ -48,15 +48,18 @@ const useHideDelay = (
 	}: UseHideDelayProps
 ) => {
 	const [ isVisible, setIsVisible ] = useState( isVisibleProp );
-	// not using state for this, we don't need to cause a re-render
+	// not using state for these, we don't need to cause a re-render
 	const hasMountedRef = useRef( false );
 	const onHideCallbackRef = useRef( onHide );
-	const wasVisiblePropRef = useRef( isVisibleProp );
-
-	// Render-time mirror of the prop → state for the show transition, so the
-	// tooltip appears synchronously without a cascading effect render.
-	if ( wasVisiblePropRef.current !== isVisibleProp ) {
-		wasVisiblePropRef.current = isVisibleProp;
+	// Render-time mirror of the prop → state for the show transition. The
+	// previous value lives in state (not a ref) so react-hooks/refs stays
+	// happy; the render-time setState still single-passes without committing,
+	// keeping the "tooltip appears synchronously" invariant covered by the
+	// `shows the tooltip synchronously on the render after isVisible flips to
+	// true` pin test in __tests__/tooltip-base.test.tsx.
+	const [ wasVisibleProp, setWasVisibleProp ] = useState( isVisibleProp );
+	if ( wasVisibleProp !== isVisibleProp ) {
+		setWasVisibleProp( isVisibleProp );
 		if ( isVisibleProp && ! isVisible ) {
 			setIsVisible( true );
 		}
@@ -144,9 +147,18 @@ type TooltipPortalProps = {
 
 const TooltipPortal: React.FC< React.PropsWithChildren< TooltipPortalProps > > =
 	memo( ( { children, parentElement } ) => {
+		// Null-guarded, one-shot ref init: the portal container element must
+		// be created and appended on the first render tick so `createPortal`
+		// can read it synchronously (the pin test
+		// `shows the tooltip synchronously on the render after isVisible flips
+		// to true` guards this). Lifting the node into state would require a
+		// second render (first render returns null → one-frame delay on first
+		// show), so we accept the lint carve-out instead of weakening the
+		// invariant. See WOOPMNT-6292.
 		const node = useRef< HTMLElement | null >( null );
-		if ( ! node.current ) {
+		if ( node.current == null ) {
 			node.current = document.createElement( 'div' );
+			// eslint-disable-next-line react-hooks/refs
 			parentElement.appendChild( node.current );
 		}
 
@@ -160,6 +172,7 @@ const TooltipPortal: React.FC< React.PropsWithChildren< TooltipPortalProps > > =
 			};
 		}, [ parentElement ] );
 
+		// eslint-disable-next-line react-hooks/refs
 		return createPortal( children, node.current );
 	} );
 
