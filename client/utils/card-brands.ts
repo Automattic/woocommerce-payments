@@ -16,6 +16,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 export interface CardBrand {
 	name: string;
 	component: string;
+	hasBrandFrame?: boolean;
 }
 
 /**
@@ -29,7 +30,7 @@ export const getCardBrands = (): CardBrand[] => {
 		{ name: 'visa', component: Visa },
 		{ name: 'mastercard', component: Mastercard },
 		{ name: 'amex', component: Amex },
-		{ name: 'discover', component: Discover },
+		{ name: 'discover', component: Discover, hasBrandFrame: true },
 	];
 
 	// Always add JCB and CUP
