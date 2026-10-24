@@ -541,6 +541,55 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	/**
+	 * The customer may have switched the subscription to another card since checkout, so the
+	 * subscription's own token must win over the parent order's original payment method.
+	 */
+	public function test_scheduled_subscription_payment_prefers_subscription_token_over_parent_order() {
+		$parent_order       = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order      = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription_token = WC_Helper_Token::create_token( 'pm_subscription_choice', self::USER_ID );
+
+		$this->order_service->set_payment_method_id_for_order( $parent_order, self::PAYMENT_METHOD_ID );
+
+		$subscription = new WC_Subscription();
+		$subscription->set_parent( $parent_order );
+		$subscription->set_customer_id( self::USER_ID );
+		$subscription->set_payment_tokens( [ $subscription_token->get_id() ] );
+
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => $subscription ] );
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( self::CUSTOMER_ID );
+
+		$this->mock_customer_service
+			->method( 'update_customer_for_user' )
+			->willReturn( self::CUSTOMER_ID );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->method( 'set_amount' )->willReturn( $request );
+		$request->method( 'set_currency_code' )->willReturn( $request );
+		$request->method( 'format_response' )->willReturn( WC_Helper_Intention::create_intention() );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( 'pm_subscription_choice' );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertContains( $subscription_token->get_id(), $renewal_order->get_payment_tokens() );
+		$this->assertSame( [ $subscription_token->get_id() ], $subscription->get_payment_tokens() );
+		$this->assertEquals( 'processing', $renewal_order->get_status() );
+
+		$renewal_notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $renewal_order->get_id() ] ), 'content' );
+		$this->assertNotContains(
+			'Recovered missing subscription payment method token from the parent order.',
+			$renewal_notes
+		);
+	}
+
 	public function test_scheduled_subscription_payment_with_saved_customer_id() {
 		$saved_customer_id = self::CUSTOMER_ID . '_old';
 
