@@ -5,18 +5,17 @@ $gap-smaller: 8px;
 	&.has-compare,
 	&.has-search {
 		@include breakpoint( '<960px' ) {
-			.woocommerce-card__action {
+			.woocommerce-table__actions {
 				.woocommerce-table__download-button {
 					grid-area: 1 / 2 / 2 / 3;
 					justify-self: end;
 					margin: -6px 0;
-					position: absolute;
 				}
 			}
 		}
 
 		&.has-search:not( .has-compare ) {
-			.woocommerce-card__action {
+			.woocommerce-table__actions {
 				.woocommerce-table__download-button {
 					align-self: center;
 					grid-column-start: 2;
@@ -25,7 +24,7 @@ $gap-smaller: 8px;
 			}
 
 			@include breakpoint( '<960px' ) {
-				.woocommerce-card__action {
+				.woocommerce-table__actions {
 					.woocommerce-table__download-button {
 						grid-area: 1 / 2 / 2 / 3;
 					}

@@ -16,6 +16,12 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 * Constructor.
 	 */
 	public function __construct() {
+	}
+
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
 			return;
 		}

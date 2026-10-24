@@ -16,8 +16,8 @@ import { __ } from '@wordpress/i18n';
 import { TestModeNotice } from 'components/test-mode-notice';
 import BannerNotice from 'components/banner-notice';
 import DepositSchedule from 'components/deposits-overview/deposit-schedule';
-import { useAllDepositsOverviews } from 'data';
-import { useSettings } from 'wcpay/data';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
+import { useSettings } from 'wcpay/data/settings';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';
@@ -103,7 +103,7 @@ const DepositFailureNotice: React.FC = () => {
 		? addQueryArgs( wcpaySettings.accountStatus.accountLink, {
 				from: 'WCPAY_PAYOUTS',
 				source: 'wcpay-payout-failure-notice',
-		  } )
+			} )
 		: '';
 
 	return hasErroredExternalAccount && accountLink !== '' ? (

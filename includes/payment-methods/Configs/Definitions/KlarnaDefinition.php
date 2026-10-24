@@ -58,23 +58,23 @@ class KlarnaDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the customer-facing title of the payment method
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @param string|null $_unused_account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_title( ?string $account_country = null ): string {
+	public static function get_title( ?string $_unused_account_country = null ): string {
 		return __( 'Klarna', 'woocommerce-payments' );
 	}
 
 	/**
 	 * Get a dynamic title based on charge details from Stripe.
 	 *
-	 * @param string $account_country The merchant's account country.
-	 * @param array  $payment_details The payment method details from the Stripe charge.
+	 * @param string $_unused_account_country The merchant's account country.
+	 * @param array  $_unused_payment_details The payment method details from the Stripe charge.
 	 *
 	 * @return string|null The dynamic title, or null to use the default get_title().
 	 */
-	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+	public static function get_title_from_charge_details( string $_unused_account_country, array $_unused_payment_details ): ?string {
 		return null;
 	}
 
@@ -92,10 +92,10 @@ class KlarnaDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the customer-facing description of the payment method
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @param string|null $_unused_account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	public static function get_description( ?string $account_country = null ): string {
+	public static function get_description( ?string $_unused_account_country = null ): string {
 		return __( 'Allow customers to pay over time or pay now with Klarna.', 'woocommerce-payments' );
 	}
 
@@ -199,11 +199,11 @@ class KlarnaDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the URL for the payment method's icon
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @param string|null $_unused_account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_icon_url( ?string $account_country = null ): string {
+	public static function get_icon_url( ?string $_unused_account_country = null ): string {
 		return plugins_url( 'assets/images/payment-methods/klarna-pill.svg', WCPAY_PLUGIN_FILE );
 	}
 
@@ -221,21 +221,21 @@ class KlarnaDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the URL for the payment method's settings icon
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @param string|null $_unused_account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_settings_icon_url( ?string $account_country = null ): string {
+	public static function get_settings_icon_url( ?string $_unused_account_country = null ): string {
 		return plugins_url( 'assets/images/payment-methods/klarna.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
 	 * Get the testing instructions for the payment method
 	 *
-	 * @param string $account_country The merchant's account country.
+	 * @param string $_unused_account_country The merchant's account country.
 	 * @return string HTML string containing testing instructions
 	 */
-	public static function get_testing_instructions( string $account_country ): string {
+	public static function get_testing_instructions( string $_unused_account_country ): string {
 		return '';
 	}
 
@@ -245,7 +245,76 @@ class KlarnaDefinition implements PaymentMethodDefinitionInterface {
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
 	public static function get_limits_per_currency(): array {
-		return WC_Payments_Utils::get_bnpl_limits_per_currency( self::get_id() );
+		return [
+			Currency_Code::UNITED_STATES_DOLLAR => [
+				Country_Code::UNITED_STATES => [
+					'min' => 100,
+					'max' => 1000000,
+				], // Represents USD 1 - 10,000 USD.
+			],
+			Currency_Code::POUND_STERLING       => [
+				Country_Code::UNITED_KINGDOM => [
+					'min' => 100,
+					'max' => 500000,
+				], // Represents GBP 1 - 5,000 GBP.
+			],
+			Currency_Code::EURO                 => [
+				Country_Code::AUSTRIA     => [
+					'min' => 100,
+					'max' => 1000000,
+				], // Represents EUR 1 - 10,000 EUR.
+				Country_Code::BELGIUM     => [
+					'min' => 100,
+					'max' => 1000000,
+				], // Represents EUR 1 - 10,000 EUR.
+				Country_Code::GERMANY     => [
+					'min' => 100,
+					'max' => 1000000,
+				], // Represents EUR 1 - 10,000 EUR.
+				Country_Code::NETHERLANDS => [
+					'min' => 100,
+					'max' => 500000,
+				], // Represents EUR 1 - 5,000 EUR.
+				Country_Code::FINLAND     => [
+					'min' => 100,
+					'max' => 1000000,
+				], // Represents EUR 1 - 10,000 EUR.
+				Country_Code::SPAIN       => [
+					'min' => 100,
+					'max' => 1000000,
+				], // Represents EUR 1 - 10,000 EUR.
+				Country_Code::IRELAND     => [
+					'min' => 100,
+					'max' => 400000,
+				], // Represents EUR 1 - 4,000 EUR.
+				Country_Code::ITALY       => [
+					'min' => 100,
+					'max' => 400000,
+				], // Represents EUR 1 - 4,000 EUR.
+				Country_Code::FRANCE      => [
+					'min' => 100,
+					'max' => 400000,
+				], // Represents EUR 1 - 4,000 EUR.
+			],
+			Currency_Code::DANISH_KRONE         => [
+				Country_Code::DENMARK => [
+					'min' => 100,
+					'max' => 10000000,
+				], // Represents DKK 1 - 100,000 DKK.
+			],
+			Currency_Code::NORWEGIAN_KRONE      => [
+				Country_Code::NORWAY => [
+					'min' => 100,
+					'max' => 10000000,
+				], // Represents NOK 1 - 100,000 NOK.
+			],
+			Currency_Code::SWEDISH_KRONA        => [
+				Country_Code::SWEDEN => [
+					'min' => 100,
+					'max' => 10000000,
+				], // Represents SEK 1 - 100,000 SEK.
+			],
+		];
 	}
 
 	/**

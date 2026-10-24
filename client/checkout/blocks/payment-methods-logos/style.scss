@@ -14,6 +14,9 @@
 			flex-shrink: 1;
 			min-width: 0;
 			max-width: 100%;
+			// No stroke here: this shared component also renders on the settings
+			// strip (which strokes its own imgs), so a stroke would double up.
+			// The checkout strip stroke lives in the checkout-scoped stylesheets.
 		}
 	}
 
@@ -24,7 +27,10 @@
 		color: var( --wp--preset--color--contrast, $gray-900 );
 		text-align: center;
 		line-height: 24px;
-		border-radius: 3px;
+		// The badges carry a 1px ring that makes them ~2px wider than this box;
+		// add the same ring + radius so the "+N" chip matches their size.
+		box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
+		border-radius: 4.6875% / 7.5%;
 		font-size: 11px;
 		font-weight: 600;
 		white-space: nowrap;
@@ -51,11 +57,18 @@
 		width: 38px;
 		height: 24px;
 		box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
+		// Round the ring to the badges' baked corners so it doesn't leave
+		// white at a corner (3/64, 3/40).
+		border-radius: 4.6875% / 7.5%;
 	}
 }
 
 .payment-methods--logos-popover {
 	> img {
 		object-position: center !important;
+		// Framed 64×40 cards (JCB, UnionPay) letterbox under WC Blocks core's
+		// forced `object-fit: contain`, leaving a white line; `cover` fills.
+		// `!important` beats the core rule, like object-position above.
+		object-fit: cover !important;
 	}
 }

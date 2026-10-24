@@ -65,7 +65,7 @@ const Info = ( {
 				order: __( 'Order link', 'woocommerce-payments' ),
 				customer: __( 'Customer name', 'woocommerce-payments' ),
 				transactionId: __( 'Transaction link', 'woocommerce-payments' ),
-		  }
+			}
 		: {
 				created: formatDateTimeFromTimestamp( dispute.created ),
 				amount: formatExplicitCurrency(
@@ -76,7 +76,7 @@ const Info = ( {
 					? formatDateTimeFromTimestamp(
 							dispute.evidence_details.due_by,
 							{ separator: ' - ', includeTime: true }
-					  )
+						)
 					: null,
 				reason: composeDisputeReason( dispute ),
 				order: dispute.order ? (
@@ -84,7 +84,7 @@ const Info = ( {
 				) : null,
 				customer: dispute.charge.billing_details.name,
 				transactionId: composeTransactionIdLink( dispute ),
-		  };
+			};
 
 	return (
 		<div className="wcpay-dispute-info">

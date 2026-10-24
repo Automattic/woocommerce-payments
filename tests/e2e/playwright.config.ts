@@ -69,14 +69,16 @@ export default defineConfig( {
 				[ 'json', { outputFile: 'results.json' } ],
 				[ 'html' ],
 				[ './reporters/slack-reporter.ts' ],
-		  ]
+			]
 		: [ [ 'html', { open: 'never' } ] ],
 	outputDir: './test-results',
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		baseURL: getBaseUrl(),
 		screenshot: 'only-on-failure',
-		trace: 'retain-on-failure',
+		// Retain a trace whenever a test is retried, so flaky tests that recover on
+		// the retry still leave a trace to diagnose (retain-on-failure discards them).
+		trace: 'on-first-retry',
 		video: 'on-first-retry',
 		viewport: { width: 1280, height: 720 },
 	},

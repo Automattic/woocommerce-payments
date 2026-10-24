@@ -6,7 +6,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { useAllDepositsOverviews } from 'wcpay/data';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 // Extend the Query interface to include the selected_currency query parameter.
@@ -71,7 +71,7 @@ export const useSelectedCurrencyOverview = (): SelectedCurrencyOverview => {
 	const overview = isSelectedCurrencyValid
 		? currencies.find(
 				( currency ) => currency.currency === selectedCurrency
-		  )
+			)
 		: currencies[ 0 ];
 
 	return {

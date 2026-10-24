@@ -10,15 +10,15 @@
 /**
  * Get the two file names from the command line.
  */
-if ( $argc < 2 ) {
+if ( $argc < 3 ) {
 	echo "Usage: php -f {$argv[0]} source-file.pot destination-file.pot\n";
-	exit;
+	die( 1 );
 }
 
 for ( $index = 1; $index <= 2; $index++ ) {
 	if ( ! is_file( $argv[ $index ] ) ) {
-		echo "File not found: {$argv[ $index ]}\n";
-		exit;
+		echo "[ERROR] File not found: {$argv[ $index ]}\n";
+		die( 1 );
 	}
 }
 
@@ -77,6 +77,10 @@ function woocommerce_admin_parse_pot( $file_name ) {
 
 /**
  * Generates a map with the mapping for 'original source file' -> final transpiled/minified file in the 'dist' folder.
+ *
+ * Lazy chunk strings are credited to the entries that load them: WordPress only loads translations for registered
+ * scripts, and the language pack only has JSON for files the POT references.
+ *
  * Format example:
  * [
  *   'client/card-readers/settings/file-upload.js' => [
@@ -88,8 +92,14 @@ function woocommerce_admin_parse_pot( $file_name ) {
  * @return array Mapping of source js files and the generated files that use them.
  */
 function load_js_transpiling_source_maps(): array {
+	$chunk_entries = json_decode( (string) @file_get_contents( 'dist/i18n-chunk-entries.json' ), true );
+	if ( ! is_array( $chunk_entries ) ) {
+		echo "[ERROR] Unable to load 'dist/i18n-chunk-entries.json'. Make sure the JS assets were built in production mode.\n";
+		die( 1 );
+	}
+
 	$mappings = [];
-	foreach ( glob( "dist/*.js.map", GLOB_NOSORT ) as $filename ) {
+	foreach ( array_merge( glob( 'dist/*.js.map', GLOB_NOSORT ), glob( 'dist/chunks/*.js.map', GLOB_NOSORT ) ) as $filename ) {
 		$file_content = file_get_contents( $filename );
 		if ( $file_content === false ) {
 			echo "[WARN] Unable to read file '". $filename . "'. Some translation strings might not have the correct references as a result.\n";
@@ -101,17 +111,28 @@ function load_js_transpiling_source_maps(): array {
 			continue;
 		}
 
+		$file = strtok( $file_json['file'], '?' );
+		if ( 0 === strpos( $file, 'chunks/' ) ) {
+			if ( ! isset( $chunk_entries[ $file ] ) ) {
+				echo "[WARN] No entry loads the chunk '" . $file . "'. Its strings won't be translated.\n";
+				continue;
+			}
+			$dist_files = $chunk_entries[ $file ];
+		} else {
+			$dist_files = [ $file ];
+		}
+
 		foreach ( $file_json[ 'sources' ] as $source ) {
-			$source = preg_replace( '%^webpack://woocommerce-payments/\./(client/.*)$%', '${1}', $source );
+			$source = preg_replace( '%^webpack://woocommerce-payments/\./((?:includes/multi-currency/)?client/.*)$%', '${1}', $source );
 			if ( 'webpack' !== substr( $source, 0, 7 ) ) {
-				$mappings[ $source ][] = $file_json[ 'file' ];
+				$mappings[ $source ] = array_merge( $mappings[ $source ] ?? [], $dist_files );
 			}
 		}
 	}
 
 	if ( empty( $mappings ) ) {
 		echo "[ERROR] Unable to load JS transpiling mappings from 'dist/*.js.map' files. Make sure the JS assets compilation was successful.\n";
-		die();
+		die( 1 );
 	}
 
 	return $mappings;

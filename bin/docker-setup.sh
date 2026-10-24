@@ -87,8 +87,9 @@ echo "Setting up environment..."
 echo
 
 # Check if WordPress is already installed in the database
-cli wp core is-installed --path=/var/www/html 2>/dev/null
-WP_INSTALLED=$?
+# Use || to capture the exit code without triggering set -e
+WP_INSTALLED=0
+cli wp core is-installed --path=/var/www/html 2>/dev/null || WP_INSTALLED=$?
 
 # Only run WordPress core install if not already installed
 if [[ $WP_INSTALLED -ne 0 ]]; then

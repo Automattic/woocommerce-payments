@@ -119,6 +119,32 @@
 	line-height: 20px;
 }
 
+// Sibling-to-the-toggle variant. Use when the subtitle hosts interactive
+// content (e.g. an inline link) that can't legally nest inside the title
+// <button>. Only renders when the accordion is expanded (see body.tsx),
+// so the opened-state layout is the only one to tune for:
+//   - body has 20px padding; pull the subtitle to the card edges via
+//     negative left/right margin so its own left padding lines the text
+//     up with the title text.
+//   - vertical position: sit naturally below the toggle button, with
+//     no negative pull-up. An earlier iteration used `margin-top:
+//     -12px` to tighten the gap to the Figma's ~4px, but that pulled
+//     the subtitle into the toggle button's focus-ring band (the
+//     inset box-shadow at the button's bottom edge), and the focus
+//     state visibly crossed the subtitle text on click. Wider gap is
+//     the right trade.
+//
+// Longhand on purpose: the four-value `margin: 0 -$a 0 -$a` shorthand
+// reads as arithmetic to SCSS (`-$a -$b` → subtraction) and collapses
+// into a wrong two-value shorthand.
+.wcpay-accordion__subtitle--external {
+	margin-top: 0;
+	margin-right: -$grid-unit-20;
+	margin-bottom: 0;
+	margin-left: -$grid-unit-20;
+	padding: 0 $grid-unit-60 $grid-unit-10 $grid-unit-20;
+}
+
 .wcpay-accordion__icon {
 	color: $gray-700;
 	margin: -2px 0 -2px 6px;

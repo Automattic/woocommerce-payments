@@ -147,12 +147,8 @@ test.describe(
 				adminPage,
 			} ) => {
 				await expect(
-					(
-						await adminPage
-							.getByTestId( 'recommended-currency' )
-							.all()
-					 ).length
-				).toBeGreaterThan( 0 );
+					adminPage.getByTestId( 'recommended-currency' )
+				).not.toHaveCount( 0 );
 			} );
 
 			test( 'selected currencies are enabled after onboarding', async ( {

@@ -37,7 +37,8 @@ import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import usePaymentMethodAvailability from './use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
-import { useEnabledPaymentMethodIds, usePmPromotions } from 'wcpay/data';
+import { usePmPromotions } from 'wcpay/data/pm-promotions';
+import { useEnabledPaymentMethodIds } from 'wcpay/data/settings';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';
 
 interface PaymentMethodProps {

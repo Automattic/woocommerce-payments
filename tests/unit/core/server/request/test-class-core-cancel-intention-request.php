@@ -42,7 +42,7 @@ class Cancel_Intention_Test extends WCPAY_UnitTestCase {
 
 	public function test_exception_will_throw_if_intent_is_invalid() {
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request = new Cancel_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
+		new Cancel_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
 	}
 
 	public function test_capture_intent_request_will_be_created() {

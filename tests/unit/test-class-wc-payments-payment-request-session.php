@@ -58,9 +58,9 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 
 		$response = rest_do_request( $request );
 		// manually calling 'rest_post_dispatch' because it is not called within the context of unit tests.
-		$response = apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
+		$response = apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 
-		$this->assertSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) );
+		$this->assertSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertIsString( $response->get_headers()['X-WooPayments-Tokenized-Cart-Session'] );
 	}
 
@@ -81,9 +81,9 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 
 		$response = rest_do_request( $request );
 		// manually calling 'rest_post_dispatch' because it is not called within the context of unit tests.
-		$response = apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
+		$response = apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 
-		$this->assertNotSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) );
+		$this->assertNotSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertNotContains( 'X-WooPayments-Tokenized-Cart-Session', array_keys( $response->get_headers() ) );
 	}
 
@@ -99,7 +99,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$session = new WC_Payments_Payment_Request_Session();
 		$session->init();
 
-		$this->assertNotSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) );
+		$this->assertNotSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
 	public function test_uses_custom_session_handler() {
@@ -124,7 +124,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 
 		rest_do_request( $request );
 
-		$this->assertSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) );
+		$this->assertSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		$this->assertInstanceOf( WC_Payments_Payment_Request_Session_Handler::class, WC()->session );
 		// cart contents are not cleared.
@@ -154,7 +154,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 
 		$response = rest_do_request( $request );
 		// manually calling 'rest_post_dispatch' because it is not called within the context of unit tests.
-		apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
+		apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 
 		// cart contents are cleared, because the `X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart` header has been provided.
 		$this->assertCount( 0, WC()->cart->cart_contents );

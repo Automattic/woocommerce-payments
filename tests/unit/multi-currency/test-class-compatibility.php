@@ -86,6 +86,10 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->compatibility->should_convert_product_price( null ) );
 	}
 
+	public function test_should_convert_shipping_amount_return_true_on_null_method() {
+		$this->assertTrue( $this->compatibility->should_convert_shipping_amount( null ) );
+	}
+
 	public function test_filter_woocommerce_order_query_with_call_not_in_backtrace() {
 		$order = wc_create_order();
 		$order->set_total( 1000 );

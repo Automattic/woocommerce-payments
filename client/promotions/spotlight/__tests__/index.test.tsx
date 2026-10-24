@@ -10,7 +10,10 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import SpotlightPromotion from '../index';
-import { usePmPromotions, usePmPromotionActions } from 'wcpay/data';
+import {
+	usePmPromotions,
+	usePmPromotionActions,
+} from 'wcpay/data/pm-promotions';
 import { recordEvent } from 'tracks';
 
 interface MockSpotlightProps {
@@ -27,7 +30,7 @@ interface MockSpotlightProps {
 }
 
 // Mock the dependencies
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/pm-promotions', () => ( {
 	usePmPromotions: jest.fn(),
 	usePmPromotionActions: jest.fn(),
 } ) );

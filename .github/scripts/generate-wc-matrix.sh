@@ -54,10 +54,8 @@ get_latest_rc_version() {
 
 # Function to get the latest beta version from WordPress.org API
 get_latest_beta_version() {
-    local latest_version=$1
-    local major_version=$(echo "$latest_version" | cut -d. -f1)
     curl -s https://api.wordpress.org/plugins/info/1.0/woocommerce.json | \
-    jq -r --arg major "$major_version" '.versions | with_entries(select(.key | startswith($major + ".") and contains("beta"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last'
+    jq -r '.versions | with_entries(select(.key | contains("beta"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last'
 }
 
 # Get the latest WooCommerce version
@@ -76,7 +74,7 @@ echo "Major versions latest stable: ${MAJOR_VERSIONS[*]}" >&2
 # Get latest RC and beta versions
 echo "Fetching latest RC and beta versions..." >&2
 LATEST_RC_VERSION=$(get_latest_rc_version)
-LATEST_BETA_VERSION=$(get_latest_beta_version "$LATEST_WC_VERSION")
+LATEST_BETA_VERSION=$(get_latest_beta_version)
 echo "Latest RC version: $LATEST_RC_VERSION" >&2
 echo "Latest beta version: $LATEST_BETA_VERSION" >&2
 
@@ -96,8 +94,16 @@ done
 # constructing invalid wporg download URLs (woocommerce.latest.zip → 404).
 VERSIONS+=("$LATEST_WC_VERSION")
 if [[ -n "$LATEST_BETA_VERSION" && "$LATEST_BETA_VERSION" != "null" ]]; then
-    VERSIONS+=("$LATEST_BETA_VERSION")
-    echo "Including beta version: $LATEST_BETA_VERSION" >&2
+    # Once a beta's release ships, the beta is older than stable and adds nothing.
+    BETA_BASE="${LATEST_BETA_VERSION%%-*}"
+    HIGHEST=$(printf '%s\n%s\n' "$BETA_BASE" "$LATEST_WC_VERSION" | sort -V | tail -n1)
+    if [[ "$HIGHEST" == "$BETA_BASE" && "$BETA_BASE" != "$LATEST_WC_VERSION" ]]; then
+        VERSIONS+=("$LATEST_BETA_VERSION")
+        echo "Including beta version: $LATEST_BETA_VERSION" >&2
+    else
+        echo "Skipping beta version $LATEST_BETA_VERSION because stable $LATEST_WC_VERSION is already released for this line." >&2
+        LATEST_BETA_VERSION=""
+    fi
 else
     echo "No beta version available, skipping beta tests" >&2
 fi

@@ -18,13 +18,6 @@ class Logger {
 	const LOG_FILE = 'woopayments-multi-currency';
 
 	/**
-	 * The WooCommerce logger instance.
-	 *
-	 * @var \WC_Logger|null
-	 */
-	private $logger;
-
-	/**
 	 * Log a debug message.
 	 *
 	 * @param string $message The message to log.

@@ -16,8 +16,11 @@ import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
  */
 import { getUserTimeZone } from 'jest-utils/timezone';
 import { TransactionsList } from '..';
-import { useTransactions, useTransactionsSummary } from 'data';
-import type { Transaction } from 'data/transactions/hooks';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'wcpay/data/transactions';
+import type { Transaction } from 'wcpay/data/transactions/hooks';
 
 jest.mock( '@woocommerce/data', () => {
 	const actualModule = jest.requireActual( '@woocommerce/data' );
@@ -46,7 +49,7 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'data/index', () => ( {
+jest.mock( 'wcpay/data/transactions', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 } ) );
@@ -665,6 +668,80 @@ describe( 'Transactions list', () => {
 					) }&locale=en_US`,
 				} );
 			} );
+		} );
+	} );
+
+	describe( 'early fraud warning pill', () => {
+		beforeEach( () => {
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 1,
+					currency: 'usd',
+					store_currencies: [ 'usd' ],
+					fees: 30,
+					total: 300,
+					net: 270,
+				},
+				isLoading: false,
+			} );
+		} );
+
+		function renderWithEarlyFraudWarning(
+			earlyFraudWarning: Transaction[ 'early_fraud_warning' ],
+			type: Transaction[ 'type' ] = 'charge'
+		) {
+			mockUseTransactions.mockReturnValue( {
+				transactions: [
+					{
+						...getMockTransactions()[ 1 ],
+						type,
+						early_fraud_warning: earlyFraudWarning,
+					},
+				],
+				transactionsError: undefined,
+				isLoading: false,
+			} );
+			return render( <TransactionsList /> );
+		}
+
+		test( 'renders the pill for a charge with an actionable warning', () => {
+			renderWithEarlyFraudWarning( {
+				actionable: true,
+				fraud_type: 'made_with_stolen_card',
+			} );
+
+			expect( screen.getByText( 'Fraud warning' ) ).toBeInTheDocument();
+		} );
+
+		test( 'renders no pill when the warning is no longer actionable', () => {
+			renderWithEarlyFraudWarning( {
+				actionable: false,
+				fraud_type: 'made_with_stolen_card',
+			} );
+
+			expect(
+				screen.queryByText( 'Fraud warning' )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'renders the pill on payment rows, which carry the charge too', () => {
+			renderWithEarlyFraudWarning(
+				{ actionable: true, fraud_type: 'made_with_stolen_card' },
+				'payment'
+			);
+
+			expect( screen.getByText( 'Fraud warning' ) ).toBeInTheDocument();
+		} );
+
+		test( 'renders no pill on the refund row sharing the charge', () => {
+			renderWithEarlyFraudWarning(
+				{ actionable: true, fraud_type: 'made_with_stolen_card' },
+				'refund'
+			);
+
+			expect(
+				screen.queryByText( 'Fraud warning' )
+			).not.toBeInTheDocument();
 		} );
 	} );
 } );

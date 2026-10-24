@@ -20,11 +20,12 @@ import {
 	useAmazonPayEnabledSettings,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useTestMode: jest.fn().mockReturnValue( [] ),
 	usePaymentRequestEnabledSettings: jest.fn(),
 	useWooPayEnabledSettings: jest.fn(),
@@ -213,6 +214,134 @@ describe( 'ExpressCheckout', () => {
 			)
 		).not.toBeInTheDocument();
 		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'WooPay' ) ).toBeDisabled();
+	} );
+
+	it( 'should prevent enabling Link while WooPay is enabled', async () => {
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( true, jest.fn() )
+		);
+		const context = { accountStatus: {}, featureFlags: { woopay: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ], jest.fn() ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeDisabled();
+		expect( screen.getByLabelText( 'WooPay' ) ).not.toBeDisabled();
+		expect(
+			screen.queryByText(
+				'To enable Link by Stripe, you must first disable WooPay.',
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeInTheDocument();
+	} );
+
+	describe( 'when both Link and WooPay are already enabled', () => {
+		const updateIsWooPayEnabledHandler = jest.fn();
+		const updateEnabledMethodIdsHandler = jest.fn();
+
+		beforeEach( () => {
+			updateIsWooPayEnabledHandler.mockClear();
+			updateEnabledMethodIdsHandler.mockClear();
+			useWooPayEnabledSettings.mockReturnValue(
+				getMockWooPayEnabledSettings(
+					true,
+					updateIsWooPayEnabledHandler
+				)
+			);
+			useGetAvailablePaymentMethodIds.mockReturnValue( [
+				'link',
+				'card',
+			] );
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				updateEnabledMethodIdsHandler,
+			] );
+
+			render(
+				<WCPaySettingsContext.Provider
+					value={ {
+						accountStatus: {},
+						featureFlags: { woopay: true },
+					} }
+				>
+					<ExpressCheckout />
+				</WCPaySettingsContext.Provider>
+			);
+		} );
+
+		it( 'allows disabling Link', async () => {
+			const linkCheckbox = screen.getByLabelText( 'Link by Stripe' );
+			expect( linkCheckbox ).toBeChecked();
+			expect( linkCheckbox ).not.toBeDisabled();
+
+			await userEvent.click( linkCheckbox );
+
+			expect( updateEnabledMethodIdsHandler ).toHaveBeenCalledWith( [
+				'card',
+			] );
+		} );
+
+		it( 'allows disabling WooPay', async () => {
+			const wooPayCheckbox = screen.getByLabelText( 'WooPay' );
+			expect( wooPayCheckbox ).toBeChecked();
+			expect( wooPayCheckbox ).not.toBeDisabled();
+
+			await userEvent.click( wooPayCheckbox );
+
+			expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith(
+				false
+			);
+		} );
+
+		it( 'explains the conflict instead of the enable-first warnings', () => {
+			expect(
+				screen.getAllByText(
+					"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toHaveLength( 2 );
+			expect(
+				screen.queryByText(
+					'To enable WooPay, you must first disable Link by Stripe.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					'To enable Link by Stripe, you must first disable WooPay.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).not.toBeInTheDocument();
+		} );
+	} );
+
+	it( 'does not block WooPay on a Link setting hidden because card is disabled', () => {
+		const context = { accountStatus: {}, featureFlags: { woopay: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ], jest.fn() ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect( screen.queryByLabelText( 'Link by Stripe' ) ).toBeNull();
+		expect( screen.getByLabelText( 'WooPay' ) ).not.toBeDisabled();
+		expect(
+			screen.queryByText(
+				'To enable WooPay, you must first disable Link by Stripe.',
+				{ ignore: '.a11y-speak-region' }
+			)
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'should show WooPay incompatibility warning', async () => {
@@ -281,5 +410,128 @@ describe( 'ExpressCheckout', () => {
 		).not.toBeInTheDocument();
 		expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
 		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
+	} );
+
+	describe( 'for UK accounts', () => {
+		const UK_COUNTRY = 'GB';
+		const originalSettings = global.wcpaySettings;
+		const originalLinkLabel = methodsConfiguration.link.label;
+		const context = { accountStatus: {}, featureFlags: { woopay: true } };
+
+		beforeEach( () => {
+			global.wcpaySettings = {
+				...originalSettings,
+				accountStatus: { country: UK_COUNTRY },
+			};
+			methodsConfiguration.link.label = 'Onelink';
+			useGetAvailablePaymentMethodIds.mockReturnValue( [
+				'link',
+				'card',
+			] );
+		} );
+
+		afterEach( () => {
+			global.wcpaySettings = originalSettings;
+			methodsConfiguration.link.label = originalLinkLabel;
+		} );
+
+		const renderExpressCheckout = () =>
+			render(
+				<WCPaySettingsContext.Provider value={ context }>
+					<ExpressCheckout />
+				</WCPaySettingsContext.Provider>
+			);
+
+		it( 'names Onelink in the terms when Link is not enabled', () => {
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card' ],
+				jest.fn(),
+			] );
+
+			renderExpressCheckout();
+
+			const termsLink = screen.getByRole( 'link', {
+				name: 'Onelink terms',
+			} );
+			expect( termsLink ).toHaveAttribute(
+				'href',
+				'https://link.com/terms'
+			);
+			expect(
+				screen.queryByRole( 'link', { name: 'Link by Stripe terms' } )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'names Onelink when WooPay blocks enabling it', () => {
+			useWooPayEnabledSettings.mockReturnValue(
+				getMockWooPayEnabledSettings( true, jest.fn() )
+			);
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card' ],
+				jest.fn(),
+			] );
+
+			renderExpressCheckout();
+
+			expect(
+				screen.getByText(
+					'To enable Onelink, you must first disable WooPay.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					'To enable Link by Stripe, you must first disable WooPay.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'names Onelink when it blocks enabling WooPay', () => {
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				jest.fn(),
+			] );
+
+			renderExpressCheckout();
+
+			expect(
+				screen.getByText(
+					'To enable WooPay, you must first disable Onelink.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					'To enable WooPay, you must first disable Link by Stripe.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'names Onelink in the conflict notice', () => {
+			useWooPayEnabledSettings.mockReturnValue(
+				getMockWooPayEnabledSettings( true, jest.fn() )
+			);
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				jest.fn(),
+			] );
+
+			renderExpressCheckout();
+
+			expect(
+				screen.getAllByText(
+					"Onelink and WooPay can't be enabled at the same time. Disable one of them.",
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toHaveLength( 2 );
+			expect(
+				screen.queryByText(
+					"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
+					{ ignore: '.a11y-speak-region' }
+				)
+			).not.toBeInTheDocument();
+		} );
 	} );
 } );

@@ -24,13 +24,28 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	public function init() {
 		// Add needed actions and filters if Name Your Price is active.
 		if ( class_exists( 'WC_Name_Your_Price' ) ) {
+			/*
+			 * Multi-currency support was added to WooCommerce Name Your Price in version 4.0.0.
+			 *
+			 * This prevents the loading of the compatibility class for Name Your Price in
+			 * versions that provide their own multi-currency support.
+			 *
+			 * @see https://github.com/Automattic/woocommerce-payments/issues/12228
+			 */
+			if ( function_exists( 'WC_Name_Your_Price' ) ) {
+				$nyp = WC_Name_Your_Price();
+				if ( isset( $nyp->version ) && version_compare( $nyp->version, '4.0.0', '>=' ) ) {
+					return;
+				}
+			}
+
 			// Convert meta prices.
 			add_filter( 'wc_nyp_raw_minimum_price', [ $this, 'get_nyp_prices' ] );
 			add_filter( 'wc_nyp_raw_maximum_price', [ $this, 'get_nyp_prices' ] );
 			add_filter( 'wc_nyp_raw_suggested_price', [ $this, 'get_nyp_prices' ] );
 
 			// Maybe translate cart prices.
-			add_action( 'woocommerce_add_cart_item_data', [ $this, 'add_initial_currency' ], 20, 3 );
+			add_filter( 'woocommerce_add_cart_item_data', [ $this, 'add_initial_currency' ], 20, 3 );
 			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'convert_cart_currency' ], 20, 2 );
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
 
@@ -78,11 +93,11 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	 * This prevevents USD > EUR > USD style conversions and potential rounding problems.
 	 *
 	 * @param array $cart_item Cart item array.
-	 * @param array $values Cart item values e.g. quantity and product_id.
+	 * @param array $_unused_values Cart item values e.g. quantity and product_id.
 	 *
 	 * @return array
 	 */
-	public function convert_cart_currency( $cart_item, $values ) {
+	public function convert_cart_currency( $cart_item, $_unused_values ) {
 
 		if ( function_exists( 'WC_Name_Your_Price' ) && isset( $cart_item['nyp_original'] ) && isset( $cart_item['nyp_currency'] ) ) {
 
@@ -111,22 +126,22 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool   $return  Whether to convert the product's price or not. Default is true.
-	 * @param object $product Product object to test.
+	 * @param bool   $should_convert Whether to convert the product's price or not. Default is true.
+	 * @param object $product        Product object to test.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $return, $product ): bool {
+	public function should_convert_product_price( bool $should_convert, $product ): bool {
 		// If it's already false, return it.
-		if ( ! $return ) {
-			return $return;
+		if ( ! $should_convert ) {
+			return $should_convert;
 		}
 
 		$currency = $this->multi_currency->get_selected_currency();
 
 		// Check for cart items to see if they are in the original currency.
 		if ( $currency->get_code() === $product->get_meta( self::NYP_CURRENCY ) ) {
-			$return = false;
+			$should_convert = false;
 		}
 
 		// Check to see if the product is a NYP product.
@@ -134,18 +149,18 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 			return false;
 		}
 
-		return $return;
+		return $should_convert;
 	}
 
 	/**
 	 * Add currency to cart edit link.
 	 *
 	 * @param array $args      The cart args.
-	 * @param array $cart_item The current cart item.
+	 * @param array $_unused_cart_item The current cart item.
 	 *
 	 * @return array
 	 */
-	public function edit_in_cart_args( $args, $cart_item ) {
+	public function edit_in_cart_args( $args, $_unused_cart_item ) {
 		$args['nyp_currency'] = $this->multi_currency->get_selected_currency()->get_code();
 		return $args;
 	}

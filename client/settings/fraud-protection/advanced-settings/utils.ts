@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import { CheckOperators, Checks, Outcomes, Rules } from './constants';
+import {
+	avsSupportedCountries,
+	CheckOperators,
+	Checks,
+	Outcomes,
+	Rules,
+} from './constants';
 import {
 	ProtectionSettingsUI,
 	FraudPreventionSetting,
@@ -30,6 +36,32 @@ export const getSettingCountries = (): string[] => {
 				.woocommerce_specific_allowed_countries;
 		default:
 			return [];
+	}
+};
+
+// Whether the store's selling locations include any country where AVS post
+// code checks are commonly supported. The AVS Mismatch filter relies on the
+// card issuer returning a post code result, so when none of the store's
+// selling locations support AVS the filter effectively does nothing.
+export const isSellingToAvsSupportedLocations = (): boolean => {
+	const supportedCountriesType = getSupportedCountriesType();
+	const settingCountries = getSettingCountries();
+
+	switch ( supportedCountriesType ) {
+		case 'all':
+			// Selling to every country includes the AVS-supported ones.
+			return true;
+		case 'specific':
+			return avsSupportedCountries.some( ( country ) =>
+				settingCountries.includes( country )
+			);
+		case 'all_except':
+			// Useful unless every AVS-supported country is excluded.
+			return ! avsSupportedCountries.every( ( country ) =>
+				settingCountries.includes( country )
+			);
+		default:
+			return true;
 	}
 };
 
@@ -134,12 +166,12 @@ const buildRuleset = (
 								key: Checks.CHECK_ITEM_COUNT,
 								operator: CheckOperators.OPERATOR_LT,
 								value: parseInt( minItems, 10 ) ?? null,
-						  }
+							}
 						: {
 								key: Checks.CHECK_ITEM_COUNT,
 								operator: CheckOperators.OPERATOR_GT,
 								value: parseInt( maxItems, 10 ) ?? null,
-						  };
+							};
 				}
 			}
 			break;
@@ -173,12 +205,12 @@ const buildRuleset = (
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_LT,
 								value: buildFormattedRulePrice( minAmount ),
-						  }
+							}
 						: {
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_GT,
 								value: buildFormattedRulePrice( maxAmount ),
-						  };
+							};
 				}
 			}
 

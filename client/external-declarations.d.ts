@@ -5,9 +5,13 @@
 declare module '@wordpress/date' {
 	export function dateI18n(
 		dateFormat: string,
-		dateValue: import('moment').Moment | Date | string | undefined,
+		dateValue: import( 'moment' ).Moment | Date | string | undefined,
 		timezone?: string | boolean
 	): string;
+}
+
+declare module '@wordpress/dataviews/wp' {
+	export * from '@wordpress/dataviews';
 }
 
 declare module 'dompurify' {
@@ -23,8 +27,4 @@ declare module 'dompurify' {
 	};
 	export default DOMPurify;
 	/* eslint-enable @typescript-eslint/naming-convention */
-}
-
-declare module '@woocommerce/settings' {
-	const getSetting: ( key: string ) => string;
 }

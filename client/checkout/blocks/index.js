@@ -7,6 +7,8 @@ import {
 	registerExpressPaymentMethod,
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
+// eslint-disable-next-line import/no-unresolved
+import { registerCheckoutFilters } from '@woocommerce/blocks-checkout';
 
 /**
  * Internal dependencies
@@ -156,8 +158,6 @@ window.addEventListener( 'load', () => {
 
 // If multi-currency is enabled, add currency code to total amount in cart and checkout blocks.
 if ( getConfig( 'isMultiCurrencyEnabled' ) ) {
-	const { registerCheckoutFilters } = window.wc.blocksCheckout;
-
 	const modifyTotalsPrice = ( defaultValue, extensions, args ) => {
 		const { cart } = args;
 

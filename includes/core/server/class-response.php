@@ -54,21 +54,21 @@ class Response implements ArrayAccess {
 	/**
 	 * Attempts to set a value in the response.
 	 *
-	 * @param mixed $offset              The key of the value.
-	 * @param mixed $value               The value.
+	 * @param mixed $_unused_offset              The key of the value.
+	 * @param mixed $_unused_value               The value.
 	 * @throws Server_Response_Exception It is not possible.
 	 */
-	public function offsetSet( $offset, $value ): void {
+	public function offsetSet( $_unused_offset, $_unused_value ): void {
 		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_malformed' );
 	}
 
 	/**
 	 * Removes a value from the response.
 	 *
-	 * @param mixed $offset                The offset to remove.
+	 * @param mixed $_unused_offset                The offset to remove.
 	 * @throws Server_Response_Exception   It is not possible.
 	 */
-	public function offsetUnset( $offset ): void {
+	public function offsetUnset( $_unused_offset ): void {
 		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_malformed' );
 	}
 

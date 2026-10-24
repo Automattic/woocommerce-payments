@@ -55,7 +55,7 @@ describeif( shouldRunSubscriptionsTests )(
 				const card = config.cards.basic;
 				await fillCardDetails( shopperPage, card );
 				await placeOrder( shopperPage );
-				expect(
+				await expect(
 					shopperPage.getByRole( 'heading', {
 						name: 'Order received',
 					} )
@@ -75,9 +75,8 @@ describeif( shouldRunSubscriptionsTests )(
 
 			// Disable multi-currency in the merchant settings.
 			// This step is important because local environment setups might have multi-currency enabled.
-			const wasMultiCurrencyEnabled = await isMulticurrencyEnabled(
-				merchantPage
-			);
+			const wasMultiCurrencyEnabled =
+				await isMulticurrencyEnabled( merchantPage );
 			if ( wasMultiCurrencyEnabled ) {
 				await deactivateMulticurrency( merchantPage );
 			}
@@ -89,7 +88,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await merchantPage
 					.getByRole( 'link', { name: 'Edit order number' } )
 					.textContent()
-			 )
+			)
 				.trim()
 				.replace( '#', '' );
 

@@ -8,7 +8,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import { PmPromotionsResponse, PmPromotionActions } from './types';
 
 /**

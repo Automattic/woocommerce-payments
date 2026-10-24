@@ -12,6 +12,7 @@ class WooPayUserConnect extends WoopayConnect {
 			...this.listeners,
 			getIsUserLoggedInCallback: () => {},
 			getEncryptedDataCallback: () => {},
+			getPreferredPaymentMethodCallback: () => {},
 		};
 	}
 
@@ -48,6 +49,22 @@ class WooPayUserConnect extends WoopayConnect {
 	}
 
 	/**
+	 * Retrieves the user's preferred payment method from WooPay.
+	 *
+	 * @return {Promise<Object|null>} Resolves to an object with brand and last4, or null.
+	 */
+	async getPreferredPaymentMethod() {
+		try {
+			return await this.sendMessageAndListenWith(
+				{ action: 'getPreferredPaymentMethod' },
+				'getPreferredPaymentMethodCallback'
+			);
+		} catch ( error ) {
+			return null;
+		}
+	}
+
+	/**
 	 * Handles the callback from the WooPayConnectIframe.
 	 *
 	 * @param {Object} data The data from the WooPayConnectIframe.
@@ -61,6 +78,9 @@ class WooPayUserConnect extends WoopayConnect {
 				break;
 			case 'get_encrypted_data_success':
 				this.listeners.getEncryptedDataCallback( data.value );
+				break;
+			case 'get_preferred_payment_method_success':
+				this.listeners.getPreferredPaymentMethodCallback( data.value );
 				break;
 		}
 	}

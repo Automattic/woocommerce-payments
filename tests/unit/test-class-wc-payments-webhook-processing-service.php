@@ -6,11 +6,11 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
-use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -768,6 +768,523 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a payment_intent.succeeded event saves a token before completing a recurring order.
+	 */
+	public function test_payment_intent_successful_saves_token_before_completing_recurring_order() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123',
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+		$user                               = new WP_User( self::factory()->user->create() );
+		$token_saved                        = false;
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_user' )
+			->willReturn( $user );
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' )
+			->willReturnCallback(
+				function () use ( &$token_saved ) {
+					$this->assertTrue( $token_saved );
+				}
+			);
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'ensure_payment_method_token_for_order' )
+			->with( $this->mock_order, 'pm_foo', $user )
+			->willReturnCallback(
+				function () use ( &$token_saved ) {
+					$token_saved = true;
+				}
+			);
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a redelivered payment_intent.succeeded event does not save a token on a paid order.
+	 */
+	public function test_payment_intent_successful_skips_token_save_when_order_already_paid() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123',
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->method( 'is_paid' )
+			->willReturn( true );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'ensure_payment_method_token_for_order' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Pins a deliberate narrowing: a paid order with no token also skips the webhook save,
+	 * leaving recovery to the renewal-time repair.
+	 */
+	public function test_payment_intent_successful_skips_token_save_when_order_paid_without_token() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123',
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->method( 'is_paid' )
+			->willReturn( true );
+		$this->mock_order
+			->method( 'get_payment_tokens' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'ensure_payment_method_token_for_order' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a recurring payment_intent.succeeded event handles an expanded intent payment method fallback.
+	 */
+	public function test_payment_intent_successful_saves_token_from_expanded_intent_payment_method() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'pi_123123123123123',
+			'object'         => 'payment_intent',
+			'amount'         => 1500,
+			'charges'        => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency'       => 'eur',
+			'payment_method' => [
+				'id'     => 'pm_expanded',
+				'object' => 'payment_method',
+			],
+			'status'         => Intent_Status::SUCCEEDED,
+			'metadata'       => [],
+		];
+		$user                               = new WP_User( self::factory()->user->create() );
+		$stored_payment_method_id           = null;
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_user' )
+			->willReturn( $user );
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->expects( $this->atLeastOnce() )
+			->method( 'update_meta_data' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$stored_payment_method_id ) {
+					if ( '_payment_method_id' === $key ) {
+						$stored_payment_method_id = $value;
+					}
+				}
+			);
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'ensure_payment_method_token_for_order' )
+			->with( $this->mock_order, 'pm_expanded', $user );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 'pm_expanded', $stored_payment_method_id );
+	}
+
+	/**
+	 * Tests that token repair notes when a webhook replaces an existing subscription token.
+	 */
+	public function test_payment_intent_successful_notes_when_token_repair_replaces_existing_token() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123',
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_new',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+		$user                               = new WP_User( self::factory()->user->create() );
+		$token                              = $this->createMock( WC_Payment_Token::class );
+		$repair_note_added                  = false;
+
+		$token
+			->method( 'get_id' )
+			->willReturn( 22 );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_user' )
+			->willReturn( $user );
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->method( 'get_payment_tokens' )
+			->willReturn( [ 11 ] );
+		$this->mock_order
+			->method( 'add_order_note' )
+			->willReturnCallback(
+				function ( $note ) use ( &$repair_note_added ) {
+					if ( false !== strpos( $note, 'updated the subscription payment method token from token #11 to #22' ) ) {
+						$repair_note_added = true;
+					}
+				}
+			);
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'ensure_payment_method_token_for_order' )
+			->with( $this->mock_order, 'pm_new', $user )
+			->willReturn( $token );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertTrue( $repair_note_added );
+	}
+
+	/**
+	 * Tests that a recurring payment_intent.succeeded event completes the order when token saving fails.
+	 */
+	public function test_payment_intent_successful_completes_recurring_order_when_token_saving_fails() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123',
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+		$user                               = new WP_User( self::factory()->user->create() );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_user' )
+			->willReturn( $user );
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'add_order_note' )
+			->withConsecutive(
+				[ $this->stringContains( 'Unable to save payment method for subscription.' ) ],
+				[ $this->stringContains( 'A payment of' ) ]
+			);
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'ensure_payment_method_token_for_order' )
+			->with( $this->mock_order, 'pm_foo', $user )
+			->willThrowException( new Exception( 'Unable to save payment method for subscription.' ) );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that a payment_intent.succeeded event will ignore the order due to key mismatch.
 	 */
 	public function test_payment_intent_successful_ignores_order_due_to_key_mismatch() {
@@ -1468,6 +1985,503 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a payment_intent.payment_failed event for a decline that is not retryable
+	 * keeps the generic failure message.
+	 */
+	public function test_payment_intent_fails_with_non_retryable_decline_uses_generic_message() {
+		$error_code    = 'payment_intent_payment_attempt_failed';
+		$decline_code  = 'generic_decline';
+		$error_message = 'error message';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_123123123123123', // Payment method ID.
+						'payment_method_details' => [
+							'type' => 'us_bank_account',
+						],
+					],
+				],
+			],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => $error_code,
+				'decline_code'   => $decline_code,
+				'message'        => $error_message,
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'us_bank_account',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( 'pm_123123123123123' );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		$this->mock_order
+			->expects( $this->exactly( 3 ) )
+			->method( 'has_status' )
+			->withConsecutive(
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::FAILED ] ]
+			)
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'With the following message: <code>error message</code>' ),
+					$this->logicalNot( $this->stringContains( 'Decline code:' ) )
+				)
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( Order_Status::FAILED );
+
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds an order
+	 * note with the provider's error details, without changing the order status, so the customer
+	 * can retry with a different payment method.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_adds_order_note_without_failing_order() {
+		$error_code        = 'payment_intent_payment_attempt_failed';
+		$decline_code      = 'klarna_payment_declined';
+		$error_message     = 'The customer declined the payment.';
+		$doc_url           = 'https://docs.example.com/klarna-decline';
+		$payment_method_id = 'pm_123123123123123';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => $error_code,
+				'decline_code'   => $decline_code,
+				'message'        => $error_message,
+				'doc_url'        => $doc_url,
+				'payment_method' => [
+					'id'   => $payment_method_id,
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ Order_Status::PROCESSING, Order_Status::COMPLETED ] )
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'A payment of' ),
+					$this->stringContains( '<strong>failed</strong> using WooPayments' ),
+					$this->stringContains( 'pi_123123123123123' ),
+					$this->stringContains( 'With the following message: <code>The customer declined the payment.</code>' ),
+					$this->stringContains( 'Decline code: <code>klarna_payment_declined</code>' ),
+					$this->stringContains( '<a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>' )
+				)
+			);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method without a decline
+	 * code or doc URL, e.g. when the provider's payment session expires, adds an order note with
+	 * the provider's message only, without changing the order status.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_without_decline_code_and_doc_url() {
+		$error_message     = 'The payment session has expired.';
+		$payment_method_id = 'pm_123123123123123';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'message'        => $error_message,
+				'payment_method' => [
+					'id'   => $payment_method_id,
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ Order_Status::PROCESSING, Order_Status::COMPLETED ] )
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'A payment of' ),
+					$this->stringContains( '<strong>failed</strong> using WooPayments' ),
+					$this->stringContains( 'With the following message: <code>The payment session has expired.</code>' ),
+					$this->logicalNot( $this->stringContains( 'Decline code:' ) ),
+					$this->logicalNot( $this->stringContains( 'More information' ) )
+				)
+			);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a payment method that is neither BNPL
+	 * nor actionable adds no order note and does not fail the order.
+	 */
+	public function test_payment_intent_fails_with_non_bnpl_non_actionable_method_is_ignored() {
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'message'        => 'The payment session has expired.',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'sepa_debit',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'get_meta' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_intent_id' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds no order
+	 * note when the intent's payment method is not the order's current payment method.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_and_mismatched_payment_method_adds_no_note() {
+		$payment_method_id       = 'pm_999999999999999';
+		$order_payment_method_id = 'pm_123123123123123';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'payment_method' => [
+					'id'   => $payment_method_id,
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( $order_payment_method_id );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'has_status' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds no order
+	 * note when the order has already been paid.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_on_paid_order_adds_no_note() {
+		$payment_method_id = 'pm_123123123123123';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'payment_method' => [
+					'id'   => $payment_method_id,
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ Order_Status::PROCESSING, Order_Status::COMPLETED ] )
+			->willReturn( true );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds an order
+	 * note even when the order has already failed, e.g. when an abandoned payment retry does
+	 * not reset the failed status, without changing the order status.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_on_failed_order_adds_note() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_payment_method_id', 'pm_123123123123123' );
+		$order->update_status( Order_Status::FAILED );
+		$order->save();
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'doc_url'        => 'https://docs.example.com/klarna-decline',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 1, preg_grep( '/<strong>failed<\/strong> using WooPayments/', $contents ) );
+		$this->assertCount( 1, preg_grep( '/Decline code: <code>klarna_payment_declined<\/code>/', $contents ) );
+
+		// Only a note is added; the order stays failed.
+		$this->assertSame( Order_Status::FAILED, wc_get_order( $order->get_id() )->get_status() );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that a re-delivered payment_intent.payment_failed event for a BNPL payment method
+	 * does not duplicate the order note, and leaves the order pending.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_does_not_duplicate_the_note() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_payment_method_id', 'pm_123123123123123' );
+		$order->save();
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'doc_url'        => 'https://docs.example.com/klarna-decline',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 1, preg_grep( '/<strong>failed<\/strong> using WooPayments/', $contents ) );
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
 	 * Tests that a dispute created event adds a respective order note.
 	 */
 	public function test_dispute_created_order_note() {
@@ -1485,7 +2499,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			],
 		];
 
-		$this->mock_order->method( 'get_currency' )->willReturn( 'USD' );
+		$this->mock_order->method( 'get_currency' )->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->mock_order
 			->expects( $this->once() )
@@ -1508,6 +2522,36 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( $this->mock_order );
 
 		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * A dispute created event for an unknown charge throws a handled exception
+	 * rather than fatalling on a null order.
+	 */
+	public function test_dispute_created_with_unknown_charge_id_throws() {
+		$this->event_body['type']           = 'charge.dispute.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'               => 'test_dispute_id',
+			'charge'           => 'unknown_charge_id',
+			'reason'           => 'test_reason',
+			'amount'           => 9900,
+			'status'           => 'test_status',
+			'evidence_details' => [
+				'due_by' => 'test_due_by',
+			],
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'unknown_charge_id' )
+			->willReturn( false );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'Could not find order via charge ID: unknown_charge_id' );
+
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
@@ -1549,6 +2593,54 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a dispute closed event leaves the order alone while another dispute on the same
+	 * charge is still open, which requires the event's dispute ID to reach the order service.
+	 */
+	public function test_dispute_closed_leaves_order_alone_while_sibling_dispute_open() {
+		// Setup test request data.
+		$this->event_body['type']           = 'charge.dispute.closed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'     => 'dp_first',
+			'charge' => 'test_charge_id',
+			'status' => 'won',
+		];
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( [ 'dp_first', 'dp_second' ] );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'add_order_note' )
+			->withConsecutive(
+				[
+					$this->matchesRegularExpression(
+						'/was not marked as completed because 1 other dispute on this payment is still open/'
+					),
+				],
+				[
+					$this->matchesRegularExpression(
+						'/Dispute has been closed with status won.*\(Dispute ID: dp_first\)/'
+					),
+				]
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that a dispute updated event adds a respective order note.
 	 */
 	public function test_dispute_updated_order_note() {
@@ -1564,8 +2656,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'add_order_note' )
 			->with(
-				$this->matchesRegularExpression(
-					'/Payment dispute has been updated/'
+				$this->logicalAnd(
+					$this->stringContains( 'Payment dispute has been updated' ),
+					$this->stringContains( '(Dispute ID: test_dispute_id)' )
 				)
 			);
 
@@ -1636,6 +2729,481 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'order_from_charge_id' )
 			->with( 'test_charge_id' )
 			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Two disputes on one charge produce the same message, so without the dispute ID
+	 * their notes are identical and only the first one is ever recorded.
+	 */
+	public function test_dispute_updated_records_a_note_per_dispute() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->event_body['type']     = 'charge.dispute.funds_withdrawn';
+		$this->event_body['livemode'] = true;
+
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $order );
+
+		$this->event_body['data']['object'] = [
+			'id'     => 'dp_first',
+			'charge' => 'test_charge_id',
+		];
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->event_body['data']['object'] = [
+			'id'     => 'dp_second',
+			'charge' => 'test_charge_id',
+		];
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 2, preg_grep( '/deducted from your next payout/', $contents ) );
+		$this->assertCount( 1, preg_grep( '/\(Dispute ID: dp_first\)/', $contents ) );
+		$this->assertCount( 1, preg_grep( '/\(Dispute ID: dp_second\)/', $contents ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * A re-delivered event still has to be a no-op for the order timeline, while the
+	 * dispute caches get cleared either way — the event fired because data changed.
+	 */
+	public function test_dispute_updated_redelivery_does_not_duplicate_the_note() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->event_body['type']           = 'charge.dispute.funds_withdrawn';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'     => 'dp_first',
+			'charge' => 'test_charge_id',
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $order );
+
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete_dispute_caches' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 1, preg_grep( '/deducted from your next payout/', $contents ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * The dispute ID is only there to keep notes apart, so an event without one still
+	 * has to record its note rather than fail.
+	 */
+	public function test_dispute_updated_without_dispute_id_still_adds_note() {
+		$this->event_body['type']           = 'charge.dispute.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'charge' => 'test_charge_id',
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'Payment dispute has been updated' ),
+					$this->logicalNot( $this->stringContains( 'Dispute ID' ) )
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an early fraud warning created event stores the meta and adds an order note.
+	 */
+	public function test_early_fraud_warning_created_order_note() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[
+					'_wcpay_early_fraud_warning',
+					[
+						'efw_id'         => 'issfr_123',
+						'efw_actionable' => true,
+						'efw_type'       => 'made_with_stolen_card',
+						'created'        => 1719800000,
+					],
+				],
+				[ '_wcpay_early_fraud_warning_actionable', 1719800000 ]
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment has received an early fraud warning with reason &quot;Made with stolen card&quot;/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a created event with no `fraud_type` key still stores the warning and adds a
+	 * note (without a reason line), rather than aborting webhook processing. `fraud_type` only
+	 * drives a descriptive label, so a missing value must degrade gracefully.
+	 */
+	public function test_early_fraud_warning_created_stores_warning_when_fraud_type_missing() {
+		// Setup test request data — note the absent `fraud_type` key.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[
+					'_wcpay_early_fraud_warning',
+					[
+						'efw_id'         => 'issfr_123',
+						'efw_actionable' => true,
+						'efw_type'       => '',
+						'created'        => 1719800000,
+					],
+				],
+				[ '_wcpay_early_fraud_warning_actionable', 1719800000 ]
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment has received an early fraud warning\. <a [^>]+>Refunding/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an early fraud warning updated event resolves a previously stored warning.
+	 */
+	public function test_early_fraud_warning_updated_resolves_existing_warning() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => false,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		// Arrange: The order has a previously stored, actionable warning.
+		$this->mock_order
+			->method( 'get_meta' )
+			->with( '_wcpay_early_fraud_warning', true )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
+				]
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with(
+				'_wcpay_early_fraud_warning',
+				[
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => false,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
+				]
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/The early fraud warning received for this payment is no longer actionable/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an early fraud warning updated event is ignored when the store never
+	 * received the corresponding created event (e.g. it was skipped because the charge
+	 * was already disputed).
+	 */
+	public function test_early_fraud_warning_updated_is_ignored_without_existing_warning() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => false,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_meta_data' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		$this->mock_database_cache
+			->expects( $this->never() )
+			->method( 'delete_early_fraud_warning_caches' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that storing an early fraud warning invalidates the cached warning list.
+	 */
+	public function test_early_fraud_warning_created_invalidates_warning_orders_cache() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'delete_early_fraud_warning_caches' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an update leaving the actionable flag untouched does not drop the cache,
+	 * since that flag is the only thing the cached list is built from.
+	 */
+	public function test_early_fraud_warning_updated_keeps_cache_when_actionable_is_unchanged() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->with( '_wcpay_early_fraud_warning', true )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
+				]
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_database_cache
+			->expects( $this->never() )
+			->method( 'delete_early_fraud_warning_caches' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that resolving a warning invalidates the cached warning list.
+	 */
+	public function test_early_fraud_warning_updated_invalidates_cache_when_actionable_changes() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => false,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->with( '_wcpay_early_fraud_warning', true )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
+				]
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'delete_early_fraud_warning_caches' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an early fraud warning event for an unknown charge throws.
+	 */
+	public function test_early_fraud_warning_throws_exception_when_order_not_found() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'unknown_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'unknown_charge_id' )
+			->willReturn( false );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'Could not find order via charge ID: unknown_charge_id' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an early fraud warning payload missing a required field throws. Unlike the
+	 * optional `fraud_type`, the `charge` reference is load-bearing — without it the order
+	 * cannot be resolved, so processing must abort with the standard exception.
+	 */
+	public function test_early_fraud_warning_throws_exception_when_charge_missing() {
+		// Setup test request data — note the absent `charge` key.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_charge_id' );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'charge not found in array' );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
@@ -1841,6 +3409,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'failed',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_db_wrapper
@@ -1850,6 +3419,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service
 			->expects( $this->never() )
 			->method( 'add_note_and_metadata_for_created_refund' );
+
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	public function test_process_refund_throws_when_order_not_found(): void {
@@ -2129,77 +3700,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->webhook_processing_service->process( $this->event_body );
-	}
-
-	/**
-	 * @dataProvider refund_failure_reason_data_provider
-	 */
-	public function test_process_webhook_refund_updated_handles_different_failure_reasons( string $failure_reason ): void {
-		$this->event_body['type']           = 'charge.refund.updated';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'status'         => 'failed',
-			'charge'         => 'test_charge_id',
-			'id'             => 'test_refund_id',
-			'amount'         => 1999,
-			'currency'       => 'usd',
-			'failure_reason' => $failure_reason,
-		];
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_charge_id' )
-			->with( 'test_charge_id' )
-			->willReturn( $this->mock_order );
-
-		$this->order_service
-			->expects( $this->once() )
-			->method( 'handle_failed_refund' )
-			->with(
-				$this->mock_order,
-				'test_refund_id',
-				1999,
-				'usd',
-				null,
-				false,
-				$failure_reason
-			);
-
-		$this->webhook_processing_service->process( $this->event_body );
-	}
-
-	/**
-	 * Data provider for refund failure reason tests.
-	 *
-	 * @return array
-	 */
-	public function refund_failure_reason_data_provider(): array {
-		return [
-			'insufficient_funds'  => [
-				Refund_Failure_Reason::INSUFFICIENT_FUNDS,
-				'Insufficient funds to process the refund',
-			],
-			'declined'            => [
-				Refund_Failure_Reason::DECLINED,
-				'The refund was declined',
-			],
-			'expired_card'        => [
-				Refund_Failure_Reason::EXPIRED_OR_CANCELED_CARD,
-				'The card used for the original payment has expired or been canceled',
-			],
-			'lost_or_stolen_card' => [
-				Refund_Failure_Reason::LOST_OR_STOLEN_CARD,
-				'The card used for the original payment was reported as lost or stolen',
-			],
-			'merchant_request'    => [
-				Refund_Failure_Reason::MERCHANT_REQUEST,
-				'The refund was canceled at your request',
-			],
-			'unknown'             => [
-				Refund_Failure_Reason::UNKNOWN,
-				'An unknown error occurred while processing the refund',
-			],
-		];
 	}
 
 	/**

@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Client-side account cache now backs off progressively (2/5/10/15 min) after repeated errors, reducing retry storms during upstream slowness.

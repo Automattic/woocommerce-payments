@@ -1,4 +1,7 @@
-/** @format */
+/**
+ * @format
+ * @jest-environment-options {"url": "https://example.com"}
+ */
 
 /**
  * External dependencies
@@ -29,13 +32,21 @@ jest.mock( '@stripe/react-stripe-js', () => ( {
 	useStripe: jest.fn(),
 } ) );
 
-jest.mock( 'wcpay/data', () => {
-	const actual = jest.requireActual( 'wcpay/data' );
+jest.mock( 'wcpay/data/settings', () => {
+	const actual = jest.requireActual( 'wcpay/data/settings' );
 	return {
 		__esModule: true,
 		...actual,
 		useWooPayEnabledSettings: () => [ false, jest.fn() ],
 		usePaymentRequestEnabledSettings: () => [ true, jest.fn() ],
+	};
+} );
+
+jest.mock( 'wcpay/data/pm-promotions', () => {
+	const actual = jest.requireActual( 'wcpay/data/pm-promotions' );
+	return {
+		__esModule: true,
+		...actual,
 		usePmPromotions: () => ( { pmPromotions: [], isLoading: false } ),
 	};
 } );
@@ -53,24 +64,12 @@ const render = ( ui, options ) =>
 		...options,
 	} );
 
+// The preview only renders the buttons on an HTTPS page, which the
+// `@jest-environment-options` URL above provides. `window.location` cannot be
+// swapped out: jsdom marks it unforgeable.
 describe( 'PaymentRequestButtonPreview', () => {
-	let location;
-	const mockHttpsLocation = new URL( 'https://example.com' );
-
-	beforeEach( () => {
-		// We need the preview component to think we're rendering on a HTTPS enabled page
-		// so the buttons are rendered.
-		location = global.location;
-		delete global.location;
-		global.location = mockHttpsLocation;
-	} );
-
 	afterEach( () => {
 		jest.clearAllMocks();
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: location,
-		} );
 	} );
 
 	it( 'displays the button preview', async () => {

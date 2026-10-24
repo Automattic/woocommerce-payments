@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Mode;
 use WCPay\Core\Mode;
 use WCPay\Exceptions\Subscription_Mode_Mismatch_Exception;
@@ -76,6 +77,17 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_invoice_service  = $this->createMock( WC_Payments_Invoice_Service::class );
 
 		$this->subscription_service = new WC_Payments_Subscription_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_product_service, $this->mock_invoice_service );
+	}
+
+	public function tear_down() {
+		global $theorder;
+
+		// Reset the global function stubs and global state so they cannot leak into other tests.
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+		WC_Subscriptions::set_wcs_is_subscription( null );
+		$theorder = null;
+
+		parent::tear_down();
 	}
 
 	/**
@@ -255,7 +267,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->payment_tokens = [ uniqid( 'pm_' ) ];
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -301,7 +313,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -411,7 +423,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $subscription ) {
+			function ( $_unused_id ) use ( $subscription ) {
 				return $subscription;
 			}
 		);
@@ -625,7 +637,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->save();
 
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $subscription ) {
+			function ( $_unused_subscription ) {
 				return true;
 			}
 		);
@@ -693,6 +705,82 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test WC_Payments_Subscription_Service->prevent_wcpay_manual_renewal()
+	 */
+	public function test_prevent_wcpay_manual_renewal() {
+		global $theorder;
+
+		$theorder                 = new WC_Subscription();
+		$theorder->payment_method = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$theorder->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'wcpay_subscription_id_12345' );
+		$theorder->save();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$actions = [
+			'wcs_create_pending_parent'  => 'Create pending parent order',
+			'wcs_create_pending_renewal' => 'Create pending renewal order',
+			'wcs_process_renewal'        => 'Process renewal',
+			'unrelated_action'           => 'Unrelated action',
+		];
+
+		$result = $this->subscription_service->prevent_wcpay_manual_renewal( $actions );
+
+		$this->assertSame( [ 'unrelated_action' => 'Unrelated action' ], $result );
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->prevent_wcpay_manual_renewal() when a third party has made
+	 * wcs_is_subscription() return true for an object that isn't actually a WC_Subscription instance.
+	 */
+	public function test_prevent_wcpay_manual_renewal_with_non_subscription_theorder() {
+		global $theorder;
+
+		// $theorder is a plain WC_Order here, not a WC_Subscription, even though wcs_is_subscription()
+		// below is stubbed to claim otherwise - this can happen with third-party filters/plugins.
+		$theorder = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$actions = [
+			'wcs_create_pending_parent'  => 'Create pending parent order',
+			'wcs_create_pending_renewal' => 'Create pending renewal order',
+			'wcs_process_renewal'        => 'Process renewal',
+		];
+
+		$result = $this->subscription_service->prevent_wcpay_manual_renewal( $actions );
+
+		$this->assertSame( $actions, $result );
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->show_wcpay_subscription_id() when a third party has made
+	 * wcs_is_subscription() return true for an object that isn't actually a WC_Subscription instance.
+	 */
+	public function test_show_wcpay_subscription_id_with_non_subscription_order() {
+		// A plain WC_Order, even though wcs_is_subscription() below is stubbed to claim otherwise.
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$this->expectOutputString( '' );
+
+		$this->subscription_service->show_wcpay_subscription_id( $order );
+	}
+
+	/**
 	 * Test WC_Payments_Subscription_Service->get_wcpay_subscription_id()
 	 */
 	public function test_get_wcpay_subscription_id() {
@@ -751,6 +839,72 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * An order whose subscription is billed through Stripe Billing.
+	 */
+	public function test_is_wcpay_subscription_order_with_stripe_billed_subscription() {
+		$subscription                 = new WC_Subscription();
+		$subscription->payment_method = 'woocommerce_payments';
+		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+
+		$this->assertTrue( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * A tokenised subscription renews on-site, so its order must not be treated as
+	 * Stripe-billed even though the store may have the Stripe Billing feature enabled.
+	 */
+	public function test_is_wcpay_subscription_order_with_tokenised_subscription() {
+		$subscription                 = new WC_Subscription();
+		$subscription->payment_method = 'woocommerce_payments';
+		// No _wcpay_subscription_id: never created in Stripe Billing.
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+
+		$this->assertFalse( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * Mixed relations: any Stripe-billed subscription is enough, matching
+	 * is_wcpay_subscription_renewal_order() in the subscriptions gateway trait.
+	 */
+	public function test_is_wcpay_subscription_order_with_mixed_subscriptions() {
+		$tokenised                 = new WC_Subscription();
+		$tokenised->payment_method = 'woocommerce_payments';
+
+		$stripe_billed                 = new WC_Subscription();
+		$stripe_billed->payment_method = 'woocommerce_payments';
+		$stripe_billed->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test456' );
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $tokenised, $stripe_billed ] );
+
+		$this->assertTrue( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * An order with no related subscriptions is never Stripe-billed.
+	 */
+	public function test_is_wcpay_subscription_order_without_subscriptions() {
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$this->assertFalse( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * Stubs wcs_get_subscriptions_for_order() for the duration of a test.
+	 *
+	 * @param array $subscriptions Subscriptions the stub should return.
+	 */
+	private function mock_wcs_get_subscriptions_for_order( array $subscriptions ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $_unused_order, $_unused_args = [] ) use ( $subscriptions ) {
+				return $subscriptions;
+			}
+		);
+	}
+
+	/**
 	 * Test WC_Payments_Subscription_Service->update_dates_to_match_wcpay_subscription().
 	 */
 	public function test_update_dates_to_match_wcpay_subscription() {
@@ -773,39 +927,73 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 			'unit_amount_decimal' => 1033.33,
 		];
 
-		$actual = WC_Payments_Subscription_Service::format_item_price_data( 'USD', '', 10.3333 );
+		$actual = WC_Payments_Subscription_Service::format_item_price_data( Currency_Code::UNITED_STATES_DOLLAR, '', 10.3333 );
 
 		$this->assertEquals( $expected, $actual );
 	}
 
+	public function provider_check_wcpay_mode_for_subscription_matching_modes(): array {
+		return [
+			'test subscription in test mode' => [ Order_Mode::TEST, true ],
+			'live subscription in live mode' => [ Order_Mode::PRODUCTION, false ],
+		];
+	}
+
 	/**
-	 * Test WC_Payments_Subscription_Service->check_wcpay_mode_for_subscription()
+	 * Test WC_Payments_Subscription_Service->check_wcpay_mode_for_subscription() when the modes match.
+	 *
+	 * @dataProvider provider_check_wcpay_mode_for_subscription_matching_modes
+	 *
+	 * @param string $subscription_mode Mode stored on the parent order.
+	 * @param bool   $is_test_mode      Whether WooPayments runs in test mode.
 	 */
-	public function test_check_wcpay_mode_for_subscription() {
+	public function test_check_wcpay_mode_for_subscription_returns_items_when_modes_match( string $subscription_mode, bool $is_test_mode ) {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
-		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $subscription_mode );
 
-		WC_Payments::mode()->test();
+		$is_test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
 
 		$items  = [ 'item1', 'item2' ];
 		$result = $this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
-		$this->assertEquals( $items, $result );
+		$this->assertEquals( [ 'item1', 'item2' ], $result );
+	}
 
-		WC_Payments::mode()->live();
+	public function provider_check_wcpay_mode_for_subscription_mismatched_modes(): array {
+		return [
+			'test subscription in live mode' => [
+				Order_Mode::TEST,
+				false,
+				'Subscription was made when WooPayments was in the test mode and cannot be renewed in the live mode.',
+			],
+			'live subscription in test mode' => [
+				Order_Mode::PRODUCTION,
+				true,
+				'Subscription was made when WooPayments was in the live mode and cannot be renewed in the test mode.',
+			],
+		];
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->check_wcpay_mode_for_subscription() when the modes differ.
+	 *
+	 * @dataProvider provider_check_wcpay_mode_for_subscription_mismatched_modes
+	 *
+	 * @param string $subscription_mode Mode stored on the parent order.
+	 * @param bool   $is_test_mode      Whether WooPayments runs in test mode.
+	 * @param string $expected_message  Expected exception message.
+	 */
+	public function test_check_wcpay_mode_for_subscription_throws_when_modes_differ( string $subscription_mode, bool $is_test_mode, string $expected_message ) {
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $subscription_mode );
+
+		$is_test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
 
 		$this->expectException( Subscription_Mode_Mismatch_Exception::class );
-		$this->expectExceptionMessage( 'Subscription was made when WooPayments was in the test mode and cannot be renewed in the live mode.' );
-		$this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
-
-		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
-		$result = $this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
-		$this->assertEquals( $items, $result );
-
-		WC_Payments::mode()->test();
-		$this->expectException( Subscription_Mode_Mismatch_Exception::class );
-		$this->expectExceptionMessage( 'Subscription was made when WooPayments was in the live mode and cannot be renewed in the test mode.' );
-		$this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
+		$this->expectExceptionMessage( $expected_message );
+		$this->subscription_service->check_wcpay_mode_for_subscription( [ 'item1', 'item2' ], $mock_order, $mock_subscription );
 	}
 }

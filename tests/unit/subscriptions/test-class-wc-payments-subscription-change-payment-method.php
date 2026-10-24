@@ -123,8 +123,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 		$this->assertContainsOnly( 'array', $result );
 		$this->assertSame( count( $test_actions ), count( $result ) );
 
-		$this->assertArrayHasKey( 'cancel', $test_actions );
-		$this->assertArrayHasKey( 'pay', $test_actions );
+		$this->assertArrayHasKey( 'cancel', $result );
+		$this->assertArrayHasKey( 'pay', $result );
 
 		// Confirm the pay url has been updated to include the change payment method flag.
 		$this->assertMatchesRegularExpression( '/order-pay=/', $result['pay']['url'] );
@@ -197,7 +197,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 	 */
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
+			function ( $_unused_order ) use ( $subscriptions ) {
 				return $subscriptions;
 			}
 		);
@@ -219,7 +219,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 
 		// Mock the wcs_get_subscription function to return our mock subscription.
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return $mock_subscription;
 			}
 		);

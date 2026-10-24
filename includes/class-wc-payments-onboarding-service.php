@@ -20,7 +20,13 @@ use WCPay\Logger;
  */
 class WC_Payments_Onboarding_Service {
 
-	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
+	const TEST_MODE_OPTION = 'wcpay_onboarding_test_mode';
+	/**
+	 * Historic reminder timestamp.
+	 *
+	 * @deprecated 11.3.0 No longer written.
+	 */
+	const TEST_MODE_ENABLED_DATE_OPTION              = 'wcpay_test_mode_enabled_date';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
@@ -117,6 +123,7 @@ class WC_Payments_Onboarding_Service {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'add_woocommerce_store_id_to_request' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cached_onboarding_fields_data' ] );
 	}
 
 	/**
@@ -926,6 +933,14 @@ class WC_Payments_Onboarding_Service {
 		update_option( self::TEST_MODE_OPTION, 'no' );
 		self::clear_account_options();
 
+		// Clear the stored flag for whether the store had WooPayments in use,
+		// so incentive eligibility is re-determined for the fresh onboarding.
+		// Deleting is safe even though WooCommerce core shares these options: if an
+		// older core copy re-freezes a stale positive from test-mode usage, the logic
+		// version marker gets it re-determined on the next evaluation. See WOOPMNT-6320.
+		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_OPTION_NAME );
+		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME );
+
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		$this->clear_embedded_kyc_in_progress();
@@ -938,6 +953,19 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Clear cached onboarding fields data.
+	 *
+	 * This deliberately excludes recommended payment methods, which are account-specific and are
+	 * only cleared after a successful onboarding flow.
+	 *
+	 * @return void
+	 */
+	public function clear_cached_onboarding_fields_data() {
+		$this->database_cache->delete( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
+		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
+	}
+
+	/**
 	 * Cleanup onboarding flow data after the account is onboarded.
 	 *
 	 * This is to avoid keeping unnecessary data in the database.
@@ -946,9 +974,9 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public function cleanup_on_account_onboarded() {
-		// Delete the onboarding fields data since it is used only during the initial onboarding.
-		$this->database_cache->delete( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
-		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
+		// Delete the onboarding fields and recommended payment methods data since they are used only
+		// during the initial onboarding.
+		$this->clear_cached_onboarding_fields_data();
 		$this->database_cache->delete( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
 	}
 
@@ -1053,12 +1081,23 @@ class WC_Payments_Onboarding_Service {
 	public static function set_test_mode( bool $test_mode ): void {
 		update_option( self::TEST_MODE_OPTION, $test_mode ? 'yes' : 'no', true );
 
-		// Switch WC_Payments onboarding mode immediately.
 		if ( $test_mode ) {
 			\WC_Payments::mode()->test_mode_onboarding();
 		} else {
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
+	}
+
+	/**
+	 * Compatibility callback for the retired test-to-live notice timer.
+	 *
+	 * @deprecated 11.3.0 Notice bookkeeping is no longer maintained.
+	 * @param mixed $old_value Previous gateway settings.
+	 * @param mixed $new_value New gateway settings.
+	 * @return void
+	 */
+	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve legacy parameters.
+		wc_deprecated_function( __METHOD__, '11.3.0' );
 	}
 
 	/**
@@ -1413,15 +1452,16 @@ class WC_Payments_Onboarding_Service {
 	 * @return array The request args, possible updated with the test drive account settings, used to create new account.
 	 */
 	public function maybe_add_test_drive_settings_to_new_account_request( array $args ): array {
-		if (
-			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
-			is_array( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
-		) {
+		$test_drive_settings = get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		if ( is_array( $test_drive_settings ) && ! empty( $test_drive_settings['capabilities'] ) ) {
+			// Only the requested capabilities belong in the account creation request. The transient is
+			// left in place so the enabled payment methods can be restored once the live account connects
+			// (WC_Payments_Account::restore_test_drive_enabled_payment_methods).
 			$args['account_data'] = array_merge(
 				$args['account_data'],
-				get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
+				[ 'capabilities' => $test_drive_settings['capabilities'] ]
 			);
-			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		}
 
 		return $args;
@@ -1483,9 +1523,15 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// Update gateway option with the WooPay capability.
+		// WooPay and Link by Stripe are mutually exclusive, so an account that can auto-enable WooPay
+		// must not do so while Link is enabled: that would leave both active with neither toggle
+		// editable, and silently discard a payment method the merchant deliberately turned on. Link is
+		// read from the merged list because it can be enabled either from existing settings or from this
+		// same capabilities payload. See #9404.
+		$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $enabled_payment_methods, true );
 		if ( ! empty( $capabilities['woopay'] ) ) {
-			$gateway->update_is_woopay_enabled( true );
+			// Link wins when both would be on, so WooPay is only enabled when Link is not.
+			$gateway->update_is_woopay_enabled( ! $is_link_enabled );
 		} else {
 			$gateway->update_is_woopay_enabled( false );
 		}

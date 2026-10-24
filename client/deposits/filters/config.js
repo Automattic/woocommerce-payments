@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __, _x } from '@wordpress/i18n';
-import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
  */
+import { getSetting } from 'wcpay/utils/wc-settings';
 import { depositStatusLabels } from 'deposits/strings';
 
 const depositStatusOptions = Object.entries( depositStatusLabels )
@@ -103,11 +103,11 @@ export const advancedFilters = {
 						? __(
 								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Date</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a payout date', 'woocommerce-payments' ),
 			},
 			rules: [
@@ -145,11 +145,11 @@ export const advancedFilters = {
 						? __(
 								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Status</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a payout status', 'woocommerce-payments' ),
 			},
 			rules: [

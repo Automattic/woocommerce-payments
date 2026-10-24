@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: This change only fixes JS linting warnings, and has no impact on merchants’/shoppers’ experience.
-
-

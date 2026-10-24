@@ -15,7 +15,7 @@ import { parseInt } from 'lodash';
  * Internal dependencies.
  */
 import type { DepositsTableHeader } from 'wcpay/types/deposits';
-import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data/deposits';
 import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,
@@ -95,9 +95,8 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 
 export const DepositsList = (): JSX.Element => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
-	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
-		getQuery()
-	);
+	const { depositsSummary, isLoading: isSummaryLoading } =
+		useDepositsSummary( getQuery() );
 
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );

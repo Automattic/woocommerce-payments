@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop rounding an order's total to the selected currency's decimals on the order received, view order and pay for order pages, which also made paying for an order charge the rounded amount

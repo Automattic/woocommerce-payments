@@ -201,6 +201,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			->willReturn( [] );
 	}
 
+	public function tear_down() {
+		$_GET     = [];
+		$_POST    = [];
+		$_REQUEST = [];
+		parent::tear_down();
+	}
+
 	public function test_new_card_subscription() {
 		$order         = WC_Helper_Order::create_order( self::USER_ID );
 		$subscriptions = [ new WC_Subscription() ];
@@ -281,9 +288,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -327,9 +332,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -399,6 +402,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$subscriptions = [ new WC_Subscription() ];
 		$subscriptions[0]->set_parent( $order );
 
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
 
 		$request->expects( $this->once() )
@@ -411,7 +417,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
 			->willReturn( $this->token );
 
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 
 		// Expect add token to order to be called, so it can be reused in renewals.
 		// This is an integration test, different scenarios for add_token_to_order method
@@ -419,9 +425,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -502,9 +506,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -522,7 +524,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		];
 
 		// The card is already saved and there's no payment needed, so no Setup Intent needs to be created.
-		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
 
 		// We're not saving a new payment method, so we don't need to add the payment method to
 		// a user account.
@@ -543,9 +545,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -557,7 +557,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcs_order_contains_subscription( false );
 
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -586,7 +586,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		// A card change only saves the card: the SetupIntent must not mark the order paid.
+		$this->assertSame( 'pending', $result_order->get_status() );
+		foreach ( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) as $note ) {
+			$this->assertStringNotContainsString( 'si_mock', $note->content );
+		}
 		$this->assertEquals( 'success', $result['result'] );
 		// Expect add token to order to be called, so it can be reused in renewals.
 		// This is an integration test, different scenarios for add_token_to_order method
@@ -607,13 +611,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcs_order_contains_subscription( false );
 
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
 		$this->mock_wcs_get_subscriptions_for_order( [] );
 
-		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
 
 		$this->mock_token_service
 			->expects( $this->never() )
@@ -631,9 +635,75 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 	}
 
+	public function test_stock_is_not_reduced_when_changing_subscription_payment_method() {
+		$product = $this->create_stock_managed_product( 10 );
+		$order   = WC_Helper_Order::create_order( self::USER_ID, 0, $product );
+
+		$_GET = [ 'change_payment_method' => 10 ];
+
+		$this->mock_wcs_order_contains_subscription( false );
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->setup_intent );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $this->token );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( 10, wc_get_product( $product->get_id() )->get_stock_quantity() );
+		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_order_stock_reduced', true ) );
+	}
+
+	public function test_stock_is_reduced_for_regular_subscription_purchase() {
+		$product = $this->create_stock_managed_product( 10 );
+		$order   = WC_Helper_Order::create_order( self::USER_ID, 50, $product );
+
+		$subscriptions = [ new WC_Subscription() ];
+		$subscriptions[0]->set_parent( $order );
+
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->payment_intent );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $this->token );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( 6, wc_get_product( $product->get_id() )->get_stock_quantity() );
+	}
+
+	private function create_stock_managed_product( int $stock_quantity ): WC_Product_Simple {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_manage_stock( true );
+		$product->set_stock_quantity( $stock_quantity );
+		$product->save();
+
+		return wc_get_product( $product->get_id() );
+	}
+
 	private function mock_wcs_order_contains_subscription( $value ) {
 		WC_Subscriptions::set_wcs_order_contains_subscription(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);
@@ -641,7 +711,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
+			function ( $_unused_order ) use ( $subscriptions ) {
 				return $subscriptions;
 			}
 		);

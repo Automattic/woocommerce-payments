@@ -3,12 +3,12 @@
 /**
  * External dependencies
  */
-import { Card } from '@wordpress/components';
 import { useContext } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import CardBody from '../card-body';
 import './style.scss';
 import WooPayExpressCheckoutItem from './woopay-item';
@@ -16,7 +16,7 @@ import AppleGooglePayExpressCheckoutItem from './apple-google-pay-item';
 import LinkExpressCheckoutItem from './link-item';
 import AmazonPayExpressCheckoutItem from './amazon-pay-item';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import { useGetAvailablePaymentMethodIds } from 'wcpay/data';
+import { useGetAvailablePaymentMethodIds } from 'wcpay/data/settings';
 
 const ExpressCheckout = () => {
 	const {

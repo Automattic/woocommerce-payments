@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Session_Rate_Limiter;
@@ -195,6 +196,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Payments::set_gateway( $this->wcpay_gateway );
+		Fraud_Prevention_Service::set_instance( null );
 	}
 
 	/**
@@ -208,7 +210,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_order_contains_subscription( $value ) {
 		WC_Subscriptions::set_wcs_order_contains_subscription(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);
@@ -216,7 +218,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);
@@ -224,7 +226,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);
@@ -234,6 +236,10 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( false );
 		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$this->mock_wcpay_gateway->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->anything(), Payment_Type::SINGLE() );
 
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
@@ -263,6 +269,10 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$this->mock_wcs_order_contains_subscription( true );
 		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
 
+		$this->mock_wcpay_gateway->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->anything(), Payment_Type::RECURRING() );
+
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
@@ -288,6 +298,10 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$order->add_payment_token( $this->token );
 
+		$this->mock_wcpay_gateway->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->anything(), Payment_Type::RECURRING() );
+
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
@@ -309,7 +323,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( true );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $parent_order ) use ( $order ) {
+			function ( $_unused_parent_order ) use ( $order ) {
 				return $order;
 			}
 		);
@@ -323,7 +337,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);

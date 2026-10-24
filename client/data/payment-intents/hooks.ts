@@ -5,8 +5,10 @@
 import { useDispatch, useSelect } from '@wordpress/data';
 import { PaymentIntent } from '../../types/payment-intents';
 import { getChargeData } from '../charges';
+// The charge-id fallback reads charge state, which now lives in its own store.
+import { store as chargesStore } from '../charges/store';
 import { PaymentChargeDetailsResponse } from '../../payment-details/types';
-import { STORE_NAME } from '../constants';
+import { store as paymentIntentsStore } from './store';
 import { Charge } from 'wcpay/types/charges';
 
 export const getIsChargeId = ( id: string ): boolean =>
@@ -17,7 +19,6 @@ export const usePaymentIntentWithChargeFallback = (
 ): PaymentChargeDetailsResponse => {
 	const { data, error, isLoading } = useSelect(
 		( select ) => {
-			const selectors = select( STORE_NAME );
 			const isChargeId = getIsChargeId( id );
 
 			/**
@@ -26,7 +27,7 @@ export const usePaymentIntentWithChargeFallback = (
 			 * It should redirect from "ch_" ID to the equivalent "pi_" ID
 			 */
 			if ( isChargeId ) {
-				return getChargeData( id, selectors );
+				return getChargeData( id, select( chargesStore ) );
 			}
 
 			/**
@@ -39,7 +40,7 @@ export const usePaymentIntentWithChargeFallback = (
 				getPaymentIntentError,
 				isResolving,
 				hasFinishedResolution,
-			} = selectors;
+			} = select( paymentIntentsStore );
 
 			const paymentIntent: PaymentIntent = getPaymentIntent( id );
 
@@ -54,7 +55,7 @@ export const usePaymentIntentWithChargeFallback = (
 		[ id ]
 	);
 
-	const { refundCharge } = useDispatch( STORE_NAME );
+	const { refundCharge } = useDispatch( paymentIntentsStore );
 
 	const doRefund = ( charge: Charge, reason: string | null ) =>
 		refundCharge( charge, reason );

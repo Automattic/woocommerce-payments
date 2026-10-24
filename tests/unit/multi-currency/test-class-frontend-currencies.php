@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
 use WCPay\MultiCurrency\Currency;
 use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\FrontendCurrencies;
@@ -59,8 +60,18 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	 */
 	private $frontend_currencies;
 
+	/**
+	 * The global query vars before each test, restored in tear_down().
+	 *
+	 * @var array
+	 */
+	private $original_query_vars;
+
 	public function set_up() {
 		parent::set_up();
+
+		global $wp;
+		$this->original_query_vars = $wp->query_vars;
 
 		$this->localization_service = new WC_Payments_Localization_Service();
 		$this->mock_compatibility   = $this->createMock( Compatibility::class );
@@ -78,6 +89,9 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 
 	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_currency_settings' );
+
+		global $wp;
+		$wp->query_vars = $this->original_query_vars;
 
 		parent::tear_down();
 	}
@@ -106,17 +120,87 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	}
 
 	public function test_get_woocommerce_currency_returns_selected_currency() {
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'EUR' ) );
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( new Currency( $this->localization_service, Currency_Code::EURO ) );
 		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
 
 		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency() );
 	}
 
 	public function test_get_woocommerce_currency_returns_store_currency() {
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'EUR' ) );
 		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( true );
 
+		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+	}
+
+	public function test_get_woocommerce_currency_passes_through_filtered_currency_when_not_switching() {
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'GBP', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+	}
+
+	public function test_get_woocommerce_currency_returns_store_currency_when_not_switching_and_nothing_was_filtered() {
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
 		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency() );
+	}
+
+	public function test_get_woocommerce_currency_overrides_filtered_currency_when_switching() {
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( new Currency( $this->localization_service, Currency_Code::EURO ) );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+	}
+
+	public function test_woocommerce_currency_filter_keeps_value_from_earlier_filters_when_not_switching() {
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		// A third-party currency switcher hooked below Multi-Currency's priority.
+		add_filter( 'woocommerce_currency', fn() => 'GBP', 5 );
+
+		// Run the filter chain as WooCommerce does, starting from the store currency.
+		$this->assertSame( 'GBP', apply_filters( 'woocommerce_currency', 'USD' ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+	}
+
+	public function test_get_woocommerce_currency_passes_through_a_second_filtered_currency_when_idle() {
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_explicit_selected_currency' )
+			->willReturn( null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'GBP', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+		$this->assertSame( 'CAD', $this->frontend_currencies->get_woocommerce_currency( 'CAD' ) );
+	}
+
+	public function test_get_woocommerce_currency_reuses_an_explicit_selection_on_a_second_call() {
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_explicit_selected_currency' )
+			->willReturn( new Currency( $this->localization_service, Currency_Code::EURO ) );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency( 'CAD' ) );
+	}
+
+	public function test_get_woocommerce_currency_re_resolves_after_selected_currency_changed() {
+		$this->mock_multi_currency
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_explicit_selected_currency' )
+			->willReturnOnConsecutiveCalls(
+				new Currency( $this->localization_service, Currency_Code::EURO ),
+				new Currency( $this->localization_service, Currency_Code::POUND_STERLING )
+			);
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
+
+		$this->frontend_currencies->selected_currency_changed();
+
+		$this->assertSame( 'GBP', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
 	}
 
 	public function test_get_price_decimals_returns_num_decimals() {
@@ -144,6 +228,105 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		// We expect 3 decimal points here because BHD uses 3 decimal points, see
 		// i18n/locale-info.php (or plugins/woocommerce/i18n/locale-info.php in WC Core).
 		$this->assertEquals( 3, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * On single-order pages the order can be loaded, and its total rounded, before its details
+	 * render, and block-based pages render without the shortcode classes. See WOOPMNT-3978.
+	 */
+	public function test_single_order_pages_use_order_currency_while_loading_the_order_and_rendering_blocks() {
+		global $wp;
+		$wp->query_vars['order-received'] = $this->mock_order->get_id();
+
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with(
+				$this->callback(
+					function ( $calls ) {
+						return in_array( 'WC_Order_Factory::get_order', $calls, true )
+							&& in_array( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock->render', $calls, true )
+							&& in_array( 'WC_Shortcode_Checkout::order_received', $calls, true );
+					}
+				)
+			)
+			->willReturn( true );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->mock_order->set_currency( 'USD' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
+
+		// USD has 2 decimals; the selected ISK has none.
+		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * The WooCommerce methods above are matched by name in the backtrace, so a WooCommerce change to
+	 * them would silently stop the match. This fails instead.
+	 */
+	public function test_matched_woocommerce_methods_keep_their_backtrace_names() {
+		// Static, so PHP reports it as WC_Order_Factory::get_order in the backtrace however it's called.
+		$this->assertTrue( ( new ReflectionMethod( 'WC_Order_Factory', 'get_order' ) )->isStatic() );
+
+		// The CI matrix still runs WooCommerce 7.6, which predates the order confirmation blocks.
+		if ( version_compare( WC_VERSION, '9.0.0', '<' ) ) {
+			$this->markTestSkipped( 'The order confirmation blocks are not in this WooCommerce version.' );
+		}
+
+		$this->assertTrue( method_exists( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock', 'render' ) );
+	}
+
+	/**
+	 * Prices on a single-order page that are not the order's, like the mini-cart, keep the
+	 * selected currency. See WOOPMNT-3978.
+	 */
+	public function test_other_prices_on_single_order_pages_keep_the_selected_currency() {
+		global $wp;
+		$wp->query_vars['view-order'] = $this->mock_order->get_id();
+
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->willReturn( false );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->mock_order->set_currency( 'USD' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
+
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * The orders list has no single order, so loading an order there must not switch to an order
+	 * currency.
+	 */
+	public function test_orders_list_page_does_not_use_order_currency_while_loading_orders() {
+		global $wp;
+		$wp->query_vars['orders'] = 1;
+
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with(
+				$this->callback(
+					function ( $calls ) {
+						return ! in_array( 'WC_Order_Factory::get_order', $calls, true );
+					}
+				)
+			)
+			->willReturn( false );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
 	}
 
 	public function test_get_price_decimals_returns_original_when_the_currency_is_same() {
@@ -250,6 +433,22 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'USD' ) );
 
 		$this->assertEquals( '%2$s%1$s', $this->frontend_currencies->get_woocommerce_price_format( '%2$s%1$s' ) );
+	}
+
+	public function test_get_woocommerce_currency_pos_returns_currency_pos_for_selected_currency() {
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'EUR' ) );
+
+		// The Cart and Checkout Blocks read the `woocommerce_currency_pos` option (via the Store API
+		// CurrencyFormatter) rather than the `woocommerce_price_format` filter the shortcode uses, so
+		// WCPay must also override the option to keep both paths aligned. EUR's default position is
+		// right_space (see i18n/currency-info.php), not the store's setting.
+		$this->assertEquals( 'right_space', $this->frontend_currencies->get_woocommerce_currency_pos( 'left' ) );
+	}
+
+	public function test_get_woocommerce_currency_pos_returns_original_pos_when_the_currency_is_same() {
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'USD' ) );
+
+		$this->assertEquals( 'left', $this->frontend_currencies->get_woocommerce_currency_pos( 'left' ) );
 	}
 
 	/**
@@ -423,8 +622,8 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$mock_product->set_price( $price );
 		$mock_product->save();
 
-		$fn_pass_param = function ( $bool ) {
-			return $bool;
+		$fn_pass_param = function ( $value ) {
+			return $value;
 		};
 
 		$spy_return_store_currency    = PHPUnit_Utils::function_spy();
@@ -436,7 +635,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		add_filter( 'wcpay_multi_currency_should_convert_product_price', $should_convert_product_price, 999 );
 
 		// Act.
-		$price_html = $mock_product->get_price_html();
+		$mock_product->get_price_html();
 
 		// Assert.
 		$this->assertEquals( $store_currency_args, ( $spy_return_store_currency->received_args )() );
@@ -475,5 +674,126 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		// Assert: Confirm the return value has not changed and that the order_currency is now null.
 		$this->assertEquals( 10.00, $return );
 		$this->assertEquals( null, $this->frontend_currencies->get_order_currency() );
+	}
+
+	/**
+	 * REST clients (e.g. the WC Store API) must not be redirected when the currency
+	 * is switched; a 302 would strip filter bounds from the URL and break the response.
+	 *
+	 * Sets `$_SERVER['REQUEST_URI']` to a Store API path so `WC()->is_rest_api_request()`
+	 * detects the REST context the same way it would in production at `init:11`. The
+	 * earlier version of this test defined `REST_REQUEST` manually, which simulated a
+	 * state that never exists when the bug actually fires (the constant isn't defined
+	 * until `parse_request`, several hooks later).
+	 */
+	public function test_clear_url_price_params_is_noop_on_rest_request() {
+		$original_request_uri   = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc/store/v1/products?currency=EUR&min_price=10&max_price=50';
+		$_GET['min_price']      = '10';
+		$_GET['max_price']      = '50';
+
+		// If the guard fails, `wp_safe_redirect()` runs followed by `exit;`. Hook the
+		// `wp_redirect` filter to throw so the redirect attempt surfaces as a test
+		// failure instead of terminating the PHPUnit process.
+		add_filter(
+			'wp_redirect',
+			function ( $location ) {
+				throw new Exception( 'Unexpected redirect during REST request to: ' . $location );
+			}
+		);
+
+		try {
+			$this->frontend_currencies->clear_url_price_params();
+			$this->addToAssertionCount( 1 );
+		} finally {
+			remove_all_filters( 'wp_redirect' );
+			unset( $_GET['min_price'], $_GET['max_price'] );
+			if ( null === $original_request_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_request_uri;
+			}
+		}
+	}
+
+	/**
+	 * The `?rest_route=` URL shape is used by WordPress when pretty permalinks are
+	 * disabled. `WC()->is_rest_api_request()` only matches `wp-json/` in REQUEST_URI,
+	 * so the guard must also recognize `$_GET['rest_route']` to cover this case.
+	 */
+	public function test_clear_url_price_params_is_noop_on_rest_route_query_request() {
+		$original_request_uri   = $_SERVER['REQUEST_URI'] ?? null;
+		$original_rest_route    = $_GET['rest_route'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/?rest_route=/wc/store/v1/products&currency=EUR&min_price=10&max_price=50';
+		$_GET['rest_route']     = '/wc/store/v1/products';
+		$_GET['min_price']      = '10';
+		$_GET['max_price']      = '50';
+
+		add_filter(
+			'wp_redirect',
+			function ( $location ) {
+				throw new Exception( 'Unexpected redirect during ?rest_route= REST request to: ' . $location );
+			}
+		);
+
+		try {
+			$this->frontend_currencies->clear_url_price_params();
+			$this->addToAssertionCount( 1 );
+		} finally {
+			remove_all_filters( 'wp_redirect' );
+			unset( $_GET['min_price'], $_GET['max_price'] );
+			if ( null === $original_rest_route ) {
+				unset( $_GET['rest_route'] );
+			} else {
+				$_GET['rest_route'] = $original_rest_route;
+			}
+			if ( null === $original_request_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_request_uri;
+			}
+		}
+	}
+
+	/**
+	 * Browser navigation (non-REST request) MUST still redirect to strip stale
+	 * `min_price`/`max_price` query params after a currency switch. Captures the
+	 * intended Location header via the `wp_redirect` filter, then throws to escape
+	 * the `exit;` that follows `wp_safe_redirect()` in `clear_url_price_params()`.
+	 */
+	public function test_clear_url_price_params_redirects_on_browser_request() {
+		$original_request_uri   = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/shop/?currency=EUR&min_price=10&max_price=50';
+		$_GET['min_price']      = '10';
+		$_GET['max_price']      = '50';
+
+		$captured_url = null;
+
+		add_filter(
+			'wp_redirect',
+			function ( $location ) use ( &$captured_url ) {
+				$captured_url = $location;
+				throw new Exception( 'redirect captured' );
+			}
+		);
+
+		try {
+			$this->frontend_currencies->clear_url_price_params();
+			$this->fail( 'Expected clear_url_price_params() to issue a redirect on a browser request.' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 'redirect captured', $e->getMessage(), 'Unexpected exception thrown.' );
+			$this->assertIsString( $captured_url, 'Expected a redirect URL to be captured.' );
+			$this->assertStringNotContainsString( 'min_price', $captured_url, 'min_price should have been stripped.' );
+			$this->assertStringNotContainsString( 'max_price', $captured_url, 'max_price should have been stripped.' );
+			$this->assertStringContainsString( 'currency=EUR', $captured_url, 'Other query args (currency) should be preserved.' );
+		} finally {
+			remove_all_filters( 'wp_redirect' );
+			unset( $_GET['min_price'], $_GET['max_price'] );
+			if ( null === $original_request_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_request_uri;
+			}
+		}
 	}
 }

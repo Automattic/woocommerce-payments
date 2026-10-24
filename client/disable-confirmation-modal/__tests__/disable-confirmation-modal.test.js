@@ -13,7 +13,7 @@ import userEvent from '@testing-library/user-event';
 import DisableConfirmationModal from '..';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
-jest.mock( '../../data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useEnabledPaymentMethodIds: jest
 		.fn()
 		.mockReturnValue( [ [ 'card', 'giropay', 'link' ] ] ),
