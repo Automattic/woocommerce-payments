@@ -16,7 +16,11 @@ import qit from '@qit/helpers';
 
 import { config } from '../config/default';
 
-export type Role = 'admin' | 'customer' | 'editor';
+export type Role =
+	| 'admin'
+	| 'customer'
+	| 'editor'
+	| 'subscriptions-customer';
 
 type RoleConfig = {
 	login: ( page: Page ) => Promise< void >;
@@ -35,6 +39,13 @@ const roles: Record< Role, RoleConfig > = {
 	editor: {
 		login: async ( page ) => {
 			const { username, password } = config.users.editor;
+			await qit.loginAs( page, username, password );
+		},
+	},
+	'subscriptions-customer': {
+		login: async ( page ) => {
+			const { username, password } =
+				config.users[ 'subscriptions-customer' ];
 			await qit.loginAs( page, username, password );
 		},
 	},
