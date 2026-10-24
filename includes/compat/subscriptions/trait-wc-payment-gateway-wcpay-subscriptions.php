@@ -598,10 +598,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 		$this->add_token_to_order( $subscription, $renewal_token );
 
-		// Sync the Stripe customer ID from the successful renewal so the subscription's
-		// customer meta stays in sync with the token owner. Otherwise, a subscription that
-		// was manually re-associated to a different customer could end up with a token that
-		// doesn't belong to the stored customer ID, later tripping Invalid_Payment_Method_Exception.
+		// The renewal just charged this token with this customer, so they belong together. Renewals
+		// inherit the subscription's customer, so keeping a stale one would fail every later renewal.
 		$renewal_customer_id = $renewal_order->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true );
 		if ( ! empty( $renewal_customer_id ) ) {
 			$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, $renewal_customer_id );
