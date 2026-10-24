@@ -2,8 +2,7 @@
  * External dependencies
  */
 
-import { renderHook } from '@testing-library/react-hooks';
-import { render } from '@testing-library/react';
+import { render, renderHook } from '@testing-library/react';
 
 /**
  * Internal dependencies

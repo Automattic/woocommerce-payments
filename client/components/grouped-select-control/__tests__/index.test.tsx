@@ -2,7 +2,7 @@
  * External Dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -125,7 +125,7 @@ describe( 'Grouped Select Control', () => {
 
 		const input = screen.getByRole( 'textbox' );
 
-		await userEvent.type( input, '1' );
+		fireEvent.change( input, { target: { value: '1' } } );
 		expect( screen.getByText( 'Option 1' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Option 2' ) ).not.toBeInTheDocument();
 	} );
@@ -138,7 +138,7 @@ describe( 'Grouped Select Control', () => {
 
 		const input = screen.getByRole( 'textbox' );
 
-		await userEvent.type( input, 'z' );
+		fireEvent.change( input, { target: { value: 'z' } } );
 		expect( screen.queryByText( 'Option 1' ) ).not.toBeInTheDocument();
 		expect( screen.getByText( 'Option 5' ) ).toBeInTheDocument();
 	} );
@@ -157,11 +157,11 @@ describe( 'Grouped Select Control', () => {
 		expect( screen.queryByText( 'Option 3' ) ).toBeInTheDocument();
 
 		const input = screen.getByRole( 'textbox' );
-		await userEvent.type( input, 'z' );
+		fireEvent.change( input, { target: { value: 'z' } } );
 		expect( screen.queryByText( 'Option 5' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).not.toBeInTheDocument();
 
-		await userEvent.clear( input );
+		fireEvent.change( input, { target: { value: '' } } );
 
 		expect( screen.queryByText( 'Option 5' ) ).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).toBeInTheDocument();

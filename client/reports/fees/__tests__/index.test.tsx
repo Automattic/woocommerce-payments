@@ -717,6 +717,9 @@ describe( 'FeesReport (DataViews)', () => {
 		rerender( <FeesReport /> );
 
 		expect( mockSpeak ).toHaveBeenCalledWith( 'Loading fees', 'polite' );
+		// DataViews 14 passes `inert="true"`, which React 19 warns about once
+		// per run. The first test to render the loading table sees it.
+		expect( console ).toHaveErrored();
 	} );
 
 	it( 'does not render the export action in the Fees DataViews controls', () => {
