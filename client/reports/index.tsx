@@ -29,7 +29,7 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( { now } ) => {
 		normalizeReportsTab( getQuery().tab )
 	);
 	const [ tabPanelKey, setTabPanelKey ] = useState( 0 );
-	const dateFilterNow = useRef( now ?? new Date() ).current;
+	const [ dateFilterNow ] = useState( () => now ?? new Date() );
 	const tabPanelWrapperRef = useRef< HTMLDivElement >( null );
 	const previousActiveTabRef = useRef< ReportsTab >( activeTab );
 	const period = useMemo(
