@@ -4,15 +4,18 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import { useGetAvailablePaymentMethodIds, useManualCapture } from '../../data';
+import {
+	useGetAvailablePaymentMethodIds,
+	useManualCapture,
+} from 'wcpay/data/settings';
 import CardBody from 'wcpay/settings/card-body';
 import PaymentMethodsList from '../payment-methods-list';
 import methodsConfiguration from 'wcpay/payment-methods-map';

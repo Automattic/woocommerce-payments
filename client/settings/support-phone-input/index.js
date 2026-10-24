@@ -3,7 +3,7 @@
  */
 import { BaseControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -12,52 +12,41 @@ import {
 	useAccountBusinessSupportPhone,
 	useGetSavingError,
 	useTestModeOnboarding,
-} from 'wcpay/data';
-import PhoneNumberInput from 'wcpay/settings/phone-input';
+} from 'wcpay/data/settings';
+import PhoneNumberInput from 'wcpay/settings/phone-input/lazy';
 import InlineNotice from 'wcpay/components/inline-notice';
 import './styles.scss';
 
-const SupportPhoneInput = ( { setInputVallid } ) => {
+const SupportPhoneInput = ( { setInputValid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();
 
 	let supportPhoneError =
 		useGetSavingError()?.data?.details?.account_business_support_phone
 			?.message;
 
-	const currentPhone = useRef( supportPhone ).current;
-	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
 	const isTestModeOnboarding = useTestModeOnboarding();
 	const isTestPhoneValid =
 		isTestModeOnboarding && supportPhone === '+10000000000';
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
-	if ( supportPhone === '' ) {
-		supportPhoneError = __(
-			'Support phone number cannot be empty.',
-			'woocommerce-payments'
-		);
-	}
-	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
-		supportPhoneError = __(
-			'Please enter a valid phone number.',
-			'woocommerce-payments'
-		);
-	}
 
-	if ( supportPhone === '' && currentPhone !== '' ) {
+	if ( supportPhone === '' || ( ! isTestPhoneValid && ! isPhoneValid ) ) {
 		supportPhoneError = __(
-			'Support phone number cannot be empty once it has been set before, please specify.',
+			'A support phone number is required. Please enter a valid phone number.',
 			'woocommerce-payments'
 		);
 	}
 
 	useEffect( () => {
-		if ( setInputVallid ) {
-			setInputVallid( ! supportPhoneError );
+		if ( setInputValid ) {
+			setInputValid( ! supportPhoneError );
 		}
-	}, [ supportPhoneError, setInputVallid ] );
+	}, [ supportPhoneError, setInputValid ] );
 
-	const labelText = __( 'Support phone number', 'woocommerce-payments' );
+	const labelText = __(
+		'Support phone number (required)',
+		'woocommerce-payments'
+	);
 	return (
 		<>
 			{ supportPhoneError && (
@@ -70,7 +59,8 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 				help={
 					<>
 						{ __(
-							'This may be visible on receipts, invoices, and automated emails from your store.',
+							// eslint-disable-next-line max-len
+							"This number may appear on customer bank statements and in-person purchase receipts, but not in order emails. Use a number you're comfortable sharing publicly.",
 							'woocommerce-payments'
 						) }
 						{ isTestModeOnboarding && (

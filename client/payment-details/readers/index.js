@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
@@ -15,7 +14,8 @@ import { TableCard } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { useCardReaderStats } from 'wcpay/data';
+import { Card, CardBody } from 'wcpay/components/card';
+import { useCardReaderStats } from 'wcpay/data/card-readers';
 import { TestModeNotice } from 'components/test-mode-notice';
 import Page from 'components/page';
 import DownloadButton from 'components/download-button';
@@ -107,17 +107,17 @@ const RenderPaymentCardReaderChargeDetails = ( props ) => {
 								? formatExportAmount(
 										reader.fee.amount,
 										reader.fee.currency
-								  )
+									)
 								: 0,
 							display: reader.fee
 								? formatExplicitCurrency(
 										reader.fee.amount,
 										reader.fee.currency
-								  )
+									)
 								: 0,
 						},
 					];
-			  } )
+				} )
 			: [];
 
 	const onDownload = () => {

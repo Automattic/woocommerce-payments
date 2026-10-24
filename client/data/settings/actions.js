@@ -12,7 +12,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import ACTION_TYPES from './action-types';
-import { NAMESPACE, STORE_NAME } from '../constants';
+import { NAMESPACE } from '../constants';
+import { SETTINGS_STORE_NAME as STORE_NAME } from '../store-names';
 
 function updateSettingsValues( payload ) {
 	return {
@@ -192,7 +193,9 @@ export function* saveSettings() {
 			data: settings,
 		} );
 
-		yield updateSettingsValues( {
+		// otherwise mid-save edits linger in the store with `isDirty` falsely false
+		yield updateSettings( {
+			...settings,
 			payment_method_statuses: response.data.payment_method_statuses,
 		} );
 
@@ -205,7 +208,9 @@ export function* saveSettings() {
 			__( 'Error saving settings.', 'woocommerce-payments' )
 		);
 
-		if ( error.server_error ) {
+		// Surface the raw server error as a second notice only when we can't show it
+		// inline next to a specific field (i.e. the response has no per-field details).
+		if ( error.server_error && ! error.data?.details ) {
 			yield dispatch( 'core/notices' ).createErrorNotice(
 				error.server_error
 			);

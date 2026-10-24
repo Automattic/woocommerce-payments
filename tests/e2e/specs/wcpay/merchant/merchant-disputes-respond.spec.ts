@@ -15,6 +15,26 @@ import {
 } from '../../../utils/merchant-navigation';
 
 /**
+ * Polls the payment details page until the dispute is visible.
+ *
+ * The dispute is only created merchant-side once Stripe's charge.dispute.created
+ * webhook is processed, which can trail the shopper checkout by tens of seconds.
+ * The page fetches its data once on load, so we reload until the dispute is there.
+ */
+async function waitForDisputeToAppear( merchantPage: Page, url: string ) {
+	await expect( async () => {
+		await merchantPage.goto( url );
+		await merchantPage.waitForLoadState( 'load' );
+
+		// not `accept-dispute-button` - that one is the modal's confirm
+		// button, which only exists while the modal is open.
+		await expect(
+			merchantPage.getByTestId( 'open-accept-dispute-modal-button' )
+		).toBeVisible( { timeout: 2000 } );
+	} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
+}
+
+/**
  * Navigates to the payment details page for a given disputed order.
  */
 async function goToPaymentDetailsForOrder(
@@ -41,6 +61,9 @@ async function goToPaymentDetailsForOrder(
 			const currentUrl = merchantPage.url();
 			return currentUrl;
 		} );
+
+	await test.step( 'Wait for the dispute to be created by the async webhook', () =>
+		waitForDisputeToAppear( merchantPage, paymentDetailsLink ) );
 
 	return paymentDetailsLink;
 }
@@ -88,6 +111,9 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			const orderId = await createDisputedOrder( browser );
 
 			await goToPaymentDetails( merchantPage, orderId );
+
+			await test.step( 'Wait for the dispute to be created by the async webhook', () =>
+				waitForDisputeToAppear( merchantPage, merchantPage.url() ) );
 
 			await test.step( 'Click the dispute accept button to open the accept dispute modal', async () => {
 				// View the modal.
@@ -471,6 +497,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 	test( 'Save a dispute challenge without submitting evidence', async ( {
 		browser,
 	} ) => {
+		// Stripe can take a while to return the saved evidence, and the
+		// save-and-restore retries below need the extra room.
+		test.slow();
+
 		const { merchantPage } = await getMerchant( browser );
 
 		const orderId = await createDisputedOrder( browser );
@@ -510,30 +540,18 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			).toBeVisible();
 		} );
 
+		const descriptionField = () =>
+			merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' );
+
 		await test.step( 'Select product type and fill description', async () => {
 			await merchantPage
 				.getByTestId( 'dispute-challenge-product-type-selector' )
 				.selectOption( 'offline_service' );
 
-			// The product description field is auto-populated asynchronously.
-			// An async React effect may overwrite user input after initial load,
-			// so we retry the fill+verify cycle until the value sticks.
-			await expect( async () => {
-				await merchantPage
-					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-					.fill( 'my product description' );
-
-				// Blur the field to ensure value is committed to state
-				await merchantPage
-					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-					.press( 'Tab' );
-
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-				).toHaveValue( 'my product description', {
-					timeout: 2000,
-				} );
-			} ).toPass( { timeout: 20000, intervals: [ 2000 ] } );
+			await descriptionField().fill( 'my product description' );
+			await expect( descriptionField() ).toHaveValue(
+				'my product description'
+			);
 		} );
 
 		await test.step( 'Save the dispute challenge for later', async () => {
@@ -543,45 +561,24 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					r.request().method() === 'POST'
 			);
 
-			// Use stable test id for the save button
 			await merchantPage.getByTestId( 'save-for-later-button' ).click();
 
 			const response = await waitResponse;
 
-			// Server acknowledged save
 			expect( response.ok() ).toBeTruthy();
+			expect(
+				response.request().postDataJSON().evidence.product_description
+			).toBe( 'my product description' );
 
-			// Validate payload included our description (guards against state not committed)
-			try {
-				const payload = response.request().postDataJSON?.();
-				// Some environments may not expose postDataJSON; guard accordingly
-				if ( payload && payload.evidence ) {
-					expect( payload.evidence.product_description ).toBe(
-						'my product description'
-					);
-				}
-			} catch ( _e ) {
-				// Non-fatal: continue to UI confirmation
-			}
-
-			// Wait for the success snackbar to confirm UI acknowledged the save.
 			await expect(
 				merchantPage.locator( '.components-snackbar__content', {
 					hasText: 'Evidence saved!',
 				} )
 			).toBeVisible( { timeout: 10000 } );
-
-			// Stripe does not guarantee immediate read-after-write consistency.
-			// Allow time for the write to propagate before navigating away.
-			await merchantPage.waitForTimeout( 3000 );
 		} );
 
 		await test.step( 'Navigate back and verify previously saved values are restored', async () => {
-			// Poll by reloading the challenge page on each retry.
-			// The Stripe API may not return the saved evidence immediately,
-			// so we retry the full navigation cycle until the saved value
-			// appears. This follows the same polling pattern used by the
-			// dispute status checks in the winning/losing evidence tests.
+			// Stripe can take a moment to return the saved evidence on reads.
 			await expect( async () => {
 				await merchantPage.goto( paymentDetailsLink );
 				await merchantPage.waitForLoadState( 'load' );
@@ -600,12 +597,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					} )
 				).toBeVisible();
 
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-				).toHaveValue( 'my product description', {
-					timeout: 5000,
-				} );
-			} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
+				await expect( descriptionField() ).toHaveValue(
+					'my product description',
+					{ timeout: 5000 }
+				);
+			} ).toPass( { timeout: 40000, intervals: [ 3000 ] } );
 		} );
 	} );
 } );

@@ -49,6 +49,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		$this->account_mock      = $this->createMock( WC_Payments_Account::class );
 		$this->api_client_mock   = $this->createMock( WC_Payments_API_Client::class );
 		$this->webhook_sync_mock = new WCPay\WooPay\WooPay_Order_Status_Sync( $this->api_client_mock, $this->account_mock );
+		$this->webhook_sync_mock->init_hooks();
 
 		// Mock the main class's cache service.
 		$this->cache      = WC_Payments::get_database_cache();
@@ -102,7 +103,10 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		// Create the WebHook with WooPay specific delivery URL.
 		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
 
-		$post_processing_payload = $this->webhook_sync_mock->create_payload( $pre_processing_payload, 'product', 1, 1 );
+		// Look up the webhook ID rather than hardcoding it. Auto-increment counters survive the per-test rollback.
+		$webhook_id = current( WooPay_Order_Status_Sync::get_webhook() );
+
+		$post_processing_payload = $this->webhook_sync_mock->create_payload( $pre_processing_payload, 'product', 1, $webhook_id );
 		$this->assertNotEquals( $pre_processing_payload, $post_processing_payload );
 		$this->assertEquals( $post_processing_payload, $woopay_specific_payload );
 
@@ -128,9 +132,9 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 			],
 		];
 
-		$this->create_non_woopay_specific_webhook();
+		$webhook_id = $this->create_non_woopay_specific_webhook();
 
-		$post_processing_payload = $this->webhook_sync_mock->create_payload( $pre_processing_payload, 'product', 1, 2 );
+		$post_processing_payload = $this->webhook_sync_mock->create_payload( $pre_processing_payload, 'product', 1, $webhook_id );
 		$this->assertEquals( $pre_processing_payload, $post_processing_payload );
 
 		$this->webhook_sync_mock->remove_webhook();
@@ -159,7 +163,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	 */
 	public function test_webhook_is_not_created_for_under_review() {
 		wp_set_current_user( self::$admin_user->ID );
-		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( true );
 		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
 
@@ -175,7 +179,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	 */
 	public function test_webhook_is_not_created_for_rejected() {
 		wp_set_current_user( self::$admin_user->ID );
-		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
 		$this->account_mock->method( 'is_account_rejected' )->willReturn( true );
 
@@ -225,5 +229,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		$webhook->set_delivery_url( $delivery_url_non_specific_for_woopay );
 		$webhook->set_status( 'active' );
 		$webhook->save();
+
+		return $webhook->get_id();
 	}
 }

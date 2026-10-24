@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Load right-to-left styles for lazy-loaded admin pages on right-to-left sites.

@@ -3,7 +3,7 @@
  */
 import { sprintf } from '@wordpress/i18n';
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, within } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -27,7 +27,12 @@ jest.mock( 'multi-currency/interface/functions', () => ( {
 
 declare const global: {
 	wcpaySettings: {
-		connect: {
+		// The fee link keys on the account country; `connect.country` is the
+		// store base country and is here so tests can make the two diverge.
+		accountStatus?: {
+			country: string;
+		};
+		connect?: {
 			country: string;
 		};
 		dateFormat?: string;
@@ -282,10 +287,10 @@ describe( 'Account fees utility functions', () => {
 
 	describe( 'formatMethodFeesTooltip()', () => {
 		beforeAll( () => {
-			global.wcpaySettings = { connect: { country: 'US' } };
+			global.wcpaySettings = { accountStatus: { country: 'US' } };
 		} );
 		afterAll( () => {
-			global.wcpaySettings = { connect: { country: '' } };
+			global.wcpaySettings = { accountStatus: { country: '' } };
 		} );
 
 		it( 'displays base percentage and fixed fee - no custom fee nor discount', () => {
@@ -341,6 +346,138 @@ describe( 'Account fees utility functions', () => {
 			);
 
 			expect( container ).toMatchSnapshot();
+		} );
+	} );
+
+	describe( 'formatMethodFeesTooltip() country fee links', () => {
+		let originalWcpaySettings: typeof global.wcpaySettings;
+
+		beforeEach( () => {
+			originalWcpaySettings = global.wcpaySettings;
+		} );
+
+		afterEach( () => {
+			global.wcpaySettings = originalWcpaySettings;
+		} );
+
+		const renderTooltipForCountry = ( country: string ) => {
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				accountStatus: { country },
+			};
+
+			return render(
+				formatMethodFeesTooltip(
+					mockAccountFees( {
+						percentage_rate: 0.123,
+						fixed_rate: 456.78,
+						currency: 'USD',
+					} )
+				)
+			);
+		};
+
+		it( 'links a United Kingdom merchant to the united-kingdom fee section', () => {
+			const { container } = renderTooltipForCountry( 'GB' );
+
+			expect(
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/#united-kingdom'
+			);
+		} );
+
+		it( 'links a Swedish merchant to the sweden fee section', () => {
+			const { container } = renderTooltipForCountry( 'SE' );
+
+			expect(
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/#sweden'
+			);
+		} );
+
+		it( 'links an account in an unmapped country to the fees page with no anchor', () => {
+			const { container } = renderTooltipForCountry( 'BR' );
+
+			expect(
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/'
+			);
+		} );
+
+		it( 'follows the account country when the store base country differs', () => {
+			// The fees rendered above the link come from the account, so the
+			// link has to describe the account's country. A store that changed
+			// its base country after onboarding would otherwise read one
+			// country's rates under a link promising another's.
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				connect: { country: 'GB' },
+				accountStatus: { country: 'US' },
+			};
+
+			const { container } = render(
+				formatMethodFeesTooltip(
+					mockAccountFees( {
+						percentage_rate: 0.123,
+						fixed_rate: 456.78,
+						currency: 'USD',
+					} )
+				)
+			);
+
+			expect(
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/#united-states'
+			);
+		} );
+
+		it( 'still offers the fees page when the account country is unknown', () => {
+			// The cached account can carry fees while erroring out of a
+			// status, leaving no country. Fees are on screen, so the link
+			// that explains them should be too.
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				accountStatus: undefined,
+			};
+
+			const { container } = render(
+				formatMethodFeesTooltip(
+					mockAccountFees( {
+						percentage_rate: 0.123,
+						fixed_rate: 456.78,
+						currency: 'USD',
+					} )
+				)
+			);
+
+			expect(
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/'
+			);
+			expect(
+				container.querySelector( '.wcpay-fees-tooltip__hint-text' )
+					?.textContent
+			).toMatch( /Learn more.* about WooPayments Fees$/ );
 		} );
 	} );
 

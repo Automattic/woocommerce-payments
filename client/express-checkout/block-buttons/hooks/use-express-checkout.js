@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback } from '@wordpress/element';
+import { useCallback, useMemo } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
@@ -42,7 +42,10 @@ export const useExpressCheckout = ( {
 	const stripe = useStripe();
 	const elements = useElements();
 
-	const buttonOptions = getExpressCheckoutButtonStyleSettings();
+	const buttonOptions = useMemo(
+		() => getExpressCheckoutButtonStyleSettings(),
+		[]
+	);
 
 	const onCancel = () => {
 		onCancelHandler();
@@ -54,10 +57,13 @@ export const useExpressCheckout = ( {
 		window.location = redirectUrl;
 	};
 
-	const abortPayment = ( message ) => {
-		setExpressPaymentError( message );
-		onAbortPaymentHandler();
-	};
+	const abortPayment = useCallback(
+		( message ) => {
+			setExpressPaymentError( message );
+			onAbortPaymentHandler();
+		},
+		[ setExpressPaymentError ]
+	);
 
 	const onButtonClick = useCallback(
 		( event ) => {

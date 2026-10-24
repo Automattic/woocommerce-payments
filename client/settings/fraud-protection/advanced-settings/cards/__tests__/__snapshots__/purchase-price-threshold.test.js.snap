@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Purchase price threshold card renders correctly 1`] = `
 .emotion-0 {
@@ -116,7 +116,7 @@ exports[`Purchase price threshold card renders correctly 1`] = `
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
@@ -125,7 +125,7 @@ exports[`Purchase price threshold card renders correctly 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -327,7 +327,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }
@@ -375,7 +375,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
@@ -384,7 +384,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -743,7 +743,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }
@@ -791,7 +791,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
@@ -800,7 +800,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1160,7 +1160,7 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
@@ -1169,7 +1169,7 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >

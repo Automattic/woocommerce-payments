@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-feat: ensure server-side validation of ECE payment methods list

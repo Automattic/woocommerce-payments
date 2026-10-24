@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix WooPay preview logo rendering at full intrinsic size on some themes.

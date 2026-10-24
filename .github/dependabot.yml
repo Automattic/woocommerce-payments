@@ -7,6 +7,8 @@ updates:
       # Check for updates once a week
       schedule:
         interval: 'weekly'
+      cooldown:
+        default-days: 7
       ignore:
         # For @wordpress dependencies, ignore all updates as most of them need to be synced to the min WP version
         - dependency-name: "@wordpress/*"
@@ -24,6 +26,8 @@ updates:
       # Check for updates once a week
       schedule:
         interval: 'weekly'
+      cooldown:
+        default-days: 7
       # Reviewers for issues created
       reviewers:
         - 'Automattic/gamma'
@@ -36,17 +40,25 @@ updates:
       # Check for updates once a week
       schedule:
           interval: 'weekly'
+      cooldown:
+        default-days: 7
       # Reviewers for issues created
       reviewers:
         - 'Automattic/gamma'
         - 'Automattic/moltres'
 
-    # Enable version updates for GitHub Actions (SHA pins in .github/workflows/ and .github/actions/)
+    # Enable version updates for GitHub Actions (SHA pins in .github/workflows/ and .github/actions/).
+    # Scan composite actions too — their SHA-pinned `uses:` refs need update PRs
+    # just like the workflow files do ('**' so nested ones like e2e/env-setup are covered).
     - package-ecosystem: 'github-actions'
-      directory: '/'
+      directories:
+        - '/'
+        - '/.github/actions/**'
       # Check for updates once a week
       schedule:
         interval: 'weekly'
+      cooldown:
+        default-days: 7
       # Reviewers for issues created
       reviewers:
         - 'Automattic/gamma'

@@ -149,7 +149,7 @@ class WC_Payments_WooPay_Button_Handler {
 		$config['addToCartNonce']           = wp_create_nonce( 'wcpay-add-to-cart' );
 		$config['shouldShowWooPayButton']   = $this->should_show_woopay_button();
 		$config['woopaySessionEmail']       = WooPay_Session::get_user_email( $user );
-		$config['woopayIsCountryAvailable'] = $this->woopay_utilities->is_country_available( $this->gateway );
+		$config['woopayIsCountryAvailable'] = $this->woopay_utilities->is_country_available();
 		$config['woopayAppearance']         = $this->gateway->is_woopay_global_theme_support_enabled()
 			? WC_Payments_Styles_Cache::get_woopay_appearance()
 			: null;
@@ -260,7 +260,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Check if WooPay is available in the user country.
-		if ( ! $this->woopay_utilities->is_country_available( $this->gateway ) ) {
+		if ( ! $this->woopay_utilities->is_country_available() ) {
 			return false;
 		}
 
@@ -282,6 +282,12 @@ class WC_Payments_WooPay_Button_Handler {
 		// Product page, but has unsupported product type.
 		if ( $this->express_checkout_helper->is_product() && ! $this->is_product_supported() ) {
 			Logger::log( 'Product page has unsupported product type ( WooPay Express button disabled )' );
+			return false;
+		}
+
+		// Product page, but the product can't be added to the cart (not purchasable or out of stock).
+		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_product_purchasable() ) {
+			Logger::log( 'Product is not purchasable ( WooPay Express button disabled )' );
 			return false;
 		}
 
@@ -389,6 +395,14 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
+		/**
+		 * Filters whether the WooPay Express button supports the given product.
+		 *
+		 * @since 5.9.0
+		 *
+		 * @param bool                   $is_supported Whether the product is supported by the WooPay Express button.
+		 * @param WC_Product|false|null  $product      The product being checked, or false/null when none could be resolved.
+		 */
 		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );
 	}
 
@@ -412,6 +426,13 @@ class WC_Payments_WooPay_Button_Handler {
 			}
 		}
 
+		/**
+		 * Filters whether the WooPay Express button supports all of the items currently in the cart.
+		 *
+		 * @since 5.7.0
+		 *
+		 * @param bool $is_supported Whether all cart items are supported by the WooPay Express button.
+		 */
 		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );
 	}
 }

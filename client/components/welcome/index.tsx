@@ -3,12 +3,13 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { CardHeader, Flex, FlexItem } from '@wordpress/components';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { useAllDepositsOverviews } from 'data';
+import { CardHeader } from 'wcpay/components/card';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import { useCurrentWpUser } from './hooks';
 import { CurrencySelect } from './currency-select';
 import './style.scss';

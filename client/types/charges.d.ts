@@ -33,6 +33,7 @@ interface Level3Data {
 
 interface ChargeRefund {
 	balance_transaction: BalanceTransaction;
+	status?: string | null;
 }
 
 interface ChargeRefunds {
@@ -46,11 +47,7 @@ export type PaymentMethodDetails = {
 }[ PAYMENT_METHOD_IDS ];
 
 export type OutcomeRiskLevel =
-	| 'normal'
-	| 'elevated'
-	| 'highest'
-	| 'not_assessed'
-	| 'unknown';
+	'normal' | 'elevated' | 'highest' | 'not_assessed' | 'unknown';
 
 export interface ChargeDispute extends Omit< Dispute, 'charge' > {
 	charge: string;
@@ -68,6 +65,14 @@ export interface Charge {
 	created: number;
 	currency: string;
 	dispute?: null | ChargeDispute;
+	/**
+	 * All disputes on the charge. A single charge can accrue more than one
+	 * dispute (e.g. AmEx/Klarna partial disputes for separately-shipped items).
+	 * Additive: absent on responses from before the companion server change
+	 * deploys, and may be omitted if the server can't load the list. `dispute`
+	 * (singular) stays populated for backwards compatibility.
+	 */
+	disputes?: ChargeDispute[];
 	disputed: boolean;
 	order: null | OrderDetails;
 	outcome: null | {
@@ -92,6 +97,80 @@ export interface Charge {
 	reader_model?: string;
 	platform?: string;
 	level3?: Level3Data;
+	/**
+	 * Server-driven fee_breakdown_v1 envelope (experimental). When present,
+	 * header totals should read from `totals.fee` / `totals.net` rather
+	 * than deriving from `balance_transaction.fee` + `application_fee_amount`.
+	 */
+	fee_breakdown_v1?: {
+		rows: Array< {
+			key: string;
+			kind: 'fee' | 'adjustment' | 'tax';
+			label: string | null;
+			/** Magnitude for arithmetic compatibility (always >= 0 for fee/tax). */
+			amount: number;
+			/** Signed for direct rendering — no -Math.abs() needed. */
+			display_amount?: number;
+			currency: string;
+			rate: null | {
+				percentage?: number;
+				fixed?: number;
+				fixed_currency?: string;
+				capped?: boolean;
+				cap_amount?: number;
+				/** Pre-formatted percentage string (e.g. "2.9%", "22.00%"). */
+				percentage_display?: string;
+			};
+			meta: null | Record< string, unknown >;
+		} >;
+		totals: {
+			fee: {
+				amount: number;
+				display_amount?: number;
+				currency: string;
+				rate?: {
+					percentage?: number;
+					fixed?: number;
+					fixed_currency?: string;
+					capped?: boolean;
+					cap_amount?: number;
+					percentage_display?: string;
+				};
+			};
+			tax: {
+				amount: number;
+				display_amount?: number;
+				currency: string;
+			};
+			net: {
+				amount: number;
+				currency: string;
+			};
+			gross: {
+				amount: number;
+				currency: string;
+			};
+			/** Convenience: fee + tax in store currency (what Stripe deducted). */
+			fee_plus_tax?: {
+				amount: number;
+				currency: string;
+			};
+		};
+		notes: Array< {
+			code: string;
+			severity?: 'info' | 'warning' | 'error';
+			meta?: Record< string, unknown >;
+		} >;
+		sources?: Record< string, unknown >;
+		/** Cross-currency charges only. Pre-formatted for display. */
+		fx?: {
+			rate_display: string;
+			from_currency: string;
+			to_currency: string;
+			from_amount: number;
+			to_amount: number;
+		};
+	};
 }
 
 export interface ChargeAmounts {

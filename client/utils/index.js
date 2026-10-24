@@ -113,6 +113,8 @@ export const isInDevMode = ( fallback = false ) => {
 
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
 
+export { redirectTo } from './navigation';
+
 /**
  * Returns the URL to view a WooPayments document.
  *
@@ -215,6 +217,8 @@ export const getPaymentMethodsUrl = () => {
  */
 export const formatStringValue = ( value ) =>
 	capitalize( value ).replace( /_/g, ' ' );
+
+export const getUserTimeZone = () => moment( new Date() ).format( 'Z' );
 
 /**
  * Basic formatting function to convert local date string to UTC.

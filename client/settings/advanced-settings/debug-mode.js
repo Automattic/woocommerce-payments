@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useDebugLog, useDevMode } from 'wcpay/data';
+import { useDebugLog, useDevMode } from 'wcpay/data/settings';
 
 const DebugMode = () => {
 	const isDevModeEnabled = useDevMode();
@@ -22,7 +22,7 @@ const DebugMode = () => {
 						? __(
 								'Log error messages (defaulted on for test accounts)',
 								'woocommerce-payments'
-						  )
+							)
 						: __( 'Log error messages', 'woocommerce-payments' )
 				}
 				help={ __(

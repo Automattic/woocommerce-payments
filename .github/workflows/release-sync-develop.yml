@@ -1,0 +1,92 @@
+name: "Release - Sync develop"
+
+# Runs from the release PR and changelog workflows, or manually to refresh the
+# sync PR right before merging it.
+on:
+  workflow_call:
+    inputs:
+      releaseVersion:
+        description: "The release version (e.g. 4.5.0)"
+        required: true
+        type: string
+    outputs:
+      develop-pr-url:
+        description: "URL of the develop sync PR"
+        value: ${{ jobs.sync-develop.outputs.develop-pr-url }}
+
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "The release version (e.g. 4.5.0)"
+        required: true
+        type: string
+
+concurrency:
+  group: release-sync-develop-${{ inputs.releaseVersion }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  sync-develop:
+    name: "Sync develop with the release branch"
+    runs-on: ubuntu-latest
+    outputs:
+      develop-pr-url: ${{ steps.open-pr.outputs.DEVELOP_PR_URL }}
+    env:
+      RELEASE_VERSION: ${{ inputs.releaseVersion }}
+      SYNC_BRANCH: changelog-for-develop/${{ inputs.releaseVersion }}
+    steps:
+      # The bot token makes the force-push trigger CI on the sync PR, which a
+      # push with GITHUB_TOKEN would not.
+      - name: "Checkout repository"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.BOTWOO_TOKEN }}
+
+      - name: "Rebuild the sync branch from develop"
+        id: rebuild
+        run: |
+          git fetch origin "release/$RELEASE_VERSION"
+          git checkout -B "$SYNC_BRANCH" origin/develop
+          ./bin/sync-develop-from-release.sh "$RELEASE_VERSION" "origin/release/$RELEASE_VERSION"
+          git add -A
+          # Nothing staged means develop already has the release, e.g. the sync PR was merged.
+          if git diff --cached --quiet; then
+            echo "develop is already in sync with release/$RELEASE_VERSION." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Sync develop with release/$RELEASE_VERSION: version bump + changelog"
+          if git fetch origin "$SYNC_BRANCH" 2> /dev/null && git diff --quiet FETCH_HEAD HEAD; then
+            echo "$SYNC_BRANCH is already up to date." >> "$GITHUB_STEP_SUMMARY"
+          else
+            git push --force origin "$SYNC_BRANCH"
+          fi
+          echo "CHANGED=1" >> "$GITHUB_OUTPUT"
+
+      - name: "Open the PR against develop"
+        id: open-pr
+        if: ${{ steps.rebuild.outputs.CHANGED }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
+        run: |
+          DEVELOP_PR_URL=$(gh pr list --head "$SYNC_BRANCH" --base develop --state open --json url --jq '.[0].url // ""')
+          if [ -z "$DEVELOP_PR_URL" ]; then
+            RELEASE_PR_ID=$(gh pr list --head "release/$RELEASE_VERSION" --base trunk --state open --json number --jq '.[0].number // ""')
+            PR_BODY=$(echo -e "> [!NOTE]\n> As the release lead, please approve and merge this PR after the release is deployed.\n\nApplies the **version bump and changelog entries** from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge. Since \`trunk\` is no longer merged back, this PR is the only thing that brings the $RELEASE_VERSION version bump onto \`develop\`.\n\nIt also deletes the changelog entry files the release used up. The \`Release - Changelog\` workflow rebuilds this branch every time it amends the release branch, and you can rebuild it by hand with the [Release - Sync develop](https://github.com/Automattic/woocommerce-payments/actions/workflows/release-sync-develop.yml) workflow.\n\nRelated release PR: #${RELEASE_PR_ID}")
+            DEVELOP_PR_URL=$(gh pr create \
+              --title "Sync develop after $RELEASE_VERSION: version bump + changelog" \
+              --body "$PR_BODY" \
+              --base develop \
+              --head "$SYNC_BRANCH")
+            if [ -n "$RELEASE_PR_ID" ]; then
+              gh pr comment "$RELEASE_PR_ID" --body "Related develop sync PR: $DEVELOP_PR_URL"
+            fi
+          fi
+          echo "Develop sync PR: $DEVELOP_PR_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "DEVELOP_PR_URL=$DEVELOP_PR_URL" >> "$GITHUB_OUTPUT"

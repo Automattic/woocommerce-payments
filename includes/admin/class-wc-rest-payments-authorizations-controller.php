@@ -58,6 +58,8 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 	/**
 	 * Retrieve authorizations to respond with via API.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetAuthorizations
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_authorizations( WP_REST_Request $request ) {
@@ -80,6 +82,8 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 
 	/**
 	 * Retrieve authorizations summary to respond with via API.
+	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetAuthorizationsSummary
 	 */
 	public function get_authorizations_summary() {
 		$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );

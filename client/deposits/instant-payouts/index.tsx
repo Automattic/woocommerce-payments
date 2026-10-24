@@ -14,7 +14,7 @@ import { Button } from '@wordpress/components';
 import './style.scss';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import InstantPayoutModal from './modal';
-import { useInstantDeposit } from 'wcpay/data';
+import { useInstantDeposit } from 'wcpay/data/deposits';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 const isButtonDisabled = ( instantBalance: AccountOverview.InstantBalance ) => {

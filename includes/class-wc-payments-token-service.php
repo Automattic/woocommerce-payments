@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 
 /**
  * Handles and process WC payment tokens API.
@@ -130,7 +131,7 @@ class WC_Payments_Token_Service {
 	 *
 	 * @param string  $payment_method_id Payment method to be added.
 	 * @param WP_User $user              User to attach payment method to.
-	 * @return WC_Payment_Token_CC       The newly created token.
+	 * @return WC_Payment_Token          The newly created token.
 	 */
 	public function add_payment_method_to_user( $payment_method_id, $user ) {
 		$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
@@ -230,7 +231,7 @@ class WC_Payments_Token_Service {
 		}
 
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
-		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10 );
 
 		foreach ( $payment_methods as $payment_method ) {
 			if ( ! isset( $payment_method['type'] ) ) {
@@ -243,10 +244,10 @@ class WC_Payments_Token_Service {
 				unset( $stored_tokens[ $payment_method['id'] ] );
 			}
 		}
-		add_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 
 		// Remove the payment methods that no longer exist in Stripe's side.
-		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10 );
 		foreach ( $stored_tokens as $token ) {
 			unset( $tokens[ $token->get_id() ] );
 			$token->delete();
@@ -429,13 +430,34 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
 
-		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
-			if ( $customer_id ) {
-				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
-				// Clear cached payment methods.
-				$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
-			}
+		if ( ! in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
+			return;
+		}
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
+		if ( ! $customer_id ) {
+			return;
+		}
+
+		try {
+			$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
+		} catch ( Exception $e ) {
+			// WooCommerce writes the local default before firing this action, so a failed mirror
+			// must not take the request down. log_to_wc() because the WCPay logger is off by default.
+			WC_Payments_Utils::log_to_wc(
+				sprintf(
+					'Failed to set the default payment method %1$s for customer %2$s (user %3$d): %4$s',
+					$token->get_token(),
+					$customer_id,
+					$token->get_user_id(),
+					$e->getMessage()
+				)
+			);
+			$this->report_failed_default_payment_method_mirror();
+		} finally {
+			// The cache has no TTL, so keeping it after a failure goes on serving a payment method
+			// the server no longer has. Clearing it lets the next read re-sync and prune.
+			$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
 		}
 	}
 
@@ -464,8 +486,13 @@ class WC_Payments_Token_Service {
 	 */
 	public function get_account_saved_payment_methods_list_item_link( $item, $payment_token ) {
 		if ( WC_Payment_Token_WCPay_Link::TYPE === strtolower( $payment_token->get_type() ) ) {
+			$account_country         = WC_Payments::get_gateway()->get_account_country();
 			$item['method']['last4'] = $payment_token->get_redacted_email();
-			$item['method']['brand'] = esc_html__( 'Stripe Link email', 'woocommerce-payments' );
+			$item['method']['brand'] = sprintf(
+				/* translators: %s: Link brand name (Stripe Link or Onelink). */
+				esc_html__( '%s email', 'woocommerce-payments' ),
+				LinkDefinition::get_title( $account_country )
+			);
 		}
 		return $item;
 	}
@@ -538,13 +565,53 @@ class WC_Payments_Token_Service {
 	 * Normalizes the Stripe Link label on My Account page.
 	 *
 	 * @param string $label Token label.
-	 * @return string $label Capitalized SEPA IBAN label.
+	 * @return string $label Capitalized  Link/Onelink label.
 	 */
 	public function normalize_stripe_link_label( $label ) {
 		if ( 'stripe link email' === strtolower( $label ) ) {
 			return 'Stripe Link email';
 		}
 
+		if ( 'onelink email' === strtolower( $label ) ) {
+			return 'Onelink email';
+		}
+
 		return $label;
+	}
+
+	/**
+	 * Tells the customer that the new default did not reach the server.
+	 *
+	 * WooCommerce's My Account handler adds "This payment method was successfully set as your
+	 * default." right after this action returns, with no way to signal a failure back to it. Left
+	 * alone, a swallowed error reads to the customer as a change that stuck. Suppress that one
+	 * message and put an error in its place instead.
+	 *
+	 * The same action also fires during checkout and in admin and REST flows, where there is no
+	 * customer reading notices, so this only runs for the My Account "Make default" request.
+	 *
+	 * @return void
+	 */
+	private function report_failed_default_payment_method_mirror() {
+		if ( ! isset( $GLOBALS['wp']->query_vars['set-default-payment-method'] ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'wc_add_notice' ) || ! did_action( 'woocommerce_init' ) || ! isset( WC()->session ) ) {
+			return;
+		}
+
+		// Returning an empty message from this filter drops the notice. The callback removes
+		// itself so it only ever eats the one success notice that follows this action.
+		$suppress_success_notice = function () use ( &$suppress_success_notice ) {
+			remove_filter( 'woocommerce_add_message', $suppress_success_notice, 100 );
+			return '';
+		};
+		add_filter( 'woocommerce_add_message', $suppress_success_notice, 100 );
+
+		wc_add_notice(
+			__( 'We could not set that payment method as your default. It may no longer be available, please reload the page and try again.', 'woocommerce-payments' ),
+			'error'
+		);
 	}
 }

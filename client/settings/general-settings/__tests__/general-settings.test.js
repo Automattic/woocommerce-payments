@@ -13,10 +13,10 @@ import {
 	useIsWCPayEnabled,
 	useTestMode,
 	useTestModeOnboarding,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useDevMode: jest.fn(),
 	useIsWCPayEnabled: jest.fn(),
 	useTestMode: jest.fn(),
@@ -186,13 +186,18 @@ describe( 'GeneralSettings', () => {
 	} );
 
 	it( 'shows dev mode help text when dev mode is enabled', () => {
+		const devModeReason = 'The WP_DEVELOPMENT_MODE constant is set.';
+		global.wcpaySettings.devModeReason = devModeReason;
 		useDevMode.mockReturnValue( true );
 		useTestMode.mockReturnValue( [ false, jest.fn() ] );
-		renderWithSettingsProvider( <GeneralSettings /> );
+		const { container } = renderWithSettingsProvider( <GeneralSettings /> );
+		delete global.wcpaySettings.devModeReason;
 
-		expect(
-			screen.queryByText( /development or staging environment/i )
-		).toBeInTheDocument();
+		expect( container ).toHaveTextContent(
+			'Your store is in development mode, so payments are simulated. ' +
+				'The WP_DEVELOPMENT_MODE constant is set. ' +
+				'Real payments only work on your live store. Learn more'
+		);
 	} );
 
 	it( 'does not disable test mode checkbox when dev mode is not enabled', () => {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix gateway, payment and subscription unit tests that could not fail, and remove duplicate tests.

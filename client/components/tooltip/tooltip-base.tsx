@@ -51,43 +51,47 @@ const useHideDelay = (
 	// not using state for this, we don't need to cause a re-render
 	const hasMountedRef = useRef( false );
 	const onHideCallbackRef = useRef( onHide );
+	const wasVisiblePropRef = useRef( isVisibleProp );
+
+	// Render-time mirror of the prop → state for the show transition, so the
+	// tooltip appears synchronously without a cascading effect render.
+	if ( wasVisiblePropRef.current !== isVisibleProp ) {
+		wasVisiblePropRef.current = isVisibleProp;
+		if ( isVisibleProp && ! isVisible ) {
+			setIsVisible( true );
+		}
+	}
 
 	useEffect( () => {
 		onHideCallbackRef.current = onHide;
 	}, [ onHide ] );
 
-	// hide delay
+	// Dispatch the "another tooltip opened" event when this one becomes visible.
 	useEffect( () => {
-		let timer: ReturnType< typeof setTimeout > | null = null;
-
 		if ( ! hasMountedRef.current ) {
 			hasMountedRef.current = true;
 			return;
 		}
-
-		// element is marked as visible, no need to hide it
 		if ( isVisibleProp ) {
 			parentElement.dispatchEvent( new Event( 'wcpay-tooltip-open' ) );
-			setIsVisible( true );
+		}
+	}, [ isVisibleProp, parentElement ] );
+
+	// Delayed hide: when the prop flips off but the tooltip is still visible,
+	// schedule the state flip so the fade-out animation can play.
+	useEffect( () => {
+		if ( isVisibleProp || ! isVisible ) {
 			return;
 		}
-
-		if ( ! isVisible ) {
-			return;
-		}
-
-		// element is marked as not visible, hide it after `hideDelayMs` milliseconds
-		timer = setTimeout( () => {
+		const timer = setTimeout( () => {
 			setIsVisible( false );
 			onHideCallbackRef.current();
 		}, hideDelayMs );
 
 		return () => {
-			if ( timer ) {
-				clearTimeout( timer );
-			}
+			clearTimeout( timer );
 		};
-	}, [ setIsVisible, hideDelayMs, isVisibleProp, isVisible, parentElement ] );
+	}, [ isVisibleProp, isVisible, hideDelayMs ] );
 
 	// listen to other events to hide
 	useEffect( () => {
@@ -128,7 +132,7 @@ const useHideDelay = (
 				handleHideElement
 			);
 		};
-	}, [ isVisibleProp, isVisible, triggerRef, tooltipRef, parentElement ] );
+	}, [ isVisible, triggerRef, tooltipRef, parentElement ] );
 
 	return isVisible;
 };
@@ -209,7 +213,16 @@ const TooltipBase: React.FC< React.PropsWithChildren< TooltipBaseProps > > = ( {
 				return;
 			}
 
+			const viewportPadding = 8;
+
 			tooltipElement.style.maxWidth = maxWidth;
+
+			// Cap maxWidth to the viewport so the tooltip can never be wider
+			// than the available space on narrow screens.
+			const viewportMaxWidth = window.innerWidth - 2 * viewportPadding;
+			if ( tooltipElement.offsetWidth > viewportMaxWidth ) {
+				tooltipElement.style.maxWidth = `${ viewportMaxWidth }px`;
+			}
 
 			const wrappedElementRect = wrappedElement.getBoundingClientRect();
 			const tooltipElementRect = tooltipElement.getBoundingClientRect();
@@ -221,18 +234,15 @@ const TooltipBase: React.FC< React.PropsWithChildren< TooltipBaseProps > > = ( {
 			const elementMiddle =
 				wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
 			const tooltipWidth = tooltipElement.offsetWidth;
-			let tooltipLeft = elementMiddle - tooltipWidth / 2;
-			const tooltipRight =
-				window.innerWidth -
-				( wrappedElementRect.left + tooltipElement.offsetWidth );
 
-			if ( tooltipLeft < 0 ) {
-				// create a gap with the left edge if the element is out of view port
-				tooltipLeft = 45;
-			} else if ( tooltipRight < 0 ) {
-				// create a gap with the right edge if the element is out of view port
-				tooltipLeft = tooltipLeft - 85;
-			}
+			// Center on the trigger, then clamp inside the viewport so the
+			// tooltip stays visible at any breakpoint or scroll position.
+			const minLeft = viewportPadding;
+			const maxLeft = window.innerWidth - tooltipWidth - viewportPadding;
+			const tooltipLeft = Math.max(
+				minLeft,
+				Math.min( elementMiddle - tooltipWidth / 2, maxLeft )
+			);
 
 			tooltipElement.style.left = `${ tooltipLeft }px`;
 

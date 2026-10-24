@@ -552,9 +552,9 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 	 * @param array $array The array to process.
 	 * @return array The array with HTML tags stripped from all values.
 	 */
-	private function array_strip_tags( array $array ): array {
+	private function array_strip_tags( array $input ): array {
 		$result = [];
-		foreach ( $array as $key => $value ) {
+		foreach ( $input as $key => $value ) {
 			if ( is_array( $value ) ) {
 				$result[ $key ] = $this->array_strip_tags( $value );
 			} elseif ( is_string( $value ) ) {

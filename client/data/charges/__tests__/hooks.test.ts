@@ -9,7 +9,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { useCharge, useChargeFromOrder } from '../';
-import { STORE_NAME } from '../../constants';
+import { STORE_NAME } from '../store';
 import {
 	chargeId,
 	chargeMock,

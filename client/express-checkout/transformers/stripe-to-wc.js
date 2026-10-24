@@ -18,7 +18,7 @@ export const transformStripeShippingAddressForStoreApi = (
 	address_2: shippingAddress.line2 ?? '',
 	city: shippingAddress.city ?? '',
 	state: shippingAddress.state ?? '',
-	postcode: shippingAddress.postal_code?.replace( ' ', '' ) ?? '',
+	postcode: shippingAddress.postal_code ?? '',
 	country: shippingAddress.country ?? '',
 } );
 
@@ -73,7 +73,7 @@ export const transformStripePaymentMethodForStoreApi = (
 					// Stripe doesn't provide us with a different phone number for shipping,
 					// so we're going to use the same phone used for billing.
 					phone: billingPhone,
-			  }
+				}
 			: undefined,
 		payment_method: 'woocommerce_payments',
 		payment_data: [

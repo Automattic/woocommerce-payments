@@ -10,7 +10,7 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import type { DepositStatus } from 'wcpay/types/deposits';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,
@@ -18,11 +18,13 @@ import PAYMENT_METHOD_IDS, {
 
 export type TransactionType =
 	| 'charge'
+	| 'payment'
 	| 'refund'
 	| 'card_reader_fee'
 	| 'financing_payout'
 	| 'financing_paydown'
-	| 'fee_refund';
+	| 'fee_refund'
+	| 'network_costs';
 
 export type TransactionSource =
 	| 'ach_credit_transfer'
@@ -65,6 +67,11 @@ export interface Transaction {
 		interval_to: string;
 	};
 	payment_intent_id?: string;
+	// Present only when the charge's order received an early fraud warning.
+	early_fraud_warning?: {
+		actionable: boolean;
+		fraud_type: string;
+	};
 }
 
 interface Transactions {

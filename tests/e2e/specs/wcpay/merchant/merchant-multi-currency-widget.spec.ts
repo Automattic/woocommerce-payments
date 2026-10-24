@@ -30,13 +30,13 @@ test.describe( 'Multi-currency widget setup', () => {
 		borderColor: 'rgb(252, 185, 0)',
 	};
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
 		await restoreCurrencies( merchantPage );
 
-		await addMulticurrencyWidget( merchantPage, true );
+		await addMulticurrencyWidget( merchantPage, project.use.baseURL, true );
 	} );
 
 	test.afterAll( async ( {}, { project } ) => {
@@ -89,35 +89,29 @@ test.describe( 'Multi-currency widget setup', () => {
 			await merchantPage
 				.getByRole( 'checkbox', { name: 'Display flags' } )
 				.check();
-			expect(
-				await merchantPage
-					.getByRole( 'checkbox', { name: 'Display flags' } )
-					.isChecked()
-			).toBeTruthy();
+			await expect(
+				merchantPage.getByRole( 'checkbox', { name: 'Display flags' } )
+			).toBeChecked();
 		} );
 
 		await test.step( 'checks display currency symbols', async () => {
 			await merchantPage
 				.getByRole( 'checkbox', { name: 'Display currency symbols' } )
 				.check();
-			expect(
-				await merchantPage
-					.getByRole( 'checkbox', {
-						name: 'Display currency symbols',
-					} )
-					.isChecked()
-			).toBeTruthy();
+			await expect(
+				merchantPage.getByRole( 'checkbox', {
+					name: 'Display currency symbols',
+				} )
+			).toBeChecked();
 		} );
 
 		await test.step( 'checks border', async () => {
 			await merchantPage
 				.getByRole( 'checkbox', { name: 'Border' } )
 				.check();
-			expect(
-				await merchantPage
-					.getByRole( 'checkbox', { name: 'Border' } )
-					.isChecked()
-			).toBeTruthy();
+			await expect(
+				merchantPage.getByRole( 'checkbox', { name: 'Border' } )
+			).toBeChecked();
 		} );
 
 		await test.step( 'updates border radius', async () => {

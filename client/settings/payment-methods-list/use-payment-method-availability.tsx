@@ -12,7 +12,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/utils/missing-currencies-message';
 import { __, sprintf } from '@wordpress/i18n';
@@ -23,7 +23,7 @@ import { getAdminUrl } from 'wcpay/utils';
 
 const documentationTypeMap = {
 	DEFAULT:
-		'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
+		'https://woocommerce.com/document/woopayments/payment-methods/local-payment-methods/#method-cant-be-enabled',
 	BNPLS: 'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
 	DELAYED_APPROVAL:
 		'https://woocommerce.com/document/woopayments/payment-methods/local-payment-methods/#approval-delays',
@@ -126,11 +126,11 @@ const usePaymentMethodAvailability = ( id: string ) => {
 								/>
 							),
 						},
-				  } )
+					} )
 				: __(
 						"This payment method is pending approval. It won't be available at checkout until it's approved.",
 						'woocommerce-payments'
-				  ),
+					),
 		};
 	}
 

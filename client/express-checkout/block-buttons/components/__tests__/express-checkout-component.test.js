@@ -1,0 +1,58 @@
+/**
+ * External dependencies
+ */
+import { render } from '@testing-library/react';
+
+/**
+ * Internal dependencies
+ */
+import ExpressCheckoutComponent from '../express-checkout-component';
+
+let mockElementProps;
+
+jest.mock( '@stripe/react-stripe-js', () => ( {
+	ExpressCheckoutElement: ( props ) => {
+		mockElementProps = props;
+		return <div />;
+	},
+} ) );
+
+jest.mock( '../../hooks/use-express-checkout', () => ( {
+	useExpressCheckout: () => ( {
+		buttonOptions: { buttonHeight: 48, buttonTheme: {} },
+		onButtonClick: jest.fn(),
+		onConfirm: jest.fn(),
+		onReady: jest.fn(),
+		onCancel: jest.fn(),
+		elements: {},
+	} ),
+} ) );
+
+describe( 'ExpressCheckoutComponent', () => {
+	afterEach( () => {
+		document.body.innerHTML = '';
+	} );
+
+	it( 'keeps the block slot when the wallet is unavailable', () => {
+		const list = document.createElement( 'ul' );
+		const slot = document.createElement( 'li' );
+		slot.id =
+			'express-payment-method-woocommerce_payments_express_checkout_applePay';
+		list.appendChild( slot );
+		document.body.appendChild( list );
+
+		render(
+			<ExpressCheckoutComponent
+				billing={ {} }
+				shippingData={ {} }
+				expressPaymentMethod="applePay"
+			/>,
+			{ container: slot }
+		);
+		mockElementProps.onReady( {
+			availablePaymentMethods: { applePay: false },
+		} );
+
+		expect( list.contains( slot ) ).toBe( true );
+	} );
+} );

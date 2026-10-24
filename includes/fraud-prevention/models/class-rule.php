@@ -23,6 +23,17 @@ class Rule {
 	const FRAUD_OUTCOME_BLOCK  = 'block';
 
 	/**
+	 * Every valid fraud outcome status.
+	 *
+	 * @var string[]
+	 */
+	const FRAUD_OUTCOME_STATUSES = [
+		self::FRAUD_OUTCOME_ALLOW,
+		self::FRAUD_OUTCOME_BLOCK,
+		self::FRAUD_OUTCOME_REVIEW,
+	];
+
+	/**
 	 * Rule key.
 	 *
 	 * @var string
@@ -70,37 +81,37 @@ class Rule {
 	/**
 	 * Creates a Rule instance from a Fraud_Ruleset rule_config field.
 	 *
-	 * @param array $array The rule array retrieved from parsing Fraud_Ruleset::rules_config.
+	 * @param array $data The rule array retrieved from parsing Fraud_Ruleset::rules_config.
 	 *
 	 * @return Rule
 	 * @throws Fraud_Ruleset_Exception
 	 */
-	public static function from_array( array $array ): Rule {
+	public static function from_array( array $data ): Rule {
 		// Check if this is a valid candidate for a rule. Rules should have keys, outcomes, and checks defined and not empty.
-		if ( ! self::validate_array( $array ) ) {
+		if ( ! self::validate_array( $data ) ) {
 			throw new Fraud_Ruleset_Exception( 'Rule definition not valid.' );
 		}
 
 		return new self(
-			$array['key'],
-			$array['outcome'],
-			Check::from_array( $array['check'] )
+			$data['key'],
+			$data['outcome'],
+			Check::from_array( $data['check'] )
 		);
 	}
 
 	/**
 	 * Validates the given array if it's structured to become a Rule object.
 	 *
-	 * @param   array $array  The array to validate.
+	 * @param   array $data  The array to validate.
 	 *
-	 * @return  bool          Whether it is a valid Rule array.
+	 * @return  bool         Whether it is a valid Rule array.
 	 */
-	public static function validate_array( array $array ) {
-		if ( ! isset( $array['key'], $array['check'], $array['outcome'] )
-			|| ! is_array( $array['check'] )
-			|| empty( $array['check'] )
+	public static function validate_array( array $data ) {
+		if ( ! isset( $data['key'], $data['check'], $data['outcome'] )
+			|| ! is_array( $data['check'] )
+			|| empty( $data['check'] )
 			|| ! in_array(
-				$array['outcome'],
+				$data['outcome'],
 				[
 					self::FRAUD_OUTCOME_BLOCK,
 					self::FRAUD_OUTCOME_REVIEW,
@@ -113,7 +124,7 @@ class Rule {
 		}
 
 		// Validate child checks.
-		if ( ! Check::validate_array( $array['check'] ) ) {
+		if ( ! Check::validate_array( $data['check'] ) ) {
 			return false;
 		}
 
@@ -128,15 +139,7 @@ class Rule {
 	 * @return bool Whether it is a valid Rule array.
 	 */
 	public static function is_valid_fraud_outcome_status( string $outcome ): bool {
-		return in_array(
-			$outcome,
-			[
-				self::FRAUD_OUTCOME_BLOCK,
-				self::FRAUD_OUTCOME_REVIEW,
-				self::FRAUD_OUTCOME_ALLOW,
-			],
-			true
-		);
+		return in_array( $outcome, self::FRAUD_OUTCOME_STATUSES, true );
 	}
 
 	/**

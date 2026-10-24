@@ -10,10 +10,10 @@ import React from 'react';
  * Internal dependencies
  */
 import CancelAuthorizationButton from '../';
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 import { Authorization } from 'wcpay/types/authorizations';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/authorizations', () => ( {
 	useAuthorization: jest.fn(),
 } ) );
 

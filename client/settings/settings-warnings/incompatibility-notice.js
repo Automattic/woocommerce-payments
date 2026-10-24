@@ -1,13 +1,14 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
 import InlineNotice from 'wcpay/components/inline-notice';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 
 const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
 	<InlineNotice status="warning" icon={ true } isDismissible={ false }>
@@ -39,4 +40,17 @@ export const WooPayIncompatibilityNotice = () => (
 		) }
 		learnMoreLinkHref="https://woocommerce.com/document/woopay-merchant-documentation/#compatibility"
 	/>
+);
+
+export const LinkWooPayConflictNotice = () => (
+	<InlineNotice status="warning" isDismissible={ false }>
+		{ sprintf(
+			/* translators: %s: Payment method name, e.g. "Stripe Link" or "Onelink". */
+			__(
+				"%s and WooPay can't be enabled at the same time. Disable one of them.",
+				'woocommerce-payments'
+			),
+			methodsConfiguration.link.label
+		) }
+	</InlineNotice>
 );

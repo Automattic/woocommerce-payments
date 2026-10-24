@@ -85,8 +85,8 @@ describe( 'Settings actions tests', () => {
 			// Since the actual fetching process is mocked, pass the apiResponse to the next saveGenerator step directly
 			next = saveGenerator.next( apiResponse );
 			expect( next.value ).toEqual( {
-				type: 'SET_SETTINGS_VALUES',
-				payload: {
+				type: 'SET_SETTINGS',
+				data: {
 					payment_method_statuses:
 						apiResponse.data.payment_method_statuses,
 				},
@@ -100,6 +100,38 @@ describe( 'Settings actions tests', () => {
 
 			// Check if the saveGenerator is complete
 			expect( saveGenerator.next().done ).toBeTruthy();
+		} );
+
+		test( 'on success, restores the saved snapshot (discarding mid-save edits)', () => {
+			// on success, we reset back the settings to the state they were when the saving started (so any mid-save edits get discarded)
+			const snapshot = {
+				enabled_payment_method_ids: [ 'card' ],
+				is_wcpay_enabled: true,
+			};
+			select.mockReturnValue( {
+				getSettings: () => snapshot,
+			} );
+
+			const apiResponse = {
+				data: {
+					payment_method_statuses: { card: 'active' },
+				},
+			};
+			apiFetch.mockReturnValue( apiResponse );
+
+			const saveGenerator = saveSettings();
+			saveGenerator.next(); // updateIsSavingSettings( true )
+			saveGenerator.next(); // apiFetch
+			const next = saveGenerator.next( apiResponse );
+
+			expect( next.value ).toEqual( {
+				type: 'SET_SETTINGS',
+				data: {
+					...snapshot,
+					payment_method_statuses:
+						apiResponse.data.payment_method_statuses,
+				},
+			} );
 		} );
 
 		test( 'displays success notice after saving', () => {
@@ -162,6 +194,57 @@ describe( 'Settings actions tests', () => {
 					} ),
 				] )
 			);
+		} );
+
+		test( 'displays server_error as a second notice only when no inline details are provided', () => {
+			const saveGenerator = saveSettings();
+
+			apiFetch.mockImplementation( () => {
+				// eslint-disable-next-line no-throw-literal
+				throw {
+					server_error: 'Stripe rejected this',
+				};
+			} );
+
+			// eslint-disable-next-line no-unused-expressions
+			[ ...saveGenerator ];
+
+			expect(
+				dispatch( 'core/notices' ).createErrorNotice
+			).toHaveBeenCalledWith( 'Error saving settings.' );
+			expect(
+				dispatch( 'core/notices' ).createErrorNotice
+			).toHaveBeenCalledWith( 'Stripe rejected this' );
+		} );
+
+		test( 'skips the duplicate server_error notice when inline details are present', () => {
+			const saveGenerator = saveSettings();
+
+			apiFetch.mockImplementation( () => {
+				// eslint-disable-next-line no-throw-literal
+				throw {
+					server_error: 'Stripe rejected this',
+					data: {
+						details: {
+							account_business_support_phone: {
+								code: 'wcpay_failed_to_update_stripe_account',
+								message: 'Stripe rejected this',
+								data: null,
+							},
+						},
+					},
+				};
+			} );
+
+			// eslint-disable-next-line no-unused-expressions
+			[ ...saveGenerator ];
+
+			expect(
+				dispatch( 'core/notices' ).createErrorNotice
+			).toHaveBeenCalledWith( 'Error saving settings.' );
+			expect(
+				dispatch( 'core/notices' ).createErrorNotice
+			).not.toHaveBeenCalledWith( 'Stripe rejected this' );
 		} );
 	} );
 

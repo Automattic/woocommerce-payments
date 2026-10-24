@@ -21,7 +21,7 @@ import {
 	useWooPayStoreLogo,
 	useGetDuplicatedPaymentMethodIds,
 } from '../hooks';
-import { STORE_NAME } from '../../constants';
+import { STORE_NAME } from '../store';
 
 jest.mock( '@wordpress/data' );
 

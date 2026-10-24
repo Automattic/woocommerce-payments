@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -40,16 +41,23 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	/**
 	 * Forwards request to API client with taking care of API_Exception.
 	 *
+	 * Invalid_Request_Parameter_Exception is a sibling of API_Exception rather than a subclass, so
+	 * it needs its own catch: without one, a request class rejecting a parameter escapes as an
+	 * uncaught fatal instead of a bad request. Other Base_Exception types are left uncaught on
+	 * purpose, since they signal a programming error rather than a bad request.
+	 *
 	 * @param string $api_method - API method name.
 	 * @param array  $args - API method args.
 	 *
-	 * @return WP_Error|mixed - Method result of WP_Error in case of API_Exception.
+	 * @return WP_Error|mixed - Method result, or WP_Error in case of an API or parameter exception.
 	 */
 	public function forward_request( $api_method, $args ) {
 		try {
 			$response = call_user_func_array( [ $this->api_client, $api_method ], $args );
 		} catch ( API_Exception $e ) {
 			$response = new WP_Error( $e->get_error_code(), $e->getMessage() );
+		} catch ( Invalid_Request_Parameter_Exception $e ) {
+			$response = new WP_Error( $e->get_error_code(), $e->getMessage(), [ 'status' => 400 ] );
 		}
 
 		return rest_ensure_response( $response );

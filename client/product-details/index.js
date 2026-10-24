@@ -82,13 +82,20 @@ jQuery( async function ( $ ) {
 	 * @param {string} currency     - The currency code (e.g., 'USD', 'EUR') for the BNPL message.
 	 * @param {number} [quantity=1] - The quantity of the product being purchased. Defaults to 1.
 	 */
-	const updateBnplPaymentMessage = ( amount, currency, quantity = 1 ) => {
+	const updateBnplPaymentMessage = async (
+		amount,
+		currency,
+		quantity = 1
+	) => {
 		const totalAmount =
 			parseIntOrReturnZero( amount ) * parseIntOrReturnZero( quantity );
 		if ( totalAmount <= 0 || ! currency ) {
 			return;
 		}
-		bnplPaymentMessageElement?.update( { amount: totalAmount, currency } );
+		await bnplPaymentMessageElement?.update( {
+			amount: totalAmount,
+			currency,
+		} );
 	};
 
 	/**

@@ -40,7 +40,12 @@ class WC_Payments_Subscription_Minimum_Amount_Handler {
 	 */
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		if ( WC_Payments_Features::should_use_stripe_billing() ) {
 			add_filter( 'woocommerce_subscriptions_minimum_processable_recurring_amount', [ $this, 'get_minimum_recurring_amount' ], 10, 2 );
 		}

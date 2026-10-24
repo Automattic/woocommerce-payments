@@ -13,14 +13,14 @@ import { useUserPreferences } from '@woocommerce/data';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data/deposits';
 import {
 	CachedDeposit,
 	CachedDeposits,
 	DepositsSummary,
 } from 'wcpay/types/deposits';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/deposits', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
 } ) );

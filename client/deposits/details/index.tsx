@@ -15,17 +15,15 @@ import clsx from 'clsx';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
-	Card,
-	CardBody,
-	CardHeader,
 	ExternalLink,
 } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { Card, CardBody, CardHeader } from 'wcpay/components/card';
 import type { CachedDeposit } from 'types/deposits';
-import { useDeposit } from 'data';
+import { useDeposit } from 'wcpay/data/deposits';
 import TransactionsList from 'transactions/list';
 import { CopyButton } from 'components/copy-button';
 import Page from 'components/page';
@@ -166,7 +164,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 							? __(
 									'Withdrawal overview',
 									'woocommerce-payments'
-							  )
+								)
 							: __( 'Payout overview', 'woocommerce-payments' )
 					}
 				>
@@ -179,11 +177,11 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									? __(
 											'Withdrawal amount',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'Payout amount',
 											'woocommerce-payments'
-									  )
+										)
 							}
 							value={ formatExplicitCurrency(
 								deposit.amount + deposit.fee,
@@ -212,11 +210,11 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									? __(
 											'Net withdrawal amount',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'Net payout amount',
 											'woocommerce-payments'
-									  )
+										)
 							}
 							value={ formatExplicitCurrency(
 								deposit.amount,
@@ -346,7 +344,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 									components: {
 										learnMoreLink: (
 											// @ts-expect-error: children is provided when interpolating the component
-											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#transactions" />
+											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout" />
 										),
 									},
 								} ) }

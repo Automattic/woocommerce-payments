@@ -144,9 +144,20 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 					'radius' => '10',
 				]
 			);
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'product' );
+		$this->mock_ece_button_helper
+			->expects( $this->once() )
+			->method( 'get_setup_future_usage' )
+			->with( 'product' )
+			->willReturn( 'off_session' );
+
 		$params = $this->system_under_test->get_express_checkout_params();
 		$this->assertArrayHasKey( 'store_name', $params );
 		$this->assertEquals( get_bloginfo( 'name' ), $params['store_name'] );
+		// The product page has no Store API cart to carry this, so it ships localized.
+		$this->assertSame( 'off_session', $params['setup_future_usage'] );
 	}
 
 	public function test_payment_fields_js_config_on_cart_page_with_cart_disabled() {
@@ -164,7 +175,7 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 			->willReturn( false );
 
 		$this->mock_ece_button_helper
-			->method( 'can_use_amazon_pay' )
+			->method( 'is_amazon_pay_enabled_by_merchant' )
 			->willReturn( false );
 
 		$config = $this->system_under_test->payment_fields_js_config( [] );
@@ -187,7 +198,7 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 			->willReturn( true );
 
 		$this->mock_ece_button_helper
-			->method( 'can_use_amazon_pay' )
+			->method( 'is_amazon_pay_enabled_by_merchant' )
 			->willReturn( false );
 
 		$config = $this->system_under_test->payment_fields_js_config( [] );
@@ -205,7 +216,7 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 			->willReturn( true );
 
 		$this->mock_ece_button_helper
-			->method( 'can_use_amazon_pay' )
+			->method( 'is_amazon_pay_enabled_by_merchant' )
 			->willReturn( true );
 
 		$config = $this->system_under_test->payment_fields_js_config( [] );
@@ -224,7 +235,7 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 			->willReturn( false );
 
 		$this->mock_ece_button_helper
-			->method( 'can_use_amazon_pay' )
+			->method( 'is_amazon_pay_enabled_by_merchant' )
 			->willReturn( true );
 
 		$this->mock_ece_button_helper
@@ -235,5 +246,63 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 		$config = $this->system_under_test->payment_fields_js_config( [] );
 
 		$this->assertFalse( $config['isAmazonPayEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_enables_amazon_pay_when_the_current_currency_rules_it_out() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'checkout' );
+
+		$this->mock_ece_button_helper
+			->method( 'is_amazon_pay_enabled_by_merchant' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( false );
+
+		$this->mock_ece_button_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->willReturn( true );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertTrue( $config['isAmazonPayEnabled'] );
+	}
+
+	public function test_init_registers_hooks_when_only_amazon_pay_is_on_and_the_current_currency_rules_it_out() {
+		$this->mock_wcpay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_wcpay_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
+		$this->mock_ece_button_helper->method( 'is_amazon_pay_enabled_by_merchant' )->willReturn( true );
+		$this->mock_ece_button_helper->method( 'can_use_amazon_pay' )->willReturn( false );
+
+		$this->system_under_test->init();
+
+		$this->assertSame( 10, has_filter( 'wcpay_payment_fields_js_config', [ $this->system_under_test, 'payment_fields_js_config' ] ) );
+		$this->assertSame( 10, has_action( 'wp_enqueue_scripts', [ $this->system_under_test, 'scripts' ] ) );
+	}
+
+	public function test_init_skips_hooks_when_no_express_checkout_method_is_on() {
+		$this->mock_wcpay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_wcpay_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
+		$this->mock_ece_button_helper->method( 'is_amazon_pay_enabled_by_merchant' )->willReturn( false );
+
+		$this->system_under_test->init();
+
+		$this->assertFalse( has_filter( 'wcpay_payment_fields_js_config', [ $this->system_under_test, 'payment_fields_js_config' ] ) );
+	}
+
+	public function test_account_creation_is_possible_when_username_and_password_generation_are_disabled() {
+		update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'yes' );
+		update_option( 'woocommerce_registration_generate_username', 'no' );
+		update_option( 'woocommerce_registration_generate_password', 'no' );
+
+		$this->assertTrue( $this->system_under_test->is_account_creation_possible() );
+	}
+
+	public function test_account_creation_is_not_possible_when_signup_from_checkout_is_disabled() {
+		update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
+
+		$this->assertFalse( $this->system_under_test->is_account_creation_possible() );
 	}
 }

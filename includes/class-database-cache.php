@@ -59,6 +59,20 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const AUTHORIZATION_SUMMARY_KEY_TEST_MODE = 'wcpay_test_authorization_summary_cache';
 
 	/**
+	 * Cache key for orders with an actionable early fraud warning.
+	 *
+	 * @var string
+	 */
+	const EARLY_FRAUD_WARNING_ORDERS_KEY = 'wcpay_early_fraud_warning_orders_cache';
+
+	/**
+	 * Cache key for orders with an actionable early fraud warning, in test mode.
+	 *
+	 * @var string
+	 */
+	const EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE = 'wcpay_test_early_fraud_warning_orders_cache';
+
+	/**
 	 * Cache key for eligible connect incentive data.
 	 */
 	const CONNECT_INCENTIVE_KEY = 'wcpay_connect_incentive';
@@ -87,6 +101,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		self::ACTIVE_DISPUTES_KEY,
 		self::AUTHORIZATION_SUMMARY_KEY,
 		self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
+		self::EARLY_FRAUD_WARNING_ORDERS_KEY,
+		self::EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE,
 		self::CONNECT_INCENTIVE_KEY,
 		self::TRACKING_INFO_KEY,
 	];
@@ -107,6 +123,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @var array
 	 */
 	private $in_memory_cache = [];
+
+	/**
+	 * Values resolved by get_or_add() during this request, keyed by cache key.
+	 *
+	 * Repeated calls are served from here once the caller's validate_data
+	 * callback approves the value; rejected values fall through to the full
+	 * read/refresh path. Cleared by add() and delete().
+	 *
+	 * @var array
+	 */
+	private $resolved_values = [];
 
 	/**
 	 * Class constructor.
@@ -136,6 +163,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return mixed|null The cached value. NULL on failure to regenerate or validate the data.
 	 */
 	public function get_or_add( string $key, callable $generator, callable $validate_data, bool $force_refresh = false, bool &$refreshed = false ) {
+		if ( ! $force_refresh && array_key_exists( $key, $this->resolved_values ) && $validate_data( $this->resolved_values[ $key ] ) ) {
+			$refreshed = false;
+			return $this->resolved_values[ $key ];
+		}
+
 		$cache_contents = $this->get_from_cache( $key );
 		$data           = null;
 		$old_data       = null;
@@ -164,6 +196,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 
 			$this->write_to_cache( $key, $data, $errored );
 		}
+
+		$this->resolved_values[ $key ] = $data;
 
 		return $data;
 	}
@@ -198,6 +232,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	public function add( string $key, $data ) {
+		unset( $this->resolved_values[ $key ] );
 		$this->write_to_cache( $key, $data, false );
 	}
 
@@ -209,8 +244,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	public function delete( string $key ) {
-		// Remove from the in-memory cache.
+		// Remove from the in-memory caches.
 		unset( $this->in_memory_cache[ $key ] );
+		unset( $this->resolved_values[ $key ] );
 
 		// Remove from the DB cache.
 		delete_option( $key );
@@ -253,6 +289,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY );
 		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE );
 		$this->delete( self::ACTIVE_DISPUTES_KEY );
+	}
+
+	/**
+	 * Delete the cached lists of orders with an actionable early fraud warning.
+	 * This ensures both live and test mode lists are refreshed.
+	 *
+	 * @return void
+	 */
+	public function delete_early_fraud_warning_caches() {
+		$this->delete( self::EARLY_FRAUD_WARNING_ORDERS_KEY );
+		$this->delete( self::EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE );
 	}
 
 	/**
@@ -403,11 +450,16 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return integer The cache TTL.
 	 */
 	private function get_ttl( string $key, array $cache_contents ): int {
+		// Legacy cache entries written before the `errored` field existed do not carry the key,
+		// and get() reaches get_ttl() (via is_expired) without guaranteeing it. Default to false so
+		// the reads below cannot emit a PHP 8 "Undefined array key" warning.
+		$errored = $cache_contents['errored'] ?? false;
+
 		switch ( $key ) {
 			case self::ACCOUNT_KEY:
 				if ( is_admin() ) {
 					// Fetches triggered from the admin panel should be more frequent.
-					if ( $cache_contents['errored'] ) {
+					if ( $errored ) {
 						// Progressive backoff on repeated errors (2/5/10/15 min).
 						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
@@ -422,7 +474,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			case self::CURRENCIES_KEY:
 				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
 					// Fetches triggered from the admin panel should be more frequent.
-					if ( $cache_contents['errored'] ) {
+					if ( $errored ) {
 						// Progressive backoff on repeated errors (2/5/10/15 min).
 						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
@@ -436,8 +488,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 			case self::BUSINESS_TYPES_KEY:
 			case self::ONBOARDING_FIELDS_DATA_KEY:
-				// Cache these for a week.
-				$ttl = WEEK_IN_SECONDS;
+				// Cache successful data for a week, but back off quickly on errors so a
+				// single transient failure does not block onboarding for the full week.
+				$ttl = $errored
+					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
+					: WEEK_IN_SECONDS;
 				break;
 			case self::CONNECT_INCENTIVE_KEY:
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
@@ -448,12 +503,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
 			case self::TRACKING_INFO_KEY:
-				$ttl = $cache_contents['errored']
+				$ttl = $errored
 					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
 					: MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
-				$ttl = 12 * HOUR_IN_SECONDS;
+				if ( $errored ) {
+					// Retry quickly after a transient failure so address autocomplete recovers promptly.
+					$ttl = 2 * MINUTE_IN_SECONDS;
+				} else {
+					$ttl = 12 * HOUR_IN_SECONDS;
+				}
 				break;
 			default:
 				// Default to 24h.
@@ -461,6 +521,15 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 		}
 
+		/**
+		 * Allows filtering of the time-to-live (in seconds) for a WooPayments database cache entry.
+		 *
+		 * @since 4.0.0
+		 *
+		 * @param int    $ttl            The cache TTL in seconds.
+		 * @param string $key            The cache key.
+		 * @param mixed  $cache_contents The contents being cached.
+		 */
 		return apply_filters( 'wcpay_database_cache_ttl', $ttl, $key, $cache_contents );
 	}
 

@@ -29,6 +29,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		delete_option( self::MOCK_KEY );
+		delete_option( Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY );
 		delete_option( Database_Cache::ACCOUNT_KEY );
 		delete_option( Database_Cache::CURRENCIES_KEY );
 		delete_option( Database_Cache::TRACKING_INFO_KEY );
@@ -96,6 +97,146 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assert_cache_contains( $value );
 	}
 
+	public function test_get_or_add_resolves_repeated_calls_in_memory() {
+		$refreshed        = false;
+		$value            = [ 'mock' => true ];
+		$validation_count = 0;
+
+		$this->write_mock_cache( $value );
+
+		$validator = function () use ( &$validation_count ) {
+			++$validation_count;
+			return true;
+		};
+		$generator = function () {
+			$this->fail( 'Should not call the generator.' );
+		};
+
+		$first                      = $this->database_cache->get_or_add( self::MOCK_KEY, $generator, $validator, false, $refreshed );
+		$validations_for_first_call = $validation_count;
+		$second                     = $this->database_cache->get_or_add( self::MOCK_KEY, $generator, $validator, false, $refreshed );
+
+		$this->assertEquals( $value, $first );
+		$this->assertEquals( $value, $second );
+		$this->assertSame( $validations_for_first_call + 1, $validation_count, 'The repeated call should revalidate once instead of performing a full read.' );
+		$this->assertFalse( $refreshed );
+	}
+
+	public function test_get_or_add_does_not_serve_resolved_value_rejected_by_the_callers_validator() {
+		$refreshed = false;
+		$old_value = [ 'old' => true ];
+		$new_value = [ 'new' => true ];
+
+		$this->write_mock_cache( $old_value );
+
+		$first = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				$this->fail( 'Should not call the generator.' );
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$second = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $new_value ) {
+				return $new_value;
+			},
+			'__return_false',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $old_value, $first );
+		$this->assertEquals( $new_value, $second );
+		$this->assertTrue( $refreshed );
+		$this->assert_cache_contains( $new_value );
+	}
+
+	public function test_get_or_add_force_refresh_bypasses_resolved_values() {
+		$refreshed = false;
+		$old_value = [ 'old' => true ];
+		$new_value = [ 'new' => true ];
+
+		$this->write_mock_cache( $old_value );
+
+		$first = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				$this->fail( 'Should not call the generator.' );
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$second = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $new_value ) {
+				return $new_value;
+			},
+			'__return_true',
+			true,
+			$refreshed
+		);
+
+		$this->assertEquals( $old_value, $first );
+		$this->assertEquals( $new_value, $second );
+		$this->assertTrue( $refreshed );
+		$this->assert_cache_contains( $new_value );
+	}
+
+	public function test_get_or_add_regenerates_after_delete_despite_resolved_values() {
+		$refreshed = false;
+		$old_value = [ 'old' => true ];
+		$new_value = [ 'new' => true ];
+
+		$this->write_mock_cache( $old_value );
+
+		$this->database_cache->get_or_add( self::MOCK_KEY, '__return_false', '__return_true', false, $refreshed );
+
+		$this->database_cache->delete( self::MOCK_KEY );
+
+		$res = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $new_value ) {
+				return $new_value;
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $new_value, $res );
+		$this->assertTrue( $refreshed );
+	}
+
+	public function test_get_or_add_returns_value_written_by_add_despite_resolved_values() {
+		$refreshed = false;
+		$old_value = [ 'old' => true ];
+		$new_value = [ 'new' => true ];
+
+		$this->write_mock_cache( $old_value );
+
+		$this->database_cache->get_or_add( self::MOCK_KEY, '__return_false', '__return_true', false, $refreshed );
+
+		$this->database_cache->add( self::MOCK_KEY, $new_value );
+
+		$res = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				$this->fail( 'Should not call the generator.' );
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $new_value, $res );
+	}
+
 	public function test_get_or_add_forces_refresh() {
 		$refreshed = false;
 		$value     = [ 'mock' => true ];
@@ -141,7 +282,6 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	public function test_get_or_add_returns_old_data_on_error() {
 		$refreshed        = false;
 		$called_generator = false;
-		$value            = [ 'mock' => true ];
 		$old              = [ 'old' => true ];
 
 		$this->write_mock_cache( $old, time() - YEAR_IN_SECONDS );
@@ -586,6 +726,59 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assert_cache_contains( $old );
 	}
 
+	public function test_address_autocomplete_errored_cache_expires_after_two_minutes() {
+		// An errored address autocomplete cache entry should expire after 2 minutes,
+		// allowing a quick retry rather than being stuck for 12 hours.
+		update_option(
+			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+			[
+				'data'    => null,
+				'fetched' => time() - 3 * MINUTE_IN_SECONDS,
+				'errored' => true,
+			],
+			'no'
+		);
+
+		$generator_called = false;
+		$this->database_cache->get_or_add(
+			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+			function () use ( &$generator_called ) {
+				$generator_called = true;
+				return 'new_token';
+			},
+			'__return_true'
+		);
+
+		$this->assertTrue( $generator_called, 'Generator should be called because the errored cache (2 min TTL) has expired.' );
+	}
+
+	public function test_address_autocomplete_success_cache_does_not_expire_after_two_minutes() {
+		// A successful address autocomplete cache entry should last 12 hours,
+		// not expire after just 2 minutes.
+		update_option(
+			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+			[
+				'data'    => 'valid_jwt_token',
+				'fetched' => time() - 3 * MINUTE_IN_SECONDS,
+				'errored' => false,
+			],
+			'no'
+		);
+
+		$generator_called = false;
+		$result           = $this->database_cache->get_or_add(
+			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+			function () use ( &$generator_called ) {
+				$generator_called = true;
+				return 'new_token';
+			},
+			'__return_true'
+		);
+
+		$this->assertFalse( $generator_called, 'Generator should NOT be called because the successful cache (12h TTL) has not expired.' );
+		$this->assertSame( 'valid_jwt_token', $result );
+	}
+
 	/**
 	 * @dataProvider provider_errored_ttl_ladder
 	 */
@@ -619,6 +812,67 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 			[ 'tracking' => true ],
 			true,
 			2 * MINUTE_IN_SECONDS
+		);
+	}
+
+	/**
+	 * A legacy cache entry written before the `errored` field existed must resolve without a
+	 * PHP 8 "Undefined array key" warning. With convertWarningsToExceptions enabled, an unguarded
+	 * read of the missing key would throw here.
+	 */
+	public function test_get_ttl_handles_legacy_entry_without_errored_key() {
+		update_option(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[
+				'data'    => [ 'business_types' => [] ],
+				'fetched' => time(),
+			],
+			'no'
+		);
+
+		$this->assertSame(
+			[ 'business_types' => [] ],
+			$this->database_cache->get( Database_Cache::BUSINESS_TYPES_KEY )
+		);
+
+		delete_option( Database_Cache::BUSINESS_TYPES_KEY );
+	}
+
+	public function test_onboarding_fields_data_errored_entries_use_progressive_backoff() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::ONBOARDING_FIELDS_DATA_KEY,
+			[ 'fields' => [] ],
+			true,
+			5 * MINUTE_IN_SECONDS,
+			2
+		);
+	}
+
+	public function test_business_types_errored_entries_use_progressive_backoff() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[ 'business_types' => [] ],
+			true,
+			5 * MINUTE_IN_SECONDS,
+			2
+		);
+	}
+
+	public function test_onboarding_fields_data_successful_entries_are_cached_for_a_week() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::ONBOARDING_FIELDS_DATA_KEY,
+			[ 'fields' => [] ],
+			false,
+			WEEK_IN_SECONDS
+		);
+	}
+
+	public function test_business_types_successful_entries_are_cached_for_a_week() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[ 'business_types' => [] ],
+			false,
+			WEEK_IN_SECONDS
 		);
 	}
 
@@ -718,32 +972,18 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1, $cache['consecutive_errors'] );
 	}
 
-	/**
-	 * @dataProvider provider_account_key_ladder
-	 */
-	public function test_account_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
+	public function test_account_key_errored_ttl_follows_ladder() {
 		set_current_screen( 'edit-page' );
 
 		$this->assert_cache_get_respects_ttl(
 			Database_Cache::ACCOUNT_KEY,
 			[ 'id' => 'acct_test' ],
 			true,
-			$expected_ttl_seconds,
-			$consecutive_errors
+			5 * MINUTE_IN_SECONDS,
+			2
 		);
 
 		set_current_screen( 'front' );
-	}
-
-	public function provider_account_key_ladder(): array {
-		return [
-			'step 1 (first error)'  => [ 1, 2 * MINUTE_IN_SECONDS ],
-			'step 2 (second error)' => [ 2, 5 * MINUTE_IN_SECONDS ],
-			'step 3 (third error)'  => [ 3, 10 * MINUTE_IN_SECONDS ],
-			'step 4 (fourth error)' => [ 4, 15 * MINUTE_IN_SECONDS ],
-			'step cap (10 errors)'  => [ 10, 15 * MINUTE_IN_SECONDS ],
-			'legacy (0 counter)'    => [ 0, 2 * MINUTE_IN_SECONDS ],
-		];
 	}
 
 	public function test_account_key_successful_ttl_is_two_hours_in_admin() {
@@ -759,10 +999,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		set_current_screen( 'front' );
 	}
 
-	/**
-	 * @dataProvider provider_currencies_key_ladder
-	 */
-	public function test_currencies_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
+	public function test_currencies_key_errored_ttl_follows_ladder() {
 		set_current_screen( 'edit-page' );
 
 		$this->assert_cache_get_respects_ttl(
@@ -772,20 +1009,10 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 				'updated'    => time(),
 			],
 			true,
-			$expected_ttl_seconds,
-			$consecutive_errors
+			5 * MINUTE_IN_SECONDS,
+			2
 		);
 		set_current_screen( 'front' );
-	}
-
-	public function provider_currencies_key_ladder(): array {
-		return [
-			'step 1' => [ 1, 2 * MINUTE_IN_SECONDS ],
-			'step 2' => [ 2, 5 * MINUTE_IN_SECONDS ],
-			'step 3' => [ 3, 10 * MINUTE_IN_SECONDS ],
-			'step 4' => [ 4, 15 * MINUTE_IN_SECONDS ],
-			'cap'    => [ 10, 15 * MINUTE_IN_SECONDS ],
-		];
 	}
 
 	public function test_errored_write_over_legacy_entry_without_counter_starts_at_one() {

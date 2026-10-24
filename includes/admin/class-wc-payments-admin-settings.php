@@ -87,26 +87,21 @@ class WC_Payments_Admin_Settings {
 		?>
 		<div id="wcpay-test-mode-notice" class="notice notice-warning">
 			<p>
-				<b>
-					<?php
-						printf(
-							/* translators: %s: WooPayments */
-							esc_html__( '%s is in test mode — all transactions are simulated!', 'woocommerce-payments' ) . ' ',
-							'WooPayments'
-						);
-					?>
-				</b>
 				<?php
 				if ( WC_Payments::mode()->is_dev() ) {
-					printf(
-						/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
-						esc_html__( 'Test mode is active because your store is running in a development or staging environment. To disable it, switch to a production %1$sWordPress environment%2$s or remove the WCPAY_DEV_MODE constant. %3$sLearn more%4$s', 'woocommerce-payments' ),
-						'<a href="' . esc_url( 'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>',
-						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>'
-					);
+					$this->print_dev_mode_notice_text();
 				} else {
+					?>
+					<b>
+						<?php
+							printf(
+								/* translators: %s: WooPayments */
+								esc_html__( '%s is in test mode — all transactions are simulated.', 'woocommerce-payments' ) . ' ',
+								'WooPayments'
+							);
+						?>
+					</b>
+					<?php
 					printf(
 						/* translators: 1: Anchor opening tag; 2: Anchor closing tag */
 						esc_html__( 'You can use %1$stest card numbers%2$s to simulate various types of transactions.', 'woocommerce-payments' ),
@@ -149,26 +144,19 @@ class WC_Payments_Admin_Settings {
 		?>
 		<div id="wcpay-test-account-notice" class="notice notice-warning">
 			<p>
-				<b><?php echo esc_html__( 'You are using a test account.', 'woocommerce-payments' ) . ' '; ?></b>
 				<?php
 				if ( ! WC_Payments::mode()->is_dev() ) {
+					?>
+					<b><?php echo esc_html__( 'You are using a test account.', 'woocommerce-payments' ) . ' '; ?></b>
+					<?php
 					printf(
 						/* translators: %s: URL to learn more */
 						esc_html__( 'Provide additional details about your business so you can begin accepting real payments. %1$sLearn more%2$s', 'woocommerce-payments' ),
-						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#sign-up-process' ) . '" target="_blank" rel="noreferrer noopener">',
+						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#signup-process' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>'
 					);
 				} else {
-					esc_html_e( '⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!', 'woocommerce-payments' );
-					echo '</br>';
-					printf(
-					/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
-						esc_html__( 'To begin accepting real payments, please go to the live store or change your %1$sWordPress environment%2$s to a production one. %3$sLearn more%4$s', 'woocommerce-payments' ),
-						'<a href="' . esc_url( 'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>',
-						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>'
-					);
+					$this->print_dev_mode_notice_text();
 				}
 				?>
 			</p>
@@ -228,33 +216,45 @@ class WC_Payments_Admin_Settings {
 		?>
 		<div id="wcpay-test-account-notice" class="notice notice-warning">
 			<p>
-				<b><?php echo esc_html__( 'You are using a sandbox test account.', 'woocommerce-payments' ) . ' '; ?></b>
 				<?php
 				if ( ! WC_Payments::mode()->is_dev() ) {
+					?>
+					<b><?php echo esc_html__( 'You are using a sandbox test account.', 'woocommerce-payments' ) . ' '; ?></b>
+					<?php
 					printf(
 					/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
 						esc_html__( 'To begin accepting real payments you will need to first %1$sreset your account%2$s and, then, provide additional details about your business. %3$sLearn more%4$s', 'woocommerce-payments' ),
 						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#resetting' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>',
-						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#sign-up-process' ) . '" target="_blank" rel="noreferrer noopener">',
+						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#signup-process' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>',
 					);
 				} else {
-					esc_html_e( '⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!', 'woocommerce-payments' );
-					echo '</br>';
-					printf(
-					/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
-						esc_html__( 'To begin accepting real payments, please go to the live store or change your %1$sWordPress environment%2$s to a production one. %3$sLearn more%4$s', 'woocommerce-payments' ),
-						'<a href="' . esc_url( 'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>',
-						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>'
-					);
+					$this->print_dev_mode_notice_text();
 				}
 				?>
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Outputs the development mode message shared by the test mode, test account and sandbox account notices.
+	 *
+	 * The same message is used on the other WooPayments pages, so keep it in sync with the `DevModeMessage` component.
+	 */
+	private function print_dev_mode_notice_text() {
+		echo '<b>' . esc_html__( 'Your store is in development mode, so payments are simulated.', 'woocommerce-payments' ) . '</b> ';
+		$reason = WC_Payments_Utils::get_dev_mode_reason( WC_Payments::mode()->get_dev_mode_triggers() );
+		if ( '' !== $reason ) {
+			echo esc_html( $reason ) . ' ';
+		}
+		printf(
+			/* translators: 1: Anchor opening tag; 2: Anchor closing tag */
+			esc_html__( 'Real payments only work on your live store. %1$sLearn more%2$s', 'woocommerce-payments' ),
+			'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes' ) . '" target="_blank" rel="noreferrer noopener">',
+			'</a>'
+		);
 	}
 
 	/**
