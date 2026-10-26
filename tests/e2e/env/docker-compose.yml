@@ -42,7 +42,7 @@ services:
       - ${E2E_ROOT}/docker/data:/var/lib/mysql
   phpMyAdmin:
     container_name: wcp_e2e_phpmyadmin
-    image: phpmyadmin/phpmyadmin:latest
+    image: phpmyadmin:latest
     ports:
       - "8085:80"
     env_file:
