@@ -1,7 +1,7 @@
 /**
  * External Dependencies
  */
-import React, { useId, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { check, chevronDown, chevronUp, Icon } from '@wordpress/icons';
 import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
@@ -43,6 +43,8 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 	searchable,
 }: GroupedSelectControlProps< ItemType > ): JSX.Element => {
 	const searchRef = useRef< HTMLInputElement >( null );
+	const toggleButtonRef = useRef< HTMLButtonElement >( null );
+	const restoreFocusRef = useRef( false );
 	const instanceId = useId();
 	const previousStateRef = useRef< {
 		visibleItems: Set< string >;
@@ -93,6 +95,13 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		itemToString: ( item ) => item?.name || '',
 		selectedItem: value || ( {} as ItemType ),
 		onSelectedItemChange,
+		onIsOpenChange: ( { isOpen: willOpen, type } ) => {
+			restoreFocusRef.current =
+				! willOpen &&
+				( type === useSelect.stateChangeTypes.MenuKeyDownEnter ||
+					type === useSelect.stateChangeTypes.MenuKeyDownEscape ||
+					type === useSelect.stateChangeTypes.ItemClick );
+		},
 		stateReducer: ( state, { changes, type } ) => {
 			if (
 				searchable &&
@@ -122,6 +131,15 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 			return changes;
 		},
 	} );
+
+	// Focus sits inside the menu, so closing it would leave focus on the page
+	// body; send it back to the field after a pick or Escape.
+	useEffect( () => {
+		if ( ! isOpen && restoreFocusRef.current ) {
+			restoreFocusRef.current = false;
+			toggleButtonRef.current?.focus();
+		}
+	}, [ isOpen ] );
 
 	const handleSearch = ( {
 		target,
@@ -189,6 +207,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 			</label>
 			<button
 				{ ...getToggleButtonProps( {
+					ref: toggleButtonRef,
 					type: 'button',
 					className: clsx(
 						'components-text-control__input wcpay-component-grouped-select-control__button',

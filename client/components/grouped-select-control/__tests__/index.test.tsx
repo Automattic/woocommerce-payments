@@ -203,6 +203,40 @@ describe( 'Grouped Select Control', () => {
 		);
 	} );
 
+	it( 'returns focus to the field after picking an option from the search results', async () => {
+		renderControl( { searchable: true } );
+
+		const select = screen.getByRole( 'button' );
+		await userEvent.click( select );
+		await userEvent.type( screen.getByRole( 'combobox' ), 'Option' );
+		await userEvent.keyboard( '{ArrowDown}{Enter}' );
+
+		expect( select ).toHaveFocus();
+	} );
+
+	it( 'returns focus to the field when the menu is closed with Escape', async () => {
+		renderControl( { searchable: true } );
+
+		const select = screen.getByRole( 'button' );
+		await userEvent.click( select );
+		await userEvent.keyboard( '{Escape}' );
+
+		expect( select ).toHaveFocus();
+		expect( onChange ).not.toHaveBeenCalled();
+	} );
+
+	it( 'returns focus to the field after clicking an option', async () => {
+		renderControl( { searchable: true } );
+
+		const select = screen.getByRole( 'button' );
+		await userEvent.click( select );
+		await userEvent.click(
+			screen.getByRole( 'option', { name: 'Option 1' } )
+		);
+
+		expect( select ).toHaveFocus();
+	} );
+
 	it( 'ignores clicks on group headings while searching', async () => {
 		renderControl( { searchable: true } );
 
