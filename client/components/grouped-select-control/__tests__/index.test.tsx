@@ -123,7 +123,7 @@ describe( 'Grouped Select Control', () => {
 		const select = screen.getByRole( 'button' );
 		await userEvent.click( select );
 
-		const input = screen.getByRole( 'textbox' );
+		const input = screen.getByRole( 'combobox' );
 
 		await userEvent.type( input, '1' );
 		expect( screen.getByText( 'Option 1' ) ).toBeInTheDocument();
@@ -136,7 +136,7 @@ describe( 'Grouped Select Control', () => {
 		const select = screen.getByRole( 'button' );
 		await userEvent.click( select );
 
-		const input = screen.getByRole( 'textbox' );
+		const input = screen.getByRole( 'combobox' );
 
 		await userEvent.type( input, 'z' );
 		expect( screen.queryByText( 'Option 1' ) ).not.toBeInTheDocument();
@@ -149,7 +149,7 @@ describe( 'Grouped Select Control', () => {
 		const select = screen.getByRole( 'button' );
 		await userEvent.click( select );
 
-		const input = screen.getByRole( 'textbox' );
+		const input = screen.getByRole( 'combobox' );
 		await userEvent.type( input, 'Option 1' );
 
 		expect( screen.getByText( 'Group 1' ) ).toBeInTheDocument();
@@ -167,7 +167,7 @@ describe( 'Grouped Select Control', () => {
 		const select = screen.getByRole( 'button' );
 		await userEvent.click( select );
 
-		const input = screen.getByRole( 'textbox' );
+		const input = screen.getByRole( 'combobox' );
 		await userEvent.type( input, 'Option' );
 		await userEvent.keyboard( '{ArrowDown}{Enter}' );
 
@@ -182,12 +182,17 @@ describe( 'Grouped Select Control', () => {
 		renderControl( { searchable: true } );
 
 		await userEvent.click( screen.getByRole( 'button' ) );
-		await userEvent.type( screen.getByRole( 'textbox' ), 'Option' );
+
+		const input = screen.getByRole( 'combobox' );
+		await userEvent.type( input, 'Option' );
 		await userEvent.keyboard( '{ArrowDown}{ArrowDown}{ArrowDown}' );
 
-		expect(
-			screen.getByRole( 'option', { name: 'Option 3' } )
-		).toHaveClass( 'is-highlighted' );
+		const highlighted = screen.getByRole( 'option', { name: 'Option 3' } );
+		expect( highlighted ).toHaveClass( 'is-highlighted' );
+		expect( input ).toHaveAttribute(
+			'aria-activedescendant',
+			highlighted.id
+		);
 
 		await userEvent.keyboard( '{Enter}' );
 
@@ -198,11 +203,45 @@ describe( 'Grouped Select Control', () => {
 		);
 	} );
 
+	it( 'returns focus to the field after picking an option from the search results', async () => {
+		renderControl( { searchable: true } );
+
+		const select = screen.getByRole( 'button' );
+		await userEvent.click( select );
+		await userEvent.type( screen.getByRole( 'combobox' ), 'Option' );
+		await userEvent.keyboard( '{ArrowDown}{Enter}' );
+
+		expect( select ).toHaveFocus();
+	} );
+
+	it( 'returns focus to the field when the menu is closed with Escape', async () => {
+		renderControl( { searchable: true } );
+
+		const select = screen.getByRole( 'button' );
+		await userEvent.click( select );
+		await userEvent.keyboard( '{Escape}' );
+
+		expect( select ).toHaveFocus();
+		expect( onChange ).not.toHaveBeenCalled();
+	} );
+
+	it( 'returns focus to the field after clicking an option', async () => {
+		renderControl( { searchable: true } );
+
+		const select = screen.getByRole( 'button' );
+		await userEvent.click( select );
+		await userEvent.click(
+			screen.getByRole( 'option', { name: 'Option 1' } )
+		);
+
+		expect( select ).toHaveFocus();
+	} );
+
 	it( 'ignores clicks on group headings while searching', async () => {
 		renderControl( { searchable: true } );
 
 		await userEvent.click( screen.getByRole( 'button' ) );
-		await userEvent.type( screen.getByRole( 'textbox' ), 'Option' );
+		await userEvent.type( screen.getByRole( 'combobox' ), 'Option' );
 		await userEvent.click( screen.getByText( 'Group 1' ) );
 
 		expect( onChange ).not.toHaveBeenCalled();
@@ -212,6 +251,27 @@ describe( 'Grouped Select Control', () => {
 		expect(
 			screen.getByRole( 'option', { name: 'Option 2' } )
 		).toBeInTheDocument();
+	} );
+
+	it( 'exposes the search field as a combobox that tracks the highlighted option', async () => {
+		renderControl( { searchable: true } );
+
+		await userEvent.click( screen.getByRole( 'button' ) );
+
+		const input = screen.getByRole( 'combobox', { name: 'Group select' } );
+		expect( input ).toHaveAttribute(
+			'aria-controls',
+			screen.getByRole( 'listbox' ).id
+		);
+		expect( input ).not.toHaveAttribute( 'aria-activedescendant' );
+
+		await userEvent.type( input, 'Option 1' );
+		await userEvent.keyboard( '{ArrowDown}' );
+
+		expect( input ).toHaveAttribute(
+			'aria-activedescendant',
+			screen.getByRole( 'option', { name: 'Option 1' } ).id
+		);
 	} );
 
 	it( 'restores visibility state after clearing search', async () => {
@@ -227,7 +287,7 @@ describe( 'Grouped Select Control', () => {
 		expect( screen.queryByText( 'Option 1' ) ).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).toBeInTheDocument();
 
-		const input = screen.getByRole( 'textbox' );
+		const input = screen.getByRole( 'combobox' );
 		await userEvent.type( input, 'z' );
 		expect( screen.queryByText( 'Option 5' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).not.toBeInTheDocument();
