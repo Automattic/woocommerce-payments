@@ -533,6 +533,10 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->method( 'is_saved_cards_enabled' )
 			->willReturn( false );
 
+		$this->mock_wcpay_gateway
+			->method( 'should_support_saved_payments' )
+			->willReturn( true );
+
 		// then: check that the save_payment_method_checkbox method was called.
 		$this->mock_wcpay_gateway
 			->expects( $this->never() )
@@ -780,7 +784,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'isReusable'             => true,
 					'isBnpl'                 => false,
 					'isExpressCheckout'      => false,
-					'title'                  => 'Link',
+					'title'                  => 'Stripe Link',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,

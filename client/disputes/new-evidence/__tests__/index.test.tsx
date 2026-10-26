@@ -494,9 +494,6 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				},
 				{ timeout: 3000 }
 			);
-
-			// The WooCommerce List component shows a deprecation warning
-			expect( console ).toHaveWarned();
 		} );
 
 		it( 'should handle enhanced_eligibility_types Visa Compliance disputes', async () => {
@@ -672,6 +669,38 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
+	it( 'focuses the step heading when navigating forward and back', async () => {
+		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Next' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: 'Review your cover letter',
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Back' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+	} );
+
 	it( 'should include empty document fields when saving to clear them on the server', async () => {
 		// This test verifies that when a user removes a document,
 		// the empty value is sent to the server so it can be cleared.
@@ -802,6 +831,96 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		// We verify this indirectly by checking that the component doesn't
 		// prevent regeneration after product type change.
 		// The actual cover letter content test is in cover-letter-generator.test.ts
+	} );
+
+	describe( 'cover letter', () => {
+		const openCoverLetter = async () => {
+			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+			fireEvent.click(
+				await screen.findByRole( 'button', { name: 'Next' } )
+			);
+			return screen.findByLabelText( 'COVER LETTER' );
+		};
+
+		it( 'stays empty after the merchant clears it', async () => {
+			const coverLetter = await openCoverLetter();
+
+			fireEvent.change( coverLetter, { target: { value: '\n' } } );
+
+			expect( coverLetter ).toHaveValue( '\n' );
+		} );
+
+		it( 'restores the generated letter on request', async () => {
+			const coverLetter = await openCoverLetter();
+			const generatedLetter = ( coverLetter as HTMLTextAreaElement )
+				.value;
+			fireEvent.change( coverLetter, {
+				target: { value: 'My own letter' },
+			} );
+			( global.confirm as jest.Mock ).mockReturnValue( true );
+
+			fireEvent.click(
+				screen.getByRole( 'button', {
+					name: 'Restore generated letter',
+				} )
+			);
+
+			expect( coverLetter ).toHaveValue( generatedLetter );
+		} );
+
+		it( 'keeps the edited letter when the restore is cancelled', async () => {
+			const coverLetter = await openCoverLetter();
+			fireEvent.change( coverLetter, {
+				target: { value: 'My own letter' },
+			} );
+			( global.confirm as jest.Mock ).mockReturnValue( false );
+
+			fireEvent.click(
+				screen.getByRole( 'button', {
+					name: 'Restore generated letter',
+				} )
+			);
+
+			expect( coverLetter ).toHaveValue( 'My own letter' );
+		} );
+
+		it( 'sends an empty letter on save to clear the saved draft', async () => {
+			mockApiFetch.mockResolvedValue( {
+				...regularDispute,
+				evidence: { uncategorized_text: 'Saved draft' },
+			} );
+			const coverLetter = await openCoverLetter();
+			fireEvent.change( coverLetter, { target: { value: '' } } );
+
+			fireEvent.click(
+				screen.getByRole( 'button', { name: /Save for later/i } )
+			);
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							evidence: expect.objectContaining( {
+								uncategorized_text: '',
+							} ),
+						} ),
+					} )
+				);
+			} );
+		} );
+
+		it( 'warns when submitting without a cover letter', async () => {
+			const coverLetter = await openCoverLetter();
+			fireEvent.change( coverLetter, { target: { value: '' } } );
+			( global.confirm as jest.Mock ).mockReturnValue( false );
+
+			fireEvent.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+			expect( global.confirm ).toHaveBeenCalledWith(
+				"Your cover letter is empty. Are you sure you're ready to submit this evidence? Evidence submissions are final."
+			);
+		} );
 	} );
 } );
 

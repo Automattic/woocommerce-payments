@@ -21,9 +21,9 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	protected $token;
 
 	/**
-	 * The session id to reference in the sessions table.
+	 * The session id to reference in the sessions table. Null until the token session loads.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $session_id;
 
@@ -78,20 +78,24 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * Otherwise, this clears everything: https://github.com/woocommerce/woocommerce/blob/de4a8ffdd474ca1879d4aa16487d6c52472a861b/plugins/woocommerce/src/StoreApi/Routes/V1/Checkout.php#L556-L558
 	 */
 	public function init_session_cookie() {
-		// If an account has been created after the session has been initialized, update the session.
-		// This method is called directly by WC blocks when an account is created right before placing an order.
-		$previous_session_data = null;
+		// The Store API calls this again when it creates an account right before placing the order.
+		// The parent would then move the guest cookie's (empty) session to the new user and save it
+		// over the token session, losing the cart's chosen shipping methods. Keep the data in memory instead.
+		if ( null !== $this->session_id && is_user_logged_in() && strval( get_current_user_id() ) !== $this->_customer_id ) {
+			$this->_customer_id = strval( get_current_user_id() );
+			$this->set( 'token_customer_id', $this->_customer_id );
+
+			return;
+		}
+
 		parent::init_session_cookie();
 
+		// Without a session cookie, the parent leaves a `t_` ID from our `generate_customer_id()` (or no ID at all), even for logged-in users.
 		if ( is_user_logged_in() && strval( get_current_user_id() ) !== $this->_customer_id ) {
-			$previous_session_data = $this->_data;
-			$this->_customer_id    = strval( get_current_user_id() );
+			$this->_customer_id = strval( get_current_user_id() );
 		}
 
 		$this->init_session_from_token();
-		if ( ! empty( $previous_session_data ) ) {
-			$this->_data = $previous_session_data;
-		}
 	}
 
 	/**
@@ -119,11 +123,12 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 
 	/**
 	 * Delete the session from the cache and database.
+	 * Before the token session loads, the parent can still act on the cookie's session (e.g. when it's invalid).
 	 *
-	 * @param int $_unused_customer_id Customer ID.
+	 * @param string $customer_id Customer ID.
 	 */
-	public function delete_session( $_unused_customer_id ) {
-		parent::delete_session( $this->session_id );
+	public function delete_session( $customer_id ) {
+		parent::delete_session( $this->session_id ?? $customer_id );
 	}
 
 	/**
@@ -133,7 +138,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * @param int    $timestamp Timestamp to expire the cookie.
 	 */
 	public function update_session_timestamp( $customer_id, $timestamp ) {
-		parent::update_session_timestamp( $this->session_id, $timestamp );
+		parent::update_session_timestamp( $this->session_id ?? $customer_id, $timestamp );
 	}
 
 	/**
@@ -162,9 +167,16 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	/**
 	 * Save data - copy of parent method with a few modifications.
 	 *
-	 * @param int $_unused_old_session_key session ID before user logs in.
+	 * @param string $old_session_key session ID before user logs in.
 	 */
-	public function save_data( $_unused_old_session_key = 0 ) {
+	public function save_data( $old_session_key = '' ) {
+		// Before the token session loads, the parent can only be saving the cookie's session,
+		// e.g. moving a guest's regular cart to the user who just logged in. Keep it under the cookie's customer ID.
+		if ( null === $this->session_id ) {
+			parent::save_data( $old_session_key );
+			return;
+		}
+
 		// Dirty if something changed - prevents saving nothing new.
 		if ( $this->_dirty ) {
 			global $wpdb;

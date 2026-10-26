@@ -1,6 +1,6 @@
 # Development and delivery
 
-**Last updated:** 2026-10-03
+**Last updated:** 2026-10-24
 
 Read the sections relevant to the current task. Paths and commands in this reference are relative to the repository root unless stated otherwise.
 
@@ -63,7 +63,7 @@ pnpm run lint:js                     # ESLint + TypeScript
 pnpm run lint:php                    # PHPCS
 pnpm run lint:php-fix                # Auto-fix PHP issues
 pnpm run format                      # Format with Prettier
-pnpm run psalm                       # PHP static analysis
+composer run phpstan                 # PHP static analysis
 ```
 
 ### Compact tool output (for agents)

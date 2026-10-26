@@ -131,10 +131,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		return 'incl';
 	}
 
-	public function __return_base() {
-		return 'base';
-	}
-
 	/**
 	 * @return WC_Payment_Gateway_WCPay
 	 */
@@ -164,6 +160,32 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			$this->createMock( Duplicates_Detection_Service::class ),
 			$mock_rate_limiter
 		);
+	}
+
+	/**
+	 * Creates a helper on the cart page with a connected account and an express checkout method enabled,
+	 * so should_show_express_checkout_button() reaches the cart checks.
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 */
+	private function create_helper_on_cart_with_express_checkout_enabled() {
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+		WC_Payments::mode()->dev();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		return $helper;
 	}
 
 	public function test_has_subscription_product_on_cart() {
@@ -874,23 +896,24 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request', 'woopay' ] );
 	}
 
+	public function test_should_show_express_checkout_button_on_cart() {
+		$helper = $this->create_helper_on_cart_with_express_checkout_enabled();
+
+		$this->assertTrue( $helper->should_show_express_checkout_button() );
+	}
+
 	public function test_should_not_show_express_checkout_button_for_non_shipping_but_price_does_not_include_tax() {
-		$this->mock_wcpay_account
-			->method( 'is_stripe_connected' )
-			->willReturn( true );
+		$helper = $this->create_helper_on_cart_with_express_checkout_enabled();
 
-		WC_Payments::mode()->dev();
-
-		add_filter( 'woocommerce_is_checkout', '__return_true' );
 		add_filter( 'wc_shipping_enabled', '__return_false' );
 		add_filter( 'wc_tax_enabled', '__return_true' );
 
 		update_option( 'woocommerce_tax_based_on', 'billing' );
 		update_option( 'woocommerce_prices_include_tax', 'no' );
 
-		$this->assertFalse( $this->system_under_test->should_show_express_checkout_button() );
+		$this->assertFalse( $helper->should_show_express_checkout_button() );
 
-		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+		remove_filter( 'wc_shipping_enabled', '__return_false' );
 		remove_filter( 'wc_tax_enabled', '__return_true' );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
 	}
@@ -1175,50 +1198,59 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * @return string
-	 */
-	public function return_usd_currency() {
-		return Currency_Code::UNITED_STATES_DOLLAR;
-	}
-
-	/**
-	 * Data provider for can_use_amazon_pay() tests.
+	 * Data provider for is_amazon_pay_enabled_by_merchant() and can_use_amazon_pay() tests.
 	 *
 	 * @return array
 	 */
-	public function can_use_amazon_pay_provider() {
+	public function amazon_pay_availability_provider() {
 		return [
-			'feature flag disabled' => [
-				'feature_flag_enabled' => false,
-				'gateway_available'    => true,
-				'tax_on_billing'       => false,
-				'expected'             => false,
+			'feature flag disabled'                => [
+				'feature_flag_enabled'         => false,
+				'gateway_enabled'              => true,
+				'gateway_available'            => true,
+				'tax_on_billing'               => false,
+				'expected_enabled_by_merchant' => false,
+				'expected_can_use'             => false,
 			],
-			'gateway not available' => [
-				'feature_flag_enabled' => true,
-				'gateway_available'    => false,
-				'tax_on_billing'       => false,
-				'expected'             => false,
+			'gateway disabled'                     => [
+				'feature_flag_enabled'         => true,
+				'gateway_enabled'              => false,
+				'gateway_available'            => true,
+				'tax_on_billing'               => false,
+				'expected_enabled_by_merchant' => false,
+				'expected_can_use'             => false,
 			],
-			'tax based on billing'  => [
-				'feature_flag_enabled' => true,
-				'gateway_available'    => true,
-				'tax_on_billing'       => true,
-				'expected'             => false,
+			'gateway not available, e.g. currency' => [
+				'feature_flag_enabled'         => true,
+				'gateway_enabled'              => true,
+				'gateway_available'            => false,
+				'tax_on_billing'               => false,
+				'expected_enabled_by_merchant' => true,
+				'expected_can_use'             => false,
 			],
-			'all conditions met'    => [
-				'feature_flag_enabled' => true,
-				'gateway_available'    => true,
-				'tax_on_billing'       => false,
-				'expected'             => true,
+			'tax based on billing'                 => [
+				'feature_flag_enabled'         => true,
+				'gateway_enabled'              => true,
+				'gateway_available'            => true,
+				'tax_on_billing'               => true,
+				'expected_enabled_by_merchant' => false,
+				'expected_can_use'             => false,
+			],
+			'all conditions met'                   => [
+				'feature_flag_enabled'         => true,
+				'gateway_enabled'              => true,
+				'gateway_available'            => true,
+				'tax_on_billing'               => false,
+				'expected_enabled_by_merchant' => true,
+				'expected_can_use'             => true,
 			],
 		];
 	}
 
 	/**
-	 * @dataProvider can_use_amazon_pay_provider
+	 * @dataProvider amazon_pay_availability_provider
 	 */
-	public function test_can_use_amazon_pay( $feature_flag_enabled, $gateway_available, $tax_on_billing, $expected ) {
+	public function test_amazon_pay_availability( $feature_flag_enabled, $gateway_enabled, $gateway_available, $tax_on_billing, $expected_enabled_by_merchant, $expected_can_use ) {
 		$original_gateway_map     = WC_Payments::get_payment_gateway_map();
 		$original_account_service = WC_Payments::get_account_service();
 		$original_cache           = WC_Payments::get_database_cache();
@@ -1236,6 +1268,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		);
 
 		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_amazon_pay_gateway->method( 'is_enabled' )->willReturn( $gateway_enabled );
 		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( $gateway_available );
 		$this->set_payment_gateway_map( [ 'amazon_pay' => $mock_amazon_pay_gateway ] );
 
@@ -1258,9 +1291,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			->getMock();
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
 
-		$result = $helper->can_use_amazon_pay();
-
-		$this->assertSame( $expected, $result );
+		$this->assertSame( $expected_enabled_by_merchant, $helper->is_amazon_pay_enabled_by_merchant() );
+		$this->assertSame( $expected_can_use, $helper->can_use_amazon_pay() );
 
 		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
 		$this->set_payment_gateway_map( $original_gateway_map );
@@ -1292,19 +1324,326 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 	public function test_should_show_express_checkout_button_returns_false_when_express_checkout_in_payment_methods_enabled() {
 		$original_gateway = WC_Payments::get_gateway();
+		$helper           = $this->create_helper_on_cart_with_express_checkout_enabled();
 
-		WC_Payments::mode()->dev();
 		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
 		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
 		WC_Payments::set_gateway( $this->mock_wcpay_gateway );
 
-		$result = $this->system_under_test->should_show_express_checkout_button();
+		$result = $helper->should_show_express_checkout_button();
 
 		$this->assertFalse( $result );
 
 		WC_Payments::set_gateway( $original_gateway );
 		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
 		WC_Payments::mode()->live();
+	}
+
+	/**
+	 * @dataProvider provider_block_page_content
+	 */
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart( string $post_content ) {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( $post_content );
+		WC()->cart->empty_cart();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			// The empty cart's 0 total hides the buttons, but the block's `canMakePayment()`
+			// needs the params once the first product is added without a reload.
+			$this->assertFalse( $helper->should_show_express_checkout_button() );
+			$this->assertTrue( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	/**
+	 * Makes a post with the given content the current one, which `has_block()` reads.
+	 *
+	 * @param string $post_content The post content.
+	 */
+	private function set_current_post_content( string $post_content ) {
+		$GLOBALS['post'] = $this->factory->post->create_and_get( [ 'post_content' => $post_content ] ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	}
+
+	public function provider_block_page_content(): array {
+		return [
+			'cart block'     => [ '<!-- wp:woocommerce/cart /-->' ],
+			'checkout block' => [ '<!-- wp:woocommerce/checkout /-->' ],
+		];
+	}
+
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_respects_page_requirements() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( false );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		WC()->cart->empty_cart();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_when_tax_is_based_on_billing() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		add_filter( 'wc_tax_enabled', '__return_true' );
+		update_option( 'woocommerce_tax_based_on', 'billing' );
+		update_option( 'woocommerce_prices_include_tax', 'no' );
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		WC()->cart->empty_cart();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			// The empty cart fails the non-shipping tax check before it reaches the 0 total check.
+			$this->assertFalse( $helper->should_show_express_checkout_button() );
+			$this->assertTrue( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_not_load_express_checkout_scripts_on_block_page_with_non_empty_zero_total_cart() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		$free_product = WC_Helper_Product::create_simple_product();
+		$free_product->set_props(
+			[
+				'regular_price' => 0,
+				'price'         => 0,
+				'virtual'       => true,
+			]
+		);
+		$free_product->save();
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $free_product->get_id(), 1 );
+		WC()->cart->calculate_totals();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_respects_should_show_override() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		WC()->cart->empty_cart();
+		$helper = new class( $this->mock_wcpay_gateway, $this->mock_wcpay_account ) extends WC_Payments_Express_Checkout_Button_Helper {
+			public function should_show_express_checkout_button() {
+				return false;
+			}
+
+			public function get_enabled_express_checkout_methods_for_context() {
+				return [ 'payment_request' ];
+			}
+		};
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_respects_location_settings() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [] );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		WC()->cart->empty_cart();
+
+		try {
+			$this->assertFalse( $this->system_under_test->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_not_load_express_checkout_scripts_on_classic_cart_with_empty_cart() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		WC()->cart->empty_cart();
+		$helper = $this->get_classic_cart_helper();
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_load_express_checkout_scripts_when_buttons_are_shown() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$helper = $this->get_classic_cart_helper();
+
+		try {
+			$this->assertTrue( $helper->should_show_express_checkout_button() );
+			$this->assertTrue( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			WC_Payments::mode()->live();
+		}
+	}
+
+	/**
+	 * @dataProvider provider_block_page_content
+	 */
+	public function test_should_load_express_checkout_scripts_on_block_page_when_the_currency_rules_out_amazon_pay( string $post_content ) {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( $post_content );
+		$helper = $this->get_helper_with_only_amazon_pay_ruled_out_by_currency();
+
+		try {
+			// Switching the address to a country with a supported currency can bring Amazon Pay back.
+			$this->assertFalse( $helper->should_show_express_checkout_button() );
+			$this->assertTrue( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_not_load_express_checkout_scripts_on_block_page_when_the_currency_rules_out_amazon_pay_and_cart_items_are_unsupported() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		add_filter( 'wcpay_payment_request_is_cart_supported', '__return_false' );
+		$helper = $this->get_helper_with_only_amazon_pay_ruled_out_by_currency();
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_not_load_express_checkout_scripts_on_block_page_when_amazon_pay_is_off_at_this_location() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		$helper = $this->get_helper_with_only_amazon_pay_ruled_out_by_currency();
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'payment_request' ] );
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_not_load_express_checkout_scripts_on_classic_cart_when_the_currency_rules_out_amazon_pay() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'get_enabled_express_checkout_methods_for_context', 'is_amazon_pay_enabled_by_merchant' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [] );
+		$helper->method( 'is_amazon_pay_enabled_by_merchant' )->willReturn( true );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'amazon_pay' ] );
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_not_show_express_checkout_button_for_pay_for_order_when_the_currency_rules_out_amazon_pay() {
+		global $wp;
+		global $wp_query;
+
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$_GET['pay_for_order'] = true;
+		$order                 = WC_Helper_Order::create_order( 1, 100 );
+		$wp->query_vars        = [ 'order-pay' => strval( $order->get_id() ) ];
+		$wp_query->query_vars  = [ 'order-pay' => strval( $order->get_id() ) ];
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+		$helper = $this->get_helper_with_only_amazon_pay_ruled_out_by_currency();
+
+		try {
+			$this->assertFalse( $helper->should_show_express_checkout_button() );
+		} finally {
+			unset( $_GET['pay_for_order'] );
+			remove_filter( 'woocommerce_is_checkout', '__return_true' );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	/**
+	 * Builds a helper where Amazon Pay is the only method switched on, and the current currency rules it out.
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 */
+	private function get_helper_with_only_amazon_pay_ruled_out_by_currency() {
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'amazon_pay' ] );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'amazon_pay' ] );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context', 'is_amazon_pay_enabled_by_merchant' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [] );
+		$helper->method( 'is_amazon_pay_enabled_by_merchant' )->willReturn( true );
+
+		return $helper;
+	}
+
+	/**
+	 * Stubs the page context rather than using the `woocommerce_is_cart` filter, which `is_cart()` lacks in older supported WooCommerce versions (e.g. 7.6).
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 */
+	private function get_classic_cart_helper() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		return $helper;
 	}
 
 	public function test_is_express_checkout_method_enabled_at_maps_pay_for_order_to_checkout() {
@@ -1350,20 +1689,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC()->cart->add_to_cart( $product->get_id(), 1 );
 		WC()->cart->calculate_totals();
 
-		$this->mock_wcpay_account
-			->method( 'is_stripe_connected' )
-			->willReturn( true );
-		WC_Payments::mode()->dev();
-
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
-			->getMock();
-
-		$helper->method( 'is_product' )->willReturn( false );
-		$helper->method( 'is_cart' )->willReturn( true );
-		$helper->method( 'is_checkout' )->willReturn( false );
-		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+		$helper = $this->create_helper_on_cart_with_express_checkout_enabled();
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}

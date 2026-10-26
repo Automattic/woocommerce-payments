@@ -322,6 +322,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Restore the gateway in the main class.
 		WC_Payments::set_gateway( $this->_gateway );
 
+		// Restore the fraud prevention service that some tests replace with a mock.
+		Fraud_Prevention_Service::set_instance( null );
+
 		// Restore the original payment gateway map to prevent test pollution.
 		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
 
@@ -648,7 +651,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			],
 			'Link'                   => [
 				'payment_details'  => [ 'type' => 'link' ],
-				'expected_title'   => 'Link',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 			'Link (via card wallet)' => [
@@ -660,7 +663,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						],
 					],
 				],
-				'expected_title'   => 'Link (WooPayments)',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 		];
@@ -720,7 +723,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'Link'       => [
 				'express_type'     => 'link',
 				'stripe_type'      => 'link',
-				'expected_title'   => 'Link (WooPayments)',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 				'payment_details'  => [
 					'type' => 'link',
@@ -920,6 +923,92 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Data provider for Link title tests across account countries.
+	 *
+	 * @return array[]
+	 */
+	public function link_title_by_account_country_provider() {
+		$link_charge        = [ 'type' => 'link' ];
+		$link_wallet_charge = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'wallet'  => [
+					'type' => 'link',
+				],
+			],
+		];
+
+		return [
+			'GB, Link charge'      => [ 'GB', $link_charge, 'Onelink' ],
+			'GB, Link card wallet' => [ 'GB', $link_wallet_charge, 'Onelink' ],
+			'US, Link charge'      => [ 'US', $link_charge, 'Stripe Link' ],
+			'US, Link card wallet' => [ 'US', $link_wallet_charge, 'Stripe Link' ],
+		];
+	}
+
+	/**
+	 * Test that every Link charge shape gets the same, account-country-aware title, with no
+	 * express checkout suffix. Link is never offered by the Express Checkout Element.
+	 *
+	 * @dataProvider link_title_by_account_country_provider
+	 *
+	 * @param string $account_country The merchant's account country.
+	 * @param array  $payment_details The payment method details from Stripe.
+	 * @param string $expected_title  The expected payment method title.
+	 */
+	public function test_link_title_uses_account_country( $account_country, $payment_details, $expected_title ) {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( $account_country );
+		$order = WC_Helper_Order::create_order();
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, $payment_details['type'], $payment_details );
+
+		$this->assertSame( $expected_title, $order->get_payment_method_title() );
+		$this->assertSame( 'woocommerce_payments', $order->get_payment_method() );
+	}
+
+	/**
+	 * Test that a Link card wallet charge still records the express checkout meta, which the
+	 * order-received page uses to render the Link logo, even though the title has no suffix.
+	 */
+	public function test_link_card_wallet_keeps_express_checkout_meta() {
+		$order           = WC_Helper_Order::create_order();
+		$payment_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'wallet'  => [
+					'type' => 'link',
+				],
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'card', $payment_details );
+
+		$this->assertSame( 'link', $order->get_meta( '_wcpay_express_checkout_payment_method' ) );
+	}
+
+	/**
+	 * Test that the express checkout title suffix filter does not apply to Link.
+	 */
+	public function test_express_checkout_title_suffix_filter_skips_link() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', 'link' );
+		$order->save();
+
+		$callback = function () {
+			return 'Custom Suffix';
+		};
+		add_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'link', [ 'type' => 'link' ] );
+
+		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
+		$this->assertSame( 'Stripe Link', $order->get_payment_method_title() );
+	}
+
+	/**
 	 * Test that a regular card payment (no wallet, no meta) sets the standard card title,
 	 * not an express checkout title.
 	 */
@@ -1113,7 +1202,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
 		$this->assertSame( 'Afterpay', $afterpay_method->get_title() );
-		$this->assertSame( 'Cash App Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
 
@@ -1656,6 +1745,499 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
 		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
 		$this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
+	}
+
+	/**
+	 * Builds a gateway mock that captures the redirect URL instead of exiting.
+	 *
+	 * @param string|null $redirect_url Filled with the redirected URL, passed by reference.
+	 *
+	 * @return WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private function get_gateway_mock_intercepting_redirect( &$redirect_url ) {
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->payment_methods['card'],
+					[ $this->payment_methods ],
+					$this->order_service,
+					$this->mock_dpps,
+					$this->mock_localization_service,
+					$this->mock_fraud_service,
+					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
+				]
+			)
+			->onlyMethods( [ 'redirect_and_exit' ] )
+			->getMock();
+
+		$mock_gateway->expects( $this->once() )
+			->method( 'redirect_and_exit' )
+			->willReturnCallback(
+				function ( $url ) use ( &$redirect_url ) {
+					$redirect_url = $url;
+				}
+			);
+
+		return $mock_gateway;
+	}
+
+	/**
+	 * Runs process_redirect_payment() with an intent carrying the given last payment error,
+	 * capturing the redirect URL instead of exiting.
+	 *
+	 * @param array       $last_payment_error The last payment error of the intent.
+	 * @param string|null $redirect_url       Filled with the redirected URL, passed by reference.
+	 *
+	 * @return WC_Order The order after processing.
+	 */
+	private function process_redirect_payment_with_last_error( array $last_payment_error, &$redirect_url ): WC_Order {
+		$intent_id           = 'pi_mock';
+		$save_payment_method = false;
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+		$order_id = $order->get_id();
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'metadata'           => [ 'order_id' => (string) $order_id ],
+				'last_payment_error' => $last_payment_error,
+			]
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_mock' ) );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		return wc_get_order( $order_id );
+	}
+
+	/**
+	 * Gets the combined text of all notes of an order.
+	 *
+	 * @param int $order_id The order ID.
+	 *
+	 * @return string
+	 */
+	private function get_order_notes_text( int $order_id ): string {
+		return implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' ) );
+	}
+
+	public function test_process_redirect_payment_with_retryable_decline_keeps_order_pending() {
+		$error_code    = 'payment_intent_authentication_failure';
+		$error_message = 'The customer declined the payment.';
+		$decline_code  = 'klarna_payment_declined';
+		$doc_url       = 'https://docs.example.com/klarna-decline';
+
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error(
+			[
+				'code'         => $error_code,
+				'message'      => $error_message,
+				'decline_code' => $decline_code,
+				'doc_url'      => $doc_url,
+			],
+			$redirect_url
+		);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->assertEquals( Order_Status::PENDING, $result_order->get_status() );
+
+		// The payment provider's error details are recorded in an order note, in the same
+		// format as other payment failure notes.
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'A payment of', $note_text );
+		$this->assertStringContainsString( '50.00', $note_text );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments', $note_text );
+		$this->assertStringContainsString( 'pi_mock', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The customer declined the payment.</code>', $note_text );
+		$this->assertStringContainsString( 'Decline code: <code>klarna_payment_declined</code>', $note_text );
+		$this->assertStringContainsString( '<a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>', $note_text );
+
+		// The customer is sent to the pay-for-order page to retry with a different payment method.
+		$this->assertEquals( $result_order->get_checkout_payment_url(), $redirect_url );
+
+		// A customer-facing error notice is shown.
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $notices['error'] );
+	}
+
+	public function test_process_redirect_payment_with_retryable_decline_and_no_doc_url() {
+		$error_code    = 'payment_intent_authentication_failure';
+		$error_message = 'The customer declined the payment.';
+		$decline_code  = 'klarna_payment_declined';
+
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error(
+			[
+				'code'         => $error_code,
+				'message'      => $error_message,
+				'decline_code' => $decline_code,
+			],
+			$redirect_url
+		);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->assertEquals( Order_Status::PENDING, $result_order->get_status() );
+
+		// The order note records the provider's message and decline code, without a doc URL.
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'A payment of', $note_text );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The customer declined the payment.</code>', $note_text );
+		$this->assertStringContainsString( 'Decline code: <code>klarna_payment_declined</code>', $note_text );
+		$this->assertStringNotContainsString( 'More information', $note_text );
+
+		$this->assertEquals( $result_order->get_checkout_payment_url(), $redirect_url );
+	}
+
+	/**
+	 * Test that a Klarna decline arriving with the payment attempt failed error code, as
+	 * delivered by the payment_intent.payment_failed webhook, also leaves the order pending
+	 * so the customer can retry with a different payment method.
+	 */
+	public function test_process_redirect_payment_with_retryable_klarna_attempt_failed_keeps_order_pending() {
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error(
+			[
+				'code'         => 'payment_intent_payment_attempt_failed',
+				'message'      => 'The customer declined the payment.',
+				'decline_code' => 'klarna_payment_declined',
+				'doc_url'      => 'https://docs.example.com/klarna-decline',
+			],
+			$redirect_url
+		);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->assertEquals( Order_Status::PENDING, $result_order->get_status() );
+
+		// The payment provider's error details are recorded in an order note, in the same
+		// format as other payment failure notes.
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'A payment of', $note_text );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The customer declined the payment.</code>', $note_text );
+		$this->assertStringContainsString( 'Decline code: <code>klarna_payment_declined</code>', $note_text );
+		$this->assertStringContainsString( '<a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>', $note_text );
+
+		// The customer is sent to the pay-for-order page to retry with a different payment method.
+		$this->assertEquals( $result_order->get_checkout_payment_url(), $redirect_url );
+
+		// A customer-facing error notice is shown.
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $notices['error'] );
+	}
+
+	/**
+	 * Data provider for provider decline codes that leave the order pending for a retry.
+	 *
+	 * @return array[] Test cases with the decline code.
+	 */
+	public function retryable_provider_decline_codes_provider(): array {
+		return [
+			'partner high risk customer' => [ 'partner_high_risk_customer' ],
+			'partner generic decline'    => [ 'partner_generic_decline' ],
+		];
+	}
+
+	/**
+	 * Test that provider declines with a retryable decline code keep the order pending,
+	 * so the customer can retry with a different payment method.
+	 *
+	 * @dataProvider retryable_provider_decline_codes_provider
+	 *
+	 * @param string $decline_code The decline code returned by the payment provider.
+	 */
+	public function test_process_redirect_payment_with_provider_decline_keeps_order_pending( string $decline_code ) {
+		$error_code    = 'payment_method_provider_decline';
+		$error_message = 'The payment provider declined the payment.';
+
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error(
+			[
+				'code'         => $error_code,
+				'message'      => $error_message,
+				'decline_code' => $decline_code,
+			],
+			$redirect_url
+		);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->assertEquals( Order_Status::PENDING, $result_order->get_status() );
+
+		// The payment provider's error details are recorded in an order note, in the same
+		// format as other payment failure notes.
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'A payment of', $note_text );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The payment provider declined the payment.</code>', $note_text );
+		$this->assertStringContainsString( '<code>' . $decline_code . '</code>', $note_text );
+
+		// The customer is sent to the pay-for-order page to retry with a different payment method.
+		$this->assertEquals( $result_order->get_checkout_payment_url(), $redirect_url );
+
+		// A customer-facing error notice is shown.
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $notices['error'] );
+	}
+
+	/**
+	 * Data provider for last payment errors that are not retryable declines.
+	 *
+	 * @return array[] Test cases with the last payment error of the intent.
+	 */
+	public function non_retryable_last_payment_errors_provider(): array {
+		return [
+			'unknown provider decline code'                => [
+				[
+					'code'         => 'payment_method_provider_decline',
+					'message'      => 'The payment provider declined the payment.',
+					'decline_code' => 'some_other_decline',
+				],
+			],
+			'klarna decline code with a wrong error code'  => [
+				[
+					'code'         => 'card_error',
+					'message'      => 'The card was declined.',
+					'decline_code' => 'klarna_payment_declined',
+				],
+			],
+			'partner decline code with a wrong error code' => [
+				[
+					'code'         => 'card_error',
+					'message'      => 'The card was declined.',
+					'decline_code' => 'partner_high_risk_customer',
+				],
+			],
+			'generic decline code'                         => [
+				[
+					'message'      => 'The payment could not be processed.',
+					'decline_code' => 'generic_decline',
+				],
+			],
+		];
+	}
+
+	/**
+	 * Test that errors that are not retryable declines keep the previous behavior:
+	 * the order is failed and the customer is sent back to the checkout page.
+	 *
+	 * @dataProvider non_retryable_last_payment_errors_provider
+	 *
+	 * @param array $last_payment_error The last payment error of the intent.
+	 */
+	public function test_process_redirect_payment_with_non_retryable_error_marks_order_failed( array $last_payment_error ) {
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error( $last_payment_error, $redirect_url );
+
+		// Errors that are not retryable declines keep the previous behavior: the order is failed.
+		$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
+
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'UPE payment failed', $note_text );
+
+		// The customer is sent back to the checkout page.
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+	}
+
+	/**
+	 * Test that a retryable decline does not duplicate the order note when the customer
+	 * returns from the payment provider's page after the webhook already recorded the failure.
+	 */
+	public function test_process_redirect_payment_with_retryable_decline_does_not_duplicate_the_note() {
+		$intent_id           = 'pi_mock';
+		$save_payment_method = false;
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+		$order_id = $order->get_id();
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->payment_methods['card'],
+					[ $this->payment_methods ],
+					$this->order_service,
+					$this->mock_dpps,
+					$this->mock_localization_service,
+					$this->mock_fraud_service,
+					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
+				]
+			)
+			->onlyMethods( [ 'redirect_and_exit' ] )
+			->getMock();
+
+		$mock_gateway->expects( $this->exactly( 2 ) )
+			->method( 'redirect_and_exit' )
+			->willReturnCallback(
+				function ( $url ) use ( &$redirect_url ) {
+					$redirect_url = $url;
+				}
+			);
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'metadata'           => [ 'order_id' => (string) $order_id ],
+				'last_payment_error' => [
+					'code'         => 'payment_intent_authentication_failure',
+					'message'      => 'The customer declined the payment.',
+					'decline_code' => 'klarna_payment_declined',
+					'doc_url'      => 'https://docs.example.com/klarna-decline',
+				],
+			]
+		);
+
+		// Each call to process_redirect_payment() sends its own Get_Intention request.
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_mock' ) );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		// The note is added only once, and the order is left pending for a retry.
+		$note_text = $this->get_order_notes_text( $order_id );
+		$this->assertSame( 1, substr_count( $note_text, 'A payment of' ) );
+		$this->assertSame( 1, substr_count( $note_text, 'Decline code: <code>klarna_payment_declined</code>' ) );
+		$this->assertEquals( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+	}
+
+	/**
+	 * A redirect return must not duplicate the failure note already written by the BNPL webhook.
+	 */
+	public function test_process_redirect_payment_does_not_duplicate_bnpl_webhook_note() {
+		$intent_id           = 'pi_mock';
+		$payment_method_id   = 'pm_mock';
+		$save_payment_method = false;
+		$error               = [
+			'code'           => 'payment_intent_payment_attempt_failed',
+			'message'        => 'The customer declined the payment.',
+			'decline_code'   => 'klarna_payment_declined',
+			'doc_url'        => 'https://docs.example.com/klarna-decline',
+			'payment_method' => [
+				'id'   => $payment_method_id,
+				'type' => Payment_Method::KLARNA,
+			],
+		];
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->save();
+		$order_id = $order->get_id();
+
+		$intent    = WC_Helper_Intention::create_intention(
+			[
+				'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'metadata'           => [ 'order_id' => (string) $order_id ],
+				'last_payment_error' => $error,
+			]
+		);
+		$charge_id = $intent->get_charge()->get_id();
+
+		$db = $this->createMock( WC_Payments_DB::class );
+		$db->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_mock' )
+			->willReturn( $order );
+
+		$webhook = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$db,
+			$this->mock_wcpay_account,
+			$this->createMock( WC_Payments_Remote_Note_Service::class ),
+			$this->order_service,
+			$this->createMock( WC_Payments_In_Person_Payments_Receipts_Service::class ),
+			$this->card_gateway,
+			$this->mock_cache,
+			$this->createMock( WC_Payments_Onboarding_Service::class ),
+			$this->mock_token_service
+		);
+
+		$webhook->process(
+			[
+				'id'       => 'evt_mock',
+				'type'     => 'payment_intent.payment_failed',
+				'livemode' => WC_Payments::mode()->is_live(),
+				'data'     => [
+					'object' => [
+						'id'                 => $intent_id,
+						'metadata'           => [ 'order_id' => (string) $order_id ],
+						'charges'            => [ 'data' => [ [ 'id' => $charge_id ] ] ],
+						'last_payment_error' => $error,
+					],
+				],
+			]
+		);
+
+		$notes_before_return = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' );
+		$this->assertSame( 1, substr_count( implode( "\n", $notes_before_return ), 'Decline code: <code>klarna_payment_declined</code>' ) );
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+
+		wp_get_current_user();
+		$redirect_url = null;
+		$gateway      = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		$notes_after_return = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' );
+		$this->assertSame( $notes_before_return, $notes_after_return );
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+		$this->assertSame( $order->get_checkout_payment_url(), $redirect_url );
 	}
 
 	public function test_get_payment_methods_with_post_request_context() {
@@ -2669,6 +3251,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_add_payment_method_no_method() {
 		$result = $this->card_gateway->add_payment_method();
 		$this->assertEquals( 'error', $result['result'] );
+
+		$notices = wc_get_notices( 'error' );
+		wc_clear_notices();
+		$this->assertStringContainsString( 'payment method was not provided', $notices[0]['notice'] );
 	}
 
 	public function test_create_and_confirm_setup_intent_existing_customer() {
@@ -2785,11 +3371,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
-	public function test_add_payment_method_no_intent() {
-		$result = $this->card_gateway->add_payment_method();
-		$this->assertEquals( 'error', $result['result'] );
-	}
-
 	public function test_add_payment_method_success() {
 		$_POST = [ 'wcpay-setup-intent' => 'sti_mock' ];
 
@@ -2866,11 +3447,25 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'square' );
+		$order->update_meta_data( '_payment_method_id', 'pm_123' );
+		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' );
+		$order->delete_meta_data( '_new_order_tracking_complete' );
+		$order->save_meta_data();
 
 		// If the payment gateway isn't WC Pay, this function should never get called.
 		$this->mock_action_scheduler_service
 			->expects( $this->never() )
 			->method( 'schedule_job' );
+
+		$this->mock_fraud_service
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
 
 		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
@@ -3071,6 +3666,207 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'req_letter'     => [ false, '123456' ],
 			'trim_too_short' => [ false, '  aaa    ' ],
 		];
+	}
+
+	/**
+	 * Runs a callback with the `init` hook made to look as though it has not fired yet.
+	 *
+	 * Mirrors with_uninitialized_action_scheduler() in the action scheduler service tests.
+	 *
+	 * @param callable $callback The callback to run.
+	 */
+	private function with_uninitialized_init( callable $callback ) {
+		global $wp_actions;
+
+		$original_action = $wp_actions['init'] ?? null;
+
+		unset( $wp_actions['init'] );
+
+		try {
+			$callback();
+		} finally {
+			if ( null !== $original_action ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
+				$wp_actions['init'] = $original_action;
+			}
+		}
+	}
+
+	/**
+	 * Reads a private method's return value off the card gateway.
+	 *
+	 * @param string $name The method name.
+	 * @return mixed
+	 */
+	private function call_private_gateway_method( string $name ) {
+		$method = new ReflectionMethod( WC_Payment_Gateway_WCPay::class, $name );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->card_gateway );
+	}
+
+	/**
+	 * Without translations loaded, the untranslated copy must match the translated definitions
+	 * exactly, so the fields do not change shape when `init` runs. See WOOPMNT-5380.
+	 */
+	public function test_untranslated_form_fields_match_translated_definitions() {
+		$untranslated = ( new ReflectionClassConstant( WC_Payment_Gateway_WCPay::class, 'MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS' ) )->getValue();
+		$translated   = $this->call_private_gateway_method( 'get_main_gateway_translated_form_fields' );
+
+		$this->assertSame(
+			$translated,
+			$untranslated,
+			'Both sets should be exactly the same in English.'
+		);
+	}
+
+	/**
+	 * After `init` the field labels are translated, since WooCommerce's payment gateways REST
+	 * endpoint returns them. See WOOPMNT-5380.
+	 */
+	public function test_form_field_labels_are_translated_after_init() {
+		$translate = function ( $translation, $text, $domain ) {
+			return 'woocommerce-payments' === $domain && 'Manual capture' === $text ? 'Captura manual' : $translation;
+		};
+		add_filter( 'gettext', $translate, 10, 3 );
+
+		$fields = $this->card_gateway->get_form_fields();
+
+		$this->assertSame( 'Captura manual', $fields['manual_capture']['title'] );
+	}
+
+	/**
+	 * Runs a callback while recording every text domain passed through the translation functions.
+	 *
+	 * @param callable $callback The callback to run.
+	 * @return string[] The text domains, one entry per translation call.
+	 */
+	private function translation_domains_used_by( callable $callback ): array {
+		$domains = [];
+		$spy     = function ( $translation, $text, $domain ) use ( &$domains ) {
+			$domains[] = $domain;
+			return $translation;
+		};
+
+		add_filter( 'gettext', $spy, 10, 3 );
+		try {
+			$callback();
+		} finally {
+			remove_filter( 'gettext', $spy, 10 );
+		}
+
+		return $domains;
+	}
+
+	/**
+	 * Translates the WooPay terms message as a Spanish site would.
+	 *
+	 * @param string $translation The current translation.
+	 * @param string $text        The source text.
+	 * @param string $domain      The text domain.
+	 * @return string
+	 */
+	public function translate_woopay_message_to_spanish( $translation, $text, $domain ) {
+		if ( 'woocommerce-payments' === $domain && 'By placing this order, you agree to our [terms] and understand our [privacy_policy].' === $text ) {
+			return 'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].';
+		}
+
+		return $translation;
+	}
+
+	/**
+	 * Before `init`, building the fields must not ask for any of this plugin's translations, or it
+	 * triggers the _load_textdomain_just_in_time notice. See WOOPMNT-5380.
+	 */
+	public function test_form_fields_ask_for_no_translations_before_init() {
+		$domains = $this->translation_domains_used_by(
+			function () {
+				$this->with_uninitialized_init(
+					function () {
+						$this->card_gateway->get_form_fields();
+					}
+				);
+			}
+		);
+
+		$this->assertNotContains( 'woocommerce-payments', $domains );
+	}
+
+	/**
+	 * Shoppers see the WooPay terms message, so once translations are available its default is
+	 * in the site's language.
+	 */
+	public function test_woopay_custom_message_default_is_translated_after_init() {
+		add_filter( 'gettext', [ $this, 'translate_woopay_message_to_spanish' ], 10, 3 );
+
+		$fields = $this->card_gateway->get_form_fields();
+
+		$this->assertSame(
+			'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].',
+			$fields['platform_checkout_custom_message']['default']
+		);
+	}
+
+	/**
+	 * On a fresh install the defaults are first read on `plugins_loaded`, in English. They are
+	 * read again as `init` starts, before install_actions() runs the migrations that can make the
+	 * first save, so the WooPay terms message is stored in the site's language, as it was before
+	 * this fix. See WOOPMNT-5380.
+	 */
+	public function test_fresh_install_defaults_are_read_again_once_translations_load() {
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+		add_filter( 'gettext', [ $this, 'translate_woopay_message_to_spanish' ], 10, 3 );
+
+		$this->with_uninitialized_init(
+			function () {
+				$this->card_gateway->init_settings();
+			}
+		);
+		$this->assertSame(
+			'By placing this order, you agree to our [terms] and understand our [privacy_policy].',
+			$this->card_gateway->settings['platform_checkout_custom_message']
+		);
+
+		$this->card_gateway->init_hooks();
+		$this->assertSame( 0, has_action( 'init', [ $this->card_gateway, 'init_settings' ] ) );
+		$this->assertSame( 10, has_action( 'init', [ WC_Payments::class, 'install_actions' ] ) );
+
+		$this->card_gateway->init_settings();
+		$this->card_gateway->update_option( 'test_mode', 'yes' );
+
+		$stored = get_option( 'woocommerce_woocommerce_payments_settings' );
+		$this->assertSame(
+			'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].',
+			$stored['platform_checkout_custom_message']
+		);
+	}
+
+	/**
+	 * With no settings row, the stored settings must come out the same whether they were
+	 * populated before or after `init`. This is what keeps saved cards working on a fresh
+	 * install, where the defaults are read during `plugins_loaded`. See WOOPMNT-5380.
+	 */
+	public function test_defaults_resolve_the_same_before_and_after_init() {
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+
+		$this->card_gateway->init_settings();
+		$after_init = $this->card_gateway->settings;
+
+		$before_init = null;
+		$this->with_uninitialized_init(
+			function () use ( &$before_init ) {
+				$this->card_gateway->init_settings();
+				$before_init = $this->card_gateway->settings;
+			}
+		);
+
+		$this->assertSame( $after_init, $before_init, 'The settings populated from defaults should not depend on when they were read.' );
+		$this->assertSame( 'yes', $before_init['saved_cards'] );
+		$this->assertSame( 'no', $before_init['manual_capture'] );
+		$this->assertSame( [ 'card' ], $before_init['upe_enabled_payment_method_ids'] );
+
+		$this->card_gateway->init_settings();
+		$this->assertTrue( $this->card_gateway->is_saved_cards_enabled() );
 	}
 
 	public function test_payment_request_form_field_defaults() {
@@ -4944,18 +5740,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->card_gateway->should_use_stripe_platform_on_checkout_page() );
 	}
 
-	public function is_woopay_falsy_value_provider() {
-		return [
-			[ '0' ],
-			[ 0 ],
-			[ null ],
-			[ false ],
-			'(bool) true is not strictly equal to (int) 1' => [ true ],
-			[ 'foo' ],
-			[ [] ],
-		];
-	}
-
 	/**
 	 * Create a partial mock for WC_Payment_Gateway_WCPay class.
 	 *
@@ -5020,7 +5804,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' );
 
 		// Act: process payment.
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame(
+			[
+				'result'   => 'success',
+				'redirect' => '',
+			],
+			$result
+		);
+		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
@@ -5093,8 +5886,20 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $order->get_checkout_order_received_url(), $result['redirect'] );
 	}
 
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
+	public function test_is_proper_intent_used_with_order_returns_false_for_mismatched_intent() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_attached' );
+		$order->save();
+
+		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( $order, 'pi_from_request' ) );
+	}
+
+	public function test_is_proper_intent_used_with_order_returns_true_for_matching_intent() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_attached' );
+		$order->save();
+
+		$this->assertTrue( $this->card_gateway->is_proper_intent_used_with_order( $order, 'pi_attached' ) );
 	}
 
 	public function test_get_recommended_payment_method() {
@@ -5807,6 +6612,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_setup_intention(
 					[
 						'id'             => $intent_id,
+						'metadata'       => [ 'order_id' => $order->get_id() ],
 						'status'         => Intent_Status::SUCCEEDED,
 						'payment_method' => 'pm_mock',
 					]
@@ -5843,7 +6649,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// The order's payment method title must reflect the actual card from the charge, not a generic
 		// "Card" label. This also propagates to the subscription. Regression guard for WOOPMNT-2882.
 		// Scope: this and the two 3DS tests below cover only the save (token-present) sub-path; the no-save
-		// boundary is pinned by test_update_order_status_does_not_brand_title_or_card_meta_when_not_saving_payment_method.
+		// path is covered by test_update_order_status_brands_title_and_card_meta_when_not_saving_payment_method.
 		$order = WC_Helper_Order::create_order();
 
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
@@ -5871,6 +6677,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_intention(
 					[
 						'id'                     => $intent_id,
+						'metadata'               => [ 'order_id' => $order->get_id() ],
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
 						// Declare the charge explicitly so the asserted title is traceable to its inputs
@@ -5933,6 +6740,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_intention(
 					[
 						'id'                     => $intent_id,
+						'metadata'               => [ 'order_id' => $order->get_id() ],
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
 						'charge'                 => [
@@ -5998,6 +6806,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_intention(
 					[
 						'id'                     => $intent_id,
+						'metadata'               => [ 'order_id' => $order->get_id() ],
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
 						'charge'                 => [
@@ -6041,13 +6850,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'Visa', $title_at_transition, 'Title must be branded at the status transition that fires the email.' );
 	}
 
-	public function test_update_order_status_does_not_brand_title_or_card_meta_when_not_saving_payment_method() {
-		// Companion to the three tests above, which all hard-code should_save_payment_method = 'true' and so
-		// exercise only the token-present sub-path. Branding (title + last4/_card_brand meta) lives entirely
-		// inside update_order_status()'s `! empty( $token )` branch, so the no-save path must leave the card
-		// details untouched. This pins that boundary: if branding ever leaks out of the save branch, this
-		// fails. We assert the meta is absent rather than a specific generic title to stay wording-agnostic.
-		// WOOPMNT-2882.
+	public function test_update_order_status_brands_title_and_card_meta_when_not_saving_payment_method() {
+		// A one-off payment confirmed in the browser (e.g. 3DS) saves no token, so the charge is the only
+		// source for the title. process_payment() ran before confirmation and could only set a generic title.
 		$order = WC_Helper_Order::create_order();
 
 		// No token is created on this path; assert it is never requested rather than relying on a stub.
@@ -6075,6 +6880,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_intention(
 					[
 						'id'                     => $intent_id,
+						'metadata'               => [ 'order_id' => $order->get_id() ],
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
 						'charge'                 => [
@@ -6105,9 +6911,148 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		$saved = wc_get_order( $order->get_id() );
-		$this->assertNotSame( 'Visa credit card', $saved->get_payment_method_title(), 'Title must not be branded when the payment method is not saved.' );
-		$this->assertEmpty( $saved->get_meta( 'last4' ), 'Card last4 meta must not be stored when the payment method is not saved.' );
-		$this->assertEmpty( $saved->get_meta( '_card_brand' ), 'Card brand meta must not be stored when the payment method is not saved.' );
+		$this->assertSame( 'Visa credit card', $saved->get_payment_method_title() );
+		$this->assertSame( '4242', $saved->get_meta( 'last4' ) );
+		$this->assertSame( 'visa', $saved->get_meta( '_card_brand' ) );
+	}
+
+	public function test_update_order_status_does_not_brand_title_or_card_meta_when_charge_is_declined() {
+		// After 3DS passes, the issuer can still decline: the intent goes back to requires_payment_method
+		// but keeps the failed charge, and the browser still calls update_order_status.
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method_title( 'Card' );
+		$order->save();
+
+		$intent_id = 'pi_mock_3ds_declined';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'false',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'metadata' => [ 'order_id' => $order->get_id() ],
+						'status'   => Intent_Status::REQUIRES_PAYMENT_METHOD,
+						'charge'   => [
+							'status'                 => 'failed',
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'brand'   => 'visa',
+									'last4'   => '0002',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertSame( 'Card', $saved->get_payment_method_title() );
+		$this->assertEmpty( $saved->get_meta( 'last4' ) );
+		$this->assertEmpty( $saved->get_meta( '_card_brand' ) );
+	}
+
+	/**
+	 * @dataProvider provider_link_charge_payment_method_details
+	 */
+	public function test_update_order_status_sets_link_title_when_not_saving_payment_method( $payment_method_details, $expected_title ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method_title( 'Card' );
+		$order->save();
+
+		$intent_id = 'pi_mock_link_no_save';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'false',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'metadata' => [ 'order_id' => $order->get_id() ],
+						'status'   => Intent_Status::SUCCEEDED,
+						'charge'   => [ 'payment_method_details' => $payment_method_details ],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertSame( $expected_title, $saved->get_payment_method_title() );
+		$this->assertSame( 'woocommerce_payments', $saved->get_payment_method() );
+		$this->assertEmpty( $saved->get_meta( 'last4' ) );
+	}
+
+	public function provider_link_charge_payment_method_details() {
+		return [
+			'link type'        => [
+				[
+					'type' => 'link',
+					'link' => [ 'country' => '' ],
+				],
+				'Stripe Link',
+			],
+			'card with wallet' => [
+				[
+					'type' => 'card',
+					'card' => [
+						'brand'  => 'visa',
+						'last4'  => '4242',
+						'wallet' => [ 'type' => 'link' ],
+					],
+				],
+				'Stripe Link',
+			],
+		];
 	}
 
 	public function test_update_order_status_keeps_branded_title_on_zero_amount_setup_intent_when_saving() {
@@ -6163,6 +7108,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_setup_intention(
 					[
 						'id'                => $intent_id,
+						'metadata'          => [ 'order_id' => $order->get_id() ],
 						'status'            => Intent_Status::SUCCEEDED,
 						'payment_method_id' => 'pm_mock',
 					]
@@ -6239,6 +7185,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_setup_intention(
 					[
 						'id'                => $intent_id,
+						'metadata'          => [ 'order_id' => $order->get_id() ],
 						'status'            => Intent_Status::SUCCEEDED,
 						'payment_method_id' => 'pm_mock',
 					]
@@ -6365,6 +7312,148 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$found,
 			'A nonce bound to the same order must still allow the intent-mismatch diagnostic note.'
 		);
+	}
+
+	/**
+	 * @dataProvider provider_intent_metadata_not_matching_order
+	 *
+	 * @param callable $build_metadata Builds the intent metadata for the order being paid.
+	 */
+	public function test_update_order_status_does_not_complete_order_with_intent_created_for_another_order( callable $build_metadata ) {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'pi_paid_for_another_order';
+		$order->update_status( Order_Status::FAILED );
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'status'   => Intent_Status::SUCCEEDED,
+						'metadata' => $build_metadata( $order ),
+					]
+				)
+			);
+
+		$this->call_update_order_status( $order, $intent_id );
+
+		$order = wc_get_order( $order->get_id() );
+		$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertSame( 'failed', $order->get_status() );
+		$this->assertFalse( $order->is_paid() );
+		$this->assertNotEmpty(
+			preg_grep( '/pi_paid_for_another_order.*does not match any payments for this order/', $notes )
+		);
+	}
+
+	public function provider_intent_metadata_not_matching_order(): array {
+		return [
+			'intent for another order'         => [
+				function ( WC_Order $order ) {
+					return [ 'order_id' => $order->get_id() + 1 ];
+				},
+			],
+			'intent without an order'          => [
+				function () {
+					return [];
+				},
+			],
+			'order number without WooPay flag' => [
+				function ( WC_Order $order ) {
+					return [ 'order_number' => $order->get_id() ];
+				},
+			],
+		];
+	}
+
+	public function test_update_order_status_does_not_complete_zero_amount_order_with_setup_intent_for_another_order() {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'seti_for_another_order';
+		$order->set_total( 0 );
+		$order->save();
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'       => $intent_id,
+						'status'   => Intent_Status::SUCCEEDED,
+						'metadata' => [ 'order_id' => $order->get_id() + 1 ],
+					]
+				)
+			);
+
+		$this->call_update_order_status( $order, $intent_id );
+
+		$order = wc_get_order( $order->get_id() );
+		$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertFalse( $order->is_paid() );
+		$this->assertNotEmpty(
+			preg_grep( '/seti_for_another_order.*does not match any payments for this order/', $notes )
+		);
+	}
+
+	public function test_update_order_status_completes_order_with_woopay_intent_for_its_order_number() {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'pi_paid_on_woopay';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'status'   => Intent_Status::SUCCEEDED,
+						'metadata' => [
+							'paid_on_woopay' => 'true',
+							'order_number'   => $order->get_id(),
+						],
+					]
+				)
+			);
+
+		$this->call_update_order_status( $order, $intent_id );
+
+		$this->assertTrue( wc_get_order( $order->get_id() )->is_paid() );
+	}
+
+	/**
+	 * Calls update_order_status() as the checkout does after authentication.
+	 *
+	 * @param WC_Order $order     The order to update.
+	 * @param string   $intent_id The intent ID the shopper authenticated.
+	 */
+	private function call_update_order_status( WC_Order $order, string $intent_id ) {
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
+		$_POST                = [
+			'action'    => 'update_order_status',
+			'order_id'  => $order->get_id(),
+			'intent_id' => $intent_id,
+			'_wpnonce'  => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+		} finally {
+			ob_end_clean();
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
 	}
 
 	public function return_ajax_wp_die_handler() {

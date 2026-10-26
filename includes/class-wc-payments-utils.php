@@ -71,6 +71,39 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Explains to merchants what turned development mode on.
+	 *
+	 * Development mode has several triggers, so naming the active one keeps merchants from looking in the wrong place.
+	 * Only the first trigger is named, in the order the mode records them.
+	 *
+	 * @see \WCPay\Core\Mode::get_dev_mode_triggers()
+	 *
+	 * @param string[] $triggers The development mode triggers.
+	 * @return string The explanation, or an empty string when no trigger has a merchant-facing explanation.
+	 */
+	public static function get_dev_mode_reason( array $triggers ): string {
+		$trigger = (string) ( $triggers[0] ?? '' );
+
+		if ( 'WCPAY_DEV_MODE' === $trigger ) {
+			return __( 'The WCPAY_DEV_MODE constant is set.', 'woocommerce-payments' );
+		}
+		if ( 'WP_ENVIRONMENT_TYPE=staging' === $trigger ) {
+			return __( 'This site is set up as a staging site.', 'woocommerce-payments' );
+		}
+		if ( 'WP_ENVIRONMENT_TYPE=development' === $trigger ) {
+			return __( 'This site is set up as a development site.', 'woocommerce-payments' );
+		}
+		if ( 0 === strpos( $trigger, 'WP_DEVELOPMENT_MODE=' ) ) {
+			return __( 'The WP_DEVELOPMENT_MODE constant is set.', 'woocommerce-payments' );
+		}
+		if ( 'wcpay_dev_mode filter' === $trigger ) {
+			return __( 'A plugin or custom code turned it on using the wcpay_dev_mode filter.', 'woocommerce-payments' );
+		}
+
+		return '';
+	}
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *

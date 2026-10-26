@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep the dispute cover letter empty when a merchant clears it, and add a button to restore the generated letter.

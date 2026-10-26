@@ -757,12 +757,6 @@ parameters:
 			path: includes/class-wc-payments-payment-method-messaging-element.php
 
 		-
-			rawMessage: 'Parameter #1 $_unused_customer_id (int) of method WC_Payments_Payment_Request_Session_Handler::delete_session() should be compatible with parameter $customer_id (string) of method WC_Session_Handler::delete_session()'
-			identifier: method.childParameterType
-			count: 1
-			path: includes/class-wc-payments-payment-request-session-handler.php
-
-		-
 			rawMessage: Access to an undefined property WC_Session::$session_id.
 			identifier: property.notFound
 			count: 1
@@ -943,14 +937,14 @@ parameters:
 			path: includes/class-wc-payments-woopay-button-handler.php
 
 		-
-			rawMessage: 'Call to function method_exists() with ''WC_Pre_Orders…'' and ''product_is_charged…'' will always evaluate to false.'
-			identifier: function.impossibleType
+			rawMessage: 'Call to function method_exists() with ''WC_Pre_Orders…'' and ''product_is_charged…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/class-wc-payments-woopay-button-handler.php
 
 		-
-			rawMessage: 'Call to method get_requires_confirmation() on an unknown class WC_Product_Booking.'
-			identifier: class.notFound
+			rawMessage: 'Call to function method_exists() with WC_Product_Booking and ''get_requires…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/class-wc-payments-woopay-button-handler.php
 
@@ -1099,26 +1093,8 @@ parameters:
 			path: includes/compat/blocks/class-blocks-data-extractor.php
 
 		-
-			rawMessage: 'Call to static method getInstance() on an unknown class MailPoet\DI\ContainerWrapper.'
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: 'Call to static method getInstance() on an unknown class MailPoet\Settings\SettingsController.'
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: Class MailPoet\WooCommerce\Subscription not found.
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: Instantiated class Automatewoo\Blocks\Marketing_Optin_Block not found.
-			identifier: class.notFound
+			rawMessage: 'Call to an undefined method MailPoet\WooCommerce\Subscription::isCurrentUserSubscribed().'
+			identifier: method.notFound
 			count: 1
 			path: includes/compat/blocks/class-blocks-data-extractor.php
 
@@ -1263,18 +1239,6 @@ parameters:
 		-
 			rawMessage: 'Call to an undefined method WC_Data_Store::find_matching_product_variation().'
 			identifier: method.notFound
-			count: 1
-			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
-
-		-
-			rawMessage: 'Offset 0 on array{''A Coruña''|''AB''|''Abia''|''Abra''|''AC''|''Aceh''|''ACT''|''Adana''|''AG''|''AK''|''AL''|''Alexandria…''|''AM''|''Amnat Charoen''|''Andhra Pradesh''|''AP''|''Arunachal Pradesh''|''BA''|''BC''|''Buenos Aires''|''Cabo Delgado''|''Callao''|''Catamarca''|''CDMX''|''CE''|''Chaco''|''Chubut''|''Ciudad Autónoma de…''|''Co. Carlow''|''Corrientes''|''Córdoba''|''DF''|''Entre Ríos''|''ES''|''Federal Capital…''|''Formosa''|''GO''|''Hokkaido''|''Hong Kong Island''|''Jal.''|''Johor''|''Jujuy''|''Khuzestan Province''|''Kingston''|''La Pampa''|''La Rioja''|''MA''|''MB''|''Mendoza''|''MG''|''Misiones''|''MS''|''MT''|''NB''|''Neuquén''|''NSW''|''NT''|''PA''|''PB''|''PE''|''PI''|''PR''|''QLD''|''RJ''|''RN''|''RO''|''RR''|''RS''|''Río Negro''|''SA''|''Salta''|''San Juan''|''San Luis''|''Santa Cruz''|''Santa Fe''|''Santiago del Estero''|''SC''|''SE''|''SP''|''Sumatera Utara''|''TAS''|''Tierra del Fuego''|''TO''|''Tucumán''|''VIC''|''WA''|''Yunnan Sheng''|''Álava'', ''A Coruña''|''Abia''|''Abra''|''Aceh''|''Acre''|''Adana''|''Agrigento''|''Alabama''|''Alagoas''|''Alaska''|''Alberta''|''Alexandria…''|''Amapá''|''Amazonas''|''Amnat Charoen''|''Andhra Pradesh''|''Arunachal Pradesh''|''Australian Capital…''|''Bahia''|''British Columbia''|''Buenos Aires''|''Cabo Delgado''|''Callao''|''Catamarca''|''Ceará''|''Chaco''|''Chubut''|''Ciudad Autónoma de…''|''Ciudad de México''|''Co. Carlow''|''Corrientes''|''Córdoba''|''Distrito Federal''|''Entre Ríos''|''Espírito Santo''|''Federal Capital…''|''Formosa''|''Goiás''|''Hokkaido''|''Hong Kong Island''|''Jalisco''|''Johor''|''Jujuy''|''Khuzestan Province''|''Kingston''|''La Pampa''|''La Rioja''|''Manitoba''|''Maranhão''|''Mato Grosso''|''Mato Grosso do Sul''|''Mendoza''|''Minas Gerais''|''Misiones''|''Neuquén''|''New Brunswick''|''New South Wales''|''Northern Territory''|''Paraná''|''Paraíba''|''Pará''|''Pernambuco''|''Piauí''|''Queensland''|''Rio de Janeiro''|''Rio Grande do Norte''|''Rio Grande do Sul''|''Rondônia''|''Roraima''|''Río Negro''|''Salta''|''San Juan''|''San Luis''|''Santa Catarina''|''Santa Cruz''|''Santa Fe''|''Santiago del Estero''|''Sergipe''|''South Australia''|''Sumatera Utara''|''São Paulo''|''Tasmania''|''Tierra del Fuego''|''Tocantins''|''Tucumán''|''Victoria''|''Western Australia''|''Yunnan Sheng''|''Álava'', ''Alberta''|''Colombie-Britannique''|''Manitoba''|''Nouveau-Brunswick''|''استان خوزستان''|''الإسكندرية''|''อำนาจเจริญ''|''云南省''|''北海道''|''香港島''|null} in empty() always exists and is not falsy.'
-			identifier: empty.offset
-			count: 1
-			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
-
-		-
-			rawMessage: 'Offset 1 on array{''A Coruña''|''AB''|''Abia''|''Abra''|''AC''|''Aceh''|''ACT''|''Adana''|''AG''|''AK''|''AL''|''Alexandria…''|''AM''|''Amnat Charoen''|''Andhra Pradesh''|''AP''|''Arunachal Pradesh''|''BA''|''BC''|''Buenos Aires''|''Cabo Delgado''|''Callao''|''Catamarca''|''CDMX''|''CE''|''Chaco''|''Chubut''|''Ciudad Autónoma de…''|''Co. Carlow''|''Corrientes''|''Córdoba''|''DF''|''Entre Ríos''|''ES''|''Federal Capital…''|''Formosa''|''GO''|''Hokkaido''|''Hong Kong Island''|''Jal.''|''Johor''|''Jujuy''|''Khuzestan Province''|''Kingston''|''La Pampa''|''La Rioja''|''MA''|''MB''|''Mendoza''|''MG''|''Misiones''|''MS''|''MT''|''NB''|''Neuquén''|''NSW''|''NT''|''PA''|''PB''|''PE''|''PI''|''PR''|''QLD''|''RJ''|''RN''|''RO''|''RR''|''RS''|''Río Negro''|''SA''|''Salta''|''San Juan''|''San Luis''|''Santa Cruz''|''Santa Fe''|''Santiago del Estero''|''SC''|''SE''|''SP''|''Sumatera Utara''|''TAS''|''Tierra del Fuego''|''TO''|''Tucumán''|''VIC''|''WA''|''Yunnan Sheng''|''Álava'', ''A Coruña''|''Abia''|''Abra''|''Aceh''|''Acre''|''Adana''|''Agrigento''|''Alabama''|''Alagoas''|''Alaska''|''Alberta''|''Alexandria…''|''Amapá''|''Amazonas''|''Amnat Charoen''|''Andhra Pradesh''|''Arunachal Pradesh''|''Australian Capital…''|''Bahia''|''British Columbia''|''Buenos Aires''|''Cabo Delgado''|''Callao''|''Catamarca''|''Ceará''|''Chaco''|''Chubut''|''Ciudad Autónoma de…''|''Ciudad de México''|''Co. Carlow''|''Corrientes''|''Córdoba''|''Distrito Federal''|''Entre Ríos''|''Espírito Santo''|''Federal Capital…''|''Formosa''|''Goiás''|''Hokkaido''|''Hong Kong Island''|''Jalisco''|''Johor''|''Jujuy''|''Khuzestan Province''|''Kingston''|''La Pampa''|''La Rioja''|''Manitoba''|''Maranhão''|''Mato Grosso''|''Mato Grosso do Sul''|''Mendoza''|''Minas Gerais''|''Misiones''|''Neuquén''|''New Brunswick''|''New South Wales''|''Northern Territory''|''Paraná''|''Paraíba''|''Pará''|''Pernambuco''|''Piauí''|''Queensland''|''Rio de Janeiro''|''Rio Grande do Norte''|''Rio Grande do Sul''|''Rondônia''|''Roraima''|''Río Negro''|''Salta''|''San Juan''|''San Luis''|''Santa Catarina''|''Santa Cruz''|''Santa Fe''|''Santiago del Estero''|''Sergipe''|''South Australia''|''Sumatera Utara''|''São Paulo''|''Tasmania''|''Tierra del Fuego''|''Tocantins''|''Tucumán''|''Victoria''|''Western Australia''|''Yunnan Sheng''|''Álava'', ''Alberta''|''Colombie-Britannique''|''Manitoba''|''Nouveau-Brunswick''|''استان خوزستان''|''الإسكندرية''|''อำนาจเจริญ''|''云南省''|''北海道''|''香港島''|null} in empty() always exists and is not falsy.'
-			identifier: empty.offset
 			count: 1
 			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
 
@@ -1497,12 +1461,6 @@ parameters:
 		-
 			rawMessage: 'Call to function is_countable() with array<WC_Order_Item> will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
-
-		-
-			rawMessage: If condition is always false.
-			identifier: if.alwaysFalse
 			count: 1
 			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
 
@@ -1879,8 +1837,8 @@ parameters:
 			path: includes/woopay/class-woopay-adapted-extensions.php
 
 		-
-			rawMessage: 'Call to function method_exists() with ''WC_Points_Rewards…'' and ''get_users_points'' will always evaluate to false.'
-			identifier: function.impossibleType
+			rawMessage: 'Call to function method_exists() with ''WC_Points_Rewards…'' and ''get_users_points'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/woopay/class-woopay-adapted-extensions.php
 

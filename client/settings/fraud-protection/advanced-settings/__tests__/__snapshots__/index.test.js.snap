@@ -291,7 +291,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   </button>
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="avs-mismatch-card"
@@ -300,7 +300,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -385,7 +385,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="international-ip-address-card"
@@ -394,7 +394,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -557,7 +557,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="ip-address-mismatch"
@@ -566,7 +566,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -670,7 +670,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="address-mismatch-card"
@@ -679,7 +679,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -764,7 +764,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="purchase-price-threshold-card"
@@ -773,7 +773,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -1015,7 +1015,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="order-items-threshold-card"
@@ -1024,7 +1024,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -1109,7 +1109,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="cvc-verification-card"
@@ -1118,7 +1118,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -1498,7 +1498,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                 </button>
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="avs-mismatch-card"
@@ -1507,7 +1507,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -1592,7 +1592,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="international-ip-address-card"
@@ -1601,7 +1601,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -1764,7 +1764,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="ip-address-mismatch"
@@ -1773,7 +1773,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -1877,7 +1877,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="address-mismatch-card"
@@ -1886,7 +1886,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -1971,7 +1971,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="purchase-price-threshold-card"
@@ -1980,7 +1980,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -2222,7 +2222,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="order-items-threshold-card"
@@ -2231,7 +2231,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -2316,7 +2316,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="cvc-verification-card"
@@ -2325,7 +2325,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -2730,7 +2730,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   </div>
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="avs-mismatch-card"
@@ -2739,7 +2739,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -2824,7 +2824,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="international-ip-address-card"
@@ -2833,7 +2833,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -2996,7 +2996,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="ip-address-mismatch"
@@ -3005,7 +3005,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -3109,7 +3109,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="address-mismatch-card"
@@ -3118,7 +3118,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -3203,7 +3203,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="purchase-price-threshold-card"
@@ -3212,7 +3212,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -3297,7 +3297,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="order-items-threshold-card"
@@ -3306,7 +3306,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -3391,7 +3391,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="cvc-verification-card"
@@ -3400,7 +3400,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="emotion-8 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -3724,7 +3724,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                 </div>
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="avs-mismatch-card"
@@ -3733,7 +3733,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -3818,7 +3818,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="international-ip-address-card"
@@ -3827,7 +3827,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -3990,7 +3990,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="ip-address-mismatch"
@@ -3999,7 +3999,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -4103,7 +4103,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="address-mismatch-card"
@@ -4112,7 +4112,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -4197,7 +4197,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="purchase-price-threshold-card"
@@ -4206,7 +4206,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -4291,7 +4291,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="order-items-threshold-card"
@@ -4300,7 +4300,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -4385,7 +4385,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-6 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-6 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="cvc-verification-card"
@@ -4394,7 +4394,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   class="emotion-8 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-10 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -4760,7 +4760,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
               class="settings-section__controls"
             >
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="avs-mismatch-card"
@@ -4769,7 +4769,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -4854,7 +4854,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="international-ip-address-card"
@@ -4863,7 +4863,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -5026,7 +5026,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="ip-address-mismatch"
@@ -5035,7 +5035,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -5139,7 +5139,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="address-mismatch-card"
@@ -5148,7 +5148,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -5233,7 +5233,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="purchase-price-threshold-card"
@@ -5242,7 +5242,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -5327,7 +5327,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="order-items-threshold-card"
@@ -5336,7 +5336,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -5421,7 +5421,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="cvc-verification-card"
@@ -5430,7 +5430,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -5713,7 +5713,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
             class="settings-section__controls"
           >
             <div
-              class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+              class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Card"
               id="avs-mismatch-card"
@@ -5722,7 +5722,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 class="emotion-2 emotion-1"
               >
                 <div
-                  class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                  class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="CardBody"
                 >
@@ -5807,7 +5807,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
               />
             </div>
             <div
-              class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+              class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Card"
               id="international-ip-address-card"
@@ -5816,7 +5816,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 class="emotion-2 emotion-1"
               >
                 <div
-                  class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                  class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="CardBody"
                 >
@@ -5979,7 +5979,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
               />
             </div>
             <div
-              class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+              class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Card"
               id="ip-address-mismatch"
@@ -5988,7 +5988,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 class="emotion-2 emotion-1"
               >
                 <div
-                  class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                  class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="CardBody"
                 >
@@ -6092,7 +6092,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
               />
             </div>
             <div
-              class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+              class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Card"
               id="address-mismatch-card"
@@ -6101,7 +6101,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 class="emotion-2 emotion-1"
               >
                 <div
-                  class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                  class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="CardBody"
                 >
@@ -6186,7 +6186,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
               />
             </div>
             <div
-              class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+              class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Card"
               id="purchase-price-threshold-card"
@@ -6195,7 +6195,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 class="emotion-2 emotion-1"
               >
                 <div
-                  class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                  class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="CardBody"
                 >
@@ -6280,7 +6280,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
               />
             </div>
             <div
-              class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+              class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Card"
               id="order-items-threshold-card"
@@ -6289,7 +6289,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 class="emotion-2 emotion-1"
               >
                 <div
-                  class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                  class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="CardBody"
                 >
@@ -6374,7 +6374,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
               />
             </div>
             <div
-              class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+              class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Card"
               id="cvc-verification-card"
@@ -6383,7 +6383,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 class="emotion-2 emotion-1"
               >
                 <div
-                  class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                  class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="CardBody"
                 >
@@ -6795,7 +6795,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                 class="settings-section__controls"
               >
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="avs-mismatch-card"
@@ -6804,7 +6804,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="emotion-2 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -6889,7 +6889,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="international-ip-address-card"
@@ -6898,7 +6898,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="emotion-2 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -7061,7 +7061,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="ip-address-mismatch"
@@ -7070,7 +7070,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="emotion-2 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -7174,7 +7174,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="address-mismatch-card"
@@ -7183,7 +7183,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="emotion-2 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -7268,7 +7268,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="purchase-price-threshold-card"
@@ -7277,7 +7277,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="emotion-2 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -7464,7 +7464,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="order-items-threshold-card"
@@ -7473,7 +7473,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="emotion-2 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -7558,7 +7558,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   />
                 </div>
                 <div
-                  class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                  class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                   data-wp-c16t="true"
                   data-wp-component="Card"
                   id="cvc-verification-card"
@@ -7567,7 +7567,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="emotion-2 emotion-1"
                   >
                     <div
-                      class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                      class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="CardBody"
                     >
@@ -7898,7 +7898,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
               class="settings-section__controls"
             >
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="avs-mismatch-card"
@@ -7907,7 +7907,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -7992,7 +7992,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="international-ip-address-card"
@@ -8001,7 +8001,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -8164,7 +8164,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="ip-address-mismatch"
@@ -8173,7 +8173,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -8277,7 +8277,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="address-mismatch-card"
@@ -8286,7 +8286,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -8371,7 +8371,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="purchase-price-threshold-card"
@@ -8380,7 +8380,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -8567,7 +8567,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="order-items-threshold-card"
@@ -8576,7 +8576,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >
@@ -8661,7 +8661,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                 />
               </div>
               <div
-                class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+                class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="Card"
                 id="cvc-verification-card"
@@ -8670,7 +8670,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                   class="emotion-2 emotion-1"
                 >
                   <div
-                    class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+                    class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
                     data-wp-c16t="true"
                     data-wp-component="CardBody"
                   >

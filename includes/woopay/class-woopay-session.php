@@ -1645,10 +1645,9 @@ class WooPay_Session {
 
 		// If we can find the index, it means the merchant checkout page is using blocks checkout.
 		if ( false !== $checkout_block_index ) {
-			$below_place_order_button_text = $custom_below_place_order_button_text;
-			$company                       = 'optional';
-			$address_2                     = 'optional';
-			$phone                         = 'optional';
+			$company   = 'optional';
+			$address_2 = 'optional';
+			$phone     = 'optional';
 
 			if ( ! empty( $checkout_page_blocks[ $checkout_block_index ]['attrs'] ) ) {
 				$checkout_block_attrs = $checkout_page_blocks[ $checkout_block_index ]['attrs'];

@@ -76,7 +76,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		// Checks if at least one express checkout method is enabled.
-		if ( ! $this->gateway->is_payment_request_enabled() && ! $this->express_checkout_helper->can_use_amazon_pay() ) {
+		if ( ! $this->gateway->is_payment_request_enabled() && ! $this->express_checkout_helper->is_amazon_pay_enabled_by_merchant() ) {
 			return;
 		}
 
@@ -116,7 +116,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				empty( $context )
 				|| $this->express_checkout_helper->is_express_checkout_method_enabled_at( $context, 'payment_request' )
 			);
-		$config['isAmazonPayEnabled']      = $this->express_checkout_helper->can_use_amazon_pay()
+		// Registers the block button even when the page loads in a currency Amazon Pay doesn't
+		// support; its `canMakePayment()` follows the live cart's currency from there.
+		$config['isAmazonPayEnabled'] = $this->express_checkout_helper->is_amazon_pay_enabled_by_merchant()
 			&& (
 				empty( $context )
 				|| $this->express_checkout_helper->is_express_checkout_method_enabled_at( $context, 'amazon_pay' )
@@ -208,13 +210,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
 		}
 
-		// If automatically generate username/password are disabled, the Express Checkout API
-		// can't include any of those fields, so account creation is not possible.
-		return (
-			$is_signup_from_checkout_allowed &&
-			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
-			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
-		);
+		// The username/password generation settings don't matter here: the Store API
+		// generates both when it creates the account, and wallets never send them.
+		return $is_signup_from_checkout_allowed;
 	}
 
 	/**
@@ -242,7 +240,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
 						// needed to communicate via the Store API.
 						'tokenized_cart_nonce'         => wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ),
-						'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
+						'tokenized_cart_session_nonce' => wp_create_nonce( WC_Payments_Payment_Request_Session::TOKENIZED_CART_SESSION_NONCE_ACTION ),
 						'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
 					],
 					'checkout'                    => [
@@ -289,7 +287,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 */
 	public function scripts() {
 		// Don't load scripts if page is not supported.
-		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {
+		if ( ! $this->express_checkout_helper->should_load_express_checkout_scripts() ) {
 			return;
 		}
 

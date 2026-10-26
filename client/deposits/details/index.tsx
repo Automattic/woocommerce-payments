@@ -15,15 +15,13 @@ import clsx from 'clsx';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
-	Card,
-	CardBody,
-	CardHeader,
 	ExternalLink,
 } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { Card, CardBody, CardHeader } from 'wcpay/components/card';
 import type { CachedDeposit } from 'types/deposits';
 import { useDeposit } from 'wcpay/data/deposits';
 import TransactionsList from 'transactions/list';

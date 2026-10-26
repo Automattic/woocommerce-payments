@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React from 'react';
+import { createRoot, Root } from 'react-dom/client';
 import { __, sprintf } from '@wordpress/i18n';
-import { render } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -14,6 +14,8 @@ import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-det
 import { recordEvent } from 'wcpay/tracks';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getAdminUrl } from 'utils';
+
+let modalRoot: Root | undefined;
 
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
@@ -82,25 +84,20 @@ export const getUpdateBusinessDetailsTask = (
 	}
 
 	const renderModal = () => {
-		let container = document.querySelector(
-			'#wcpay-update-business-details-container'
-		);
-
-		if ( ! container ) {
-			container = document.createElement( 'div' );
-			container.id = 'wcpay-update-business-details-container';
+		if ( ! modalRoot ) {
+			const container = document.createElement( 'div' );
 			document.body.appendChild( container );
+			modalRoot = createRoot( container );
 		}
 
-		render(
+		modalRoot.render(
 			<UpdateBusinessDetailsModal
 				key={ Date.now() }
 				errorMessages={ errorMessages }
 				accountStatus={ status }
 				accountLink={ accountLink }
 				currentDeadline={ currentDeadline }
-			/>,
-			container
+			/>
 		);
 	};
 

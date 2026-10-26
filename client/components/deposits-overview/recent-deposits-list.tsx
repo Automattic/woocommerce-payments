@@ -5,17 +5,12 @@ import React from 'react';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import {
-	CardBody,
-	CardDivider,
-	Flex,
-	FlexItem,
-	Icon,
-} from '@wordpress/components';
+import { CardDivider, Flex, FlexItem, Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { CardBody } from 'wcpay/components/card';
 import './style.scss';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';

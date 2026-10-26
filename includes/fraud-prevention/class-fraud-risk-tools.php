@@ -429,8 +429,7 @@ class Fraud_Risk_Tools {
 	 * @return string
 	 */
 	private static function get_formatted_converted_amount( $amount, $base_currency ) {
-		$default_currency = $base_currency;
-		$target_currency  = $base_currency;
+		$target_currency = $base_currency;
 
 		if ( function_exists( 'WC_Payments_Multi_Currency' ) ) {
 			$default_currency = WC_Payments_Multi_Currency()->get_default_currency();

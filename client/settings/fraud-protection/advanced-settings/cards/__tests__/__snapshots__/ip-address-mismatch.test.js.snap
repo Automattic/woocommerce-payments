@@ -116,7 +116,7 @@ exports[`International billing address card renders correctly 1`] = `
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="ip-address-mismatch"
@@ -125,7 +125,7 @@ exports[`International billing address card renders correctly 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -347,7 +347,7 @@ exports[`International billing address card renders correctly when enabled 1`] =
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="ip-address-mismatch"
@@ -356,7 +356,7 @@ exports[`International billing address card renders correctly when enabled 1`] =
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -579,7 +579,7 @@ exports[`International billing address card renders correctly when enabled and c
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="ip-address-mismatch"
@@ -588,7 +588,7 @@ exports[`International billing address card renders correctly when enabled and c
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -811,7 +811,7 @@ exports[`International billing address card renders like disabled when checked, 
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="ip-address-mismatch"
@@ -820,7 +820,7 @@ exports[`International billing address card renders like disabled when checked, 
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >

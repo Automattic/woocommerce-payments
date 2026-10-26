@@ -860,6 +860,68 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests the content of the payment failure note generated for an order.
+	 */
+	public function test_get_payment_failure_note() {
+		// Arrange: Create the intent, get the charge, and set an additional failed message.
+		$intent  = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
+		$charge  = $intent->get_charge();
+		$message = 'This is the test failed message.';
+
+		// Act: Generate the payment failure note.
+		$note = $this->order_service->get_payment_failure_note( $this->order, $intent->get_id(), $charge->get_id(), $message );
+
+		// Assert: The note follows the same format as other payment failure notes.
+		$this->assertStringContainsString( 'A payment of', $note );
+		$this->assertStringContainsString( '50.00', $note );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $note );
+		$this->assertStringContainsString( $intent->get_id(), $note );
+		$this->assertStringContainsString( $message, $note );
+	}
+
+	/**
+	 * Provider decline details include escaped error data and an optional documentation link.
+	 */
+	public function test_get_provider_decline_message_with_doc_url() {
+		$error = [
+			'message'      => 'Customer <cancelled> checkout',
+			'decline_code' => 'klarna_payment_declined',
+			'doc_url'      => 'https://docs.example.com/klarna-decline',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Customer &lt;cancelled&gt; checkout</code>. Decline code: <code>klarna_payment_declined</code>. <a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>', $message );
+	}
+
+	/**
+	 * Decline messages without a documentation URL do not add a link.
+	 */
+	public function test_get_provider_decline_message_without_doc_url() {
+		$error = [
+			'message'      => 'Customer cancelled checkout',
+			'decline_code' => 'klarna_payment_declined',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Customer cancelled checkout</code>. Decline code: <code>klarna_payment_declined</code>.', $message );
+	}
+
+	/**
+	 * A provider error without a decline code retains the webhook's generic message format.
+	 */
+	public function test_get_provider_decline_message_without_decline_code() {
+		$error = [
+			'message' => 'Provider <error>',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Provider &lt;error&gt;</code>', $message );
+	}
+
+	/**
 	 * Method `mark_payment_failed` should exit if the order status is already failed.
 	 */
 	public function test_mark_payment_failed_exits_on_existing_order_status_failed() {
@@ -2428,10 +2490,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $this->order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
 	}
 
-	public function set_wcpay_refund_transaction_id_for_order() {
+	public function test_set_wcpay_refund_transaction_id_for_order() {
 		$wcpay_refund_transaction_id = 'txn_mock';
-		$this->order_service->set_wcpay_refund_transaction_id_for_order( $this->order, $wcpay_refund_transaction_id );
-		$this->assertSame( $this->order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ), $wcpay_refund_transaction_id );
+		$refund                      = wc_create_refund(
+			[
+				'amount'   => $this->order->get_total(),
+				'order_id' => $this->order->get_id(),
+			]
+		);
+		$this->order_service->set_wcpay_refund_transaction_id_for_order( $refund, $wcpay_refund_transaction_id );
+		$this->assertSame( 'txn_mock', wc_get_order( $refund->get_id() )->get_meta( '_wcpay_refund_transaction_id', true ) );
 	}
 
 	public function test_get_wcpay_refund_id() {
@@ -2707,7 +2775,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order
 			->expects( $this->never() )
 			->method( 'update_meta_data' );
-		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
+		$charge = new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' );
+		$charge->set_captured( true );
+		$this->order_service->attach_transaction_fee_to_order( $mock_order, $charge );
 	}
 
 	public function test_attach_transaction_fee_to_order_uncaptured_charge() {

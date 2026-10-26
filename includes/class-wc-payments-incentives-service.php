@@ -529,9 +529,9 @@ class WC_Payments_Incentives_Service {
 	private function has_orders(): bool {
 		// First, get the stored value, if it exists.
 		// This way we avoid costly DB queries and API calls.
-		$has_orders = get_transient( $this->store_has_orders_transient_name );
-		if ( false !== $has_orders ) {
-			return filter_var( $has_orders, FILTER_VALIDATE_BOOLEAN );
+		$stored_has_orders = get_transient( $this->store_has_orders_transient_name );
+		if ( false !== $stored_has_orders ) {
+			return filter_var( $stored_has_orders, FILTER_VALIDATE_BOOLEAN );
 		}
 
 		// We need to determine the value.

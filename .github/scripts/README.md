@@ -1,8 +1,34 @@
 # GitHub Actions Scripts
 
-This directory contains scripts used by GitHub Actions workflows for dynamic version management and matrix generation.
+This directory contains scripts used by GitHub Actions workflows for documentation checks, dynamic version management and matrix generation.
 
 ## Scripts
+
+### `check-doc-links.js`
+
+Checks WooCommerce documentation URLs for HTTP errors and missing HTML `id` anchors. Runs when same-repository `release/**` PRs targeting `trunk` are opened, updated or reopened. Results appear in the job log and summary; failures produce a non-zero exit code.
+
+`github-actions[bot]` posts the report on the triggering release PR, updating the same comment on subsequent runs. Manual runs report only in the job log and summary.
+
+Scans Git-tracked `readme.txt` and PHP/JS/JSX/TS/TSX files at the root and in `assets/`, `client/`, `includes/`, `src/` and `templates/`, including source comments. Tests, dependencies and generated/minified bundles are excluded.
+
+Run manually with the GitHub CLI:
+
+```bash
+gh workflow run check-doc-links.yml --repo Automattic/woocommerce-payments \
+  --ref WORKFLOW_BRANCH -f ref=SOURCE_REF
+```
+
+`--ref` selects the workflow branch; `-f ref` selects the branch, tag or commit to scan. Omit the input to scan the workflow commit. The source checkout is only read, never executed.
+
+Local use, after installing the repository's dependencies:
+
+```bash
+node .github/scripts/check-doc-links.js --report /tmp/documentation-links.md
+node --test .github/scripts/tests/test-*doc-links.js
+```
+
+The checker uses Node.js and `parse5`. A separate `test-doc-links.yml` workflow runs offline tests on PRs changing the checker, its tests, workflows or dependencies. It follows redirects within WooCommerce documentation hosts and checks exact, decoded IDs. It does not evaluate runtime expressions, execute page JavaScript, check `<a name>`, or detect links to the wrong topic. Access blocks and timeouts mean verification failed, not necessarily that the link is broken.
 
 ### `generate-wc-matrix.sh`
 
@@ -38,9 +64,9 @@ Single JSON object containing versions array and metadata:
 - Fetches latest WC version from WordPress.org API
 - Dynamically calculates L-1 version (latest stable in previous major branch)
 - Includes only L-1 and current major versions (skipping intermediate versions)
-- Dynamically resolves beta and RC versions from current major branch
+- Dynamically resolves the newest beta and RC versions, including the next major's
 - Outputs structured JSON for easy parsing
-- Skips beta versions when not available
+- Skips beta and RC versions when not available, or once their stable release ships
 - Provides debug output to stderr for troubleshooting
 
 ## Matrix Generation Strategy
@@ -67,7 +93,7 @@ The workflow uses an optimized PHP version strategy to reduce job count while ma
 
 1. Fetches the latest WooCommerce version from `https://api.wordpress.org/plugins/info/1.0/woocommerce.json`
 2. Dynamically calculates the L-1 version by finding the latest stable version in the previous major branch
-3. Fetches beta and RC versions from the current major branch only
+3. Fetches the newest beta and RC versions, skipping any whose stable release has shipped
 4. Outputs JSON object to stdout for matrix generation
 
 ### Workflow Integration
