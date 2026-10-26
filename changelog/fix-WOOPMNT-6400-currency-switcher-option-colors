@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed the Currency Switcher block's currency list being unreadable on Windows and Linux when the block uses light text on its default transparent background.

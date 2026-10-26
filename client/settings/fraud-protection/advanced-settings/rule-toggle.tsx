@@ -43,14 +43,11 @@ const getFilterAction = (
 	return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
 };
 
-const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
-	FraudProtectionRuleToggleProps
-> > = ( { setting, label, description, children } ) => {
-	const {
-		protectionSettingsUI,
-		setProtectionSettingsUI,
-		setIsDirty,
-	} = useContext( FraudPreventionSettingsContext );
+const FraudProtectionRuleToggle: React.FC<
+	React.PropsWithChildren< FraudProtectionRuleToggleProps >
+> = ( { setting, label, description, children } ) => {
+	const { protectionSettingsUI, setProtectionSettingsUI, setIsDirty } =
+		useContext( FraudPreventionSettingsContext );
 
 	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
 

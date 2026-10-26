@@ -5,6 +5,9 @@
  */
 import { getResourceId } from 'utils/data';
 
+const EMPTY_OBJECT = {};
+const EMPTY_ARRAY = [];
+
 /**
  * Retrieves the transactions state from the wp.data store if the state
  * has been initialized, otherwise returns an empty state.
@@ -36,11 +39,11 @@ const getTransactionsForQuery = ( state, query ) => {
 };
 
 export const getTransactions = ( state, query ) => {
-	return getTransactionsForQuery( state, query ).data || [];
+	return getTransactionsForQuery( state, query ).data || EMPTY_ARRAY;
 };
 
 export const getTransactionsError = ( state, query ) => {
-	return getTransactionsForQuery( state, query ).error || {};
+	return getTransactionsForQuery( state, query ).error || EMPTY_OBJECT;
 };
 
 /**
@@ -57,11 +60,11 @@ const getTransactionsSummaryForQuery = ( state, query ) => {
 };
 
 export const getTransactionsSummary = ( state, query ) => {
-	return getTransactionsSummaryForQuery( state, query ).data || {};
+	return getTransactionsSummaryForQuery( state, query ).data || EMPTY_OBJECT;
 };
 
 export const getTransactionsSummaryError = ( state, query ) => {
-	return getTransactionsSummaryForQuery( state, query ).error || {};
+	return getTransactionsSummaryForQuery( state, query ).error || EMPTY_OBJECT;
 };
 
 const getFraudOutcomeTransactionsForQuery = ( state, status, query ) => {
@@ -74,13 +77,15 @@ const getFraudOutcomeTransactionsForQuery = ( state, status, query ) => {
 
 export const getFraudOutcomeTransactions = ( state, status, query ) => {
 	return (
-		getFraudOutcomeTransactionsForQuery( state, status, query ).data || []
+		getFraudOutcomeTransactionsForQuery( state, status, query ).data ||
+		EMPTY_ARRAY
 	);
 };
 
 export const getFraudOutcomeTransactionsError = ( state, status, query ) => {
 	return (
-		getFraudOutcomeTransactionsForQuery( state, status, query ).error || {}
+		getFraudOutcomeTransactionsForQuery( state, status, query ).error ||
+		EMPTY_OBJECT
 	);
 };
 
@@ -96,7 +101,7 @@ const getFraudOutcomeTransactionsSummaryForQuery = ( state, status, query ) => {
 export const getFraudOutcomeTransactionsSummary = ( state, status, query ) => {
 	return (
 		getFraudOutcomeTransactionsSummaryForQuery( state, status, query )
-			.data || {}
+			.data || EMPTY_OBJECT
 	);
 };
 
@@ -107,6 +112,6 @@ export const getFraudOutcomeTransactionsSummaryError = (
 ) => {
 	return (
 		getFraudOutcomeTransactionsSummaryForQuery( state, status, query )
-			.error || {}
+			.error || EMPTY_OBJECT
 	);
 };

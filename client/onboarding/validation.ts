@@ -22,13 +22,8 @@ const isValid = ( name: keyof OnboardingFields, value?: string ): boolean => {
 // TS is smart enough to infer the return type here.
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const useValidation = ( name: keyof OnboardingFields ) => {
-	const {
-		data,
-		errors,
-		setErrors,
-		touched,
-		setTouched,
-	} = useOnboardingContext();
+	const { data, errors, setErrors, touched, setTouched } =
+		useOnboardingContext();
 
 	const validate = ( value: string | undefined = data[ name ] ) => {
 		if ( ! touched[ name ] ) setTouched( { [ name ]: true } );
@@ -36,7 +31,7 @@ export const useValidation = ( name: keyof OnboardingFields ) => {
 		const error = isValid( name, value )
 			? undefined
 			: ( strings.errors as Record< string, string > )[ name ] ||
-			  strings.errors.generic;
+				strings.errors.generic;
 
 		setErrors( { [ name ]: error } );
 	};

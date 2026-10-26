@@ -71,6 +71,7 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 		<div className="wcpay-dispute-evidence-file-upload-control">
 			<div className="wcpay-dispute-evidence-file-upload-control__info">
 				<div className="wcpay-dispute-evidence-file-upload-control__info-header">
+					{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 					<label className="wcpay-dispute-evidence-file-upload-control__label">
 						{ label }
 					</label>

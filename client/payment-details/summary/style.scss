@@ -1,15 +1,5 @@
 /** @format */
 
-.woocommerce-payments-page {
-	.components-card__header {
-		font-size: 20px;
-	}
-
-	.components-card {
-		margin-bottom: 24px;
-	}
-}
-
 .payment-details-summary {
 	display: flex;
 	flex: 1;
@@ -126,7 +116,17 @@
 	}
 }
 
-.woocommerce-list--horizontal {
+.payment-details-summary__dispute-label {
+	@include font-size( 11 );
+	text-transform: uppercase;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	color: $studio-gray-60;
+	// Match the padding of the "Dispute details" heading below.
+	margin: $grid-unit-15 $grid-unit-30 0;
+}
+
+.wcpay-horizontal-list {
 	margin-top: 0 !important;
 }
 

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -100,7 +101,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account
 			->method( 'get_account_default_currency' )
-			->willReturn( 'USD' );
+			->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
 			->disableOriginalConstructor()
@@ -187,61 +188,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$new_payment_method_title = 'new_payment_method_title';
 		$new_payment_method       = 'non-wc-pay';
 
-		$filtered_old_payment_method_title = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
-		$filtered_new_payment_method_title = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
+		$filtered_old_payment_method_title = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$filtered_new_payment_method_title = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		$this->assertEquals( $filtered_old_payment_method_title, $old_payment_method_title );
 		$this->assertEquals( $filtered_new_payment_method_title, $new_payment_method_title );
-	}
-
-	/**
-	 * Case: Same payment method, different last 4, new payment is saved.
-	 * expect old and new title to be modified. Renewal order is updated.
-	 */
-	public function test_failed_renewal_using_saved_payment() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$old_payment_method_title = 'cc';
-		$new_payment_method_title = 'cc';
-
-		$this->renewal_order->update_meta_data( '_old_payment_method', $old_payment_method );
-		$this->renewal_order->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
-		$this->renewal_order->set_payment_method( $new_payment_method );
-		$this->renewal_order->set_payment_method_title( $new_payment_method_title );
-
-		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$_POST[ $this->post_payment_token_parameter ] = $this->token2->get_id();
-
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertStringContainsString( $this->last4digits[2], $new_payment_method_title_modified );
-	}
-
-	public function test_failed_renewal_using_new_payment_method() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$old_payment_method_title = 'cc';
-		$new_payment_method_title = 'cc';
-
-		$payment_method_id                             = 'test-payment-method-id';
-		$_POST[ $this->post_payment_token_parameter ]  = '';
-		$_POST[ $this->post_payment_method_parameter ] = $payment_method_id;
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_payment_method' )
-			->with( $payment_method_id )
-			->willReturn(
-				[
-					'card' => [
-						'last4' => $this->last4digits[3],
-					],
-				]
-			);
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 	}
 
 	/**
@@ -262,8 +213,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $this->token2->get_id();
 
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
+		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertStringContainsString( $this->last4digits[2], $new_payment_method_title_modified );
 	}
@@ -293,8 +244,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 					],
 				]
 			);
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
+		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 	}
@@ -318,7 +269,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// Simulate is_changing_payment_method_for_subscription being true.
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -372,8 +323,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$new_payment_method = 'non-wc-pay';
 		$this->subscription->update_meta_data( '_old_payment_method', $old_payment_method );
 		$this->subscription->set_payment_method( $new_payment_method );
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
+		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertEquals( $new_payment_method_title, $new_payment_method_title_modified );
 	}
@@ -388,7 +339,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->renewal_order->add_payment_token( $old_token );
 		$this->renewal_order->add_payment_token( $newer_token );
 
-		$old_payment_method_title_modified = (string) apply_filters(
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
 			'Amazon Pay',
 			'woocommerce_payments_amazon_pay',
@@ -410,7 +361,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$_POST['payment_method']                                    = $amazon_pay_gateway_id;
 		$_POST[ 'wc-' . $amazon_pay_gateway_id . '-payment-token' ] = $new_token->get_id();
 
-		$new_payment_method_title_modified = (string) apply_filters(
+		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_new_payment_method_title',
 			'Amazon Pay',
 			$amazon_pay_gateway_id,
@@ -434,13 +385,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$_POST['payment_method']                                    = $amazon_pay_gateway_id;
 		$_POST[ 'wc-' . $amazon_pay_gateway_id . '-payment-token' ] = $new_token->get_id();
 
-		$old_payment_method_title_modified = (string) apply_filters(
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
 			$old_payment_method_title,
 			$old_payment_method,
 			$this->subscription
 		);
-		$new_payment_method_title_modified = (string) apply_filters(
+		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_new_payment_method_title',
 			$new_payment_method_title,
 			$amazon_pay_gateway_id,
@@ -463,7 +414,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->renewal_order->add_payment_token( $old_token );
 		$this->renewal_order->add_payment_token( $newer_token );
 
-		$old_payment_method_title_modified = (string) apply_filters(
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
 			'Stripe Link',
 			WC_Payment_Gateway_WCPay::GATEWAY_ID,
@@ -483,7 +434,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
 
-		$new_payment_method_title_modified = (string) apply_filters(
+		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_new_payment_method_title',
 			'Stripe Link',
 			WC_Payment_Gateway_WCPay::GATEWAY_ID,
@@ -506,13 +457,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
 
-		$old_payment_method_title_modified = (string) apply_filters(
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
 			$old_payment_method_title,
 			$old_payment_method,
 			$this->subscription
 		);
-		$new_payment_method_title_modified = (string) apply_filters(
+		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_new_payment_method_title',
 			$new_payment_method_title,
 			WC_Payment_Gateway_WCPay::GATEWAY_ID,
@@ -530,7 +481,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// Our filter should produce "Stripe Link (email)" regardless.
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$old_payment_method_title = 'Card';
-		$new_payment_method_title = 'Credit card';
 
 		$link_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'linker@test.com' );
 		$card_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
@@ -543,7 +493,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $card_token->get_id();
 
-		$old_payment_method_title_modified = (string) apply_filters(
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
 			$old_payment_method_title,
 			$old_payment_method,
@@ -573,13 +523,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $card_token->get_id();
 
-		$old_payment_method_title_modified = (string) apply_filters(
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
 			$old_payment_method_title,
 			$old_payment_method,
 			$this->subscription
 		);
-		$new_payment_method_title_modified = (string) apply_filters(
+		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_new_payment_method_title',
 			$new_payment_method_title,
 			WC_Payment_Gateway_WCPay::GATEWAY_ID,
@@ -619,7 +569,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $card_token_new->get_id();
 
-		$old_payment_method_title_modified = (string) apply_filters(
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
 			$old_payment_method_title,
 			$old_payment_method,
@@ -630,5 +580,65 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->assertStringContainsString( 'Visa', $old_payment_method_title_modified );
 		$this->assertStringContainsString( '4242', $old_payment_method_title_modified );
 		$this->assertStringNotContainsString( 'Link', $old_payment_method_title_modified );
+	}
+
+	public function test_link_old_payment_method_uses_onelink_for_gb_account() {
+		$this->rebind_subscription_note_filters_to_test_gateway( \WCPay\Constants\Country_Code::UNITED_KINGDOM );
+
+		$old_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'customer@example.com' );
+
+		$newer_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$newer_token->set_last4( '9999' );
+		$newer_token->save();
+
+		$this->renewal_order->add_payment_token( $old_token );
+		$this->renewal_order->add_payment_token( $newer_token );
+
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+			'woocommerce_subscription_note_old_payment_method_title',
+			'Stripe Link',
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		$this->assertStringContainsString( '***omer@example.com', $old_payment_method_title_modified );
+		$this->assertStringContainsString( 'Onelink', $old_payment_method_title_modified );
+	}
+
+	public function test_link_new_saved_payment_method_uses_onelink_for_gb_account() {
+		$this->rebind_subscription_note_filters_to_test_gateway( \WCPay\Constants\Country_Code::UNITED_KINGDOM );
+
+		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'buyer@link.com' );
+
+		$this->renewal_order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->renewal_order->set_payment_method_title( 'Stripe Link' );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
+
+		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+			'woocommerce_subscription_note_new_payment_method_title',
+			'Stripe Link',
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		$this->assertStringContainsString( '***uyer@link.com', $new_payment_method_title_modified );
+		$this->assertStringContainsString( 'Onelink', $new_payment_method_title_modified );
+	}
+
+	/**
+	 * The subscription-note filters are registered once per PHP process via a static guard, so a
+	 * plugin-bootstrap gateway (constructed before set_up) owns them. Point them at this test's
+	 * gateway so our mocked account country drives the branch under test.
+	 */
+	private function rebind_subscription_note_filters_to_test_gateway( string $account_country ): void {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( $account_country );
+
+		remove_all_filters( 'woocommerce_subscription_note_old_payment_method_title' );
+		remove_all_filters( 'woocommerce_subscription_note_new_payment_method_title' );
+		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this->wcpay_gateway, 'get_specific_old_payment_method_title' ], 10, 3 );
+		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this->wcpay_gateway, 'get_specific_new_payment_method_title' ], 10, 3 );
 	}
 }

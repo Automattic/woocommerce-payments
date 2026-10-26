@@ -18,24 +18,29 @@ import { useDispatch } from '@wordpress/data';
 import NewEvidence from '../index';
 import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
 import type { DisputeReason } from 'wcpay/types/disputes';
-import {
-	useGetSettings,
-	useDisputeEvidence,
-	WCPAY_STORE_NAME,
-} from 'wcpay/data';
+import { useGetSettings } from 'wcpay/data/settings';
+import { useDisputeEvidence } from 'wcpay/data/disputes';
+import { PAYMENT_INTENTS_STORE_NAME } from 'wcpay/data/store-names';
 
 // Mock the API fetch calls
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 // Mock the data hooks
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useGetSettings: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
 
-// Mock the dispatch hooks
+// Mock the dispatch hooks. `createReduxStore` returns the store name so the
+// slice stores that load through the component resolve to their name string —
+// which is what `useDispatch` is keyed on below.
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
+	createReduxStore: jest.fn( ( name ) => name ),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
@@ -489,9 +494,6 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				},
 				{ timeout: 3000 }
 			);
-
-			// The WooCommerce List component shows a deprecation warning
-			expect( console ).toHaveWarned();
 		} );
 
 		it( 'should handle enhanced_eligibility_types Visa Compliance disputes', async () => {
@@ -540,7 +542,7 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 
 			await waitFor( () => {
 				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
-					'Error: API error'
+					'API error'
 				);
 			} );
 		} );
@@ -553,7 +555,11 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				createInfoNotice: jest.fn(),
 			} );
 
-			const error = new Error( 'Save error' );
+			const error = {
+				code: 'lock_timeout',
+				message: 'Save error',
+				data: null,
+			};
 			mockApiFetch
 				.mockResolvedValueOnce( baseDispute )
 				.mockRejectedValueOnce( error );
@@ -567,7 +573,7 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				fireEvent.click( saveButton );
 
 				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
-					expect.stringContaining( 'Save error' )
+					'Failed to save evidence. (Save error)'
 				);
 			} );
 		} );
@@ -663,6 +669,38 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
+	it( 'focuses the step heading when navigating forward and back', async () => {
+		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Next' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: 'Review your cover letter',
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Back' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+	} );
+
 	it( 'should include empty document fields when saving to clear them on the server', async () => {
 		// This test verifies that when a user removes a document,
 		// the empty value is sent to the server so it can be cleared.
@@ -716,6 +754,41 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
+	it( 'keeps typed evidence when settings finish loading after the dispute', async () => {
+		const loadedSettings = {
+			account_country: 'US',
+			account_business_name: 'Test Store',
+		};
+		let settings = {};
+		mockUseGetSettings.mockImplementation( () => settings );
+
+		const { rerender } = render(
+			<NewEvidence query={ { id: 'dp_test_456' } } />
+		);
+
+		const description = await screen.findByLabelText(
+			'PRODUCT OR SERVICE DESCRIPTION'
+		);
+		fireEvent.change( description, {
+			target: { value: 'my product description' },
+		} );
+
+		settings = loadedSettings;
+		rerender( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByLabelText( 'PRODUCT OR SERVICE DESCRIPTION' )
+			).toHaveValue( 'my product description' );
+		} );
+
+		expect(
+			mockApiFetch.mock.calls.filter(
+				( [ options ] ) => ! ( options as { method?: string } ).method
+			)
+		).toHaveLength( 1 );
+	} );
+
 	it( 'should regenerate cover letter when product type changes even if previously edited', async () => {
 		// This test verifies that when a user changes the product type,
 		// the cover letter is regenerated even if it was previously modified.
@@ -758,6 +831,96 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		// We verify this indirectly by checking that the component doesn't
 		// prevent regeneration after product type change.
 		// The actual cover letter content test is in cover-letter-generator.test.ts
+	} );
+
+	describe( 'cover letter', () => {
+		const openCoverLetter = async () => {
+			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+			fireEvent.click(
+				await screen.findByRole( 'button', { name: 'Next' } )
+			);
+			return screen.findByLabelText( 'COVER LETTER' );
+		};
+
+		it( 'stays empty after the merchant clears it', async () => {
+			const coverLetter = await openCoverLetter();
+
+			fireEvent.change( coverLetter, { target: { value: '\n' } } );
+
+			expect( coverLetter ).toHaveValue( '\n' );
+		} );
+
+		it( 'restores the generated letter on request', async () => {
+			const coverLetter = await openCoverLetter();
+			const generatedLetter = ( coverLetter as HTMLTextAreaElement )
+				.value;
+			fireEvent.change( coverLetter, {
+				target: { value: 'My own letter' },
+			} );
+			( global.confirm as jest.Mock ).mockReturnValue( true );
+
+			fireEvent.click(
+				screen.getByRole( 'button', {
+					name: 'Restore generated letter',
+				} )
+			);
+
+			expect( coverLetter ).toHaveValue( generatedLetter );
+		} );
+
+		it( 'keeps the edited letter when the restore is cancelled', async () => {
+			const coverLetter = await openCoverLetter();
+			fireEvent.change( coverLetter, {
+				target: { value: 'My own letter' },
+			} );
+			( global.confirm as jest.Mock ).mockReturnValue( false );
+
+			fireEvent.click(
+				screen.getByRole( 'button', {
+					name: 'Restore generated letter',
+				} )
+			);
+
+			expect( coverLetter ).toHaveValue( 'My own letter' );
+		} );
+
+		it( 'sends an empty letter on save to clear the saved draft', async () => {
+			mockApiFetch.mockResolvedValue( {
+				...regularDispute,
+				evidence: { uncategorized_text: 'Saved draft' },
+			} );
+			const coverLetter = await openCoverLetter();
+			fireEvent.change( coverLetter, { target: { value: '' } } );
+
+			fireEvent.click(
+				screen.getByRole( 'button', { name: /Save for later/i } )
+			);
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							evidence: expect.objectContaining( {
+								uncategorized_text: '',
+							} ),
+						} ),
+					} )
+				);
+			} );
+		} );
+
+		it( 'warns when submitting without a cover letter', async () => {
+			const coverLetter = await openCoverLetter();
+			fireEvent.change( coverLetter, { target: { value: '' } } );
+			( global.confirm as jest.Mock ).mockReturnValue( false );
+
+			fireEvent.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+			expect( global.confirm ).toHaveBeenCalledWith(
+				"Your cover letter is empty. Are you sure you're ready to submit this evidence? Evidence submissions are final."
+			);
+		} );
 	} );
 } );
 
@@ -813,9 +976,10 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 		mockUseDisputeEvidence.mockReturnValue( { updateDispute: jest.fn() } );
 		( mockUseDispatch as jest.Mock ).mockImplementation(
 			( storeName: string ) => {
-				if ( storeName === WCPAY_STORE_NAME ) {
+				if ( storeName === PAYMENT_INTENTS_STORE_NAME ) {
 					return {
-						invalidateResolutionForStoreSelector: mockInvalidateResolutionForStoreSelector,
+						invalidateResolutionForStoreSelector:
+							mockInvalidateResolutionForStoreSelector,
 					};
 				}
 				if ( storeName === 'core/notices' ) {
@@ -860,9 +1024,8 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 	} );
 
 	it( 'does not invalidate payment intent cache when dispute has no payment_intent', async () => {
-		const disputeWithoutPaymentIntent = createDisputeWithPaymentIntent(
-			false
-		);
+		const disputeWithoutPaymentIntent =
+			createDisputeWithPaymentIntent( false );
 		mockApiFetch.mockResolvedValue( disputeWithoutPaymentIntent );
 
 		render( <NewEvidence query={ { id: 'dp_test_cache' } } /> );
@@ -933,5 +1096,95 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 				mockInvalidateResolutionForStoreSelector
 			).toHaveBeenCalledWith( 'getPaymentIntent' );
 		} );
+	} );
+} );
+
+describe( 'NewEvidence - multiple → other product type mapping', () => {
+	const disputeWithMultipleSuggestedType = {
+		id: 'dp_test_multiple',
+		amount: 1000,
+		currency: 'usd',
+		created: 1609459200,
+		reason: 'fraudulent' as DisputeReason,
+		status: 'needs_response',
+		evidence_details: {
+			due_by: 1610064000,
+		},
+		evidence: {},
+		metadata: {},
+		order: {
+			id: 123,
+			number: '123',
+			ip_address: '192.168.1.1',
+			suggested_product_type: 'multiple',
+		},
+		charge: {
+			id: 'ch_test_multiple',
+			payment_method_details: {
+				type: 'card',
+				card: { issuer: 'Test Bank' },
+			},
+		},
+		enhanced_eligibility_types: [],
+		balance_transactions: [],
+	};
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		mockApiFetch.mockResolvedValue( disputeWithMultipleSuggestedType );
+		mockUseGetSettings.mockReturnValue( {
+			account_country: 'US',
+			account_business_name: 'Test Store',
+			account_business_support_email: 'support@test.com',
+			account_business_support_phone: '1234567890',
+		} );
+		mockUseDisputeEvidence.mockReturnValue( { updateDispute: jest.fn() } );
+		( mockUseDispatch as jest.Mock ).mockReturnValue( {
+			createSuccessNotice: jest.fn(),
+			createErrorNotice: jest.fn(),
+			createInfoNotice: jest.fn(),
+		} );
+	} );
+
+	afterEach( () => {
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+	} );
+
+	it( 'remaps multiple → other when the feature flag is enabled', async () => {
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByText( 'Product or service details' )
+			).toBeInTheDocument();
+		} );
+
+		const productTypeSelect = screen
+			.getByText( 'Product or service details' )
+			.closest( 'section' )
+			?.querySelector( 'select' ) as HTMLSelectElement;
+
+		expect( productTypeSelect ).not.toBeNull();
+		expect( productTypeSelect ).toHaveValue( 'other' );
+	} );
+
+	it( 'preserves multiple when the feature flag is disabled', async () => {
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
+
+		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
+
+		await waitFor( () => {
+			expect( screen.getByText( 'Product details' ) ).toBeInTheDocument();
+		} );
+
+		const productTypeSelect = screen
+			.getByText( 'Product details' )
+			.closest( 'section' )
+			?.querySelector( 'select' ) as HTMLSelectElement;
+
+		expect( productTypeSelect ).not.toBeNull();
+		expect( productTypeSelect ).toHaveValue( 'multiple' );
 	} );
 } );

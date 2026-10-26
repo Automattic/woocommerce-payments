@@ -16,17 +16,18 @@ import {
 	useAccountCommunicationsEmail,
 	useGetSavingError,
 	useSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useAccountCommunicationsEmail: jest.fn(),
 	useGetSavingError: jest.fn(),
 	useSettings: jest.fn(),
 } ) );
 
-const mockUseAccountCommunicationsEmail = useAccountCommunicationsEmail as jest.MockedFunction<
-	typeof useAccountCommunicationsEmail
->;
+const mockUseAccountCommunicationsEmail =
+	useAccountCommunicationsEmail as jest.MockedFunction<
+		typeof useAccountCommunicationsEmail
+	>;
 const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 	typeof useGetSavingError
 >;

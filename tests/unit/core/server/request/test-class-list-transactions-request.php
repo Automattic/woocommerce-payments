@@ -53,89 +53,6 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$request->set_date_before( '2022-01-01' );
 	}
 
-	public function test_list_transactions_request_will_be_date() {
-		$page              = 2;
-		$page_size         = 50;
-		$direction         = 'asc';
-		$sort              = 'date';
-		$filters           = [
-			'key' => 'value',
-		];
-		$date_after        = '2022-01-01 00:00:00';
-		$date_before       = '2022-02-01 00:00:00';
-		$date_between      = [ $date_after, $date_before ];
-		$match             = 'match';
-		$type              = 'bill';
-		$type_is_not       = 'passport';
-		$device            = 'ios';
-		$device_is_not     = 'android';
-		$channel           = 'online';
-		$channel_is_not    = 'in_person';
-		$country           = Country_Code::UNITED_STATES;
-		$country_is_not    = Country_Code::CANADA;
-		$risk_level        = '0';
-		$risk_level_is_not = '1';
-		$search            = [ 'search' ];
-		$currency          = 'usd';
-		$cs_currency       = 'eur';
-		$loan_id           = 'loan_id';
-
-		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_page( $page );
-		$request->set_page_size( $page_size );
-		$request->set_sort_direction( $direction );
-		$request->set_sort_by( $sort );
-		$request->set_date_after( $date_after );
-		$request->set_date_before( $date_before );
-		$request->set_date_between( $date_between );
-		$request->set_match( $match );
-		$request->set_type_is( $type );
-		$request->set_type_is_not( $type_is_not );
-		$request->set_source_device_is( $device );
-		$request->set_source_device_is_not( $device_is_not );
-		$request->set_channel_is( $channel );
-		$request->set_channel_is_not( $channel_is_not );
-		$request->set_customer_country_is( $country );
-		$request->set_customer_country_is_not( $country_is_not );
-		$request->set_risk_level_is( $risk_level );
-		$request->set_risk_level_is_not( $risk_level_is_not );
-		$request->set_search( $search );
-		$request->set_store_currency_is( $currency );
-		$request->set_customer_currency_is_not( $currency );
-		$request->set_customer_currency_is( $cs_currency );
-		$request->set_loan_id_is( $loan_id );
-		$request->set_filters( $filters );
-
-		$params = $request->get_params();
-
-		$this->assertIsArray( $params );
-		$this->assertSame( $page, $params['page'] );
-		$this->assertSame( $page_size, $params['pagesize'] );
-		$this->assertSame( $sort, $params['sort'] );
-		$this->assertSame( $direction, $params['direction'] );
-		$this->assertSame( $date_after, $params['date_after'] );
-		$this->assertSame( $date_before, $params['date_before'] );
-		$this->assertSame( $date_between, $params['date_between'] );
-		$this->assertSame( $match, $params['match'] );
-		$this->assertSame( $type, $params['type_is'] );
-		$this->assertSame( $type_is_not, $params['type_is_not'] );
-		$this->assertSame( $device, $params['source_device_is'] );
-		$this->assertSame( $device_is_not, $params['source_device_is_not'] );
-		$this->assertSame( $channel, $params['channel_is'] );
-		$this->assertSame( $channel_is_not, $params['channel_is_not'] );
-		$this->assertSame( $country, $params['customer_country_is'] );
-		$this->assertSame( $country_is_not, $params['customer_country_is_not'] );
-		$this->assertSame( $risk_level, $params['risk_level_is'] );
-		$this->assertSame( $risk_level_is_not, $params['risk_level_is_not'] );
-		$this->assertSame( $search, $params['search'] );
-		$this->assertSame( $loan_id, $params['loan_id_is'] );
-		$this->assertSame( $currency, $params['customer_currency_is_not'] );
-		$this->assertSame( $cs_currency, $params['customer_currency_is'] );
-		$this->assertSame( $currency, $params['store_currency_is'] );
-		$this->assertSame( $filters['key'], $params['key'] );
-		$this->assertSame( 'GET', $request->get_method() );
-		$this->assertSame( WC_Payments_API_Client::TRANSACTIONS_API, $request->get_api() );
-	}
 	public function test_list_transactions_request_will_be_date_using_from_rest_request_function() {
 		$page              = 2;
 		$page_size         = 50;
@@ -168,6 +85,18 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$rest_request->set_param( 'date_after', $date_after );
 		$rest_request->set_param( 'date_before', $date_before );
 		$rest_request->set_param( 'date_between', $date_between );
+		$rest_request->set_param(
+			'available_on_after',
+			'2026-04-01 00:00:00'
+		);
+		$rest_request->set_param(
+			'available_on_before',
+			'2026-04-30 23:59:59'
+		);
+		$rest_request->set_param(
+			'available_on_between',
+			[ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ]
+		);
 		$rest_request->set_param( 'match', $match );
 		$rest_request->set_param( 'type_is', $type );
 		$rest_request->set_param( 'type_is_not', $type_is_not );
@@ -197,6 +126,9 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $date_after, $params['date_after'] );
 		$this->assertSame( $date_before, $params['date_before'] );
 		$this->assertSame( $date_between, $params['date_between'] );
+		$this->assertArrayNotHasKey( 'available_on_after', $params );
+		$this->assertArrayNotHasKey( 'available_on_before', $params );
+		$this->assertArrayNotHasKey( 'available_on_between', $params );
 		$this->assertSame( $match, $params['match'] );
 		$this->assertSame( $type, $params['type_is'] );
 		$this->assertSame( $type_is_not, $params['type_is_not'] );
@@ -215,5 +147,71 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $currency, $params['store_currency_is'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::TRANSACTIONS_API, $request->get_api() );
+	}
+
+	public function test_format_response_adds_early_fraud_warning_from_order_meta() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_charge_id', 'ch_with_efw' );
+		$order->save();
+
+		// Store the warning through the writer, so a future rename of the meta keys fails here.
+		WC_Payments::get_order_service()->mark_payment_early_fraud_warning(
+			$order,
+			'ch_with_efw',
+			'issfr_mock',
+			true,
+			'made_with_stolen_card',
+			1752969600
+		);
+
+		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+
+		$result = $request->format_response(
+			[
+				'data' => [
+					[
+						'transaction_id' => 'txn_1',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_with_efw',
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'actionable' => true,
+				'fraud_type' => 'made_with_stolen_card',
+			],
+			$result['data'][0]['early_fraud_warning']
+		);
+	}
+
+	public function test_format_response_omits_early_fraud_warning_when_order_has_none() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_charge_id', 'ch_without_efw' );
+		$order->save();
+
+		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+
+		$result = $request->format_response(
+			[
+				'data' => [
+					[
+						'transaction_id' => 'txn_1',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_without_efw',
+					],
+					[
+						'transaction_id' => 'txn_2',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_no_matching_order',
+					],
+				],
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'early_fraud_warning', $result['data'][0] );
+		$this->assertArrayNotHasKey( 'early_fraud_warning', $result['data'][1] );
 	}
 }

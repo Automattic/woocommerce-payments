@@ -57,7 +57,7 @@ const stateReducer = (
 							? Math.min(
 									items.indexOf( selectedItem ) + 1,
 									items.length - 1
-							  )
+								)
 							: 0
 					],
 			};
@@ -113,11 +113,14 @@ function CustomSelectControl< ItemType extends Item >( {
 		}
 
 		if ( ! itemString ) {
-			return __( 'No selection' );
+			return __( 'No selection', 'woocommerce-payments' );
 		}
 
 		// translators: %s: The selected option.
-		return sprintf( __( 'Currently selected: %s' ), itemString );
+		return sprintf(
+			__( 'Currently selected: %s', 'woocommerce-payments' ),
+			itemString
+		);
 	}
 
 	const menuProps = getMenuProps( {
@@ -134,11 +137,13 @@ function CustomSelectControl< ItemType extends Item >( {
 	);
 
 	// We need this here, because the null active descendant is not fully ARIA compliant.
-	if (
-		menuProps[ 'aria-activedescendant' ]?.startsWith( 'downshift-null' )
-	) {
-		delete menuProps[ 'aria-activedescendant' ];
-	}
+	const {
+		'aria-activedescendant': ariaActiveDescendant,
+		...menuPropsWithoutDescendant
+	} = menuProps;
+	const safeMenuProps = ariaActiveDescendant?.startsWith( 'downshift-null' )
+		? menuPropsWithoutDescendant
+		: menuProps;
 	return (
 		<div
 			className={ clsx(
@@ -179,7 +184,7 @@ function CustomSelectControl< ItemType extends Item >( {
 				/>
 			</Button>
 			{ /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */ }
-			<ul { ...menuProps } onKeyDown={ onKeyDownHandler }>
+			<ul { ...safeMenuProps } onKeyDown={ onKeyDownHandler }>
 				{ isOpen &&
 					items.map( ( item, index ) => (
 						// eslint-disable-next-line react/jsx-key

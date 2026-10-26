@@ -58,7 +58,12 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	public function __construct( $http ) {
 
 		$this->http = $http;
+	}
 
+	/**
+	 * Register hooks.
+	 */
+	public function init_hooks() {
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_get_identity', [ $this, 'ajax_tracks_id' ] );
@@ -70,8 +75,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_after_single_product', [ $this, 'classic_product_page_view' ] );
 		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'blocks_checkout_start' ] );
 		add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ $this, 'blocks_cart_page_view' ] );
-		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
-		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 1 );
+		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 1 );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 		add_action( 'wp_footer', [ $this, 'add_frontend_tracks_scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
@@ -221,8 +226,15 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return bool
 	 */
 	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
-		// Allow merchants to disable all shopper tracking via filter.
-		// The filter defaults to the WooCommerce global tracking setting.
+		/**
+		 * Filters whether shopper tracking is enabled.
+		 *
+		 * Allows merchants to disable all shopper tracking. Defaults to the WooCommerce global tracking setting.
+		 *
+		 * @since 10.4.0
+		 *
+		 * @param bool $enabled Whether shopper tracking is enabled.
+		 */
 		if ( ! apply_filters( 'wcpay_shopper_tracking_enabled', 'no' !== get_option( 'woocommerce_allow_tracking', '' ) ) ) {
 			return false;
 		}
@@ -303,6 +315,14 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
+		/**
+		 * Filters the properties recorded with a Tracks event.
+		 *
+		 * @since 8.6.0
+		 *
+		 * @param array  $properties The event properties.
+		 * @param string $event_name The Tracks event name.
+		 */
 		$properties = apply_filters( 'wcpay_tracks_event_properties', $properties, $event_name );
 
 		if ( isset( $properties['record_event_data'] ) ) {
@@ -327,7 +347,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return $event_obj;
 		}
 
-		$pixel = $event_obj->build_pixel_url( $event_obj );
+		$pixel = $event_obj->build_pixel_url();
 
 		if ( ! $pixel ) {
 			return new WP_Error( 'invalid_pixel', 'cannot generate tracks pixel for given input', 400 );
@@ -561,7 +581,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	public function checkout_order_processed( $order_id ) {
 
 		$payment_gateway = wc_get_payment_gateway_by_order( $order_id );
-		$properties      = [ 'payment_title' => 'other' ];
 
 		// If the order was placed using WooCommerce Payments, record the payment title using Tracks.
 		if ( isset( $payment_gateway->id ) && strpos( $payment_gateway->id, 'woocommerce_payments' ) === 0 ) {
@@ -634,22 +653,27 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Add tracking configuration to payment fields JS config.
 	 *
+	 * The flag covers store-level conditions only, so it skips the WooPay check.
+	 * Events that need WooPay are still filtered per event in tracks_record_event().
+	 *
 	 * @param array $config The payment fields JS config.
 	 * @return array The modified config.
 	 */
 	public function add_tracking_config_to_payment_fields( $config ) {
-		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, false );
+		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, true );
 		return $config;
 	}
 
 	/**
 	 * Add tracking configuration to express checkout JS params.
 	 *
+	 * @see WooPay_Tracker::add_tracking_config_to_payment_fields() for why the WooPay check is skipped.
+	 *
 	 * @param array $params The express checkout JS params.
 	 * @return array The modified params.
 	 */
 	public function add_tracking_config_to_express_checkout( $params ) {
-		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, false );
+		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, true );
 		return $params;
 	}
 
@@ -659,9 +683,16 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return void
 	 */
 	public function add_frontend_tracks_scripts() {
-		$frontent_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
+		/**
+		 * Filters the front-end tracks events to register.
+		 *
+		 * @since 8.2.0
+		 *
+		 * @param array $frontend_tracks The front-end tracks events.
+		 */
+		$frontend_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
 
-		if ( count( $frontent_tracks ) === 0 ) {
+		if ( count( $frontend_tracks ) === 0 ) {
 			return;
 		}
 
@@ -680,7 +711,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		wp_localize_script(
 			'wcpay-frontend-tracks',
 			'wcPayFrontendTracks',
-			$frontent_tracks
+			$frontend_tracks
 		);
 
 		wp_enqueue_script( 'wcpay-frontend-tracks' );

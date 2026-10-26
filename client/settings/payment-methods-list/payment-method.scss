@@ -40,12 +40,23 @@
 				flex-wrap: wrap;
 				align-items: center;
 				gap: 8px;
+				// This settings strip wraps (the checkout strip truncates), so
+				// undo the shared component's `overflow: hidden`, which would
+				// clip the icons' box-shadow ring.
+				overflow: visible;
 
 				img {
 					width: 32px;
 					height: 20px;
-					object-fit: contain;
+					// `cover` avoids the letterbox `contain` leaves when the box
+					// aspect differs from the art (matches the checkout strips).
+					object-fit: cover;
 					margin-right: 0;
+					// box-shadow ring, not a `border`, so white-bg logos read as
+					// defined chips without shifting layout. Same as the checkout
+					// strips.
+					box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.07 );
+					border-radius: 4.6875% / 7.5%;
 				}
 			}
 		}

@@ -6,14 +6,13 @@ import {
 	_resetForTesting,
 } from '../checkPaymentMethodIsAvailable';
 
+const ENABLED_METHODS = [ 'payment_request', 'amazon_pay' ];
+
 // Mock the utils index module.
 jest.mock( '..', () => ( {
 	getExpressCheckoutData: jest.fn( ( key ) => {
 		if ( key === 'checkout' ) {
 			return { currency_decimals: 2 };
-		}
-		if ( key === 'enabled_methods' ) {
-			return [ 'payment_request', 'amazon_pay' ];
 		}
 		return null;
 	} ),
@@ -34,12 +33,14 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 	let mockStripe;
 	let eventHandlers;
 
-	const createCart = ( totalPrice, currencyCode ) => ( {
+	const createCart = ( totalPrice, currencyCode, extensions = {} ) => ( {
 		cartTotals: {
 			total_price: totalPrice,
 			currency_code: currencyCode,
 			currency_minor_unit: 2,
 		},
+		cartItems: [],
+		extensions,
 	} );
 
 	beforeEach( () => {
@@ -86,7 +87,8 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		const result = await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( result ).toBe( true );
@@ -96,17 +98,47 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		const result = await checkPaymentMethodIsAvailable(
 			'googlePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( result ).toBe( false );
+	} );
+
+	it( 're-probes instead of reusing a false result when an empty cart gets its first product', async () => {
+		mockEceButton.mount.mockImplementationOnce( () => {
+			Promise.resolve().then( () =>
+				eventHandlers.ready( { availablePaymentMethods: undefined } )
+			);
+		} );
+
+		const emptyCartResult = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '0', 'EUR' ),
+			mockApi,
+			ENABLED_METHODS
+		);
+		const filledCartResult = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '28000', 'EUR' ),
+			mockApi,
+			ENABLED_METHODS
+		);
+
+		expect( emptyCartResult ).toBe( false );
+		expect( filledCartResult ).toBe( true );
+		expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+		expect( mockStripe.elements ).toHaveBeenLastCalledWith(
+			expect.objectContaining( { amount: 28000, currency: 'eur' } )
+		);
 	} );
 
 	it( 'returns false immediately when currency code is empty', async () => {
 		const result = await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '1000', '' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( result ).toBe( false );
@@ -122,7 +154,8 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		const result = await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( result ).toBe( false );
@@ -136,7 +169,8 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		const result = await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( result ).toBe( false );
@@ -154,7 +188,8 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		const result = await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( result ).toBe( false );
@@ -164,12 +199,14 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 		await checkPaymentMethodIsAvailable(
 			'googlePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		// Only one stripe.elements() call since both share the same check.
@@ -180,12 +217,14 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 		await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '2000', 'EUR' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
@@ -195,12 +234,14 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '1000', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 		await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '2000', 'EUR' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( mockApi.loadStripeForExpressCheckout ).toHaveBeenCalledTimes(
@@ -212,11 +253,140 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		await checkPaymentMethodIsAvailable(
 			'applePay',
 			createCart( '0', 'USD' ),
-			mockApi
+			mockApi,
+			ENABLED_METHODS
 		);
 
 		expect( mockStripe.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( { amount: 1 } )
 		);
+	} );
+
+	// This probe builds its own Elements instance to ask which wallets are available. If its
+	// setupFutureUsage diverges from the one the real button mints with, availability is
+	// answered for a different payment than the shopper actually makes.
+	describe( 'setupFutureUsage', () => {
+		afterEach( () => {
+			delete global.wcpayExpressCheckoutParams;
+		} );
+
+		it( 'passes the value the server declared on the cart', async () => {
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: 'off_session' },
+				} ),
+				mockApi,
+				ENABLED_METHODS
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( { setupFutureUsage: 'off_session' } )
+			);
+		} );
+
+		it( 'omits it when the server declared none', async () => {
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
+				mockApi,
+				ENABLED_METHODS
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.not.objectContaining( {
+					setupFutureUsage: expect.anything(),
+				} )
+			);
+		} );
+
+		// The page-load globals go stale the moment the shopper edits the cart without a
+		// reload, so the live cart has to win.
+		it( 'reads the live cart rather than the page-load globals', async () => {
+			global.wcpayExpressCheckoutParams = {
+				setup_future_usage: 'off_session',
+			};
+
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
+				mockApi,
+				ENABLED_METHODS
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.not.objectContaining( {
+					setupFutureUsage: expect.anything(),
+				} )
+			);
+		} );
+
+		// Holding amount and currency fixed is what makes this discriminating: it leaves
+		// setupFutureUsage as the only dimension that can force a second probe. Swapping a
+		// simple product for a same-priced subscription without a reload is the real case —
+		// without it in the memo key, the cached probe answers for the wrong payment shape.
+		it( 'different setupFutureUsage triggers separate checks', async () => {
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
+				mockApi,
+				ENABLED_METHODS
+			);
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: 'off_session' },
+				} ),
+				mockApi,
+				ENABLED_METHODS
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+		} );
+	} );
+
+	describe( 'paymentMethodTypes', () => {
+		it( 'lists a type for each enabled method', async () => {
+			await checkPaymentMethodIsAvailable(
+				'googlePay',
+				createCart( '1000', 'USD' ),
+				mockApi,
+				[ 'payment_request', 'amazon_pay' ]
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					paymentMethodTypes: [ 'card', 'amazon_pay' ],
+				} )
+			);
+		} );
+
+		// Dropping Amazon Pay from the cart's list after a currency switch must
+		// not reuse the check that still asked Stripe about it.
+		it( 'different enabled methods trigger separate checks', async () => {
+			await checkPaymentMethodIsAvailable(
+				'googlePay',
+				createCart( '1000', 'USD' ),
+				mockApi,
+				[ 'payment_request', 'amazon_pay' ]
+			);
+			await checkPaymentMethodIsAvailable(
+				'googlePay',
+				createCart( '1000', 'USD' ),
+				mockApi,
+				[ 'payment_request' ]
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+			expect( mockStripe.elements ).toHaveBeenLastCalledWith(
+				expect.objectContaining( { paymentMethodTypes: [ 'card' ] } )
+			);
+		} );
 	} );
 } );

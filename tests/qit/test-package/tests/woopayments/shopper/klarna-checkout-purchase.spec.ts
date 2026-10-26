@@ -68,6 +68,10 @@ test.describe( 'Klarna Checkout', { tag: '@shopper' }, () => {
 		).not.toBeEmpty();
 	} );
 
+	// Order-visibility and refund are intentionally NOT asserted for Klarna: the
+	// Klarna playground redirect cannot be driven to a completed order without
+	// flakiness (see the redirect-only assertion below), so there is no captured
+	// order or transaction to verify or refund. Tracked alongside #6763.
 	test(
 		'allows to use Klarna as a payment method',
 		{ tag: '@critical' },
@@ -89,8 +93,12 @@ test.describe( 'Klarna Checkout', { tag: '@shopper' }, () => {
 			await shopper.placeOrder( shopperPage );
 
 			// Since we don't control the HTML in the Klarna playground page,
-			// verifying the redirect is all we can do consistently.
-			await expect( shopperPage ).toHaveURL( /.*klarna\.com/ );
+			// verifying the redirect is all we can do consistently. Wait for the page
+			// to load, though: navigating away while it is still loading aborts the
+			// cleanup's navigation to the cart.
+			await shopperPage.waitForURL( /.*klarna\.com/, {
+				waitUntil: 'load',
+			} );
 		}
 	);
 } );

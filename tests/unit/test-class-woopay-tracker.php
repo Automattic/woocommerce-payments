@@ -36,6 +36,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	 */
 	private $cache;
 
+	/**
+	 * @var string
+	 */
+	private $platform_checkout_setting;
+
 	public function setUp(): void {
 		parent::setUp();
 
@@ -44,11 +49,13 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->http_client_stub->method( 'get_connected_user_data' )->willReturn( [ 'ID' => 1234 ] );
 
 		$this->tracker = new WooPay_Tracker( $this->http_client_stub );
+		$this->tracker->init_hooks();
 
 		$this->cache      = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
 		WC_Payments::get_gateway()->enable();
+		$this->platform_checkout_setting = WC_Payments::get_gateway()->get_option( 'platform_checkout' );
 
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
 		update_option( 'woocommerce_allow_tracking', 'yes' );
@@ -56,6 +63,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 
 	public function tearDown(): void {
 		WC_Payments::set_database_cache( $this->cache );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', $this->platform_checkout_setting );
 		parent::tearDown();
 	}
 
@@ -79,13 +87,14 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_woopay_eligible   = true;
 		$is_account_connected = true;
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
 		global $wp_roles;
-		$all_roles = array_diff( $wp_roles->get_names(), [ 'administrator' ] );
+		$all_roles = array_diff( array_keys( $wp_roles->get_names() ), [ 'administrator' ] );
 
 		foreach ( $all_roles as $role ) {
-			wp_get_current_user()->set_role( $role );
-			$this->assertTrue( $this->tracker->should_enable_tracking() );
+			wp_set_current_user( self::factory()->user->create( [ 'role' => $role ] ) );
+			$this->assertTrue( $this->tracker->should_enable_tracking(), "Tracking should be enabled for the $role role." );
 		}
 	}
 
@@ -96,15 +105,29 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->tracker->should_enable_tracking() );
 	}
 
-	public function test_tracks_build_event_obj_for_admin_events(): void {
-		$this->set_account_connected( true );
-		$event_name = 'wcadmin_test_event';
-		$properties = [ 'test_property' => 'value' ];
+	public function test_shopper_tracking_config_is_enabled_when_woopay_is_not_eligible(): void {
+		$is_woopay_eligible   = false;
+		$is_account_connected = true;
+		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
 
-		$event_obj = $this->invoke_method( $this->tracker, 'tracks_build_event_obj', [ wp_get_current_user(), $event_name, $properties ] );
-		$this->assertEquals( 'value', $event_obj->test_property );
-		$this->assertEquals( 1234, $event_obj->_ui );
-		$this->assertEquals( $event_name, $event_obj->_en );
+		$config = $this->tracker->add_tracking_config_to_payment_fields( [] );
+		$params = $this->tracker->add_tracking_config_to_express_checkout( [] );
+
+		$this->assertTrue( $config['isShopperTrackingEnabled'] );
+		$this->assertTrue( $params['is_shopper_tracking_enabled'] );
+	}
+
+	public function test_shopper_tracking_config_is_disabled_when_store_opts_out(): void {
+		$is_woopay_eligible   = true;
+		$is_account_connected = true;
+		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
+		update_option( 'woocommerce_allow_tracking', 'no' );
+
+		$config = $this->tracker->add_tracking_config_to_payment_fields( [] );
+		$params = $this->tracker->add_tracking_config_to_express_checkout( [] );
+
+		$this->assertFalse( $config['isShopperTrackingEnabled'] );
+		$this->assertFalse( $params['is_shopper_tracking_enabled'] );
 	}
 
 	public function test_tracks_build_event_obj_for_shopper_events() {
@@ -130,11 +153,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Utility method to access protected methods for testing.
 	 */
-	protected function invoke_method( &$object, $method_name, array $parameters = [] ) {
-		$reflection = new \ReflectionClass( get_class( $object ) );
+	protected function invoke_method( &$instance, $method_name, array $parameters = [] ) {
+		$reflection = new \ReflectionClass( get_class( $instance ) );
 		$method     = $reflection->getMethod( $method_name );
 		$method->setAccessible( true );
-		return $method->invokeArgs( $object, $parameters );
+		return $method->invokeArgs( $instance, $parameters );
 	}
 
 	/**

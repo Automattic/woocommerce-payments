@@ -37,15 +37,20 @@ class WC_Payments_Email_Failed_Renewal_Authentication extends WC_Email {
 		$this->template_plain = 'plain/failed-renewal-authentication.php';
 		$this->template_base  = __DIR__ . '/emails/';
 
-		// Triggers the email at the correct hook.
-		add_action( 'woocommerce_woocommerce_payments_payment_requires_action', [ $this, 'trigger' ] );
-
 		if ( isset( $email_classes['WCS_Email_Customer_Renewal_Invoice'] ) ) {
 			$this->original_email = $email_classes['WCS_Email_Customer_Renewal_Invoice'];
 		}
 
 		// We want all the parent's methods, with none of its properties, so call its parent's constructor, rather than my parent constructor.
 		parent::__construct();
+	}
+
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
+		// Triggers the email at the correct hook.
+		add_action( 'woocommerce_woocommerce_payments_payment_requires_action', [ $this, 'trigger' ] );
 	}
 
 	/**

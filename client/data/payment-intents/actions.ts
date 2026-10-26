@@ -18,7 +18,12 @@ import {
 	UpdatePaymentIntentAction,
 } from './types';
 import { Charge } from 'wcpay/types/charges';
-import { STORE_NAME } from 'wcpay/data/constants';
+import { PAYMENT_INTENTS_STORE_NAME as STORE_NAME } from '../store-names';
+// Take these two names from their store modules, not from `store-names`: the import
+// is also what registers the store, and neither is otherwise loaded on the payment
+// details page, so invalidating them after a refund would throw on a hard refresh.
+import { STORE_NAME as TIMELINE_STORE_NAME } from '../timeline/store';
+import { STORE_NAME as EARLY_FRAUD_WARNINGS_STORE_NAME } from '../early-fraud-warnings/store';
 
 export function updatePaymentIntent(
 	id: string,
@@ -60,7 +65,7 @@ export function* refundCharge(
 		} );
 
 		yield controls.dispatch(
-			STORE_NAME,
+			TIMELINE_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getTimeline'
 		);
@@ -69,6 +74,14 @@ export function* refundCharge(
 			STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getPaymentIntent'
+		);
+
+		// A full refund resolves the warning on the server, so drop the cached list
+		// rather than leave the Overview task pointing at a payment already refunded.
+		yield controls.dispatch(
+			EARLY_FRAUD_WARNINGS_STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getActiveEarlyFraudWarnings'
 		);
 
 		yield controls.dispatch(

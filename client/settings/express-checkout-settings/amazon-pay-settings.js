@@ -7,9 +7,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import CardBody from '../card-body';
 import {
-	Card,
 	CheckboxControl,
 	BaseControl,
 	RadioControl,
@@ -19,7 +19,7 @@ import {
 	useAmazonPayEnabledSettings,
 	useAmazonPayLocations,
 	useExpressCheckoutInPaymentMethodsEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import interpolateComponents from '@automattic/interpolate-components';
 import ExpressCheckoutSettingsNotices from './express-checkout-settings-notices';
 
@@ -80,14 +80,10 @@ const GeneralSettings = () => {
 };
 
 const AmazonPaySettings = ( { section } ) => {
-	const [
-		isAmazonPayEnabled,
-		updateIsAmazonPayEnabled,
-	] = useAmazonPayEnabledSettings();
-	const [
-		amazonPayLocations,
-		updateAmazonPayLocations,
-	] = useAmazonPayLocations();
+	const [ isAmazonPayEnabled, updateIsAmazonPayEnabled ] =
+		useAmazonPayEnabledSettings();
+	const [ amazonPayLocations, updateAmazonPayLocations ] =
+		useAmazonPayLocations();
 	const [
 		isExpressCheckoutInPaymentMethodsEnabled,
 		updateIsExpressCheckoutInPaymentMethodsEnabled,
@@ -156,9 +152,9 @@ const AmazonPaySettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? false
 												: isAmazonPayEnabled &&
-												  amazonPayLocations.includes(
+													amazonPayLocations.includes(
 														'product'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'product'
@@ -180,9 +176,9 @@ const AmazonPaySettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? false
 												: isAmazonPayEnabled &&
-												  amazonPayLocations.includes(
+													amazonPayLocations.includes(
 														'cart'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'cart'
@@ -204,9 +200,9 @@ const AmazonPaySettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? true
 												: isAmazonPayEnabled &&
-												  amazonPayLocations.includes(
+													amazonPayLocations.includes(
 														'checkout'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'checkout'

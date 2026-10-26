@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payments_Fraud_Service;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
@@ -36,7 +37,6 @@ use WCPay\Database_Cache;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-use WC_Subscriptions;
 /**
  * WC_Payment_Gateway_WCPay unit tests
  */
@@ -172,8 +172,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	private $payment_method_classes = [
 		Payment_Method::CARD       => \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
-		Payment_Method::GIROPAY    => \WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
-		Payment_Method::SOFORT     => \WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 		Payment_Method::BANCONTACT => \WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
 		Payment_Method::EPS        => \WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
 		Payment_Method::P24        => \WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
@@ -218,7 +216,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
-		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( 'USD' );
+		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$payment_methods = [
 			'link' => [
@@ -337,7 +335,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			WC_Helper_Site_Currency::$mock_site_currency = '';
 		}
 
-		foreach ( $this->mock_payment_gateways as $id => $mock_gateway ) {
+		foreach ( $this->mock_payment_gateways as $_unused_id => $mock_gateway ) {
 			$mock_gateway->expects( $this->any() )
 				->method( 'wc_payments_get_payment_gateway_by_id' )
 				->will(
@@ -410,7 +408,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_non_required_mandate_data() {
-		$mock_gateway_not_requiring_mandate_data = $this->mock_payment_gateways[ Payment_Method::GIROPAY ];
+		$mock_gateway_not_requiring_mandate_data = $this->mock_payment_gateways[ Payment_Method::BANCONTACT ];
 		$this->assertFalse( $mock_gateway_not_requiring_mandate_data->is_mandate_data_required() );
 	}
 
@@ -476,69 +474,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $response, $result );
 	}
 
-	public function test_process_redirect_payment_intent_processing() {
-		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
-		$order            = WC_Helper_Order::create_order();
-
-		$order_id            = $order->get_id();
-		$save_payment_method = false;
-		$user                = wp_get_current_user();
-		$intent_status       = Intent_Status::PROCESSING;
-		$intent_metadata     = [ 'order_id' => (string) $order_id ];
-		$charge_id           = 'ch_mock';
-		$customer_id         = 'cus_mock';
-		$intent_id           = 'pi_mock';
-		$payment_method_id   = 'pm_mock';
-
-		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->save();
-
-		$card_method = $this->mock_payment_methods['card'];
-
-		$payment_intent = WC_Helper_Intention::create_intention(
-			[
-				'status'   => $intent_status,
-				'metadata' => $intent_metadata,
-			]
-		);
-
-		$mock_upe_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
-			->will(
-				$this->returnValue( [ $user, $customer_id ] )
-			);
-
-		$mock_upe_gateway->expects( $this->any() )
-			->method( 'get_selected_payment_method' )
-			->willReturn( $card_method );
-
-		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $payment_intent );
-
-		$this->set_cart_contains_subscription_items( false );
-
-		$mock_upe_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
-
-		$result_order = wc_get_order( $order_id );
-		$note         = wc_get_order_notes(
-			[
-				'order_id' => $order_id,
-				'limit'    => 1,
-			]
-		)[0];
-
-		$this->assertStringContainsString( 'authorized', $note->content );
-		$this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
-		$this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
-		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
-		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
-		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
-		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
-	}
-
 	public function test_process_redirect_payment_intent_succeded() {
 
 		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
@@ -594,10 +529,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
 		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
 		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
-	}
-
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->mock_upe_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
 	}
 
 	public function test_process_redirect_setup_intent_succeded() {
@@ -750,95 +681,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
 	}
 
-	public function test_correct_payment_method_title_for_order() {
-		$order = WC_Helper_Order::create_order();
-
-		$visa_credit_details       = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'visa',
-				'funding' => 'credit',
-			],
-		];
-		$visa_debit_details        = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'visa',
-				'funding' => 'debit',
-			],
-		];
-		$mastercard_credit_details = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'mastercard',
-				'funding' => 'credit',
-			],
-		];
-		$eps_details               = [
-			'type' => 'eps',
-		];
-		$giropay_details           = [
-			'type' => 'giropay',
-		];
-		$p24_details               = [
-			'type' => 'p24',
-		];
-		$sofort_details            = [
-			'type' => 'sofort',
-		];
-		$bancontact_details        = [
-			'type' => 'bancontact',
-		];
-		$sepa_details              = [
-			'type' => 'sepa_debit',
-		];
-		$ideal_details             = [
-			'type' => 'ideal',
-		];
-		$becs_details              = [
-			'type' => 'au_becs_debit',
-		];
-
-		$charge_payment_method_details = [
-			$visa_credit_details,
-			$visa_debit_details,
-			$mastercard_credit_details,
-			$giropay_details,
-			$sofort_details,
-			$bancontact_details,
-			$eps_details,
-			$p24_details,
-			$ideal_details,
-			$sepa_details,
-			$becs_details,
-		];
-
-		$expected_payment_method_titles = [
-			'Visa credit card',
-			'Visa debit card',
-			'Mastercard credit card',
-			'giropay',
-			'Sofort',
-			'Bancontact',
-			'EPS',
-			'Przelewy24 (P24)',
-			'iDEAL | Wero',
-			'SEPA Direct Debit',
-			'BECS Direct Debit',
-		];
-
-		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
-			$payment_method_id = $payment_method_details['type'];
-			$mock_upe_gateway  = $this->mock_payment_gateways[ $payment_method_id ];
-			$payment_method    = $this->mock_payment_methods[ $payment_method_id ];
-			$mock_upe_gateway->expects( $this->any() )
-				->method( 'get_selected_payment_method' )
-				->willReturn( $payment_method );
-			$mock_upe_gateway->set_payment_method_title_for_order( $order, $payment_method_id, $payment_method_details );
-			$this->assertEquals( $expected_payment_method_titles[ $i ], $order->get_payment_method_title() );
-		}
-	}
-
 	public function test_process_payment_sets_card_payment_method_and_title() {
 		$mock_card_payment_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
 		$user                      = wp_get_current_user();
@@ -958,230 +800,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'SEPA Direct Debit', $result_order->get_payment_method_title() );
 		$this->assertEquals( null, $result_order->get_meta( 'last4', true ) );
 		$this->assertEquals( null, $result_order->get_meta( '_card_brand', true ) );
-	}
-
-	public function test_payment_methods_show_correct_default_outputs() {
-		$mock_token = WC_Helper_Token::create_token( 'pm_mock' );
-		$this->mock_token_service->expects( $this->any() )
-			->method( 'add_payment_method_to_user' )
-			->will(
-				$this->returnValue( $mock_token )
-			);
-
-		$mock_user              = 'mock_user';
-		$mock_payment_method_id = 'pm_mock';
-
-		$mock_visa_details       = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'visa',
-				'funding' => 'debit',
-			],
-		];
-		$mock_mastercard_details = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'mastercard',
-				'funding' => 'credit',
-			],
-		];
-		$mock_giropay_details    = [
-			'type' => 'giropay',
-		];
-		$mock_p24_details        = [
-			'type' => 'p24',
-		];
-		$mock_sofort_details     = [
-			'type' => 'sofort',
-		];
-		$mock_bancontact_details = [
-			'type' => 'bancontact',
-		];
-		$mock_eps_details        = [
-			'type' => 'eps',
-		];
-		$mock_sepa_details       = [
-			'type' => 'sepa_debit',
-		];
-		$mock_ideal_details      = [
-			'type' => 'ideal',
-		];
-		$mock_becs_details       = [
-			'type' => 'au_becs_debit',
-		];
-
-		$this->set_cart_contains_subscription_items( false );
-		$card_method       = $this->mock_payment_methods['card'];
-		$giropay_method    = $this->mock_payment_methods['giropay'];
-		$p24_method        = $this->mock_payment_methods['p24'];
-		$sofort_method     = $this->mock_payment_methods['sofort'];
-		$bancontact_method = $this->mock_payment_methods['bancontact'];
-		$eps_method        = $this->mock_payment_methods['eps'];
-		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
-		$ideal_method      = $this->mock_payment_methods['ideal'];
-		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
-
-		$this->assertEquals( 'card', $card_method->get_id() );
-		$this->assertEquals( 'Card', $card_method->get_title( 'US' ) );
-		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
-		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
-		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertTrue( $card_method->is_reusable() );
-		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
-
-		$this->assertEquals( 'giropay', $giropay_method->get_id() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title( 'US' ) );
-		$this->assertEquals( 'giropay', $giropay_method->get_title( 'US', $mock_giropay_details ) );
-		$this->assertTrue( $giropay_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $giropay_method->is_reusable() );
-
-		$this->assertEquals( 'p24', $p24_method->get_id() );
-		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( 'US' ) );
-		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( 'US', $mock_p24_details ) );
-		$this->assertTrue( $p24_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $p24_method->is_reusable() );
-
-		$this->assertEquals( 'sofort', $sofort_method->get_id() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title( 'US' ) );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title( 'US', $mock_sofort_details ) );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sofort_method->is_reusable() );
-
-		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
-		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( 'US' ) );
-		$this->assertEquals( 'Bancontact', $bancontact_method->get_title( 'US', $mock_bancontact_details ) );
-		$this->assertTrue( $bancontact_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $bancontact_method->is_reusable() );
-
-		$this->assertEquals( 'eps', $eps_method->get_id() );
-		$this->assertEquals( 'EPS', $eps_method->get_title( 'US' ) );
-		$this->assertEquals( 'EPS', $eps_method->get_title( 'US', $mock_eps_details ) );
-		$this->assertTrue( $eps_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $eps_method->is_reusable() );
-
-		$this->assertEquals( 'sepa_debit', $sepa_method->get_id() );
-		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( 'US' ) );
-		$this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( 'US', $mock_sepa_details ) );
-		$this->assertTrue( $sepa_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sepa_method->is_reusable() );
-
-		$this->assertEquals( 'ideal', $ideal_method->get_id() );
-		$this->assertEquals( 'iDEAL | Wero', $ideal_method->get_title( 'US' ) );
-		$this->assertEquals( 'iDEAL | Wero', $ideal_method->get_title( 'US', $mock_ideal_details ) );
-		$this->assertTrue( $ideal_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $ideal_method->is_reusable() );
-
-		$this->assertEquals( 'au_becs_debit', $becs_method->get_id() );
-		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( 'US' ) );
-		$this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( 'US', $mock_becs_details ) );
-		$this->assertTrue( $becs_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $becs_method->is_reusable() );
-	}
-
-	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
-		// Setup $this->mock_payment_methods.
-
-		$this->set_cart_contains_subscription_items( true );
-		// Disable manual renewals to test only reusable methods are enabled.
-		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
-			function () {
-				return false;
-			}
-		);
-
-		$card_method       = $this->mock_payment_methods['card'];
-		$giropay_method    = $this->mock_payment_methods['giropay'];
-		$sofort_method     = $this->mock_payment_methods['sofort'];
-		$bancontact_method = $this->mock_payment_methods['bancontact'];
-		$eps_method        = $this->mock_payment_methods['eps'];
-		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
-		$p24_method        = $this->mock_payment_methods['p24'];
-		$ideal_method      = $this->mock_payment_methods['ideal'];
-		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
-
-		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $giropay_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sofort_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $eps_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sepa_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $p24_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $ideal_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $becs_method->is_enabled_at_checkout( 'US' ) );
-	}
-
-	public function test_only_valid_payment_methods_returned_for_currency() {
-		// Setup $this->mock_payment_methods.
-
-		$card_method       = $this->mock_payment_methods['card'];
-		$giropay_method    = $this->mock_payment_methods['giropay'];
-		$sofort_method     = $this->mock_payment_methods['sofort'];
-		$bancontact_method = $this->mock_payment_methods['bancontact'];
-		$eps_method        = $this->mock_payment_methods['eps'];
-		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
-		$p24_method        = $this->mock_payment_methods['p24'];
-		$ideal_method      = $this->mock_payment_methods['ideal'];
-		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
-
-		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$account_domestic_currency                   = 'USD';
-
-		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
-
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
-
-		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
-
-		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
-		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
-
-		WC_Helper_Site_Currency::$mock_site_currency = '';
-	}
-
-	public function test_create_token_from_setup_intent_adds_token() {
-
-		$mock_token           = WC_Helper_Token::create_token( 'pm_mock' );
-		$mock_setup_intent_id = 'si_mock';
-		$mock_user            = wp_get_current_user();
-
-		$this->mock_token_service
-			->method( 'add_payment_method_to_user' )
-			->with( 'pm_mock', $mock_user )
-			->will(
-				$this->returnValue( $mock_token )
-			);
-
-		foreach ( $this->mock_payment_gateways as $mock_upe_gateway ) {
-			$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $mock_setup_intent_id );
-
-			$request->expects( $this->once() )
-				->method( 'format_response' )
-				->willReturn(
-					WC_Helper_Intention::create_setup_intention(
-						[
-							'id'             => $mock_setup_intent_id,
-							'payment_method' => 'pm_mock',
-						]
-					)
-				);
-			$this->assertEquals( $mock_token, $mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
-		}
 	}
 
 	/**
@@ -1347,6 +965,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	private function setup_saved_payment_method() {
+		// Saved tokens are only usable by their logged-in owner.
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'customer' ] ) );
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
 		return [

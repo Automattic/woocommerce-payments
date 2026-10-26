@@ -8,12 +8,13 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { Card, CardBody, CardDivider } from '@wordpress/components';
+import { Card, CardBody } from 'wcpay/components/card';
+import { CardDivider } from '@wordpress/components';
 import SettingsSection from 'wcpay/settings/settings-section';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';
 import CardReaderListItem from './list-item';
-import { useReaders } from 'wcpay/data';
+import { useReaders } from 'wcpay/data/card-readers';
 
 const ReadersListDescription = () => (
 	<>
@@ -55,14 +56,14 @@ const ReadersList = (): JSX.Element => {
 						<CardBody className="card-readers-list__body">
 							<ul>
 								{ ! isLoading &&
-									Object.entries(
-										readers
-									).map( ( [ index, reader ] ) => (
-										<CardReaderListItem
-											key={ index }
-											reader={ reader }
-										/>
-									) ) }
+									Object.entries( readers ).map(
+										( [ index, reader ] ) => (
+											<CardReaderListItem
+												key={ index }
+												reader={ reader }
+											/>
+										)
+									) }
 							</ul>
 						</CardBody>
 					</Card>

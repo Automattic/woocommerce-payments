@@ -9,7 +9,7 @@ import { isInDevMode } from 'wcpay/utils';
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 jest.mock( 'wcpay/embedded-components', () => {
@@ -37,6 +37,13 @@ const mockIsInDevMode = isInDevMode as jest.MockedFunction<
 	typeof isInDevMode
 >;
 
+declare const global: {
+	wcpaySettings: { devModeReason?: string };
+};
+
+const devModeReason =
+	'A plugin or custom code turned it on using the wcpay_dev_mode filter.';
+
 const mockOnboardingContext = () => {
 	( useOnboardingContext as jest.Mock ).mockReturnValue( {
 		data: {},
@@ -54,12 +61,14 @@ describe( 'EmbeddedKyc Component', () => {
 		mockIsInDevMode.mockReturnValue( false );
 	} );
 
+	afterEach( () => {
+		delete global.wcpaySettings.devModeReason;
+	} );
+
 	it( 'renders the EmbeddedAccountOnboarding component when not finalizing', async () => {
 		mockOnboardingContext();
 
-		await act( async () => {
-			render( <EmbeddedKyc /> );
-		} );
+		render( <EmbeddedKyc /> );
 
 		await waitFor( async () => {
 			expect(
@@ -71,18 +80,25 @@ describe( 'EmbeddedKyc Component', () => {
 	it( 'shows dev mode warning banner when dev mode is active', async () => {
 		mockOnboardingContext();
 		mockIsInDevMode.mockReturnValue( true );
+		global.wcpaySettings.devModeReason = devModeReason;
 
-		let container: HTMLElement;
-		await act( async () => {
-			const result = render( <EmbeddedKyc /> );
-			container = result.container;
-		} );
+		const { container } = render( <EmbeddedKyc /> );
 
-		expect( container!.textContent ).toContain(
-			'Your store is in development mode.'
+		expect( container ).toHaveTextContent(
+			'Your store is in development mode, so payments are simulated. ' +
+				'A plugin or custom code turned it on using the wcpay_dev_mode filter. Live accounts can only be set up on your live store. Learn more'
 		);
-		expect( container!.textContent ).toContain(
-			'can only create test accounts'
+	} );
+
+	it( 'leaves out the development mode reason when there is none', async () => {
+		mockOnboardingContext();
+		mockIsInDevMode.mockReturnValue( true );
+
+		const { container } = render( <EmbeddedKyc /> );
+
+		expect( container ).toHaveTextContent(
+			'Your store is in development mode, so payments are simulated. ' +
+				'Live accounts can only be set up on your live store. Learn more'
 		);
 	} );
 
@@ -90,14 +106,10 @@ describe( 'EmbeddedKyc Component', () => {
 		mockOnboardingContext();
 		mockIsInDevMode.mockReturnValue( false );
 
-		let container: HTMLElement;
-		await act( async () => {
-			const result = render( <EmbeddedKyc /> );
-			container = result.container;
-		} );
+		const { container } = render( <EmbeddedKyc /> );
 
-		expect( container!.textContent ).not.toContain(
-			'Your store is in development mode.'
+		expect( container.textContent ).not.toContain(
+			'Your store is in development mode'
 		);
 	} );
 } );

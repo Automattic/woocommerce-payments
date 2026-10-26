@@ -22,7 +22,7 @@ interface FormatDateTimeOptions {
  * The input date string is converted to UTC for consistent handling across timezones.
  *
  * @param dateTimeStr - Date time string in YYYY-MM-DD HH:MM:SS format
- * @param options - Formatting options
+ * @param options     - Formatting options
  */
 export function formatDateTimeFromString(
 	dateTimeStr: string,
@@ -54,7 +54,7 @@ export function formatDateTimeFromString(
  * The input timestamp is converted to UTC for consistent handling across timezones.
  *
  * @param timestamp - Unix timestamp (seconds since epoch)
- * @param options - Formatting options
+ * @param options   - Formatting options
  */
 export function formatDateTimeFromTimestamp(
 	timestamp: number,

@@ -52,6 +52,8 @@ class HooksProxyTest extends WCPAY_UnitTestCase {
 	 * Test setup.
 	 */
 	protected function setUp(): void {
+		parent::setUp();
+
 		$this->sut    = new HooksProxy();
 		$this->helper = $this->createMock( HooksHelper::class );
 	}
@@ -66,7 +68,7 @@ class HooksProxyTest extends WCPAY_UnitTestCase {
 
 		$this->sut->add_filter( $hook_name, [ $this->helper, 'action' ], 11, 3 );
 
-		$result = apply_filters( $hook_name, 1, 2, 3 );
+		$result = apply_filters( $hook_name, 1, 2, 3 ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertSame( 4, $result );
 	}
 
@@ -80,7 +82,7 @@ class HooksProxyTest extends WCPAY_UnitTestCase {
 
 		$this->sut->add_action( $hook_name, [ $this->helper, 'action' ], 11, 3 );
 
-		$result = do_action( $hook_name, 1, 2, 3 );
+		$result = do_action( $hook_name, 1, 2, 3 ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertNull( $result ); // Non-null would be a filter.
 	}
 
@@ -94,7 +96,7 @@ class HooksProxyTest extends WCPAY_UnitTestCase {
 
 		$this->sut->add_filter( $hook_name, [ $this->helper, 'action' ], 11, 3 );
 
-		$result = $this->sut->apply_filters( $hook_name, 1, 2, 3 );
+		$result = $this->sut->apply_filters( $hook_name, 1, 2, 3 ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertEquals( 4, $result ); // Non-null would be a filter.
 	}
 }

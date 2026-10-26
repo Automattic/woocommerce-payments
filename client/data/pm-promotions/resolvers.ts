@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
+import { PM_PROMOTIONS_STORE_NAME as STORE_NAME } from '../store-names';
 import { PmPromotion, PmPromotionsData } from './types';
 import { ApiError } from '../../types/errors';
 
@@ -76,7 +77,7 @@ export function* getPmPromotions(): unknown {
 			throw new Error( 'Invalid promotions data received from API' );
 		}
 
-		yield controls.dispatch( 'wc/payments', 'updatePmPromotions', result );
+		yield controls.dispatch( STORE_NAME, 'updatePmPromotions', result );
 	} catch ( e ) {
 		yield controls.dispatch(
 			'core/notices',
@@ -87,7 +88,7 @@ export function* getPmPromotions(): unknown {
 			)
 		);
 		yield controls.dispatch(
-			'wc/payments',
+			STORE_NAME,
 			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);

@@ -23,7 +23,7 @@ const failures = [
 	},
 	{
 		card: config.cards[ 'invalid-cvv-number' ],
-		error: 'Your card’s security code is incomplete.',
+		error: 'Your security code is incomplete.',
 	},
 	{
 		card: config.cards[ 'declined-funds' ],
@@ -39,8 +39,7 @@ const failures = [
 	},
 	{
 		card: config.cards[ 'declined-processing' ],
-		error:
-			'An error occurred while processing your card. Try again in a little bit.',
+		error: 'An error occurred while processing your card. Try again in a little bit.',
 	},
 	{
 		card: config.cards[ 'declined-incorrect' ],

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`CVC verification card renders correctly when CVC check is disabled 1`] = `
 .emotion-0 {
@@ -89,7 +89,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="cvc-verification-card"
@@ -98,7 +98,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -273,7 +273,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
 
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="cvc-verification-card"
@@ -282,7 +282,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >

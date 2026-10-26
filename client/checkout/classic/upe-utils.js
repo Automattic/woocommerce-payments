@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getTerms } from '../utils/upe';
+import { getLinkEmail, getTerms, isLinkEnabled } from '../utils/upe';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
 
 /**
@@ -144,6 +144,22 @@ export const getUpeSettings = ( paymentMethodType ) => {
 		};
 	}
 
+	const linkEmail =
+		paymentMethodType === 'card' &&
+		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+			? getLinkEmail( document.querySelector( '#billing_email' )?.value )
+			: undefined;
+
+	if ( linkEmail ) {
+		upeSettings.defaultValues = {
+			...upeSettings.defaultValues,
+			billingDetails: {
+				...upeSettings.defaultValues?.billingDetails,
+				email: linkEmail,
+			},
+		};
+	}
+
 	return upeSettings;
 };
 
@@ -161,7 +177,7 @@ export const generateCheckoutEventNames = () => {
 /**
  * Appends the payment method ID to the form.
  *
- * @param {Object} $form jQuery form object
+ * @param {Object} $form           jQuery form object
  * @param {string} paymentMethodId Payment method ID to append
  */
 export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
@@ -173,7 +189,7 @@ export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
 /**
  * Appends payment method error data to the form.
  *
- * @param {Object} $form jQuery form object
+ * @param {Object} $form              jQuery form object
  * @param {Object} paymentMethodError Error object containing code, decline_code, message, and type
  */
 export const appendPaymentMethodErrorDataToForm = (
@@ -249,7 +265,7 @@ export function dispatchChangeEventFor( element ) {
  *
  * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  * @return {boolean} Whether the payment method is restricted to selected billing country.
- **/
+ */
 export const hasPaymentMethodCountryRestrictions = ( upeElement ) => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
@@ -260,7 +276,7 @@ export const hasPaymentMethodCountryRestrictions = ( upeElement ) => {
  * Hides the payment method if it has set specific countries in the PHP class.
  *
  * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
- **/
+ */
 export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const upeContainer = upeElement?.closest( '.wc_payment_method' );
 	if ( ! upeContainer ) {
@@ -354,7 +370,7 @@ export const isBillingInformationMissing = () => {
 	)
 		? document.querySelector(
 				`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }`
-		  )?.value
+			)?.value
 		: null;
 
 	// We need to just find one field with missing information. If even only one is missing, just return early.

@@ -34,7 +34,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( { query } ) => {
 		} );
 	}
 
-	if ( 'card_reader_fee' === transactionType ) {
+	if ( transactionType === 'card_reader_fee' ) {
 		return (
 			<PaymentCardReaderChargeDetails
 				chargeId={ id }

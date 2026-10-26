@@ -16,7 +16,7 @@ import {
 	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
-} from '../data';
+} from 'wcpay/data/settings';
 import PaymentMethodIcon from '../settings/payment-method-icon';
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
 import WooCardIcon from 'assets/images/cards/woo-card.svg?asset';

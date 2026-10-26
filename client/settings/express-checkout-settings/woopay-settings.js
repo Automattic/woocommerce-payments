@@ -4,15 +4,15 @@
  */
 import React from 'react';
 import clsx from 'clsx';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import {
-	Card,
 	CheckboxControl,
 	TextareaControl,
 	ExternalLink,
@@ -29,23 +29,23 @@ import {
 	useWooPayLocations,
 	useWooPayShowIncompatibilityNotice,
 	useWooPayGlobalThemeSupportEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import InlineNotice from 'wcpay/components/inline-notice';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
-import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
+import {
+	LinkWooPayConflictNotice,
+	WooPayIncompatibilityNotice,
+} from '../settings-warnings/incompatibility-notice';
 
 const WooPaySettings = ( { section } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
-	const [
-		isWooPayEnabled,
-		updateIsWooPayEnabled,
-	] = useWooPayEnabledSettings();
+	const [ isWooPayEnabled, updateIsWooPayEnabled ] =
+		useWooPayEnabledSettings();
 
-	const [
-		woopayCustomMessage,
-		setWooPayCustomMessage,
-	] = useWooPayCustomMessage();
+	const [ woopayCustomMessage, setWooPayCustomMessage ] =
+		useWooPayCustomMessage();
 
 	const [
 		isWooPayGlobalThemeSupportEnabled,
@@ -60,7 +60,11 @@ const WooPaySettings = ( { section } ) => {
 		updateWooPayLocations( location, isChecked );
 	};
 
-	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
+	// Link is only offered alongside card, and its settings row is hidden otherwise.
+	const isStripeLinkEnabled =
+		enabledMethodIds.includes( 'link' ) &&
+		enabledMethodIds.includes( 'card' );
+	const isConflicting = isWooPayEnabled && isStripeLinkEnabled;
 
 	const showIncompatibilityNotice =
 		useWooPayShowIncompatibilityNotice() && ! isStripeLinkEnabled;
@@ -77,18 +81,26 @@ const WooPaySettings = ( { section } ) => {
 					{ showIncompatibilityNotice && (
 						<WooPayIncompatibilityNotice />
 					) }
-					{ isStripeLinkEnabled && (
+					{ isConflicting && <LinkWooPayConflictNotice /> }
+					{ isStripeLinkEnabled && ! isConflicting && (
 						<InlineNotice status="warning" isDismissible={ false }>
-							{ __(
-								'To enable WooPay, you must first disable Link by Stripe.',
-								'woocommerce-payments'
+							{ sprintf(
+								/* translators: %s: Payment method name, e.g. "Stripe Link" or "Onelink". */
+								__(
+									'To enable WooPay, you must first disable %s.',
+									'woocommerce-payments'
+								),
+								methodsConfiguration.link.label
 							) }
 						</InlineNotice>
 					) }
 					<div className="wcpay-woopay-settings__enable">
 						<CheckboxControl
 							checked={ isWooPayEnabled }
-							disabled={ isStripeLinkEnabled }
+							// Only block turning WooPay on, so a store with both enabled can still turn it off.
+							disabled={
+								isStripeLinkEnabled && ! isWooPayEnabled
+							}
 							onChange={ updateIsWooPayEnabled }
 							label={ __(
 								'Enable WooPay',
@@ -100,7 +112,7 @@ const WooPaySettings = ( { section } ) => {
 									? __(
 											'When enabled, customers will be able to checkout using WooPay.',
 											'woocommerce-payments'
-									  )
+										)
 									: interpolateComponents( {
 											mixedString: __(
 												/* eslint-disable-next-line max-len */
@@ -142,7 +154,7 @@ const WooPaySettings = ( { section } ) => {
 													/>
 												),
 											},
-									  } )
+										} )
 								/* eslint-enable jsx-a11y/anchor-has-content */
 							}
 							__nextHasNoMarginBottom
@@ -309,7 +321,7 @@ const WooPaySettings = ( { section } ) => {
 										// eslint-disable-next-line max-len
 										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
 									),
-								}
+								},
 						} ) }
 						value={ woopayCustomMessage }
 						onChange={ setWooPayCustomMessage }

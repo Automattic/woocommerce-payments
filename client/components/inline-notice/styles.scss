@@ -1,9 +1,5 @@
 .wcpay-inline-notice.components-notice {
 	margin: $gap-large 0;
-	padding: 11px 0 11px 17px;
-	border-left: none;
-	border-radius: 2px;
-	justify-content: flex-start;
 
 	/* Margin exceptions */
 	@at-root .components-modal__header + &,
@@ -29,9 +25,6 @@
 		}
 	}
 	.components-notice__content {
-		margin-top: 2px;
-		margin-bottom: 2px;
-
 		// Ensure links don't wrap across lines, e.g. "Learn (newline) more".
 		a {
 			white-space: nowrap;
@@ -42,18 +35,6 @@
 	}
 	a.wcpay-inline-notice__action {
 		text-decoration: none;
-	}
-	&.is-dismissible {
-		padding-right: 12px;
-	}
-	.components-notice__dismiss {
-		height: 24px;
-		width: 24px;
-		svg {
-			width: 15px;
-			height: 15px;
-			fill: $gray-900;
-		}
 	}
 
 	/* Specific styles for each variant */

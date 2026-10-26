@@ -15,7 +15,7 @@ if [ ! -f "${JT_DIR}/config.env" ]; then
         # shellcheck source=/dev/null
         source "${MAIN_REPO}/bin/jurassictube/config.env"
     else
-        echo "Not configured. Run 'npm run tube:setup' first."
+        echo "Not configured. Run 'pnpm run tube:setup' first."
         exit 0
     fi
 else

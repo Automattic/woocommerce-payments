@@ -139,14 +139,14 @@ export function* saveStoreSettings( suppressNotices = false ) {
 			path: `${ NAMESPACE }/multi-currency/update-settings`,
 			method: 'POST',
 			data: {
-				wcpay_multi_currency_enable_auto_currency: storeSettings.enable_auto_currency
-					? 'yes'
-					: 'no',
-				wcpay_multi_currency_enable_storefront_switcher: storeSettings.enable_storefront_switcher
-					? 'yes'
-					: 'no',
+				wcpay_multi_currency_enable_auto_currency:
+					storeSettings.enable_auto_currency ? 'yes' : 'no',
+				wcpay_multi_currency_enable_storefront_switcher:
+					storeSettings.enable_storefront_switcher ? 'yes' : 'no',
 				wcpay_multi_currency_rendering_mode:
 					storeSettings.rendering_mode || 'speed',
+				wcpay_multi_currency_cache_recommendation_dismissed:
+					storeSettings.cache_recommendation_dismissed ? 'yes' : 'no',
 			},
 		} );
 

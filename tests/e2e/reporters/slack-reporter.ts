@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable no-console */
 
 /**
  * External dependencies
  */
+import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 import type {
 	Reporter,
 	FullConfig,
@@ -22,6 +25,11 @@ import { SlackClient } from '../utils/slack';
 const {
 	E2E_SLACK_TOKEN,
 	E2E_SLACK_CHANNEL_ID,
+	// When set, the reporter is running in the phase-2 re-run and reconciles
+	// the phase-1 message instead of posting a new one.
+	E2E_SLACK_RERUN,
+	// Optional override for the cross-phase state file path.
+	E2E_SLACK_STATE_FILE,
 	WC_E2E_SCREENSHOTS,
 	E2E_GH_TOKEN,
 	E2E_HEAD_SHA,
@@ -41,6 +49,54 @@ const {
 	GITHUB_RUN_ID,
 	GITHUB_RUN_ATTEMPT,
 } = process.env;
+
+// -- Re-run state (phase-1 → phase-2 handoff) --------------------------------
+
+interface RerunState {
+	threadTs: string;
+	buildLogUrl?: string;
+	failedTestIds: string[];
+}
+
+function getStateFilePath(): string {
+	return (
+		E2E_SLACK_STATE_FILE ||
+		resolve( __dirname, '../.slack-thread-state.json' )
+	);
+}
+
+function writeRerunState( state: RerunState ): void {
+	try {
+		writeFileSync( getStateFilePath(), JSON.stringify( state ), 'utf8' );
+	} catch ( error ) {
+		// Non-fatal: a missing state file just means phase 2 falls back to
+		// its default behavior.
+		console.log( 'Failed to write Slack re-run state', error );
+	}
+}
+
+function readRerunState(): RerunState | undefined {
+	try {
+		const filePath = getStateFilePath();
+		if ( ! existsSync( filePath ) ) {
+			return undefined;
+		}
+		const parsed = JSON.parse( readFileSync( filePath, 'utf8' ) );
+		// Guard against a parseable-but-malformed file so reconciliation
+		// can't later throw on a non-iterable failedTestIds.
+		if (
+			typeof parsed?.threadTs !== 'string' ||
+			! Array.isArray( parsed?.failedTestIds )
+		) {
+			return undefined;
+		}
+		return parsed as RerunState;
+	} catch ( error ) {
+		// Non-fatal: treat a corrupt/unreadable state file as "no state".
+		console.log( 'Failed to read Slack re-run state', error );
+		return undefined;
+	}
+}
 
 // -- Helpers ------------------------------------------------------------------
 
@@ -203,13 +259,10 @@ function buildStatusSummary(
 	return parts.join( ', ' );
 }
 
-function buildParentMessage(
-	failureCount: number,
-	flakyCount: number,
-	done: boolean,
+function buildHeaderParts(
 	buildLogUrl?: string,
 	commitSha?: string
-): string {
+): { jobTitle: string; commitLine: string } {
 	const matrixLabel = getMatrixLabel();
 	const branch = getBranch();
 	const sha = commitSha || GITHUB_SHA || '';
@@ -220,21 +273,64 @@ function buildParentMessage(
 	const jobTitle = buildLogUrl
 		? `<${ buildLogUrl }|${ matrixLabel }>`
 		: matrixLabel;
+	return { jobTitle, commitLine: `\`${ branch }\` | ${ commitLink }` };
+}
 
+function buildParentMessage(
+	failureCount: number,
+	flakyCount: number,
+	done: boolean,
+	buildLogUrl?: string,
+	commitSha?: string
+): string {
+	const { jobTitle, commitLine } = buildHeaderParts( buildLogUrl, commitSha );
 	const summary = buildStatusSummary( failureCount, flakyCount );
 
 	if ( done ) {
 		const icon = failureCount > 0 ? ':red_circle:' : ':warning:';
 		return (
 			`${ icon } *Done — ${ summary }* | ${ jobTitle }\n` +
-			`\`${ branch }\` | ${ commitLink }`
+			`${ commitLine }`
 		);
 	}
 
 	return (
 		`:loading-dots: *Running* | ${ jobTitle }\n` +
-		`\`${ branch }\` | ${ commitLink }\n` +
+		`${ commitLine }\n` +
 		`${ summary } so far`
+	);
+}
+
+/**
+ * Build the reconciled parent message posted after the phase-2 re-run.
+ * - All recovered → yellow "passed after re-run".
+ * - Some still failing → red, annotated with the recovered count.
+ */
+function buildRerunParentMessage(
+	stillFailingCount: number,
+	recoveredCount: number,
+	buildLogUrl?: string,
+	commitSha?: string
+): string {
+	const { jobTitle, commitLine } = buildHeaderParts( buildLogUrl, commitSha );
+
+	if ( stillFailingCount > 0 ) {
+		const noun = stillFailingCount === 1 ? 'failure' : 'failures';
+		const recoveredNote =
+			recoveredCount > 0
+				? ` (${ recoveredCount } recovered on re-run)`
+				: '';
+		return (
+			`:red_circle: *Done — ${ stillFailingCount } ${ noun }*` +
+			`${ recoveredNote } | ${ jobTitle }\n` +
+			`${ commitLine }`
+		);
+	}
+
+	return (
+		`:large_yellow_circle: *Done — passed after re-run* ` +
+		`(${ recoveredCount } recovered) | ${ jobTitle }\n` +
+		`${ commitLine }`
 	);
 }
 
@@ -261,6 +357,15 @@ class SlackReporter implements Reporter {
 	// Maps test ID → reply ts, so we can update the reply if the test recovers.
 	private reportedTests = new Map< string, string >();
 
+	// Test IDs currently counted as failures (entries are dropped on recovery).
+	private failedTestIds = new Set< string >();
+
+	// Re-run mode (phase 2): adopt the phase-1 thread and reconcile it.
+	private rerun = false;
+	private rerunState: RerunState | undefined;
+	// Maps test ID → final status observed during the phase-2 re-run.
+	private phase2Status = new Map< string, TestResult[ 'status' ] >();
+
 	constructor() {
 		this.enabled = isEnabled();
 		this.client = new SlackClient(
@@ -269,6 +374,25 @@ class SlackReporter implements Reporter {
 		);
 		this.buildLogUrl = getBuildLogUrl();
 		this.commitSha = E2E_HEAD_SHA || GITHUB_SHA || undefined;
+
+		// In the phase-2 re-run, adopt the phase-1 thread (and its job URL) so
+		// we reconcile that message rather than create a new one.
+		this.rerun = !! E2E_SLACK_RERUN;
+		if ( this.rerun ) {
+			this.rerunState = readRerunState();
+			if ( this.rerunState ) {
+				this.threadTs = this.rerunState.threadTs;
+				this.buildLogUrl =
+					this.rerunState.buildLogUrl ?? this.buildLogUrl;
+			} else {
+				// Re-run requested but no phase-1 state to adopt: fall back to
+				// posting a fresh thread (pre-reconciliation behavior).
+				console.log(
+					'Slack re-run requested but no phase-1 state found; ' +
+						'falling back to a new thread.'
+				);
+			}
+		}
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -281,6 +405,13 @@ class SlackReporter implements Reporter {
 
 	async onTestEnd( test: TestCase, result: TestResult ) {
 		if ( ! this.enabled ) {
+			return;
+		}
+
+		// Re-run mode (phase 2): don't post anything. Record each test's final
+		// status so onEnd can reconcile the phase-1 parent message.
+		if ( this.rerun && this.rerunState ) {
+			this.phase2Status.set( test.id, result.status );
 			return;
 		}
 
@@ -301,6 +432,7 @@ class SlackReporter implements Reporter {
 		}
 
 		this.failureCount++;
+		this.failedTestIds.add( test.id );
 
 		// First failure: resolve job URL, create the parent thread.
 		if ( ! this.threadTs ) {
@@ -362,8 +494,18 @@ class SlackReporter implements Reporter {
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	async onEnd( result: FullResult ) {
+		if ( ! this.enabled ) {
+			return;
+		}
+
+		// Re-run mode (phase 2): reconcile the phase-1 parent against the
+		// re-run outcomes instead of posting a separate message.
+		if ( this.rerun && this.rerunState ) {
+			await this.reconcileAfterRerun();
+			return;
+		}
+
 		if (
-			! this.enabled ||
 			! this.threadTs ||
 			( this.failureCount === 0 && this.flakyCount === 0 )
 		) {
@@ -381,6 +523,12 @@ class SlackReporter implements Reporter {
 				this.commitSha
 			)
 		);
+
+		// Persist state so a phase-2 re-run can reconcile THIS message
+		// (recover or downgrade it) instead of orphaning or duplicating it.
+		if ( this.failureCount > 0 ) {
+			this.persistRerunState();
+		}
 	}
 
 	/**
@@ -390,6 +538,7 @@ class SlackReporter implements Reporter {
 	private async markTestAsFlaky( test: TestCase ): Promise< void > {
 		this.failureCount--;
 		this.flakyCount++;
+		this.failedTestIds.delete( test.id );
 
 		const replyTs = this.reportedTests.get( test.id );
 		if ( replyTs && this.threadTs ) {
@@ -413,6 +562,69 @@ class SlackReporter implements Reporter {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Persist what a phase-2 re-run needs to reconcile this job's parent
+	 * message: the thread ts, the job URL, and the IDs still counted as
+	 * failures (tests that recovered in phase 1 are already dropped).
+	 */
+	private persistRerunState(): void {
+		if ( ! this.threadTs ) {
+			return;
+		}
+		writeRerunState( {
+			threadTs: this.threadTs,
+			buildLogUrl: this.buildLogUrl,
+			failedTestIds: Array.from( this.failedTestIds ),
+		} );
+	}
+
+	/**
+	 * Reconcile the phase-1 parent message against the phase-2 re-run.
+	 * A phase-1 failure is "recovered" only if it passed in the re-run;
+	 * anything else (failed again, or never re-run) stays a failure.
+	 */
+	private async reconcileAfterRerun(): Promise< void > {
+		const state = this.rerunState;
+		if ( ! state || ! this.threadTs ) {
+			return;
+		}
+
+		const phase1Failures = new Set( state.failedTestIds );
+		let recovered = 0;
+		let stillFailing = 0;
+		for ( const id of phase1Failures ) {
+			if ( this.phase2Status.get( id ) === 'passed' ) {
+				recovered++;
+			} else {
+				stillFailing++;
+			}
+		}
+
+		// Phase 2 re-runs whole spec files, so it can surface a test that
+		// passed in phase 1 but fails now. Those make the job red under
+		// `set -e`, so count them too — otherwise the reconciled message
+		// could look greener than the actual job outcome.
+		for ( const [ id, status ] of this.phase2Status ) {
+			if (
+				! phase1Failures.has( id ) &&
+				status !== 'passed' &&
+				status !== 'skipped'
+			) {
+				stillFailing++;
+			}
+		}
+
+		await this.client.updateMessage(
+			this.threadTs,
+			buildRerunParentMessage(
+				stillFailing,
+				recovered,
+				this.buildLogUrl,
+				this.commitSha
+			)
+		);
 	}
 }
 

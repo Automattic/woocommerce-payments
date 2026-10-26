@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`ConnectAccountPage should render correctly 1`] = `
 .emotion-0 {
@@ -44,7 +44,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
     id="connect-account-page"
   >
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -328,7 +328,7 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
     id="connect-account-page"
   >
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -336,7 +336,7 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-card__body components-card-body emotion-4 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -404,7 +404,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
     id="connect-account-page"
   >
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -671,7 +671,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
     id="connect-account-page"
   >
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >

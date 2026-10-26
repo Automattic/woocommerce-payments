@@ -3,14 +3,13 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 
 export const useTimeline = ( paymentIntentId ) =>
 	useSelect(
 		( select ) => {
-			const { getTimeline, getTimelineError, isResolving } = select(
-				STORE_NAME
-			);
+			const { getTimeline, getTimelineError, isResolving } =
+				select( STORE_NAME );
 
 			return {
 				timeline: getTimeline( paymentIntentId ),
