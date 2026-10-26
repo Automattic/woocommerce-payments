@@ -5,7 +5,12 @@
 import { __ } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { debounce } from 'lodash';
-import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
+import {
+	addAction,
+	removeAction,
+	applyFilters,
+	doAction,
+} from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -752,6 +757,12 @@ jQuery( ( $ ) => {
 					}
 				}
 			);
+
+			// A variation or quantity change during init blocked the button and
+			// dispatched to no handler, so replay it now that one is registered.
+			if ( ! isForcedRefresh && expressCheckoutButtonUi.isBlocked() ) {
+				doAction( 'wcpay.express-checkout.update-button-data' );
+			}
 		},
 	};
 
