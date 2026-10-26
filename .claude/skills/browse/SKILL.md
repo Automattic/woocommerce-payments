@@ -16,7 +16,7 @@ Nothing here asserts anything. When a check is worth keeping, write an E2E spec 
 1. The dev site is running and `pnpm run watch` is building your changes.
 2. `pnpm run browse open` opens Chrome logged in as `admin`. Add `--headless` to keep the window hidden.
 3. `pnpm run browse status` shows the WooPayments account. If it reports an error, the site can't reach the WooPayments server: check the dev tools API redirect. `pay` refuses to run unless the checkout is in test mode.
-4. `pnpm run browse seed` once per site adds the `customer` user and the `free` coupon. It never changes existing data.
+4. `pnpm run browse seed` once per site adds the `customer` user, the `free` coupon and a classic checkout page at `/checkout-classic`. It never changes existing data.
 
 ## Commands
 
@@ -25,8 +25,8 @@ Nothing here asserts anything. When a check is worth keeping, write an E2E spec 
 | `open [--headless]`, `close` | Start or stop the browser |
 | `status` | Account ID, country, status, test and dev mode |
 | `login [admin\|customer]`, `logout` | Switch user; there's one user at a time |
-| `checkout [product]` | Empty the cart, add a product (ID or slug, default `beanie`) and fill the billing address as the current user |
-| `card <name>` | Fill a test card from `config.cards`, such as `basic`, `3ds2` or `declined` |
+| `checkout [product] [--classic]` | Empty the cart, add a product (ID or slug, default `beanie`) and fill the billing address as the current user. `--classic` uses the classic checkout page instead of the site's checkout page |
+| `card <name>` | Fill a test card from `config.cards`, such as `basic`, `3ds2` or `declined`. `card`, `pay` and `confirm-3ds` work on either checkout |
 | `pay` | Place the order and print the order number, the error, or that a 3DS challenge is open |
 | `confirm-3ds [fail]` | Complete or fail the open 3DS challenge |
 | `settings`, `wc-settings [tab]`, `transactions` | Admin pages |
@@ -54,5 +54,4 @@ pnpm run browse snapshot
 
 ## Limits
 
-- Only the blocks checkout is supported.
 - Commands change the dev site like a person would. Put back any setting you change.

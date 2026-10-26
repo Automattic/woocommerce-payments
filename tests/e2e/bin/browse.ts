@@ -27,7 +27,7 @@ import { parse } from 'dotenv';
  * Internal dependencies
  */
 import { config } from '../config/default';
-import { wpAdminLogin } from '../utils/helpers';
+import { isUIUnblocked, wpAdminLogin } from '../utils/helpers';
 import * as devtools from '../utils/devtools';
 import * as merchant from '../utils/merchant';
 import * as merchantNavigation from '../utils/merchant-navigation';
@@ -180,22 +180,29 @@ const getStatus = async ( page: Page ) => {
 	};
 };
 
-const assertBlocksCheckout = async ( page: Page ) => {
-	if ( ! ( await page.locator( '.wc-block-checkout' ).count() ) ) {
-		throw new Error(
-			'Only the blocks checkout is supported. This page has no blocks checkout.'
-		);
+const classicCheckoutPath = '/checkout-classic';
+
+const checkoutType = async ( page: Page ) => {
+	if ( await page.locator( '.wc-block-checkout' ).count() ) {
+		return 'blocks';
 	}
+	if ( await page.locator( 'form.woocommerce-checkout' ).count() ) {
+		return 'classic';
+	}
+	throw new Error( 'This page has no checkout. Run `checkout` first.' );
 };
 
 // Reads test mode from the checkout's own payment config, which guests can see
 // too, so `pay` never places a live charge.
-const assertTestMode = async ( page: Page ) => {
+const assertTestMode = async ( page: Page, type: string ) => {
 	const testMode = await page.evaluate(
-		() =>
-			( window as any ).wc?.wcSettings?.getSetting(
-				'woocommerce_payments_data'
-			)?.testMode
+		( classic ) =>
+			classic
+				? ( window as any ).wcpay_upe_config?.testMode
+				: ( window as any ).wc?.wcSettings?.getSetting(
+						'woocommerce_payments_data'
+				  )?.testMode,
+		type === 'classic'
 	);
 	if ( testMode === undefined ) {
 		throw new Error( 'WooPayments is not available on this checkout.' );
@@ -350,8 +357,25 @@ const commands: Record< string, Helper > = {
 			} );
 			created.push( 'coupon "free"' );
 		}
+		// The site's checkout page stays as it is, so the classic checkout
+		// gets a page of its own.
+		const pages = await restOrThrow(
+			page,
+			'GET',
+			`/wp/v2/pages?slug=${ classicCheckoutPath.slice( 1 ) }&status=any`
+		);
+		if ( ! pages.length ) {
+			await restOrThrow( page, 'POST', '/wp/v2/pages', {
+				title: 'Checkout (classic)',
+				slug: classicCheckoutPath.slice( 1 ),
+				status: 'publish',
+				content:
+					'<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->',
+			} );
+			created.push( `page "${ classicCheckoutPath }"` );
+		}
 		return created.length
-			? `Created ${ created.join( ' and ' ) }.`
+			? `Created ${ created.join( ', ' ) }.`
 			: 'Nothing to create.';
 	},
 	settings: merchantNavigation.goToWooPaymentsSettings,
@@ -381,7 +405,10 @@ const commands: Record< string, Helper > = {
 	},
 	// Empties the cart, adds one product (an ID or a slug) and fills in the
 	// billing address, as whoever is logged in.
-	checkout: async ( page, product = 'beanie' ) => {
+	checkout: async ( page, ...args ) => {
+		const classic = args.includes( '--classic' );
+		const product =
+			args.find( ( arg ) => arg !== '--classic' ) ?? 'beanie';
 		const id =
 			typeof product === 'number'
 				? product
@@ -397,11 +424,27 @@ const commands: Record< string, Helper > = {
 		}
 		await storeApi( page, 'DELETE', '/cart/items' );
 		await storeApi( page, 'POST', '/cart/add-item', { id, quantity: 1 } );
+		const billing = config.addresses.customer.billing;
+		if ( classic ) {
+			await page.goto( classicCheckoutPath );
+			if ( ! ( await page.locator( 'form.woocommerce-checkout' ).count() ) ) {
+				throw new Error( 'No classic checkout page. Run `seed` first.' );
+			}
+			await shopper.fillBillingAddress( page, billing );
+			// The address change reloads the payment methods.
+			await shopper.waitForUiRefresh( page );
+			await isUIUnblocked( page );
+			return;
+		}
 		await page.goto( '/checkout' );
 		await page
 			.getByRole( 'heading', { name: 'Contact information' } )
 			.waitFor();
-		await assertBlocksCheckout( page );
+		if ( ( await checkoutType( page ) ) !== 'blocks' ) {
+			throw new Error(
+				'The checkout page has no checkout block. Use `checkout --classic`.'
+			);
+		}
 		// The helper only opens a saved address if it has rendered already.
 		const billingForm = page.getByRole( 'group', {
 			name: 'Billing address',
@@ -410,7 +453,6 @@ const commands: Record< string, Helper > = {
 			page.getByLabel( 'Edit billing address' ).waitFor(),
 			billingForm.getByLabel( 'Country/Region' ).waitFor(),
 		] );
-		const billing = config.addresses.customer.billing;
 		// The helper leaves out the email, which logged-in shoppers already
 		// have.
 		const email = page.getByLabel( 'Email address' );
@@ -428,12 +470,13 @@ const commands: Record< string, Helper > = {
 				) }.`
 			);
 		}
-		await assertBlocksCheckout( page );
-		await shopper.fillCardDetailsWCB( page, cards[ name ] );
+		await ( ( await checkoutType( page ) ) === 'classic'
+			? shopper.fillCardDetails( page, cards[ name ] )
+			: shopper.fillCardDetailsWCB( page, cards[ name ] ) );
 	},
 	pay: async ( page ) => {
-		await assertBlocksCheckout( page );
-		await assertTestMode( page );
+		const type = await checkoutType( page );
+		await assertTestMode( page, type );
 		// An error from an earlier attempt stays on the page for a moment, so
 		// wait for it to go before looking for a new one.
 		const stale = await page
@@ -441,7 +484,9 @@ const commands: Record< string, Helper > = {
 				'.wc-block-components-notice-banner.is-error, .woocommerce-error'
 			)
 			.elementHandles();
-		await shopper.placeOrderWCB( page, false );
+		await ( type === 'classic'
+			? shopper.placeOrder( page )
+			: shopper.placeOrderWCB( page, false ) );
 		await Promise.any( [
 			Promise.all(
 				stale.map( ( notice ) =>
