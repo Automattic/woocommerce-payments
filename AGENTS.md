@@ -13,6 +13,7 @@ Before working in an area below, read its linked reference and follow the applic
 | Public signatures, hooks, subclass overrides, REST/Abilities, asset handles, options/meta, migrations, upstream contracts, multisite or install paths | [Compatibility and migrations](.claude/docs/agent-compatibility.md) |
 | Writing or reviewing tests, PHPCS method-ordering scope, styles cache, Abilities, ExPlat/Tracks, query encoding or agent documentation | [Feature rules and documentation](.claude/docs/agent-feature-rules.md) |
 | E2E execution, setup or debugging | [E2E skill](.claude/skills/e2e-testing/SKILL.md) and [test overview](tests/README.md) |
+| Checking a change by hand in a browser on the dev site | [Browse skill](.claude/skills/browse/SKILL.md) |
 | Code review | [.claude/review-rules.md](.claude/review-rules.md), plus the references for the affected areas |
 
 For feature-specific investigations, the architecture reference indexes payment flow, mode, promotions, capital, disputes and payment-method lifecycle guides. Read [src/README.md](src/README.md) for DI and PSR-4 work, [includes/core/README.md](includes/core/README.md) for the Request/Response API, and [includes/core/CONTRIBUTING.md](includes/core/CONTRIBUTING.md) before adding Request classes.
