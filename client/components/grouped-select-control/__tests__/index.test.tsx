@@ -178,6 +178,42 @@ describe( 'Grouped Select Control', () => {
 		);
 	} );
 
+	it( 'keeps the highlight on the right option after crossing several group headings', async () => {
+		renderControl( { searchable: true } );
+
+		await userEvent.click( screen.getByRole( 'button' ) );
+		await userEvent.type( screen.getByRole( 'textbox' ), 'Option' );
+		await userEvent.keyboard( '{ArrowDown}{ArrowDown}{ArrowDown}' );
+
+		expect(
+			screen.getByRole( 'option', { name: 'Option 3' } )
+		).toHaveClass( 'is-highlighted' );
+
+		await userEvent.keyboard( '{Enter}' );
+
+		expect( onChange ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				selectedItem: options[ 4 ],
+			} )
+		);
+	} );
+
+	it( 'ignores clicks on group headings while searching', async () => {
+		renderControl( { searchable: true } );
+
+		await userEvent.click( screen.getByRole( 'button' ) );
+		await userEvent.type( screen.getByRole( 'textbox' ), 'Option' );
+		await userEvent.click( screen.getByText( 'Group 1' ) );
+
+		expect( onChange ).not.toHaveBeenCalled();
+		expect(
+			screen.getByRole( 'option', { name: 'Option 1' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'option', { name: 'Option 2' } )
+		).toBeInTheDocument();
+	} );
+
 	it( 'restores visibility state after clearing search', async () => {
 		renderControl( { searchable: true } );
 
