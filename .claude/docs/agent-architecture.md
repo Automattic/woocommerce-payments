@@ -1,6 +1,6 @@
 # Architecture and code placement
 
-**Last updated:** 2026-09-05
+**Last updated:** 2026-10-24
 
 Read the sections relevant to the current task. Paths and commands in this reference are relative to the repository root unless stated otherwise.
 
@@ -132,7 +132,7 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 | Frontend | React 18.3, TypeScript, @wordpress/data (Redux), SCSS |
 | Build | Webpack, Babel, PostCSS, @wordpress/scripts |
 | Testing | PHPUnit, Jest, Playwright, React Testing Library |
-| Quality | ESLint, PHPCS, Psalm, TypeScript, Prettier |
+| Quality | ESLint, PHPCS, PHPStan, TypeScript, Prettier |
 
 
 ## Configuration Files
