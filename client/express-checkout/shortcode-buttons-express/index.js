@@ -476,7 +476,7 @@ jQuery( ( $ ) => {
 				);
 			} );
 
-			const onWalletCancel = () => {
+			const handleWalletCancel = () => {
 				isWalletOpen = false;
 
 				if (
@@ -494,17 +494,22 @@ jQuery( ( $ ) => {
 				onCancelHandler();
 			};
 
-			eceButton.on( 'cancel', onWalletCancel );
+			eceButton.on( 'cancel', handleWalletCancel );
 
 			// Mounting another Element over this one would close its open wallet
 			// sheet but leave Stripe's page overlay behind. Destroying it removes
 			// the overlay, but Stripe sends no `cancel`, so cancel ourselves.
 			destroyMountedElement = () => {
 				destroyMountedElement = null;
-				eceButton.destroy();
+
+				try {
+					eceButton.destroy();
+				} catch ( e ) {
+					// Stripe destroys the Element itself after `loaderror`.
+				}
 
 				if ( isWalletOpen ) {
-					onWalletCancel();
+					handleWalletCancel();
 				}
 			};
 

@@ -653,6 +653,18 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 			expect( global.jQuery.unblockUI ).not.toHaveBeenCalled();
 		} );
+
+		it( 'should still mount the new button when Stripe already destroyed the old one', async () => {
+			// Stripe destroys the Element itself after `loaderror`, and a second
+			// `destroy()` throws.
+			stripeElementMock.destroy.mockImplementation( () => {
+				throw new Error( 'This Element has already been destroyed.' );
+			} );
+
+			await refresh();
+
+			expect( stripeElementMock.mount ).toHaveBeenCalledTimes( 2 );
+		} );
 	} );
 
 	it( 'should leave the button available while WooCommerce refreshes its order review', async () => {
