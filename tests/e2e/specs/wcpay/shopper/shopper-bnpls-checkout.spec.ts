@@ -15,7 +15,7 @@ import * as navigation from '../../../utils/shopper-navigation';
 import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
 
 const cardTestingProtectionStates = [ false, true ];
-const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
+const bnplProviders = [ 'Affirm', 'Afterpay' ];
 
 // using multiple products to prevent the "order duplication service" to be triggered.
 const products = [ 'belt', 'sunglasses' ];
