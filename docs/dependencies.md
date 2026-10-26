@@ -32,9 +32,9 @@ to catalog our packages and provide guidance to a developer who wants to test an
 5. Merge the PR. If there are any lingering concerns, consider merging immediately after a release code freeze so that we benefit from several testing cycles.
 
 ## PHP Dev Dependencies
-| Package Name                                  | Usage Summary                        | Testing                                                   | Notes                     |
-|-----------------------------------------------|--------------------------------------|-----------------------------------------------------------|---------------------------|
-| [vimeo/psalm](https://github.com/vimeo/psalm) | Used for type checking our PHP code. | Run the tool, make sure it completes and produces output. | Run with `pnpm run psalm`. |
+| Package Name                                         | Usage Summary                        | Testing                                                   | Notes                            |
+|------------------------------------------------------|--------------------------------------|-----------------------------------------------------------|----------------------------------|
+| [phpstan/phpstan](https://github.com/phpstan/phpstan) | Used for type checking our PHP code. | Run the tool, make sure it completes and produces output. | Run with `composer run phpstan`. |
 
 ## JavaScript Dev Dependencies
 | Package Name                                                                                     | Usage Summary                                                                                                                                                           | Testing                                                                                                                                                                                                                                                                                    | Notes                                                                                                                                                                                                                                                                                                                                  |
