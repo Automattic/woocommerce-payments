@@ -28,12 +28,17 @@ jQuery( ( $ ) => {
 	$( document.body ).on( 'found_variation', () => {
 		expressCheckoutButtonUi.blockButton();
 	} );
+	// Before WooCommerce 9.8, `show_variation` reaches the body before
+	// `found_variation` and `woocommerce_variation_has_changed`, so act once
+	// the whole change has been dispatched.
 	$( document.body ).on( 'show_variation hide_variation', () => {
-		if ( ! hasVariationChanged ) {
-			expressCheckoutButtonUi.unblock();
-			return;
-		}
-		doAction( 'wcpay.express-checkout.update-button-data' );
+		queueMicrotask( () => {
+			if ( ! hasVariationChanged ) {
+				expressCheckoutButtonUi.unblock();
+				return;
+			}
+			doAction( 'wcpay.express-checkout.update-button-data' );
+		} );
 	} );
 
 	// IAPI block: the new block doesn't fire the legacy jQuery event, and its
