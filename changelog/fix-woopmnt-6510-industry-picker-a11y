@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Make the industry picker in onboarding easier to use with a keyboard and screen readers: the search field is announced with its question, and focus returns to the field after picking an option.
