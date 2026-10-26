@@ -73,6 +73,9 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		: itemsToRender;
 	const getGroupHeadingId = ( groupKey: string ) =>
 		`${ instanceId }-group-${ groupKey }`;
+	const labelId = `${ instanceId }-label`;
+	const menuId = `${ instanceId }-menu`;
+	const getItemId = ( index: number ) => `${ instanceId }-item-${ index }`;
 
 	const {
 		isOpen,
@@ -84,6 +87,9 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		getItemProps,
 	} = useSelect( {
 		items: selectableItems,
+		labelId,
+		menuId,
+		getItemId,
 		itemToString: ( item ) => item?.name || '',
 		selectedItem: value || ( {} as ItemType ),
 		onSelectedItemChange,
@@ -203,10 +209,23 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 				{ isOpen && (
 					<>
 						{ searchable && (
+							// Focus moves here while the menu is open, so the
+							// input has to announce the highlighted option;
+							// Downshift only marks it on the unfocused menu.
 							<input
 								className="wcpay-component-grouped-select-control__search"
 								ref={ searchRef }
 								type="text"
+								role="combobox"
+								aria-labelledby={ labelId }
+								aria-controls={ menuId }
+								aria-expanded={ isOpen }
+								aria-autocomplete="list"
+								aria-activedescendant={
+									selectableItems[ highlightedIndex ]
+										? getItemId( highlightedIndex )
+										: undefined
+								}
 								value={ searchText }
 								onChange={ handleSearch }
 								tabIndex={ -1 }
