@@ -760,7 +760,11 @@ jQuery( ( $ ) => {
 
 			// A variation or quantity change during init blocked the button and
 			// dispatched to no handler, so replay it now that one is registered.
-			if ( ! isForcedRefresh && expressCheckoutButtonUi.isBlocked() ) {
+			if (
+				isProductContext &&
+				! isForcedRefresh &&
+				expressCheckoutButtonUi.isBlocked()
+			) {
 				doAction( 'wcpay.express-checkout.update-button-data' );
 			}
 		},
