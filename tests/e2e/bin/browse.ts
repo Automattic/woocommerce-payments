@@ -508,7 +508,7 @@ const commands: Record< string, Helper > = {
 	// so the click goes through playwright-cli, which has stayed connected.
 	'confirm-3ds': async ( page, result = 'complete' ) => {
 		const name = result === 'fail' ? 'Fail' : 'Complete';
-		const { status } = spawnSync(
+		const { status, stdout, stderr } = spawnSync(
 			'playwright-cli',
 			[
 				`-s=${ session }`,
@@ -522,7 +522,9 @@ const commands: Record< string, Helper > = {
 			{ encoding: 'utf8' }
 		);
 		if ( status !== 0 ) {
-			throw new Error( 'No 3DS challenge is open.' );
+			throw new Error(
+				`Could not click ${ name }:\n${ ( stdout + stderr ).trim() }`
+			);
 		}
 		return paymentOutcome( page, false );
 	},
