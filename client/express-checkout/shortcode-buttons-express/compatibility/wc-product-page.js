@@ -20,24 +20,20 @@ import {
 jQuery( ( $ ) => {
 	// Classic shortcode: WooCommerce updates the add to cart button on
 	// `show_variation`/`hide_variation`, not on the change event, so refresh
-	// then. Until the shopper changes the selection, they replay the load state.
+	// then.
 	let hasVariationChanged = false;
 	$( document.body ).on( 'woocommerce_variation_has_changed', () => {
 		hasVariationChanged = true;
-	} );
-	$( document.body ).on( 'found_variation', () => {
 		expressCheckoutButtonUi.blockButton();
 	} );
 	// Before WooCommerce 9.8, `show_variation` reaches the body before
-	// `found_variation` and `woocommerce_variation_has_changed`, so act once
-	// the whole change has been dispatched.
+	// `woocommerce_variation_has_changed`, so act once the whole change has
+	// been dispatched.
 	$( document.body ).on( 'show_variation hide_variation', () => {
 		queueMicrotask( () => {
-			if ( ! hasVariationChanged ) {
-				expressCheckoutButtonUi.unblock();
-				return;
+			if ( hasVariationChanged ) {
+				doAction( 'wcpay.express-checkout.update-button-data' );
 			}
-			doAction( 'wcpay.express-checkout.update-button-data' );
 		} );
 	} );
 

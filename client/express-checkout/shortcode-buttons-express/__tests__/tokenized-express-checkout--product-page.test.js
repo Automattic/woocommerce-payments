@@ -915,7 +915,6 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		} );
 
 		// The shopper picks a variation before init registers the handler.
-		$( document.body ).trigger( 'found_variation' );
 		$( document.body ).trigger( 'woocommerce_variation_has_changed' );
 		$( document.body ).trigger( 'show_variation' );
 		await act( async () => {

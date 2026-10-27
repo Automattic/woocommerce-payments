@@ -373,7 +373,6 @@ describe( 'ECE product page compatibility', () => {
 					refreshMock
 				);
 				jest.spyOn( buttonUi, 'blockButton' ).mockImplementation();
-				jest.spyOn( buttonUi, 'unblock' ).mockImplementation();
 				await import( '../wc-product-page' );
 			} );
 		} );
@@ -434,18 +433,31 @@ describe( 'ECE product page compatibility', () => {
 			expect( refreshMock ).toHaveBeenCalledTimes( 1 );
 		} );
 
-		it( 'only lifts the block for the selection WooCommerce replays on page load', async () => {
-			// Pre-9.8 order for a default variation: the block lands last.
+		it( 'blocks as soon as the selection changes, before an AJAX lookup returns', async () => {
+			// With many variations, WooCommerce looks the variation up over AJAX
+			// and only fires `found_variation` once the response comes back.
+			$( document.body ).trigger( 'woocommerce_variation_has_changed' );
+			await settle();
+
+			expect( buttonUi.blockButton ).toHaveBeenCalled();
+			expect( refreshMock ).not.toHaveBeenCalled();
+
+			$( document.body ).trigger( 'found_variation' );
+			$( document.body ).trigger( 'show_variation' );
+			await settle();
+
+			expect( refreshMock ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'ignores the selection WooCommerce replays on page load', async () => {
+			// Pre-9.8 order for a default variation, with no shopper change.
 			$( document.body ).trigger( 'hide_variation' );
 			$( document.body ).trigger( 'show_variation' );
 			$( document.body ).trigger( 'found_variation' );
 			await settle();
 
+			expect( buttonUi.blockButton ).not.toHaveBeenCalled();
 			expect( refreshMock ).not.toHaveBeenCalled();
-			expect( buttonUi.unblock ).toHaveBeenCalledTimes( 2 );
-			expect(
-				buttonUi.blockButton.mock.invocationCallOrder[ 0 ]
-			).toBeLessThan( buttonUi.unblock.mock.invocationCallOrder[ 1 ] );
 		} );
 	} );
 } );
