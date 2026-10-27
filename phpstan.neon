@@ -43,7 +43,6 @@ parameters:
         - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
         - dev/phpstan-wcpay-constants.php
         - dev/phpstan-abilities-stubs.php
-        - dev/phpstan-incentives-stubs.php
 
     scanDirectories:
         - vendor/woocommerce/subscriptions-core

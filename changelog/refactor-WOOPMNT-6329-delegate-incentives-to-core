@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Use WooCommerce core to fetch WooPayments connect incentives and check eligibility for them.
+Remove the connect incentive from the Connect page, which merchants no longer reach from the admin.

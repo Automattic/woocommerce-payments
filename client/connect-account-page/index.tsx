@@ -17,7 +17,6 @@ import { Card, CardBody } from 'wcpay/components/card';
 import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
-import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
@@ -80,7 +79,6 @@ const TestDriveLoader: React.FunctionComponent< {
 
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
-	const incentive = wcpaySettings.connectIncentive;
 	const [ modalVisible, setModalVisible ] = useState( false );
 
 	const [ errorMessage, setErrorMessage ] = useState< string >(
@@ -162,9 +160,6 @@ const ConnectAccountPage: React.FC = () => {
 	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
 		recordEvent( 'wcpay_connect_account_clicked', {
 			wpcom_connection: isJetpackConnected ? 'Yes' : 'No',
-			...( incentive && {
-				incentive_id: incentive.id,
-			} ),
 			sandbox_mode: sandboxMode,
 			path: 'payments_connect_v2',
 			from: determineTrackingFrom(),
@@ -338,9 +333,6 @@ const ConnectAccountPage: React.FC = () => {
 	useEffect( () => {
 		recordEvent( 'page_view', {
 			path: 'payments_connect_v2',
-			...( incentive && {
-				incentive_id: incentive.id,
-			} ),
 			from: determineTrackingFrom(),
 			source: determineTrackingSource(),
 		} );
@@ -398,22 +390,6 @@ const ConnectAccountPage: React.FC = () => {
 		setSubmitted( true );
 
 		trackConnectAccountClicked( false );
-
-		// If there is an incentive available, request promo activation before redirecting.
-		// Display an error message if the request fails.
-		if ( incentive ) {
-			try {
-				const activatePromoRequest = await apiFetch< {
-					success: boolean;
-				} >( {
-					path: `/wc-analytics/admin/notes/experimental-activate-promo/${ incentive.id }`,
-					method: 'POST',
-				} );
-				if ( ! activatePromoRequest?.success ) throw new Error();
-			} catch ( _ ) {
-				setErrorMessage( strings.incentive.error );
-			}
-		}
 
 		// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
 		if ( ! isCountrySupported ) {
@@ -620,12 +596,6 @@ const ConnectAccountPage: React.FC = () => {
 							}
 						</div>
 					</Card>
-					{
-						// Only show the incentive if an account is NOT connected.
-						! isAccountConnected && incentive && (
-							<Incentive { ...incentive } />
-						)
-					}
 					{
 						// Only show the sandbox mode panel if an account is NOT connected.
 						! isAccountConnected && (
