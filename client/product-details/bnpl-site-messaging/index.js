@@ -17,8 +17,8 @@ const elementsLocations = {
 	bnplClassicCart: 'bnpl_classic_cart',
 };
 
-// Tracks the cart PMME's height. Replaced each time the cart totals update re-mounts the element.
-let cartPmmeResizeObserver;
+// Tracks the height of the cart's BNPL message. Replaced each time a cart update re-mounts the element.
+let resizeObserver;
 
 export const initializeBnplSiteMessaging = async () => {
 	const {
@@ -161,8 +161,8 @@ export const initializeBnplSiteMessaging = async () => {
 				// Stripe doesn't size the iframe until it's on screen, which can be long after `ready` when the cart
 				// totals are below the fold. Track its size instead of measuring once, so the reserved height
 				// never ends up shorter than the message.
-				cartPmmeResizeObserver?.disconnect();
-				cartPmmeResizeObserver = new ResizeObserver( () => {
+				resizeObserver?.disconnect();
+				resizeObserver = new ResizeObserver( () => {
 					const pmmeContainerRect =
 						pmmeContainer.getBoundingClientRect();
 
@@ -208,7 +208,7 @@ export const initializeBnplSiteMessaging = async () => {
 						pmmeMarginBottom + 2 + 'px'
 					);
 				} );
-				cartPmmeResizeObserver.observe( pmmeContainer );
+				resizeObserver.observe( pmmeContainer );
 			} else {
 				paymentMessageLoading?.remove();
 			}
