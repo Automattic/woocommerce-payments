@@ -5,6 +5,7 @@
  */
 import { applyFilters } from '@wordpress/hooks';
 import { render } from '@testing-library/react';
+import $ from 'jquery';
 
 /**
  * Internal dependencies
@@ -348,6 +349,115 @@ describe( 'ECE product page compatibility', () => {
 				id: 100,
 				variation: [ { attribute: 'Color', value: 'red' } ],
 			} );
+		} );
+	} );
+
+	describe( 'Classic variation refresh', () => {
+		let refreshMock, buttonUi;
+
+		beforeEach( async () => {
+			global.$ = global.jQuery = $;
+			// Invoke document.ready callbacks immediately.
+			$.fn.ready = ( callback ) => callback( $ );
+			global.wcpayExpressCheckoutParams = { button_context: 'product' };
+
+			// The listeners must be attached by, and dispatch to, the same
+			// module registry the test spies on.
+			await jest.isolateModulesAsync( async () => {
+				( { default: buttonUi } = await import( '../../button-ui' ) );
+				const { addAction } = await import( '@wordpress/hooks' );
+				refreshMock = jest.fn();
+				addAction(
+					'wcpay.express-checkout.update-button-data',
+					'test',
+					refreshMock
+				);
+				jest.spyOn( buttonUi, 'blockButton' ).mockImplementation();
+				await import( '../wc-product-page' );
+			} );
+		} );
+
+		afterEach( () => {
+			$( document.body ).off();
+			global.jQuery = jest.fn();
+			delete global.$;
+			delete global.wcpayExpressCheckoutParams;
+		} );
+
+		// The listener defers to a microtask, so let it run.
+		const settle = () => Promise.resolve();
+
+		it( 'refreshes once WooCommerce shows the picked variation, not on the change itself', async () => {
+			// WooCommerce 9.8+ order: the add to cart button only changes state
+			// on `show_variation`, 300ms after the change events.
+			$( document.body ).trigger( 'found_variation' );
+			$( document.body ).trigger( 'woocommerce_variation_has_changed' );
+			await settle();
+
+			expect( buttonUi.blockButton ).toHaveBeenCalled();
+			expect( refreshMock ).not.toHaveBeenCalled();
+
+			$( document.body ).trigger( 'show_variation' );
+			await settle();
+
+			expect( refreshMock ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'refreshes after the whole change when WooCommerce shows the variation synchronously', async () => {
+			// Before WooCommerce 9.8, `show_variation` is triggered inside the
+			// `found_variation` handler, so it reaches the body first.
+			$( document.body ).trigger( 'show_variation' );
+			$( document.body ).trigger( 'found_variation' );
+			$( document.body ).trigger( 'woocommerce_variation_has_changed' );
+			await settle();
+
+			expect( refreshMock ).toHaveBeenCalledTimes( 1 );
+			// The refresh lifts the block, or skips the fetch and lifts it for an
+			// unavailable variation, so it must come after the block.
+			expect(
+				buttonUi.blockButton.mock.invocationCallOrder[ 0 ]
+			).toBeLessThan( refreshMock.mock.invocationCallOrder[ 0 ] );
+		} );
+
+		it( 'refreshes when clearing the selection hides the variation', async () => {
+			$( document.body ).trigger( 'woocommerce_variation_has_changed' );
+			$( document.body ).trigger( 'show_variation' );
+			await settle();
+			refreshMock.mockClear();
+
+			// A cleared selection resolves synchronously, so WooCommerce hides
+			// the variation before it reports the change.
+			$( document.body ).trigger( 'hide_variation' );
+			await settle();
+
+			expect( refreshMock ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'blocks as soon as the selection changes, before an AJAX lookup returns', async () => {
+			// With many variations, WooCommerce looks the variation up over AJAX
+			// and only fires `found_variation` once the response comes back.
+			$( document.body ).trigger( 'woocommerce_variation_has_changed' );
+			await settle();
+
+			expect( buttonUi.blockButton ).toHaveBeenCalled();
+			expect( refreshMock ).not.toHaveBeenCalled();
+
+			$( document.body ).trigger( 'found_variation' );
+			$( document.body ).trigger( 'show_variation' );
+			await settle();
+
+			expect( refreshMock ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'ignores the selection WooCommerce replays on page load', async () => {
+			// Pre-9.8 order for a default variation, with no shopper change.
+			$( document.body ).trigger( 'hide_variation' );
+			$( document.body ).trigger( 'show_variation' );
+			$( document.body ).trigger( 'found_variation' );
+			await settle();
+
+			expect( buttonUi.blockButton ).not.toHaveBeenCalled();
+			expect( refreshMock ).not.toHaveBeenCalled();
 		} );
 	} );
 } );
