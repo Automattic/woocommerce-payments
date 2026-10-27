@@ -42,9 +42,7 @@
 		font-size: 12px;
 		line-height: 16px;
 		color: $gray-600;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		overflow-wrap: anywhere;
 	}
 
 	&__value {
@@ -52,9 +50,7 @@
 		font-size: 13px;
 		line-height: 20px;
 		padding: 8px 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		overflow-wrap: anywhere;
 
 		.is-big {
 			font-size: 20px;
