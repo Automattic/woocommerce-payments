@@ -14,7 +14,7 @@ Nothing here asserts anything. When a check is worth keeping, write an E2E spec 
 ## Before you start
 
 1. The dev site is running and `pnpm run watch` is building your changes.
-2. `pnpm run browse open` opens Chrome logged in as `admin`. Add `--headless` to keep the window hidden.
+2. `pnpm run browse open` opens Chrome logged in as `admin` / `admin`. If your site's admin login is different, set `BROWSE_ADMIN_USER` and `BROWSE_ADMIN_PASSWORD` in `.env`. Add `--headless` to keep the window hidden.
 3. `pnpm run browse status` shows the WooPayments account. If it reports an error, the site can't reach the WooPayments server: check the dev tools API redirect. `pay` refuses to run unless the checkout is in test mode.
 4. `pnpm run browse seed` once per site adds the `customer` user, the `free` coupon and a classic checkout page at `/checkout-classic`. It never changes existing data.
 

@@ -45,17 +45,20 @@ const session = `woopayments-${ createHash( 'sha1' )
 	.digest( 'hex' )
 	.slice( 0, 8 ) }`;
 
-const readPort = () => {
+const readEnv = () => {
 	try {
-		return parse( readFileSync( path.join( rootDir, '.env' ) ) )
-			.WORDPRESS_PORT;
+		return parse( readFileSync( path.join( rootDir, '.env' ) ) );
 	} catch {
-		return undefined;
+		return {};
 	}
 };
+const env = { ...readEnv(), ...process.env };
 // The same port `pnpm run up` uses.
-const baseURL = `http://localhost:${ readPort() || '8082' }`;
-const admin = { username: 'admin', password: 'admin' };
+const baseURL = `http://localhost:${ env.WORDPRESS_PORT || '8082' }`;
+const admin = {
+	username: env.BROWSE_ADMIN_USER || 'admin',
+	password: env.BROWSE_ADMIN_PASSWORD || 'admin',
+};
 
 const playwrightCli = ( args: string[] ) =>
 	spawnSync( 'playwright-cli', [ `-s=${ session }`, ...args ], {
@@ -291,8 +294,12 @@ const logIn = async (
 				.locator( '#login_error' )
 				.innerText()
 				.catch( () => 'no error shown' );
+			const hint =
+				user === admin
+					? ' Set BROWSE_ADMIN_USER and BROWSE_ADMIN_PASSWORD in .env.'
+					: '';
 			throw new Error(
-				`Could not log in as "${ user.username }": ${ error.trim() }`
+				`Could not log in as "${ user.username }": ${ error.trim() }${ hint }`
 			);
 		} );
 };
@@ -563,7 +570,7 @@ const open = async ( headless: boolean ) => {
 		throw new Error( 'playwright-cli could not open the browser.' );
 	}
 	await withPage( ( page ) => logIn( page, admin ) );
-	return `Logged in to ${ baseURL } as admin.`;
+	return `Logged in to ${ baseURL } as ${ admin.username }.`;
 };
 
 const run = ( command: string, args: unknown[] ) => {

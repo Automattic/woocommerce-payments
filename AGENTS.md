@@ -43,7 +43,7 @@ For feature-specific investigations, the architecture reference indexes payment 
 - In tests, use named constants for arrange/act values and plain literals for expected values and `->with()` payloads. The feature rules reference has the exceptions.
 - To see a checkout, payment or admin change working, check it on the dev site with `pnpm run browse` ([browse skill](.claude/skills/browse/SKILL.md)) rather than a one-off script, and report what you saw.
 - PHP tests require Docker. Read the development reference for commands and use the E2E skill when an E2E check is needed. Confirm tested code and built assets match the intended revision; run `pnpm run watch` when testing local frontend/admin edits.
-- Check `.env` for the WordPress port. Preserve existing data, unrelated containers and user processes. Do not reset the local admin password unless explicitly requested; the development login is `admin` / `admin`.
+- Check `.env` for the WordPress port. Preserve existing data, unrelated containers and user processes. Do not reset the local admin password unless explicitly requested; the default development login is `admin` / `admin`.
 - Never remove a worktree that is the current working directory; perform any authorised cleanup from the main clone.
 
 ## Git and delivery
