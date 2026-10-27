@@ -5,10 +5,11 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Database_Cache;
-
 /**
  * WC_Payments_Incentives_Service unit tests.
+ *
+ * Fetching, caching and eligibility are owned by WooCommerce core, so these tests
+ * only stub the incentives API response and cover the WooPayments-side surfaces.
  */
 class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	/**
@@ -26,25 +27,11 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_incentive_data;
 
 	/**
-	 * Mocked incentives cache data.
+	 * Number of requests made to the incentives API.
 	 *
-	 * @var array
+	 * @var int
 	 */
-	private $mock_incentives_cache_data;
-
-	/**
-	 * Transient key for incentives cache.
-	 *
-	 * @var string
-	 */
-	private $transient_incentives_cache_key = WC_Payments_Incentives_Service::PREFIX . 'woopayments_cache';
-
-	/**
-	 * Transient key for has orders.
-	 *
-	 * @var string
-	 */
-	private $transient_has_orders_key = WC_Payments_Incentives_Service::PREFIX . 'woopayments_store_has_orders';
+	private $incentives_api_requests = 0;
 
 	/**
 	 * Pre-test setup
@@ -52,26 +39,19 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->incentives_service = new WC_Payments_Incentives_Service( $this->createMock( Database_Cache::class ) );
+		$this->incentives_service = new WC_Payments_Incentives_Service();
 		$this->incentives_service->init_hooks();
+		$this->incentives_service->clear_cache();
 
-		$this->mock_incentive_data        = [
+		$this->mock_incentive_data = [
 			'id'          => 'incentive_id',
+			'promo_id'    => 'incentive_promo_id',
 			'type'        => 'connect_page',
 			'description' => 'incentive_description',
 			'tc_url'      => 'incentive_tc_url',
 		];
-		$this->mock_incentives_cache_data = [
-			'incentives'   => [],
-			// This is the hash of the test store context:
-			// 'country' => Country_Code::UNITED_STATES,
-			// 'locale' => 'en_US',
-			// 'has_orders' => false,
-			// 'has_payments' => false,
-			// 'has_wcpay' => false.
-			'context_hash' => '6d37bc19d822af681f896b21065134c7',
-			'timestamp'    => 1234567890,
-		];
+
+		$this->incentives_api_requests = 0;
 
 		// Ensure the Payments menu is present.
 		global $menu;
@@ -79,9 +59,6 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$menu = [
 			[ 'Payments', null, 'wc-admin&path=/payments/connect' ],
 		];
-
-		// Ensure no payment gateways are available.
-		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
 	}
 
 	/**
@@ -94,12 +71,11 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$menu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		remove_all_filters( 'pre_http_request' );
-		remove_all_filters( 'woocommerce_order_query' );
-		remove_all_filters( 'woocommerce_order_query_args' );
-		remove_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
 
-		delete_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' );
-		delete_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' );
+		// WooCommerce core stores these while determining eligibility.
+		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_OPTION_NAME );
+		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME );
+		delete_transient( WC_Payments_Incentives_Service::PREFIX . 'woopayments_store_has_orders' );
 
 		$this->incentives_service->clear_cache();
 
@@ -117,7 +93,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		global $menu;
 
 		// Arrange.
-		$this->mock_cache_with();
+		$this->mock_incentives_api_with();
 
 		// Act.
 		$this->incentives_service->add_payments_menu_badge();
@@ -130,7 +106,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		global $menu;
 
 		// Arrange.
-		$this->mock_cache_with( [ $this->mock_incentive_data ] );
+		$this->mock_incentives_api_with( [ $this->mock_incentive_data ] );
 
 		// Act.
 		$this->incentives_service->add_payments_menu_badge();
@@ -141,7 +117,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_allowed_promo_notes_without_incentive() {
 		// Arrange.
-		$this->mock_cache_with();
+		$this->mock_incentives_api_with();
 
 		// Act.
 		$promo_notes = $this->incentives_service->allowed_promo_notes();
@@ -152,18 +128,18 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_allowed_promo_notes_with_incentive() {
 		// Arrange.
-		$this->mock_cache_with( [ $this->mock_incentive_data ] );
+		$this->mock_incentives_api_with( [ $this->mock_incentive_data ] );
 
 		// Act.
 		$promo_notes = $this->incentives_service->allowed_promo_notes();
 
 		// Assert.
-		$this->assertContains( $this->mock_incentive_data['id'], $promo_notes );
+		$this->assertContains( 'incentive_id', $promo_notes );
 	}
 
 	public function test_onboarding_task_badge_without_incentive() {
 		// Arrange.
-		$this->mock_cache_with();
+		$this->mock_incentives_api_with();
 
 		// Act.
 		$badge = $this->incentives_service->onboarding_task_badge( '' );
@@ -174,7 +150,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_onboarding_task_badge_with_incentive_no_task_badge() {
 		// Arrange.
-		$this->mock_cache_with( [ $this->mock_incentive_data ] );
+		$this->mock_incentives_api_with( [ $this->mock_incentive_data ] );
 
 		// Act.
 		$badge = $this->incentives_service->onboarding_task_badge( '' );
@@ -187,17 +163,18 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		// Arrange.
 		$incentive_data               = $this->mock_incentive_data;
 		$incentive_data['task_badge'] = 'task_badge';
-		$this->mock_cache_with( [ $incentive_data ] );
+		$this->mock_incentives_api_with( [ $incentive_data ] );
 
 		// Act.
 		$badge = $this->incentives_service->onboarding_task_badge( '' );
 
 		// Assert.
-		$this->assertSame( $badge, 'task_badge' );
+		$this->assertSame( 'task_badge', $badge );
 	}
 
 	public function test_get_connect_incentive_non_supported_country() {
 		// Arrange.
+		$this->mock_incentives_api_with( [ $this->mock_incentive_data ] );
 		add_filter(
 			'woocommerce_countries_base_country',
 			function () {
@@ -207,518 +184,76 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 		// Act and assert.
 		$this->assertNull( $this->incentives_service->get_connect_incentive() );
+		$this->assertSame( 0, $this->incentives_api_requests );
 
 		// Clean up.
 		remove_all_filters( 'woocommerce_countries_base_country' );
 	}
 
-	public function test_get_connect_incentive_cached_error() {
+	public function test_get_connect_incentive_returns_connect_page_incentive() {
 		// Arrange.
-		set_transient( $this->transient_incentives_cache_key, new WP_Error( 'http_request_failed' ), HOUR_IN_SECONDS );
-		$requests = 0;
+		$other_incentive         = $this->mock_incentive_data;
+		$other_incentive['id']   = 'other_incentive_id';
+		$other_incentive['type'] = 'welcome_page';
+		$this->mock_incentives_api_with( [ $other_incentive, $this->mock_incentive_data ] );
+
+		// Act.
+		$incentive = $this->incentives_service->get_connect_incentive();
+
+		// Assert.
+		$this->assertSame( 'incentive_id', $incentive['id'] ?? null );
+	}
+
+	public function test_get_connect_incentive_skips_incentive_missing_display_details() {
+		// Arrange.
+		$incentive_data = $this->mock_incentive_data;
+		unset( $incentive_data['tc_url'] );
+		$this->mock_incentives_api_with( [ $incentive_data ] );
+
+		// Act and assert.
+		$this->assertNull( $this->incentives_service->get_connect_incentive() );
+	}
+
+	public function test_get_connect_incentive_without_core_provider() {
+		// Arrange.
+		$this->mock_incentives_api_with( [ $this->mock_incentive_data ] );
+		$incentives_service = $this->getMockBuilder( WC_Payments_Incentives_Service::class )
+			->onlyMethods( [ 'get_core_incentives_provider' ] )
+			->getMock();
+		$incentives_service->method( 'get_core_incentives_provider' )->willReturn( null );
+
+		// Act and assert.
+		$this->assertNull( $incentives_service->get_connect_incentive() );
+		$this->assertSame( 0, $this->incentives_api_requests );
+	}
+
+	/**
+	 * Stubs the incentives API to return the given incentives list, without caching it.
+	 *
+	 * @param array $incentives The incentives list to return.
+	 *
+	 * @return void
+	 */
+	private function mock_incentives_api_with( array $incentives = [] ) {
 		add_filter(
 			'pre_http_request',
-			function ( $value, $parsed_args, $url ) use ( &$requests ) {
-				if ( str_starts_with( $url, 'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives' ) ) {
-					++$requests;
+			function ( $value, $parsed_args, $url ) use ( $incentives ) {
+				if ( ! str_starts_with( $url, 'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives' ) ) {
+					return $value;
 				}
 
-				return $value;
+				++$this->incentives_api_requests;
+
+				return [
+					'response' => [ 'code' => 200 ],
+					'body'     => wp_json_encode( $incentives ),
+					'headers'  => [
+						'cache-for' => '0',
+					],
+				];
 			},
 			10,
 			3
 		);
-
-		// Act and assert.
-		$this->assertNull( $this->incentives_service->get_connect_incentive() );
-		$this->assertSame( 0, $requests, 'A cached API error should not be retried.' );
-	}
-
-	public function test_get_cached_connect_incentive_from_cache() {
-		// Arrange.
-		$this->mock_cache_with( [ $this->mock_incentive_data ] );
-
-		// Act and assert.
-		$this->assertSame(
-			$this->mock_incentive_data,
-			$this->incentives_service->get_connect_incentive()
-		);
-	}
-
-	public function test_get_connect_incentive_doesnt_refresh_cache_on_same_content_hash() {
-		// Arrange.
-		$this->mock_cache_with( [ $this->mock_incentive_data ] );
-		set_transient( $this->transient_has_orders_key, 'no', HOUR_IN_SECONDS );
-
-		// Act.
-		$this->incentives_service->get_connect_incentive();
-
-		// Assert.
-		$this->assertSame(
-			$this->mock_incentives_cache_data['timestamp'],
-			get_transient( $this->transient_incentives_cache_key )['timestamp']
-		);
-
-		// Clean up.
-		delete_transient( $this->transient_has_orders_key );
-	}
-
-	public function test_get_connect_incentive_refreshes_cache_on_wrong_content_hash() {
-		// Arrange.
-		$this->mock_cache_with( [ $this->mock_incentive_data ] );
-		set_transient( $this->transient_has_orders_key, 'yes', HOUR_IN_SECONDS );
-
-		// Act.
-		$this->incentives_service->get_connect_incentive();
-
-		// Assert.
-		$this->assertNotSame(
-			$this->mock_incentives_cache_data['timestamp'],
-			get_transient( $this->transient_incentives_cache_key )['timestamp']
-		);
-
-		// Clean up.
-		delete_transient( $this->transient_has_orders_key );
-	}
-
-	public function test_get_connect_incentive_refreshes_cache_on_missing_content_hash() {
-		// Arrange.
-		$cached_data               = $this->mock_incentives_cache_data;
-		$cached_data['incentives'] = [ $this->mock_incentive_data ];
-		unset( $cached_data['context_hash'] );
-		set_transient( $this->transient_incentives_cache_key, $cached_data, HOUR_IN_SECONDS );
-
-		// Act.
-		$this->incentives_service->get_connect_incentive();
-
-		// Assert.
-		$this->assertNotSame(
-			$this->mock_incentives_cache_data['timestamp'],
-			get_transient( $this->transient_incentives_cache_key )['timestamp']
-		);
-	}
-
-	public function test_get_connect_incentive_error_on_fetch() {
-		// Arrange.
-		$this->mock_wp_remote_get( new WP_Error() );
-
-		// Act and assert.
-		$this->assertNull( $this->incentives_service->get_connect_incentive() );
-		$this->assertInstanceOf( WP_Error::class, get_transient( $this->transient_incentives_cache_key ) );
-	}
-
-	public function test_get_connect_incentive_without_incentive_no_cache_for() {
-		// Arrange.
-		$this->mock_wp_remote_get(
-			[
-				'response' => [ 'code' => 204 ],
-			]
-		);
-
-		// Assert.
-		add_filter(
-			'pre_set_transient_' . $this->transient_incentives_cache_key,
-			function ( $value, $expiration ) {
-				$this->assertArrayHasKey( 'incentives', $value );
-				$this->assertArrayHasKey( 'context_hash', $value );
-				$this->assertArrayHasKey( 'timestamp', $value );
-
-				$this->assertEmpty( $value['incentives'] );
-				$this->assertSame( $this->mock_incentives_cache_data['context_hash'], $value['context_hash'] );
-				$this->assertGreaterThanOrEqual( time(), $value['timestamp'] );
-
-				// Ensure the cache is set to expire in 1 day.
-				$this->assertSame( DAY_IN_SECONDS, $expiration );
-
-				return $value;
-			},
-			10,
-			2
-		);
-
-		// Act.
-		$this->incentives_service->get_connect_incentive();
-
-		// Clean up.
-		remove_all_filters( 'pre_set_transient_' . $this->transient_incentives_cache_key );
-	}
-
-	public function test_get_connect_incentive_with_incentive_and_cache_for() {
-		// Arrange.
-		$this->mock_wp_remote_get(
-			[
-				'response' => [ 'code' => 200 ],
-				'body'     => wp_json_encode( [ $this->mock_incentive_data ] ),
-				'headers'  => [
-					'cache-for' => '1',
-				],
-			]
-		);
-
-		// Assert.
-		add_filter(
-			'pre_set_transient_' . $this->transient_incentives_cache_key,
-			function ( $value, $expiration ) {
-				$this->assertArrayHasKey( 'incentives', $value );
-				$this->assertArrayHasKey( 'context_hash', $value );
-				$this->assertArrayHasKey( 'timestamp', $value );
-
-				$this->assertSame( [ $this->mock_incentive_data ], $value['incentives'] );
-				$this->assertSame( $this->mock_incentives_cache_data['context_hash'], $value['context_hash'] );
-				$this->assertGreaterThanOrEqual( time(), $value['timestamp'] );
-
-				// Ensure the cache is set to expire in 1 second.
-				$this->assertSame( 1, $expiration );
-
-				return $value;
-			},
-			10,
-			2
-		);
-
-		// Act.
-		$this->incentives_service->get_connect_incentive();
-
-		// Clean up.
-		remove_all_filters( 'pre_set_transient_' . $this->transient_incentives_cache_key );
-	}
-
-	public function test_get_connect_incentive_uses_cached_context() {
-		$had_woopayments_option_key = WC_Payments_Incentives_Service::PREFIX . 'woopayments_store_had_woopayments';
-
-		// Arrange.
-		set_transient( $this->transient_has_orders_key, 'yes', HOUR_IN_SECONDS );
-		update_option( $had_woopayments_option_key, 'yes' );
-		// A stored positive is only trusted when determined by the current logic version.
-		update_option( $had_woopayments_option_key . '_version', 2 );
-		$call_count = 0;
-		add_filter(
-			'woocommerce_order_query_args',
-			function ( $args ) use ( &$call_count ) {
-				$call_count++;
-
-				return $args;
-			}
-		);
-
-		// Act.
-		$this->incentives_service->get_connect_incentive();
-
-		// Assert.
-		$this->assertSame( 0, $call_count );
-
-		// Clean up.
-		delete_transient( $this->transient_has_orders_key );
-		delete_option( $had_woopayments_option_key );
-		delete_option( $had_woopayments_option_key . '_version' );
-	}
-
-	public function test_get_connect_incentive_has_orders_is_cached_longer_when_has_orders() {
-		// Arrange.
-		// Mock wc_get_orders to return a mocked order.
-		$mock_order = $this->createMock( WC_Order::class );
-		$mock_order->method( 'get_id' )->willReturn( 1 );
-		$date_created = new WC_DateTime( 'now - 30 day' );
-		$mock_order->method( 'get_date_created' )->willReturn( $date_created );
-		$this->mock_wc_get_orders( [ $mock_order ] );
-
-		// Assert.
-		add_filter(
-			'pre_set_transient_' . $this->transient_has_orders_key,
-			function ( $value, $expiration ) {
-				$this->assertSame( 'yes', $value );
-
-				// Ensure the cache is set to expire in 90 days - 30 days = 60 days.
-				$expected_expiration = 60 * DAY_IN_SECONDS;
-				// Allowing 5-second difference to avoid flaky tests due to time()  precision.
-				$this->assertLessThanOrEqual( 5, abs( $expected_expiration - $expiration ), 'Expiration time should be within 5 second of expected value' );
-
-				return $value;
-			},
-			10,
-			2
-		);
-
-		// Act.
-		$this->incentives_service->get_connect_incentive();
-
-		// Clean up.
-		remove_all_filters( 'woocommerce_order_query' );
-		remove_all_filters( 'pre_set_transient_' . $this->transient_has_orders_key );
-	}
-
-	public function test_get_connect_incentive_has_orders_caches_when_no_orders() {
-		// Arrange.
-		// Mock wc_get_orders to return an empty array.
-		$this->mock_wc_get_orders( [] );
-
-		// Assert.
-		add_filter(
-			'pre_set_transient_' . $this->transient_has_orders_key,
-			function ( $value, $expiration ) {
-				$this->assertSame( 'no', $value );
-
-				// Ensure the cache is set to expire in 6 hours.
-				$this->assertSame( 6 * HOUR_IN_SECONDS, $expiration );
-
-				return $value;
-			},
-			10,
-			2
-		);
-
-		// Act.
-		$this->incentives_service->get_connect_incentive();
-
-		// Clean up.
-		remove_all_filters( 'woocommerce_order_query' );
-		remove_all_filters( 'pre_set_transient_' . $this->transient_has_orders_key );
-	}
-
-	public function test_has_wcpay_ignores_test_mode_orders() {
-		// Arrange.
-		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
-		$order->update_meta_data( '_wcpay_mode', 'test' );
-		$order->save();
-
-		// Act.
-		$result = $this->invoke_has_wcpay( $this->incentives_service );
-
-		// Assert.
-		$this->assertFalse( $result );
-		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-		$this->assertSame( 2, (int) get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' ) );
-
-		// Clean up.
-		$order->delete( true );
-	}
-
-	public function test_has_wcpay_counts_live_mode_orders() {
-		// Arrange.
-		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
-		$order->update_meta_data( '_wcpay_mode', 'prod' );
-		$order->save();
-
-		// Act.
-		$result = $this->invoke_has_wcpay( $this->incentives_service );
-
-		// Assert.
-		$this->assertTrue( $result );
-		$this->assertSame( 'yes', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-
-		// Clean up.
-		$order->delete( true );
-	}
-
-	/**
-	 * Such orders predate WooPayments saving the mode meta, or were created outside the checkout flow
-	 * that saves it. Erring towards incentive eligibility is intentional.
-	 */
-	public function test_has_wcpay_ignores_orders_without_mode_meta() {
-		// Arrange.
-		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
-		$order->save();
-
-		// Act.
-		$result = $this->invoke_has_wcpay( $this->incentives_service );
-
-		// Assert.
-		$this->assertFalse( $result );
-		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-
-		// Clean up.
-		$order->delete( true );
-	}
-
-	public function test_has_wcpay_ignores_test_drive_account_data() {
-		// Arrange.
-		$service = $this->incentives_service_with_account_data(
-			[
-				'account_id'    => 'acct_123',
-				'is_live'       => false,
-				'is_test_drive' => true,
-			]
-		);
-
-		// Act & assert.
-		$this->assertFalse( $this->invoke_has_wcpay( $service ) );
-		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-	}
-
-	public function test_has_wcpay_ignores_sandbox_account_data() {
-		// Arrange.
-		$service = $this->incentives_service_with_account_data(
-			[
-				'account_id' => 'acct_123',
-				'is_live'    => false,
-			]
-		);
-
-		// Act & assert.
-		$this->assertFalse( $this->invoke_has_wcpay( $service ) );
-		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-	}
-
-	public function test_has_wcpay_counts_live_account_data() {
-		// Arrange.
-		$service = $this->incentives_service_with_account_data(
-			[
-				'account_id'    => 'acct_123',
-				'is_live'       => true,
-				'is_test_drive' => false,
-			]
-		);
-
-		// Act & assert.
-		$this->assertTrue( $this->invoke_has_wcpay( $service ) );
-		$this->assertSame( 'yes', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-	}
-
-	/**
-	 * Cached account data written by older WooPayments versions may not carry the mode flags,
-	 * and we'd rather keep counting those stores as WooPayments users than reclassify them on missing data.
-	 */
-	public function test_has_wcpay_counts_account_data_without_mode_flags() {
-		// Arrange.
-		$service = $this->incentives_service_with_account_data( [ 'account_id' => 'acct_123' ] );
-
-		// Act & assert.
-		$this->assertTrue( $this->invoke_has_wcpay( $service ) );
-		$this->assertSame( 'yes', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-	}
-
-	/**
-	 * A stored positive determined by an earlier logic version is re-determined.
-	 *
-	 * This is what keeps a value frozen by an earlier revision of this logic - or by a WC core
-	 * copy running an older revision - from disqualifying the store forever.
-	 */
-	public function test_has_wcpay_redetermines_stale_positive() {
-		// Arrange.
-		// A positive stored without a logic version, as an earlier revision would have left it.
-		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'yes' );
-		delete_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' );
-
-		// Act & assert.
-		$this->assertFalse( $this->invoke_has_wcpay( $this->incentives_service ) );
-		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-		$this->assertSame( 2, (int) get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' ) );
-	}
-
-	public function test_has_wcpay_trusts_current_positive() {
-		// Arrange.
-		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'yes' );
-		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version', 2 );
-
-		// Act & assert.
-		$this->assertTrue( $this->invoke_has_wcpay( $this->incentives_service ) );
-		$this->assertSame( 'yes', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-	}
-
-	/**
-	 * A stored negative is trusted regardless of the logic version that determined it.
-	 *
-	 * Each revision of the logic is stricter than the one before it, so a store that didn't
-	 * qualify under an earlier revision can't start qualifying under the current one.
-	 */
-	public function test_has_wcpay_trusts_stale_negative() {
-		// Arrange.
-		// A live-mode order that would determine a positive if the stored value were re-determined.
-		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
-		$order->update_meta_data( '_wcpay_mode', 'prod' );
-		$order->save();
-
-		// A negative stored without a logic version, as an earlier revision would have left it.
-		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'no' );
-		delete_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' );
-
-		// Act & assert.
-		$this->assertFalse( $this->invoke_has_wcpay( $this->incentives_service ) );
-		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
-
-		// Clean up.
-		$order->delete( true );
-	}
-
-	/**
-	 * Mocks the cache with the given incentives list.
-	 *
-	 * @param array $incentives The incentives list to mock with.
-	 *
-	 * @return void
-	 */
-	private function mock_cache_with( array $incentives = [] ) {
-		$cache_data               = $this->mock_incentives_cache_data;
-		$cache_data['incentives'] = $incentives;
-
-		set_transient( $this->transient_incentives_cache_key, $cache_data, HOUR_IN_SECONDS );
-	}
-
-	/**
-	 * Helper method to mock the remote request to the incentives endpoint.
-	 *
-	 * @param array|WP_Error $response The response to return from the HTTP request.
-	 *
-	 * @return void
-	 */
-	private function mock_wp_remote_get( $response ) {
-		add_filter(
-			'pre_http_request',
-			function ( $value, $parsed_args, $url ) use ( $response ) {
-				if ( str_starts_with( $url, 'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives' ) ) {
-					return $response;
-				}
-
-				return $value;
-			},
-			10,
-			3
-		);
-	}
-
-	/**
-	 * Helper method to mock wc_get_orders function
-	 *
-	 * @param array $orders The orders to return from the mock.
-	 */
-	private function mock_wc_get_orders( $orders ) {
-		add_filter(
-			'woocommerce_order_query',
-			function () use ( $orders ) {
-				return $orders;
-			}
-		);
-	}
-
-	/**
-	 * Invokes the private has_wcpay() method on the given service instance.
-	 *
-	 * @param WC_Payments_Incentives_Service $service The service instance.
-	 *
-	 * @return bool The has_wcpay() result.
-	 */
-	private function invoke_has_wcpay( WC_Payments_Incentives_Service $service ): bool {
-		$has_wcpay = new ReflectionMethod( $service, 'has_wcpay' );
-		$has_wcpay->setAccessible( true );
-
-		return $has_wcpay->invoke( $service );
-	}
-
-	/**
-	 * Builds an incentives service whose account cache returns the given account data.
-	 *
-	 * @param array $account_data The account data the database cache should return.
-	 *
-	 * @return WC_Payments_Incentives_Service The service instance.
-	 */
-	private function incentives_service_with_account_data( array $account_data ): WC_Payments_Incentives_Service {
-		$mock_database_cache = $this->createMock( Database_Cache::class );
-		$mock_database_cache->method( 'get' )->willReturn( $account_data );
-
-		return new WC_Payments_Incentives_Service( $mock_database_cache );
 	}
 }

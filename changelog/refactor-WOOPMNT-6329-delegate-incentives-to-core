@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Use WooCommerce core to fetch WooPayments connect incentives and check eligibility for them.
