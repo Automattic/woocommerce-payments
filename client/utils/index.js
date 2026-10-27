@@ -197,7 +197,7 @@ export const getPaymentMethodSettingsUrl = ( method ) => {
 	// On the new settings screen, the customisation pages are sub-pages of the WooPayments screen.
 	if ( window.wcpaySettingsScreen && settingsScreenSubPages[ method ] ) {
 		return getAdminUrl( {
-			page: 'wc-payment-settings-wp-admin',
+			page: 'wc-settings-screen-wp-admin',
 			p: `/settings/woopayments-${ settingsScreenSubPages[ method ] }`,
 		} );
 	}

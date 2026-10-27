@@ -34,7 +34,7 @@ class SettingsScreenService {
 	/**
 	 * Admin page of WooCommerce's payment settings screen.
 	 */
-	const PAGE_SLUG = 'wc-payment-settings-wp-admin';
+	const PAGE_SLUG = 'wc-settings-screen-wp-admin';
 
 	/**
 	 * REST route of the settings entities, under `wc/v3`. Each entity's record is at `{route}/{entity name}`.
