@@ -44,7 +44,7 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 /**
  * Checks if a deposit is an instant payout (as opposed to a manual deposit).
  * Both instant and manual deposits have `automatic: false`, but only instant
- * deposits have a non-zero service fee.
+ * deposits have a non-zero service fee and/or `fee_percentage`.
  */
 const isInstant = ( deposit: CachedDeposit ): boolean =>
 	! deposit.automatic && ( deposit.fee > 0 || deposit.fee_percentage > 0 );
@@ -320,7 +320,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 } ) => {
 	const { deposit, isLoading } = useDeposit( depositId );
 
-	const isInstantDeposit = ! isLoading && deposit && isInstant( deposit );
+	const isInstantDeposit = ! isLoading && deposit && ! deposit.automatic;
 
 	return (
 		<Page>
@@ -335,7 +335,8 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 			{ deposit && (
 				<ErrorBoundary>
 					{ isInstantDeposit ? (
-						// If instant deposit, show a message instead of the transactions list.
+						// Stripe only links transactions to automatic payouts, so instant and
+						// manual payouts show a message instead of the transactions list.
 						// Matching the components used in @woocommerce/components TableCard for consistent UI.
 						<Card>
 							<CardHeader>
