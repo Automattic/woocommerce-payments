@@ -139,9 +139,9 @@ class WooCommerceDeposits extends BaseCompatibility {
 	 * @return  string|false The product deposit type if deposits are enabled on it, or false.
 	 */
 	private function get_product_deposit_type( $product ) {
-		$product_has_deposit = class_exists( 'WC_Deposits_Product_Manager' ) && call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product );
+		$product_has_deposit = class_exists( 'WC_Deposits_Product_Manager' ) && call_user_func( [ 'WC_Deposits_Product_Manager', 'deposits_enabled' ], $product->get_id() );
 		if ( $product_has_deposit ) {
-			return call_user_func( [ 'WC_Deposits_Product_Manager', 'get_deposit_type' ], $product );
+			return call_user_func( [ 'WC_Deposits_Product_Manager', 'get_deposit_type' ], $product->get_id() );
 		}
 		return false;
 	}

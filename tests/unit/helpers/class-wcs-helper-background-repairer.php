@@ -12,6 +12,11 @@
  */
 class WCS_Background_Repairer {
 
+	/**
+	 * @var string The hook used to schedule background repairs for a specific object.
+	 */
+	protected $repair_hook;
+
 	public function init() {
 		// Do nothing.
 	}

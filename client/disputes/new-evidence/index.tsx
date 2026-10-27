@@ -1259,26 +1259,22 @@ export default ( { query }: { query: { id: string } } ) => {
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
 						{ steps[ 2 ].subheading }
 					</p>
-					{ isCoverLetterManuallyEdited && (
+					{ /* Unmount the notice rather than drop its action: Notice runs its children's hooks to build the screen reader text, so losing the button mid-life crashes it. */ }
+					{ isCoverLetterManuallyEdited && ! readOnly && (
 						<InlineNotice
 							icon
 							isDismissible={ false }
 							status="warning"
 							className="wcpay-dispute-evidence-new__cover-letter-warning"
-							actions={
-								readOnly
-									? undefined
-									: [
-											{
-												label: __(
-													'Restore generated letter',
-													'woocommerce-payments'
-												),
-												onClick:
-													handleRestoreCoverLetter,
-											},
-										]
-							}
+							actions={ [
+								{
+									label: __(
+										'Restore generated letter',
+										'woocommerce-payments'
+									),
+									onClick: handleRestoreCoverLetter,
+								},
+							] }
 						>
 							{ __(
 								"You've made some manual edits to your cover letter. If you update your evidence again, those changes won't be reflected here automatically — but you can always make further edits yourself.",

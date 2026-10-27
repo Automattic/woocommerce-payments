@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Update the Jetpack Connection package to 9.13.0, which lets the connection owner hand it to another administrator from Settings > Connectors on WordPress 7.0 or later.

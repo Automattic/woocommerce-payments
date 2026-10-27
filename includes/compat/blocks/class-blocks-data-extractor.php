@@ -42,7 +42,7 @@ class Blocks_Data_Extractor {
 	private function get_available_blocks() {
 		$blocks = [];
 		if ( class_exists( '\AutomateWoo\Blocks\Marketing_Optin_Block' ) ) {
-			$blocks[] = new \Automatewoo\Blocks\Marketing_Optin_Block();
+			$blocks[] = new \AutomateWoo\Blocks\Marketing_Optin_Block();
 		}
 
 		if ( class_exists( '\Mailchimp_Woocommerce_Newsletter_Blocks_Integration' ) ) {

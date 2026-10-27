@@ -23,12 +23,12 @@
     "require": {
         "php": ">=7.3",
         "ext-json": "*",
-        "automattic/jetpack-connection": "9.11.0",
+        "automattic/jetpack-connection": "9.13.0",
         "automattic/jetpack-config": "4.0.0",
         "automattic/jetpack-autoloader": "6.0.1",
         "automattic/jetpack-sync": "5.4.1",
         "woocommerce/subscriptions-core": "6.7.1",
-        "automattic/jetpack-constants": "4.0.0"
+        "automattic/jetpack-constants": "4.0.1"
     },
     "require-dev": {
         "composer/installers": "1.10.0",
@@ -51,7 +51,8 @@
         "sirbrillig/phpcs-variable-analysis": "^2.11",
         "phpcompatibility/php-compatibility": "9.3.5",
         "wp-coding-standards/wpcs": "^3.0",
-        "szepeviktor/phpstan-wordpress": "^2.0"
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "woocommerce/php-stubs": "^2026.10"
     },
     "scripts": {
         "test": [

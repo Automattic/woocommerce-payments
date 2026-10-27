@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Point the E2E phpMyAdmin image at the official `phpmyadmin` image instead of the deprecated `phpmyadmin/phpmyadmin` one.
