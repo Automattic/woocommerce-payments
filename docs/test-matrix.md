@@ -24,7 +24,7 @@ All test suites, CI workflows, and release processes are owned and maintained by
 | 6 | [Playwright E2E (Atomic)](#6-playwright-e2e--atomic) | E2E | WooPayments | Manual | No | No |
 | 7 | [Smoke Tests](#7-smoke-tests) | E2E / Release | WooPayments | Release workflow | No | Yes |
 | 8 | [QIT E2E (PR)](#8-qit-e2e--pr) | E2E | WooPayments (platform: QualityOps) | PR (develop/trunk) | Yes | No |
-| 9 | [QIT E2E (Scheduled)](#9-qit-e2e--scheduled) | E2E | WooPayments (platform: QualityOps) | Push (develop/trunk) | No | No |
+| 9 | [QIT E2E (Push)](#9-qit-e2e--push) | E2E | WooPayments (platform: QualityOps) | Push (develop/trunk) | No | No |
 | 10 | [QIT E2E (Pre-release)](#10-qit-e2e--pre-release) | E2E | WooPayments (platform: QualityOps) | Manual | No | Yes |
 | 11 | [QIT Security & Malware](#11-qit-security--malware) | Security | WooPayments (platform: QualityOps) | PR | Yes | No |
 | 12 | [Performance Tests](#12-performance-tests) | Performance | WooPayments | Manual | No | No |
@@ -269,7 +269,7 @@ QIT (Quality Insights Testing) runs tests on a WordPress.com cloud environment, 
 
 ---
 
-### 9. QIT E2E — Scheduled
+### 9. QIT E2E — Push
 
 | Field | Value |
 |-------|-------|
@@ -605,7 +605,7 @@ Last 20 runs: **9 passed**, 11 failed. Three distinct failure patterns:
 
 **WP nightly blocks regression:** Two consecutive scheduled runs show all WC Blocks shopper specs failing on WP nightly — `checkout-failures`, `checkout-purchase`, and `saved-card-checkout` all fail. This suggests a breaking change in WordPress nightly affecting the blocks checkout integration. Stable WP versions are unaffected.
 
-#### QIT E2E — Scheduled (`qit-e2e.yml`)
+#### QIT E2E — Push (`qit-e2e.yml`)
 
 Baseline (March 1–9): **14 passed**, 6 failed. Two issues have since degraded the suite:
 

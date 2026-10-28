@@ -47,12 +47,13 @@ Since `qit-cli` requires PHP 7.4+ but the project has `config.platform.php: 7.3`
 
 ### Running Tests
 
-#### Security and PHPStan tests
+#### Security, PHPStan and malware tests
 
 ```bash
 pnpm run test:qit-security
 pnpm run test:qit-phpstan
 pnpm run test:qit-phpstan-local  # Against local development build
+pnpm run test:qit-malware
 ```
 
 #### E2E Tests
