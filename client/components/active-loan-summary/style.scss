@@ -37,6 +37,7 @@
 	margin-right: 0;
 	min-width: 0;
 	overflow: hidden;
+	overflow-wrap: anywhere;
 
 	& + & {
 		border-left: 1px solid $gray-200;
@@ -46,7 +47,6 @@
 		font-size: 12px;
 		line-height: 16px;
 		color: $gray-600;
-		overflow-wrap: anywhere;
 	}
 
 	&__value {
@@ -54,7 +54,6 @@
 		font-size: 13px;
 		line-height: 20px;
 		padding: 8px 0;
-		overflow-wrap: anywhere;
 
 		.is-big {
 			font-size: 20px;
