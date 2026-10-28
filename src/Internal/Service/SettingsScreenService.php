@@ -22,7 +22,7 @@ use WP_Error;
  */
 class SettingsScreenService {
 	/**
-	 * Name of the main settings entity. WooCommerce shows it at `/settings/woopayments`.
+	 * Name of the main settings entity. WooCommerce shows it at `/settings/payments/woopayments`.
 	 */
 	const SCREEN_ID = 'woopayments';
 
@@ -96,7 +96,7 @@ class SettingsScreenService {
 	}
 
 	/**
-	 * Gets the name of a sub-page's entity. WooCommerce shows it at `/settings/{name}`.
+	 * Gets the name of a sub-page's entity. WooCommerce shows it at `/settings/payments/{name}`.
 	 *
 	 * @param string $path The sub-page's path, such as `woopay`.
 	 * @return string
@@ -112,7 +112,7 @@ class SettingsScreenService {
 	 * @return string
 	 */
 	public static function get_page_url( string $name ): string {
-		return admin_url( 'admin.php?page=' . self::PAGE_SLUG . '&p=/settings/' . $name );
+		return admin_url( 'admin.php?page=' . self::PAGE_SLUG . '&p=/settings/payments/' . $name );
 	}
 
 	/**
