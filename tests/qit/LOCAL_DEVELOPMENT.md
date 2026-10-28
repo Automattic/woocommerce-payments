@@ -61,11 +61,11 @@ pnpm run test:qit-e2e-up
 # 2. Source environment variables (run in each new terminal)
 source "$(./vendor/bin/qit env:source)"
 
-# 3. Navigate to test package
-cd tests/qit/test-package
+# 3. Install the test package's dependencies (first run only; it uses npm)
+(cd tests/qit/test-package && npm ci)
 
 # 4. Run tests with Playwright
-pnpm exec playwright test --ui
+(cd tests/qit/test-package && pnpm exec playwright test --ui)
 
 # 5. Reset database between runs (optional, restores post-setup state)
 pnpm run test:qit-e2e-reset
@@ -122,12 +122,12 @@ Tests are organized into Playwright **projects**:
 | `merchant` | Admin/merchant flows | `tests/woopayments/merchant/` |
 | `subscriptions` | Subscription-specific tests | `tests/woopayments/subscriptions/` |
 
-By default, Playwright only shows/runs the `default` project (basic.spec.ts). To see all tests, you need to specify the projects.
+Headless runs include every project. In UI mode, check which projects the sidebar's project filter has selected, or pass `--project` to pick them.
 
 #### Common Playwright Commands
 
 ```bash
-# Interactive UI mode - default project only
+# Interactive UI mode
 pnpm exec playwright test --ui
 
 # Interactive UI mode - all projects (shows all tests)
@@ -139,7 +139,7 @@ pnpm exec playwright test --ui --project=merchant
 pnpm exec playwright test --ui --project=subscriptions
 
 # Run all tests headless (all projects)
-pnpm exec playwright test --project=default --project=shopper --project=merchant --project=subscriptions
+pnpm exec playwright test
 
 # Run a specific test file
 pnpm exec playwright test tests/woopayments/shopper/shopper-checkout-purchase.spec.ts

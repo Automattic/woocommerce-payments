@@ -45,12 +45,13 @@ E2E tests require Jetpack tokens from an onboarded WooPayments account. Use the 
 
 ### Running Tests
 
-#### Security and PHPStan tests
+#### Security, PHPStan and malware tests
 
 ```bash
 pnpm run test:qit-security
 pnpm run test:qit-phpstan
 pnpm run test:qit-phpstan-local  # Against local development build
+pnpm run test:qit-malware
 ```
 
 #### E2E Tests
