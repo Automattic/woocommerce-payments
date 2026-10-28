@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep manual capture orders paid with 3DS from being cancelled when the shopper leaves before checkout finishes.
