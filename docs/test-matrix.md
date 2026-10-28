@@ -315,7 +315,7 @@ Runs two scans:
 - `qit run:security` — security vulnerability scanning
 - `qit run:malware` — malware detection
 
-Exit codes: 0 = pass, 1 = fail, 2 = warning only (warnings do NOT fail CI).
+Exit codes: 0 = pass, 1 = fail, 2 = invalid arguments or config, 3 = warning only (warnings do NOT fail CI).
 
 ---
 

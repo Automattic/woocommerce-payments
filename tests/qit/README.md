@@ -41,9 +41,7 @@ E2E tests require Jetpack tokens from an onboarded WooPayments account. Use the 
 
 #### Note on qit-cli version
 
-The project uses `woocommerce/qit-cli:dev-trunk` in `composer.json` because [test packages](https://qit.woo.com/docs/test-packages/) (used for E2E tests) are not yet available in stable releases.
-
-Since `qit-cli` requires PHP 7.4+ but the project has `config.platform.php: 7.3` to ensure production compatibility, all `composer install` commands in the project use `--ignore-platform-req=php`. This is safe because `qit-cli` is a dev-only tool that never ships to users.
+`composer.json` pins `woocommerce/qit-cli` for local runs, and `.github/workflows/qit.yml` and `.github/workflows/qit-e2e-run.yml` install the same version in CI. Bump all three together.
 
 ### Running Tests
 

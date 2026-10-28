@@ -24,7 +24,8 @@ jobs:
         uses: ./.github/actions/build
 
       - name: Install QIT CLI
-        run: composer global require woocommerce/qit-cli:^1.0
+        # Keep in sync with the woocommerce/qit-cli pin in composer.json.
+        run: composer global require woocommerce/qit-cli:1.3.3
 
       - name: Authenticate QIT
         run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
@@ -34,7 +35,7 @@ jobs:
           set +e
           qit run:security woocommerce-payments --zip=woocommerce-payments.zip
           EXIT_CODE=$?
-          # QIT exit codes (qit-cli 1.1.x):
+          # QIT exit codes (qit-cli 1.3.x):
           # 0 = success
           # 1 = failed (critical security errors)
           # 2 = invalid (bad arguments/config)
@@ -59,7 +60,7 @@ jobs:
           set +e
           qit run:malware woocommerce-payments --zip=woocommerce-payments.zip
           EXIT_CODE=$?
-          # QIT exit codes (qit-cli 1.1.x):
+          # QIT exit codes (qit-cli 1.3.x):
           # 0 = success
           # 1 = failed (critical malware detected)
           # 2 = invalid (bad arguments/config)
