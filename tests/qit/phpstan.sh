@@ -28,13 +28,13 @@ if echo "${ARGS[@]}" | grep -q -- "--local"; then
 
 	echo "Running PHPStan tests with development build $ZIP_FILE..." >&2
 	set +e
-	RAW="$($QIT_BINARY run:phpstan "$EXTENSION_NAME" --zip "$ZIP_FILE" --wait 2>&1)"
+	RAW="$($QIT_BINARY run:phpstan "$EXTENSION_NAME" --zip "$ZIP_FILE" 2>&1)"
 	EXIT_CODE=$?
 	set -e
 else
 	echo "Running PHPStan tests..." >&2
 	set +e
-	RAW="$($QIT_BINARY run:phpstan "$EXTENSION_NAME" --wait 2>&1)"
+	RAW="$($QIT_BINARY run:phpstan "$EXTENSION_NAME" 2>&1)"
 	EXIT_CODE=$?
 	set -e
 fi

@@ -48,10 +48,11 @@ Single JSON object containing versions array and metadata:
   "versions": [
     "7.7.0",
     "9.9.5",
-    "latest",
+    "10.0.3",
     "10.1.0-rc.2"
   ],
   "metadata": {
+    "latest_wc_version": "10.0.3",
     "l1_version": "9.9.5",
     "rc_version": "10.1.0-rc.2",
     "beta_version": null
@@ -73,19 +74,21 @@ Single JSON object containing versions array and metadata:
 
 ### PHP Version Strategy
 
-The workflow uses an optimized PHP version strategy to reduce job count while maintaining comprehensive coverage:
+The E2E workflow (`e2e-test.yml`) uses an optimized PHP version strategy to reduce job count while maintaining comprehensive coverage:
 
-- **WC 7.7.0**: PHP 7.3 (legacy support - minimum required version)
-- **WC L-1**: PHP 8.3 (stable)
-- **WC latest**: PHP 8.3 (stable)
-- **WC beta**: PHP 8.3 (stable) - only when available
-- **WC rc**: PHP 8.4 (latest)
+- **WC 7.7.0**: PHP 7.4 (legacy support - minimum required version)
+- **WC L-1**: PHP 8.4
+- **WC latest**: PHP 8.4
+- **WC beta**: PHP 8.4 - only when available
+- **WC rc**: PHP 8.4 - only when available
+
+The PR workflow (`e2e-pull-request.yml`) runs only L-1 and latest. The QIT E2E workflows run every WC version on PHP 8.3 and skip WC 7.7.0.
 
 ### Version Resolution
 
 - **L-1 Version**: Extracted from JSON metadata
-- **Beta Version**: Extracted from JSON metadata, only included when available
-- **RC Version**: Always included - extracted from JSON metadata or falls back to string "rc"
+- **Beta Version**: Extracted from JSON metadata, only included when available (`null` otherwise)
+- **RC Version**: Extracted from JSON metadata, only included when available (`null` otherwise)
 
 ## How It Works
 
