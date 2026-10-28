@@ -348,19 +348,24 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 								</Text>
 							</CardHeader>
 							<CardBody className="wcpay-deposit-overview--instant__transactions-list-message">
-								{ interpolateComponents( {
-									/* Translators: {{learnMoreLink}} is a link element (<a/>). */
-									mixedString: __(
-										`We're unable to show transaction history on instant payouts. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
-										'woocommerce-payments'
-									),
-									components: {
-										learnMoreLink: (
-											// @ts-expect-error: children is provided when interpolating the component
-											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout" />
-										),
-									},
-								} ) }
+								{ isInstant( deposit )
+									? interpolateComponents( {
+											/* Translators: {{learnMoreLink}} is a link element (<a/>). */
+											mixedString: __(
+												`We're unable to show transaction history on instant payouts. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
+												'woocommerce-payments'
+											),
+											components: {
+												learnMoreLink: (
+													// @ts-expect-error: children is provided when interpolating the component
+													<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout" />
+												),
+											},
+										} )
+									: __(
+											"We're unable to show transaction history on manual payouts.",
+											'woocommerce-payments'
+										) }
 							</CardBody>
 						</Card>
 					) : (

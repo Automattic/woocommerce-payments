@@ -266,20 +266,29 @@ describe( 'Deposit details', () => {
 	} );
 
 	test( 'shows a notice instead of the transactions list for an instant payout', () => {
-		const { getByText, queryByTestId } =
+		const { getByText, queryByText, queryByTestId } =
 			renderDetails( mockInstantDeposit );
 		expect(
-			getByText( /unable to show transaction history/ )
+			getByText( /unable to show transaction history on instant payouts/ )
 		).toBeInTheDocument();
+		expect( getByText( 'Learn more' ) ).toBeInTheDocument();
+		expect(
+			queryByText( /transaction history on manual payouts/ )
+		).not.toBeInTheDocument();
 		expect( queryByTestId( 'transactions-list' ) ).not.toBeInTheDocument();
 	} );
 
 	test( 'shows a notice instead of the transactions list for a manual payout', () => {
-		const { getByText, queryByTestId } = renderDetails( mockManualDeposit );
+		const { getByText, queryByText, queryByTestId } =
+			renderDetails( mockManualDeposit );
 		expect( getByText( /Manual payout date:/ ) ).toBeInTheDocument();
 		expect(
-			getByText( /unable to show transaction history/ )
+			getByText( /unable to show transaction history on manual payouts/ )
 		).toBeInTheDocument();
+		expect(
+			queryByText( /transaction history on instant payouts/ )
+		).not.toBeInTheDocument();
+		expect( queryByText( 'Learn more' ) ).not.toBeInTheDocument();
 		expect( queryByTestId( 'transactions-list' ) ).not.toBeInTheDocument();
 	} );
 } );
