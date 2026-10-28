@@ -41,7 +41,7 @@ E2E tests require Jetpack tokens from an onboarded WooPayments account. Use the 
 
 #### Note on qit-cli version
 
-`composer.json` pins `woocommerce/qit-cli` for local runs, and `.github/workflows/qit.yml` and `.github/workflows/qit-e2e-run.yml` install the same version in CI. Bump all three together.
+Local runs use the `woocommerce/qit-cli` version locked in `composer.lock`. Both `.github/workflows/qit.yml` and `.github/workflows/qit-e2e-run.yml` read that version when installing QIT in CI, keeping dependency updates in sync automatically.
 
 ### Running Tests
 
