@@ -206,7 +206,7 @@ class WC_Payments_Status {
 			return __( 'You do not have permission to run this tool.', 'woocommerce-payments' );
 		}
 
-		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
+		WC_Payments_Styles_Cache::bust_styles_cache();
 		return __( 'WooPayments styles cleared', 'woocommerce-payments' );
 	}
 
