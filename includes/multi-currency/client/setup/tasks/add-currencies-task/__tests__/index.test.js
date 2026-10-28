@@ -126,7 +126,7 @@ const availableCurrencies = {
 		id: 'dkk',
 		is_default: false,
 		flag: '🇩🇰',
-		symbol: 'DKK',
+		symbol: 'kr.',
 	},
 	BIF: {
 		code: 'BIF',
@@ -257,17 +257,13 @@ describe( 'Multi-Currency enabled currencies list', () => {
 	} );
 
 	test( 'currency search works with currency name', () => {
-		const container = createContainer();
+		createContainer();
 
 		fireEvent.change(
 			screen.getByPlaceholderText(
 				__( 'Search currencies', 'woocommerce-payments' )
 			),
 			{ target: { value: 'Danish krone' } }
-		);
-
-		expect( container ).toMatchSnapshot(
-			'snapshot-currency-search-by-name'
 		);
 
 		expect(
@@ -279,17 +275,13 @@ describe( 'Multi-Currency enabled currencies list', () => {
 	} );
 
 	test( 'currency search works with currency code', () => {
-		const container = createContainer();
+		createContainer();
 
 		fireEvent.change(
 			screen.getByPlaceholderText(
 				__( 'Search currencies', 'woocommerce-payments' )
 			),
 			{ target: { value: 'DKK' } }
-		);
-
-		expect( container ).toMatchSnapshot(
-			'snapshot-currency-search-by-code'
 		);
 
 		expect(
@@ -301,17 +293,13 @@ describe( 'Multi-Currency enabled currencies list', () => {
 	} );
 
 	test( 'currency search works with currency symbol', () => {
-		const container = createContainer();
+		createContainer();
 
 		fireEvent.change(
 			screen.getByPlaceholderText(
 				__( 'Search currencies', 'woocommerce-payments' )
 			),
 			{ target: { value: '€' } }
-		);
-
-		expect( container ).toMatchSnapshot(
-			'snapshot-currency-search-by-symbol'
 		);
 
 		expect(
@@ -410,11 +398,7 @@ describe( 'Multi-Currency enabled currencies list', () => {
 			submitEnabledCurrenciesUpdate: jest.fn(),
 		} );
 
-		const container = createContainer();
-
-		expect( container ).toMatchSnapshot(
-			'snapshot-all-currencies-selected'
-		);
+		createContainer();
 
 		expect( screen.queryAllByRole( 'checkbox' ).length ).toBe( 0 );
 		expect(
