@@ -3792,4 +3792,114 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY ) );
 		$this->assertFalse( get_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY ) );
 	}
+
+	/**
+	 * Tests that an authorization moves a pending order to On hold and links its charge,
+	 * for when the shopper leaves before the browser updates the order after 3DS.
+	 */
+	public function test_amount_capturable_updated_puts_pending_order_on_hold() {
+		$order = WC_Helper_Order::create_order();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * Tests that an order the browser already put On hold is left as it is.
+	 */
+	public function test_amount_capturable_updated_leaves_on_hold_order_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::ON_HOLD );
+		$notes_before = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+		$this->assertCount( $notes_before, wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+	}
+
+	/**
+	 * Tests that in-person payments, which are always captured manually, keep their order status.
+	 */
+	public function test_amount_capturable_updated_ignores_in_person_payments() {
+		$order = WC_Helper_Order::create_order();
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD_PRESENT );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	/**
+	 * Tests that an authorization without a matching order still succeeds and clears the cache.
+	 */
+	public function test_amount_capturable_updated_without_order_clears_cache() {
+		$this->event_body['type']           = 'payment_intent.amount_capturable_updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_mock',
+			'status'   => Intent_Status::REQUIRES_CAPTURE,
+			'metadata' => [],
+			'charges'  => [ 'data' => [ [ 'payment_method_details' => [ 'type' => Payment_Method::CARD ] ] ] ],
+		];
+
+		$this->mock_db_wrapper->method( 'order_from_intent_id' )->willReturn( false );
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Sets up a `payment_intent.amount_capturable_updated` event for an authorized order.
+	 *
+	 * @param WC_Order $order               The order the intent belongs to.
+	 * @param string   $payment_method_type The charge's payment method type.
+	 */
+	private function set_up_amount_capturable_updated_event( $order, $payment_method_type = Payment_Method::CARD ) {
+		$this->event_body['type']           = 'payment_intent.amount_capturable_updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_mock',
+			'status'   => Intent_Status::REQUIRES_CAPTURE,
+			'metadata' => [],
+			'charges'  => [ 'data' => [ [ 'payment_method_details' => [ 'type' => $payment_method_type ] ] ] ],
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->willReturn( $order );
+
+		$this->mock_api_client
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status' => Intent_Status::REQUIRES_CAPTURE,
+						'charge' => [ 'captured' => false ],
+					]
+				)
+			);
+	}
+
+	/**
+	 * Gets the text of all the order's notes.
+	 *
+	 * @param WC_Order $order The order.
+	 *
+	 * @return string
+	 */
+	private function get_order_notes_text( $order ) {
+		return implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
+	}
 }

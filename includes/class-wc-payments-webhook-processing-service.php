@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Get_Intention;
@@ -233,7 +234,7 @@ class WC_Payments_Webhook_Processing_Service {
 				$this->process_webhook_payment_intent_canceled();
 				break;
 			case 'payment_intent.amount_capturable_updated':
-				$this->process_webhook_payment_intent_amount_capturable_updated();
+				$this->process_webhook_payment_intent_amount_capturable_updated( $event_body );
 				break;
 			case 'invoice.upcoming':
 			case 'invoice.paid':
@@ -421,12 +422,46 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent amount capturable updated event.
 	 *
+	 * Puts a pending order on hold once its payment is authorized. After 3DS, the browser
+	 * may never report the result, and Hold stock would then cancel the order and void the authorization.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
 	 * @return void
+	 *
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
-	private function process_webhook_payment_intent_amount_capturable_updated() {
+	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		if ( Intent_Status::REQUIRES_CAPTURE !== ( $event_object['status'] ?? null ) ) {
+			return;
+		}
+
+		// In-person payments are always captured manually and their own flow updates the order.
+		$payment_method_type = $event_object['charges']['data'][0]['payment_method_details']['type'] ?? null;
+		if ( Payment_Method::CARD_PRESENT === $payment_method_type || Payment_Method::INTERAC_PRESENT === $payment_method_type ) {
+			return;
+		}
+
+		// Authorizations without an order, such as ones created outside of WooCommerce, only need the cache cleared.
+		try {
+			$order = $this->get_order_from_event_body( $event_body );
+		} catch ( Invalid_Payment_Method_Exception $e ) {
+			return;
+		}
+
+		if ( ! $order || ! $order->has_status( Order_Status::PENDING ) ) {
+			return;
+		}
+
+		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+		$this->order_service->attach_intent_info_to_order( $order, $payment_intent );
+		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 	}
 
 	/**
