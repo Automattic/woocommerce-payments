@@ -25,6 +25,8 @@
 
 	@media ( max-width: 782px ) {
 		flex-wrap: wrap;
+		// The Flex gap would push two 50%-wide blocks onto separate lines.
+		gap: 0;
 	}
 }
 
