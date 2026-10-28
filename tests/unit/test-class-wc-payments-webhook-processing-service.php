@@ -3829,14 +3829,25 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Tests that in-person payments, which are always captured manually, keep their order status.
+	 *
+	 * @dataProvider provider_in_person_payment_method_types
+	 *
+	 * @param string $payment_method_type The in-person payment method type.
 	 */
-	public function test_amount_capturable_updated_ignores_in_person_payments() {
+	public function test_amount_capturable_updated_ignores_in_person_payments( $payment_method_type ) {
 		$order = WC_Helper_Order::create_order();
-		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD_PRESENT );
+		$this->set_up_amount_capturable_updated_event( $order, $payment_method_type );
 
 		$this->webhook_processing_service->process( $this->event_body );
 
 		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	public function provider_in_person_payment_method_types() {
+		return [
+			'Card present'    => [ Payment_Method::CARD_PRESENT ],
+			'Interac present' => [ Payment_Method::INTERAC_PRESENT ],
+		];
 	}
 
 	/**
