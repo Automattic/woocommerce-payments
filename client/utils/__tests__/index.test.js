@@ -28,7 +28,7 @@ describe( 'Utilities', () => {
 
 		test( 'opens express checkout customisation on its sub-page', () => {
 			expect( getPaymentMethodSettingsUrl( 'payment_request' ) ).toEqual(
-				'admin.php?page=wc-settings-screen-wp-admin&p=%2Fsettings%2Fwoopayments-apple-pay-google-pay'
+				'admin.php?page=wc-settings-screen-wp-admin&p=%2Fsettings%2Fpayments%2Fwoopayments-apple-pay-google-pay'
 			);
 		} );
 

@@ -198,7 +198,7 @@ export const getPaymentMethodSettingsUrl = ( method ) => {
 	if ( window.wcpaySettingsScreen && settingsScreenSubPages[ method ] ) {
 		return getAdminUrl( {
 			page: 'wc-settings-screen-wp-admin',
-			p: `/settings/woopayments-${ settingsScreenSubPages[ method ] }`,
+			p: `/settings/payments/woopayments-${ settingsScreenSubPages[ method ] }`,
 		} );
 	}
 	return getAdminUrl( {
