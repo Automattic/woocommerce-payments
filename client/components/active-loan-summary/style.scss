@@ -23,10 +23,12 @@
 		}
 	}
 
+	// Stack the blocks and pad the row instead of each block, matching the
+	// bottom row, so stacked blocks are not separated by double padding.
 	@media ( max-width: 782px ) {
-		flex-wrap: wrap;
-		// The Flex gap would push two 50%-wide blocks onto separate lines.
-		gap: 0;
+		flex-direction: column;
+		padding-top: 24px;
+		padding-bottom: 24px;
 	}
 }
 
@@ -61,7 +63,8 @@
 	}
 
 	@media ( max-width: 782px ) {
-		min-width: 50%;
+		padding-top: 0;
+		padding-bottom: 0;
 
 		& + & {
 			border-left: none;
