@@ -43,9 +43,12 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 	searchable,
 }: GroupedSelectControlProps< ItemType > ): JSX.Element => {
 	const searchRef = useRef< HTMLInputElement >( null );
-	const previousStateRef = useRef< {
-		visibleItems: Set< string >;
-	} >();
+	const previousStateRef = useRef<
+		| {
+				visibleItems: Set< string >;
+		  }
+		| undefined
+	>( undefined );
 	const groupKeys = listItems
 		.filter( ( item ) => item.items?.length )
 		.map( ( group ) => group.key );
