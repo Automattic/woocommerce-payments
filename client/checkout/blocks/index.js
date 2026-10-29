@@ -27,7 +27,6 @@ import {
 } from 'wcpay/express-checkout/block-buttons';
 
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
-import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
@@ -126,7 +125,11 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 		getUPEConfig( 'isWooPayEmailInputEnabled' ) &&
 		! isPreviewing()
 	) {
-		handleWooPayEmailInput( '#email', api, true );
+		import(
+			/* webpackChunkName: "woopay-email-input" */ '../woopay/email-input-iframe'
+		).then( ( { handleWooPayEmailInput } ) => {
+			handleWooPayEmailInput( '#email', api, true );
+		} );
 	}
 
 	if ( getUPEConfig( 'shouldShowWooPayButton' ) ) {
