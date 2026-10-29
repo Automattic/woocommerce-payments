@@ -272,34 +272,6 @@ export default {
 		"We've temporarily paused new account creation. We'll notify you when we resume!",
 		'woocommerce-payments'
 	),
-	incentive: {
-		limitedTimeOffer: __( 'Limited time offer', 'woocommerce-payments' ),
-		details: __(
-			'Discount will be applied to payments processed via WooPayments upon completion of installation, setup, and connection.',
-			'woocommerce-payments'
-		),
-		termsAndConditions: ( url: string ): JSX.Element =>
-			createInterpolateElement(
-				__(
-					'*See <a>Terms and Conditions</a> for details.',
-					'woocommerce-payments'
-				),
-				{
-					a: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							href={ url }
-							target="_blank"
-							rel="noopener noreferrer"
-						/>
-					),
-				}
-			),
-		error: __(
-			'There was an error applying the promotion. Please contact support for assistance if the problem persists',
-			'woocommerce-payments'
-		),
-	},
 	nonSupportedCountry: createInterpolateElement(
 		sprintf(
 			/* translators: %1$s: WooPayments */
