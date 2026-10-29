@@ -62,9 +62,17 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 			setIsOpened( next );
 		};
 
-		// Ref is used so that the effect does not re-run upon scrollAfterOpen changing value.
-		const scrollAfterOpenRef = useRef< boolean | undefined >();
-		scrollAfterOpenRef.current = scrollAfterOpen;
+		// Mirror the scrollAfterOpen prop into a ref so useUpdateEffect only
+		// fires on the open-edge (via isOpened) while still reading the latest
+		// prop value. Writing the ref in a post-commit useEffect avoids the
+		// render-time ref write that react-hooks/refs flags; the write lands
+		// before useUpdateEffect can next fire (which is gated on isOpened).
+		const scrollAfterOpenRef = useRef< boolean | undefined >(
+			scrollAfterOpen
+		);
+		useEffect( () => {
+			scrollAfterOpenRef.current = scrollAfterOpen;
+		} );
 		// Runs after initial render.
 		useUpdateEffect( () => {
 			if (
