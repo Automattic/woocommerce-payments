@@ -1,5 +1,5 @@
 name: "QIT E2E Slack summary"
-description: "Post a single Slack message summarising the failed matrix cells of a QIT E2E run."
+description: "Post a single Slack message summarising the failed matrix cells and tests of a QIT E2E run."
 
 inputs:
   slack-token:
@@ -10,15 +10,30 @@ inputs:
     description: "Slack channel ID to post into. When empty, the action no-ops."
     required: false
     default: ""
+  skip-repeats:
+    description: "When 'true', don't post if the previous run on the same branch failed with the same tests."
+    required: false
+    default: "false"
 
 runs:
   using: composite
   steps:
+    - name: "Download test results"
+      # A cell that failed before tests ran uploads nothing; the summary still lists it.
+      continue-on-error: true
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        pattern: qit-e2e-results-*
+        path: ${{ runner.temp }}/qit-results
+
     - name: "Post failure summary to Slack"
       shell: bash
       env:
         SLACK_TOKEN: ${{ inputs.slack-token }}
         CHANNEL_ID: ${{ inputs.channel-id }}
+        SKIP_REPEATS: ${{ inputs.skip-repeats }}
+        RESULTS_DIR: ${{ runner.temp }}/qit-results
+        SIGNATURE_FILE: ${{ runner.temp }}/qit-slack-signature/signature.txt
         # Default token has actions:read for the jobs API.
         GH_TOKEN: ${{ github.token }}
         REPO: ${{ github.repository }}
@@ -47,6 +62,11 @@ runs:
           exit 1
         }
 
+        # Slack shows only the first few tests per cell; the run link has the rest.
+        MAX_TESTS=5
+        mkdir -p "$(dirname "$SIGNATURE_FILE")"
+        : > "$SIGNATURE_FILE"
+
         # Failed cells only. The summary job's own conclusion is still null, so
         # it is excluded.
         FAILED_LINES=""
@@ -55,9 +75,45 @@ runs:
           [ -z "$name" ] && continue
           FAILED_LINES+="• <${url}|${name}>"$'\n'
           COUNT=$((COUNT + 1))
+          # Lists the job even when its report has no failed tests, so a
+          # different failing job never matches the previous signature.
+          printf '%s\n' "$name" >> "$SIGNATURE_FILE"
+
+          # The job name and the results artifact name are both built from the
+          # matrix values in qit-e2e-run.yml's callers.
+          ctrf=""
+          if [[ "$name" =~ ^([a-z]+)\ \|\ WP\ ([^ ]+)\ \|\ WC\ ([^ ]+)\ \|\ PHP\ ([^ ]+)\ / ]]; then
+            artifact="qit-e2e-results-wp${BASH_REMATCH[2]}-wc${BASH_REMATCH[3]}-php${BASH_REMATCH[4]}-${BASH_REMATCH[1]}"
+            ctrf=$(find "$RESULTS_DIR/$artifact" -name ctrf.json -print -quit 2>/dev/null || true)
+          fi
+
+          if [ -z "$ctrf" ]; then
+            FAILED_LINES+="    ◦ _No test results: QIT or the site setup failed before the tests ran._"$'\n'
+            printf '%s\tno-results\n' "$name" >> "$SIGNATURE_FILE"
+            continue
+          fi
+
+          TESTS=$(jq -r --argjson max "$MAX_TESTS" '
+            def esc: gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
+            [ .results.tests[] | select(.status == "failed") ] as $failed
+            | if ($failed | length) == 0 then
+                "    ◦ _No failed tests in the report; check the job log._"
+              else
+                ( $failed[:$max][]
+                  | (.filePath | split("/") | last) as $spec
+                  | (((.suite // "") | split(" > ") | .[2:]) + [ .name ] | join(" › ")) as $title
+                  | ((.message // "") | gsub("\u001b\\[[0-9;]*m"; "") | split("\n")[0] | .[0:120]) as $msg
+                  | "    ◦ `\($spec)` › \($title | esc)" + (if $msg != "" then " — _\($msg | esc)_" else "" end) ),
+                ( if ($failed | length) > $max then "    ◦ …and \(($failed | length) - $max) more" else empty end )
+              end' "$ctrf")
+          FAILED_LINES+="$TESTS"$'\n'
+
+          jq -r --arg job "$name" '.results.tests[] | select(.status == "failed")
+            | [ $job, (.filePath | split("/") | last), (.suite // ""), .name ] | @tsv' "$ctrf" >> "$SIGNATURE_FILE"
         done < <(printf '%s' "$JOBS_JSON" \
           | jq -r '.jobs[] | select(.conclusion == "failure") | [.name, .html_url] | @tsv')
 
+        sort -o "$SIGNATURE_FILE" "$SIGNATURE_FILE"
         FAILED_LINES="${FAILED_LINES%$'\n'}"
         NOUN=$([ "$COUNT" -eq 1 ] && echo "failure" || echo "failures")
 
@@ -69,6 +125,22 @@ runs:
           --arg failed "$FAILED_LINES" \
           '":red_circle: *\($wf) — \($count) \($noun)* | <\($runurl)|run>\n`\($branch)` | <\($commiturl)|`\($sha)`>"
            + (if $failed != "" then "\n" + $failed else "" end)')
+        printf '%s\n' "$TEXT"
+
+        # A broken test can stay red for days, and an alert per push buries new
+        # failures. Lookup errors fall through to posting.
+        if [ "$SKIP_REPEATS" = "true" ]; then
+          WORKFLOW_ID=$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '.workflow_id' || true)
+          PREV=$(gh api "repos/$REPO/actions/workflows/$WORKFLOW_ID/runs?branch=$BRANCH&status=completed&per_page=20" \
+            --jq "[ .workflow_runs[] | select(.id < $RUN_ID) ] | first // empty | \"\(.id) \(.conclusion)\"" || true)
+          read -r PREV_ID PREV_CONCLUSION <<< "${PREV:-}" || true
+          if [ "${PREV_CONCLUSION:-}" = "failure" ] \
+            && gh run download "$PREV_ID" --repo "$REPO" -n qit-slack-signature -D "$RUNNER_TEMP/prev-signature" \
+            && cmp -s "$RUNNER_TEMP/prev-signature/signature.txt" "$SIGNATURE_FILE"; then
+            echo "Same failures as the previous run ($SERVER_URL/$REPO/actions/runs/$PREV_ID); not posting."
+            exit 0
+          fi
+        fi
 
         # Join in case the bot isn't a channel member yet.
         curl -sS -X POST https://slack.com/api/conversations.join \
@@ -87,3 +159,13 @@ runs:
           exit 1
         fi
         echo "Posted QIT E2E failure summary ($COUNT $NOUN) to Slack."
+
+    - name: "Save failure signature"
+      # Uploaded only after a post or a skip succeeds, so a failed post is retried by the next run.
+      if: ${{ inputs.skip-repeats == 'true' && inputs.slack-token != '' && inputs.channel-id != '' }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: qit-slack-signature
+        path: ${{ runner.temp }}/qit-slack-signature/signature.txt
+        retention-days: 30
+        overwrite: true
