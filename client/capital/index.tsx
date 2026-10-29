@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { TableCard } from '@woocommerce/components';
+import { TableCard, TableCardColumn } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -23,10 +23,15 @@ import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data/capital';
 import { getAdminUrl } from 'wcpay/utils';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
-const columns = [
+interface Column extends TableCardColumn {
+	cellClassName?: string;
+}
+
+const columns: Column[] = [
 	{
 		key: 'paid_out_at',
 		label: __( 'Disbursed', 'woocommerce-payments' ),
@@ -91,7 +96,7 @@ const getLoanStatusChip = ( loan: CapitalLoan ) => {
 	);
 };
 
-const getRowsData = ( loans: CapitalLoan[] ) =>
+const getRowsData = ( loans: CapitalLoan[], columnsToDisplay: Column[] ) =>
 	loans.map( ( loan ) => {
 		const clickable = ( children: React.ReactNode ) => (
 			<ClickableCell
@@ -159,7 +164,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 			{ value: string | number; display: React.ReactNode }
 		>;
 
-		return columns.map( ( { key } ) => data[ key ] );
+		return columnsToDisplay.map( ( { key } ) => data[ key ] );
 	} );
 
 const getSummary = ( loans: CapitalLoan[] ) => {
@@ -204,6 +209,11 @@ const getSummary = ( loans: CapitalLoan[] ) => {
 
 const CapitalPage = (): JSX.Element => {
 	const { loans, isLoading } = useLoans();
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_capital_loans_hidden_columns',
+			columns
+		);
 
 	return (
 		<Page>
@@ -219,11 +229,12 @@ const CapitalPage = (): JSX.Element => {
 				title={ __( 'All loans', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				totalRows={ loans.length }
-				headers={ columns }
-				rows={ getRowsData( loans ) }
+				headers={ columnsToDisplay }
+				rows={ getRowsData( loans, columnsToDisplay ) }
 				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
 				showMenu={ true }
+				onColumnsChange={ onColumnsChange }
 			/>
 		</Page>
 	);
