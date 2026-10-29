@@ -19,7 +19,7 @@ interface DuplicateNoticeProps {
 	dismissedNotices: PaymentMethodToPluginsMap;
 	setDismissedDuplicateNotices: (
 		notices: PaymentMethodToPluginsMap
-	) => null;
+	) => void;
 }
 
 function DuplicateNotice( {

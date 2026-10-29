@@ -1,0 +1,209 @@
+.wcpay-settings-screen__method-tabs {
+	.components-tab-panel__tabs {
+		margin-block-end: 16px;
+		border-block-end: 1px solid $gray-200;
+	}
+}
+
+.wcpay-settings-screen__card-description {
+	margin: 0;
+	color: $gray-700;
+}
+
+// Sits under the Advanced option, in line with its label.
+.components-button.wcpay-settings-screen__fraud-rules-link {
+	margin-inline-start: 24px;
+}
+
+.wcpay-settings-screen__bank-account {
+	margin-block-start: 8px;
+}
+
+.wcpay-settings-screen__bank-account-title {
+	margin: 0 0 4px;
+	color: $gray-900;
+}
+
+// The payment method lists, laid out as the designs show them: toggle, text, fees, then the logo.
+.wcpay-settings-screen__controls {
+	.payment-method-item {
+		padding: 16px 0;
+	}
+
+	.payment-method-item__row {
+		display: grid;
+		grid-template-columns: auto minmax( 0, 1fr ) auto auto;
+		grid-auto-flow: dense;
+		column-gap: 16px;
+		row-gap: 8px;
+		align-items: start;
+	}
+
+	.payment-method-item__checkbox {
+		grid-column: 1;
+		grid-row: 1;
+		align-self: start;
+		padding-block-start: 2px;
+	}
+
+	.payment-method-item__text-container,
+	.payment-method-item__text-container > div:not( [class*='payment-method'] ),
+	.payment-method-item__subgroup {
+		display: contents;
+	}
+
+	.payment-method-item__label--mobile {
+		display: none;
+	}
+
+	.payment-method-item__label-container {
+		grid-column: 2;
+	}
+
+	.payment-method-item__label {
+		font-weight: 400;
+		font-size: 15px;
+	}
+
+	.payment-method-item__description {
+		color: $gray-700;
+	}
+
+	// A payment method's description runs under its fees, as far as the logo.
+	.payment-method__list-item {
+		.payment-method-item__label-container {
+			display: contents;
+		}
+
+		.payment-method-item__label {
+			grid-column: 2;
+			grid-row: 1;
+			margin: 0;
+		}
+
+		.payment-method-item__description {
+			grid-column: 2 / 4;
+			margin: 0;
+			padding: 0;
+		}
+
+		.payment-method-item__icon {
+			grid-row: 1 / span 2;
+		}
+	}
+
+	.payment-method-item__icon {
+		grid-column: 4;
+		box-sizing: border-box;
+		border: 1px solid $gray-200;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		margin: 0;
+		overflow: hidden;
+		border-radius: 2px;
+
+		img,
+		svg {
+			max-width: 40px;
+			max-height: 40px;
+		}
+	}
+
+	.payment-method__fees {
+		grid-column: 3;
+		grid-row: 1;
+		align-self: start;
+		margin: 0;
+
+		.woocommerce-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			padding: 0;
+			border: 0;
+			background: none;
+			color: $gray-700;
+			font-size: 13px;
+
+			svg {
+				fill: currentColor;
+			}
+		}
+	}
+
+	// The express checkouts' Customize and Read more buttons sit under their description.
+	.express-checkout .payment-method-item__action {
+		grid-column: 2;
+		justify-self: start;
+		margin: 0;
+	}
+
+	.payment-method-item > .wcpay-inline-notice,
+	.payment-method-item > .components-notice {
+		margin-inline-start: 52px;
+		margin-inline-end: 56px;
+	}
+}
+
+.wcpay-settings-screen__tab-description {
+	margin-block-end: 8px;
+}
+
+.wcpay-settings-screen__border-radius {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+
+	.components-range-control {
+		flex: 1;
+	}
+
+	.components-number-control {
+		width: 80px;
+	}
+}
+
+.wcpay-settings-screen__border-radius-suffix {
+	padding-inline-end: 12px;
+	color: var( --wp-admin-theme-color );
+}
+
+// The existing rule cards, in the order of the designs: title, how the filter protects, then its controls and notices.
+.wcpay-settings-screen__fraud-rules {
+	.fraud-protection-rule-card .wcpay-card-body {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+
+		> h4 {
+			order: -2;
+			margin: 0;
+		}
+
+		> .fraud-protection-rule-description {
+			order: -1;
+
+			p {
+				margin: 0;
+			}
+		}
+
+		> .wcpay-inline-notice {
+			order: 1;
+			margin: 0;
+		}
+	}
+}
+
+.wcpay-settings-screen__test-account-notice {
+	p {
+		margin-block: 4px 12px;
+	}
+
+	.components-external-link {
+		margin-inline-start: 12px;
+	}
+}

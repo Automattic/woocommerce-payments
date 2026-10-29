@@ -28,3 +28,12 @@ declare module 'dompurify' {
 	export default DOMPurify;
 	/* eslint-enable @typescript-eslint/naming-convention */
 }
+
+declare module '@wordpress/editor' {
+	/** Adds a field to an entity in the editor's field registry. Only works while the Gutenberg plugin is active. */
+	export function registerEntityField(
+		kind: string,
+		name: string,
+		field: Record< string, unknown >
+	): void;
+}

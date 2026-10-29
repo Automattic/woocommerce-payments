@@ -178,6 +178,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_payments_admin_child_pages' ], 16 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
+		add_action( 'wcpay_settings_screen_register_scripts', [ $this, 'add_settings_screen_data' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
@@ -685,17 +686,7 @@ class WC_Payments_Admin {
 			'before'
 		);
 
-		wp_localize_script(
-			'WCPAY_ADMIN_SETTINGS',
-			'wcpayExpressCheckoutParams',
-			[
-				'stripe' => [
-					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-					'accountId'      => $this->account->get_stripe_account_id(),
-					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-				],
-			]
-		);
+		wp_localize_script( 'WCPAY_ADMIN_SETTINGS', 'wcpayExpressCheckoutParams', $this->get_express_checkout_preview_params() );
 
 		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
@@ -896,6 +887,36 @@ class WC_Payments_Admin {
 		);
 	}
 
+
+	/**
+	 * Adds the account data and styles the existing settings controls need to the settings screen's script.
+	 *
+	 * @param string $handle The settings screen's script handle.
+	 */
+	public function add_settings_screen_data( $handle ): void {
+		if ( ! is_string( $handle ) ) {
+			return;
+		}
+		wp_add_inline_script( $handle, new Woo_Payments_Payment_Method_Definitions(), 'before' );
+		wp_localize_script( $handle, 'wcpaySettings', $this->get_js_settings() );
+		wp_localize_script( $handle, 'wcpayExpressCheckoutParams', $this->get_express_checkout_preview_params() );
+		wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
+	}
+
+	/**
+	 * Gets the Stripe details the settings pages need to preview the express checkout buttons.
+	 *
+	 * @return array
+	 */
+	private function get_express_checkout_preview_params(): array {
+		return [
+			'stripe' => [
+				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+				'accountId'      => $this->account->get_stripe_account_id(),
+				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			],
+		];
+	}
 
 	/**
 	 * Get the WCPay settings to be sent to JS.

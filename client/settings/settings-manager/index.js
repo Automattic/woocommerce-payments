@@ -13,6 +13,7 @@ import { dispatch } from '@wordpress/data';
  */
 import AdvancedSettings from '../advanced-settings';
 import ExpressCheckout from '../express-checkout';
+import ExpressCheckoutDescription from '../express-checkout/description';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
 import SettingsLayout from '../settings-layout';
@@ -37,22 +38,6 @@ import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-contex
 import VatFormModal from '../../vat/form-modal';
 import SpotlightPromotion from 'promotions/spotlight';
 import './style.scss';
-
-const ExpressCheckoutDescription = () => (
-	<>
-		<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
-		<p>
-			{ __(
-				'Let your customers use their favorite express payment methods and digital wallets ' +
-					'for faster, more secure checkouts across different parts of your store.',
-				'woocommerce-payments'
-			) }
-		</p>
-		<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#express-checkouts">
-			{ __( 'Learn more', 'woocommerce-payments' ) }
-		</ExternalLink>
-	</>
-);
 
 const GeneralSettingsDescription = () => (
 	<>
