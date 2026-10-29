@@ -439,7 +439,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// below would be processed if this were a GET. The request-method gate is the only
 		// thing that may stop it.
 		$_GET['wc_payment_method']            = 'woocommerce_payments';
-		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce_' . $order->get_id() );
 		$_GET['payment_intent']               = 'pi_mock';
 		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
 		$_GET['key']                          = $order->get_order_key();
@@ -515,7 +515,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// An otherwise processable return, so the unattached intent is the only thing that may stop it.
 		$_SERVER['REQUEST_METHOD']          = 'GET';
 		$_GET['wc_payment_method']          = 'woocommerce_payments';
-		$_GET['_wpnonce']                   = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['_wpnonce']                   = wp_create_nonce( 'wcpay_process_redirect_order_nonce_' . $order->get_id() );
 		$_GET['setup_intent']               = 'seti_mock';
 		$_GET['setup_intent_client_secret'] = 'seti_mock_secret';
 		$_GET['key']                        = $order->get_order_key();
@@ -533,6 +533,41 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$_GET['_wpnonce'],
 			$_GET['setup_intent'],
 			$_GET['setup_intent_client_secret'],
+			$_GET['key']
+		);
+	}
+
+	public function test_maybe_process_upe_redirect_ignores_previous_nonce_format() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// An otherwise processable return, so the nonce is the only thing that may stop it.
+		$_SERVER['REQUEST_METHOD']            = 'GET';
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
+
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
 			$_GET['key']
 		);
 	}
