@@ -66,10 +66,36 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 		}
 
 		// saving the session and sending new cookies only when we're not dealing with an ephemeral cart.
-		if ( wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] ?? '' ) ) !== '1' ) {
+		if ( ! $this->is_ephemeral_cart() ) {
 			add_action( 'shutdown', [ $this, 'save_data' ], 20 );
 			add_action( 'woocommerce_set_cart_cookies', [ $this, 'set_customer_session_cookie' ] );
 		}
+	}
+
+	/**
+	 * Sets the session cookie, unless the cart is ephemeral.
+	 *
+	 * Skipping the hook in `init()` isn't enough: other code, like Multi-Currency's currency switch, calls this
+	 * directly. A cookie would give the shopper a session they never started, which takes their later page views
+	 * off the page cache.
+	 *
+	 * @param bool $set Whether the cookie should be set.
+	 */
+	public function set_customer_session_cookie( $set ) {
+		if ( $this->is_ephemeral_cart() ) {
+			return;
+		}
+
+		parent::set_customer_session_cookie( $set );
+	}
+
+	/**
+	 * Whether the cart only lives for this request, to read product prices and payment methods.
+	 *
+	 * @return bool
+	 */
+	private function is_ephemeral_cart(): bool {
+		return wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] ?? '' ) ) === '1';
 	}
 
 	/**
