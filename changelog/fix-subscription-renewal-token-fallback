@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fall back to the subscription's saved payment token when a renewal order is missing one, avoiding premature renewal failures.
