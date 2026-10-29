@@ -17,6 +17,7 @@ class WooPayDirectCheckout {
 	static userConnect;
 	static sessionConnect;
 	static encryptedSessionDataPromise;
+	static elementsWithRedirectListener = new WeakSet();
 	static redirectElements = {
 		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout .checkout-button',
 		BLOCKS_CART_PROCEED_BUTTON:
@@ -363,6 +364,12 @@ class WooPayDirectCheckout {
 		};
 
 		elements.forEach( ( element ) => {
+			// Callers pass every button they find after a cart change, including ones bound earlier.
+			if ( this.elementsWithRedirectListener.has( element ) ) {
+				return;
+			}
+			this.elementsWithRedirectListener.add( element );
+
 			const elementState = {
 				is_loading: false,
 			};

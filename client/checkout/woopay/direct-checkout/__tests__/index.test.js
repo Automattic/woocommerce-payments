@@ -17,6 +17,18 @@ jest.mock( '@wordpress/hooks', () => ( {
 	},
 } ) );
 
+let mockIsItemPendingQuantity = false;
+jest.mock( '@wordpress/data', () => ( {
+	select: () => ( {
+		isItemPendingDelete: () => false,
+		isItemPendingQuantity: () => mockIsItemPendingQuantity,
+	} ),
+	dispatch: () => ( {
+		itemIsPendingDelete: () => {},
+		itemIsPendingQuantity: () => {},
+	} ),
+} ) );
+
 jest.mock(
 	'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout',
 	() => ( {
@@ -53,6 +65,22 @@ global.$ = jest.fn( () => ( {
 		}
 	},
 } ) );
+
+const jQueryCallbacks = {};
+global.jQuery = jest.fn( () => ( {
+	on: ( events, callback ) => {
+		events.split( ' ' ).forEach( ( event ) => {
+			jQueryCallbacks[ event ] = callback;
+		} );
+	},
+} ) );
+
+// Microtasks only, so it also works while timers are faked.
+const flushPromises = async () => {
+	for ( let i = 0; i < 20; i++ ) {
+		await Promise.resolve();
+	}
+};
 
 require( '../index.js' );
 
@@ -171,20 +199,27 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 describe( 'WooPay direct checkout cart item listeners', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+		jest.useFakeTimers();
+	} );
+
+	afterEach( () => {
+		jest.useRealTimers();
 	} );
 
 	it( 'should not prefetch encrypted session data on add item if third-party cookies are not enabled', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
-
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
+		await flushPromises();
 
 		await wpHookCallbacks[
 			'experimental__woocommerce_blocks-cart-add-item'
 		]();
+		jest.advanceTimersByTime( 400 );
+		await flushPromises();
 
 		expect(
 			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
@@ -199,20 +234,212 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
-
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
+		await flushPromises();
+		jest.clearAllMocks();
 
 		await wpHookCallbacks[
 			'experimental__woocommerce_blocks-cart-add-item'
 		]();
+		jest.advanceTimersByTime( 400 );
+		await flushPromises();
 
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
-		).toHaveBeenCalled();
+		).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'prefetches once when the remove-item hook and the store sync event report the same removal', async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			true
+		);
+		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
+
+		fireEvent.load( window );
+		await flushPromises();
+		jest.clearAllMocks();
+
+		await wpHookCallbacks[
+			'experimental__woocommerce_blocks-cart-remove-item'
+		]( { product: { key: 'cart-item-key' } } );
+		window.dispatchEvent(
+			new CustomEvent( 'wc-blocks_store_sync_required', {
+				detail: { type: 'from_@wordpress/data' },
+			} )
+		);
+		jest.advanceTimersByTime( 400 );
+		await flushPromises();
+
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).toHaveBeenCalledTimes( 1 );
+	} );
+	it( 'drops the prefetched session while a quantity change is still in flight', async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			true
+		);
+		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
+
+		fireEvent.load( window );
+		await flushPromises();
+		jest.clearAllMocks();
+		mockIsItemPendingQuantity = true;
+
+		wpHookCallbacks[
+			'experimental__woocommerce_blocks-cart-set-item-quantity'
+		]( { product: { key: 'cart-item-key' } } );
+		jest.advanceTimersByTime( 400 );
+		await flushPromises();
+
 		expect(
 			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
+		).toHaveBeenCalled();
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).not.toHaveBeenCalled();
+
+		mockIsItemPendingQuantity = false;
+		jest.advanceTimersByTime( 100 );
+		await flushPromises();
+		jest.advanceTimersByTime( 400 );
+		await flushPromises();
+	} );
+} );
+
+describe( 'WooPay direct checkout cart change listeners', () => {
+	const loadAsLoggedInShopper = async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			true
+		);
+		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
+
+		fireEvent.load( window );
+		await flushPromises();
+		jest.clearAllMocks();
+	};
+
+	const settleCart = async () => {
+		jest.advanceTimersByTime( 400 );
+		await flushPromises();
+	};
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		jest.useFakeTimers();
+	} );
+
+	afterEach( () => {
+		jest.useRealTimers();
+	} );
+
+	it( 'drops the prefetched session at once and prefetches again after the cart settles', async () => {
+		await loadAsLoggedInShopper();
+
+		document.body.dispatchEvent(
+			new CustomEvent( 'wc-blocks_added_to_cart' )
+		);
+
+		expect(
+			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
+		).toHaveBeenCalled();
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).not.toHaveBeenCalled();
+
+		await settleCart();
+
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it.each( [ 'from_iAPI', 'from_@wordpress/data' ] )(
+		'prefetches again after a store sync event %s',
+		async ( type ) => {
+			await loadAsLoggedInShopper();
+
+			window.dispatchEvent(
+				new CustomEvent( 'wc-blocks_store_sync_required', {
+					detail: { type },
+				} )
+			);
+			await settleCart();
+
+			expect(
+				WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+			).toHaveBeenCalledTimes( 1 );
+		}
+	);
+
+	it.each( [ 'added_to_cart', 'removed_from_cart' ] )(
+		'prefetches again after the classic %s event',
+		async ( event ) => {
+			await loadAsLoggedInShopper();
+
+			jQueryCallbacks[ event ]();
+			await settleCart();
+
+			expect(
+				WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+			).toHaveBeenCalledTimes( 1 );
+		}
+	);
+
+	it( 'prefetches once for a burst of events about the same change', async () => {
+		await loadAsLoggedInShopper();
+
+		jQueryCallbacks.added_to_cart();
+		document.body.dispatchEvent(
+			new CustomEvent( 'wc-blocks_added_to_cart' )
+		);
+		document.body.dispatchEvent(
+			new CustomEvent( 'wc-blocks_added_to_cart' )
+		);
+		await settleCart();
+
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'binds a checkout button that WooCommerce renders after a cart change', async () => {
+		const newButton = document.createElement( 'a' );
+		await loadAsLoggedInShopper();
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [
+			newButton,
+		] );
+
+		document.body.dispatchEvent(
+			new CustomEvent( 'wc-blocks_added_to_cart' )
+		);
+		await settleCart();
+
+		expect(
+			WooPayDirectCheckout.addRedirectToWooPayEventListener
+		).toHaveBeenCalledWith( [ newButton ], true );
+	} );
+
+	it( 'does not prefetch after a cart change when third-party cookies are disabled', async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			false
+		);
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
+		fireEvent.load( window );
+		await flushPromises();
+		jest.clearAllMocks();
+
+		document.body.dispatchEvent(
+			new CustomEvent( 'wc-blocks_added_to_cart' )
+		);
+		await settleCart();
+
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).not.toHaveBeenCalled();
 	} );
 } );
