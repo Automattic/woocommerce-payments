@@ -179,5 +179,11 @@ describe( 'CapitalPage', () => {
 		expect( updateUserPreferences ).toHaveBeenCalledWith( {
 			wc_payments_capital_loans_hidden_columns: [ 'fee_amount' ],
 		} );
+		expect(
+			screen.queryByRole( 'menuitemcheckbox', { name: 'Disbursed' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'menuitemcheckbox', { name: 'Amount' } )
+		).not.toBeInTheDocument();
 	} );
 } );
