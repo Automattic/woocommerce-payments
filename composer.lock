@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "46419712aea9a55227548370fa351f57",
+    "content-hash": "448b88dcc511cb58172731208517f5d6",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -57,16 +57,16 @@
         },
         {
             "name": "automattic/jetpack-admin-ui",
-            "version": "v0.14.8",
+            "version": "v0.14.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-admin-ui.git",
-                "reference": "d2d30d50940daf3e0155cd327fa5fcef16adb00b"
+                "reference": "58eff17c25087f5aa40749e4e06cd4289a1e8678"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-admin-ui/zipball/d2d30d50940daf3e0155cd327fa5fcef16adb00b",
-                "reference": "d2d30d50940daf3e0155cd327fa5fcef16adb00b",
+                "url": "https://api.github.com/repos/Automattic/jetpack-admin-ui/zipball/58eff17c25087f5aa40749e4e06cd4289a1e8678",
+                "reference": "58eff17c25087f5aa40749e4e06cd4289a1e8678",
                 "shasum": ""
             },
             "require": {
@@ -112,22 +112,22 @@
             ],
             "description": "Generic Jetpack wp-admin UI elements",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.14.8"
+                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.14.10"
             },
-            "time": "2026-10-20T16:03:21+00:00"
+            "time": "2026-10-28T19:54:58+00:00"
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v5.0.14",
+            "version": "v5.0.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "e78e8b4ad01add1208abb1401debd589cba369cc"
+                "reference": "2e8a72d9a2ea40d7101ea4a32143e3d35df73b8c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/e78e8b4ad01add1208abb1401debd589cba369cc",
-                "reference": "e78e8b4ad01add1208abb1401debd589cba369cc",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/2e8a72d9a2ea40d7101ea4a32143e3d35df73b8c",
+                "reference": "2e8a72d9a2ea40d7101ea4a32143e3d35df73b8c",
                 "shasum": ""
             },
             "require": {
@@ -169,9 +169,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v5.0.14"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v5.0.16"
             },
-            "time": "2026-10-20T16:03:11+00:00"
+            "time": "2026-10-28T19:54:51+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -482,23 +482,23 @@
         },
         {
             "name": "automattic/jetpack-password-checker",
-            "version": "v0.5.2",
+            "version": "v0.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-password-checker.git",
-                "reference": "22ba60ea5d383e05cd8397f85ec0eee9bec04c01"
+                "reference": "af3a27ab7dd226e1d0dbfd00bef8c19a3de48a7b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-password-checker/zipball/22ba60ea5d383e05cd8397f85ec0eee9bec04c01",
-                "reference": "22ba60ea5d383e05cd8397f85ec0eee9bec04c01",
+                "url": "https://api.github.com/repos/Automattic/jetpack-password-checker/zipball/af3a27ab7dd226e1d0dbfd00bef8c19a3de48a7b",
+                "reference": "af3a27ab7dd226e1d0dbfd00bef8c19a3de48a7b",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.4"
             },
             "require-dev": {
-                "automattic/phpunit-select-config": "^1.0.11",
+                "automattic/phpunit-select-config": "^1.0.12",
                 "yoast/phpunit-polyfills": "^4.0.0"
             },
             "suggest": {
@@ -506,7 +506,6 @@
             },
             "type": "jetpack-library",
             "extra": {
-                "autotagger": true,
                 "textdomain": "jetpack-password-checker",
                 "mirror-repo": "Automattic/jetpack-password-checker",
                 "branch-alias": {
@@ -527,9 +526,9 @@
             ],
             "description": "Password Checker.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-password-checker/tree/v0.5.2"
+                "source": "https://github.com/Automattic/jetpack-password-checker/tree/v0.5.3"
             },
-            "time": "2026-09-21T18:51:46+00:00"
+            "time": "2026-10-20T16:02:38+00:00"
         },
         {
             "name": "automattic/jetpack-redirect",
@@ -692,29 +691,29 @@
         },
         {
             "name": "automattic/jetpack-sync",
-            "version": "v5.4.1",
+            "version": "v5.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-sync.git",
-                "reference": "b8c3ec6f41af48a8c9872e0b4dc30e50e23a1357"
+                "reference": "da84a170d4d19d3a10ad3ec7f9cdaad6df71bb04"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-sync/zipball/b8c3ec6f41af48a8c9872e0b4dc30e50e23a1357",
-                "reference": "b8c3ec6f41af48a8c9872e0b4dc30e50e23a1357",
+                "url": "https://api.github.com/repos/Automattic/jetpack-sync/zipball/da84a170d4d19d3a10ad3ec7f9cdaad6df71bb04",
+                "reference": "da84a170d4d19d3a10ad3ec7f9cdaad6df71bb04",
                 "shasum": ""
             },
             "require": {
-                "automattic/jetpack-connection": "^9.9.1",
-                "automattic/jetpack-constants": "^4.0.0",
-                "automattic/jetpack-ip": "^0.7.0",
-                "automattic/jetpack-password-checker": "^0.5.2",
-                "automattic/jetpack-roles": "^4.0.0",
-                "automattic/jetpack-status": "^7.1.0",
+                "automattic/jetpack-connection": "^9.13.0",
+                "automattic/jetpack-constants": "^4.0.1",
+                "automattic/jetpack-ip": "^0.7.1",
+                "automattic/jetpack-password-checker": "^0.5.3",
+                "automattic/jetpack-roles": "^4.0.1",
+                "automattic/jetpack-status": "^7.1.1",
                 "php": ">=7.4"
             },
             "require-dev": {
-                "automattic/phpunit-select-config": "^1.0.11",
+                "automattic/phpunit-select-config": "^1.0.12",
                 "yoast/phpunit-polyfills": "^4.0.0"
             },
             "suggest": {
@@ -722,7 +721,6 @@
             },
             "type": "jetpack-library",
             "extra": {
-                "autotagger": true,
                 "textdomain": "jetpack-sync",
                 "mirror-repo": "Automattic/jetpack-sync",
                 "branch-alias": {
@@ -752,9 +750,9 @@
             ],
             "description": "Everything needed to allow syncing to the WP.com infrastructure.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-sync/tree/v5.4.1"
+                "source": "https://github.com/Automattic/jetpack-sync/tree/v5.4.3"
             },
-            "time": "2026-10-07T13:56:12+00:00"
+            "time": "2026-10-20T16:03:55+00:00"
         },
         {
             "name": "composer/installers",

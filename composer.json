@@ -26,7 +26,7 @@
         "automattic/jetpack-connection": "9.13.0",
         "automattic/jetpack-config": "4.0.0",
         "automattic/jetpack-autoloader": "6.0.1",
-        "automattic/jetpack-sync": "5.4.1",
+        "automattic/jetpack-sync": "5.4.3",
         "woocommerce/subscriptions-core": "6.7.1",
         "automattic/jetpack-constants": "4.0.1"
     },
