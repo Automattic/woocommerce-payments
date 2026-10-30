@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fixed missing live shipping rates in the Apple Pay sheet for Canadian and UK addresses, by filling the redacted postcode in a valid format.
+Fixed missing live shipping rates in the Apple Pay and Google Pay sheets for Canadian and UK addresses, by filling the redacted postcode in a valid format.
