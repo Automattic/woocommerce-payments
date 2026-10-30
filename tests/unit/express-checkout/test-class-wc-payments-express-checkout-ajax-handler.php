@@ -309,6 +309,13 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		];
 	}
 
+	public function test_maybe_skip_postcode_validation_allows_padded_postcodes() {
+		$this->assertTrue( $this->ajax_handler->maybe_skip_postcode_validation( false, 'ZZZY0AA', 'GB' ) );
+		$this->assertTrue( $this->ajax_handler->maybe_skip_postcode_validation( false, 'Z9Z0A0', 'CA' ) );
+		$this->assertFalse( $this->ajax_handler->maybe_skip_postcode_validation( false, 'ZZZY1AB', 'GB' ) );
+		$this->assertFalse( $this->ajax_handler->maybe_skip_postcode_validation( false, 'ZZZ0AA', 'US' ) );
+	}
+
 	public function test_tokenized_cart_avoid_address_postcode_normalization_if_route_incorrect() {
 		$request = new WP_REST_Request();
 		$request->set_route( '/wc/store/v1/checkout' );

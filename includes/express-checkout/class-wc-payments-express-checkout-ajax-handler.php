@@ -242,10 +242,10 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return $valid;
 		}
 
-		// We padded the string with `0` in the `get_normalized_postal_code` method.
+		// We padded the string in the `get_normalized_postal_code` method, ending in `0` for CA and `0AA` for GB.
 		// It's a flimsy check, but better than nothing.
 		// Plus, this check is only made for the scenarios outlined in the `tokenized_cart_store_api_address_normalization` method.
-		if ( substr( $postcode, - 1 ) === '0' ) {
+		if ( substr( $postcode, - 1 ) === '0' || substr( $postcode, - 3 ) === '0AA' ) {
 			return true;
 		}
 
