@@ -139,7 +139,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$billing_address  = $request->get_param( 'billing_address' );
 
 		// this should be modified.
-		$this->assertSame( 'H3B000', $shipping_address['postcode'] );
+		$this->assertSame( 'H3B0A0', $shipping_address['postcode'] );
 		// this shouldn't be modified.
 		$this->assertSame( '90210', $billing_address['postcode'] );
 	}
@@ -170,8 +170,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$shipping_address = $request->get_param( 'shipping_address' );
 		$billing_address  = $request->get_param( 'billing_address' );
 
-		$this->assertSame( 'B1000', $shipping_address['postcode'] );
-		$this->assertSame( 'B2000', $billing_address['postcode'] );
+		$this->assertSame( 'B10AA', $shipping_address['postcode'] );
+		$this->assertSame( 'B20AA', $billing_address['postcode'] );
 	}
 
 	public function test_tokenized_cart_gb_address_outward_code_3_postcode_normalization() {
@@ -200,8 +200,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$shipping_address = $request->get_param( 'shipping_address' );
 		$billing_address  = $request->get_param( 'billing_address' );
 
-		$this->assertSame( 'B10000', $shipping_address['postcode'] );
-		$this->assertSame( 'B24000', $billing_address['postcode'] );
+		$this->assertSame( 'B100AA', $shipping_address['postcode'] );
+		$this->assertSame( 'B240AA', $billing_address['postcode'] );
 	}
 
 	public function test_tokenized_cart_gb_address_outward_code_4_postcode_normalization() {
@@ -230,8 +230,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$shipping_address = $request->get_param( 'shipping_address' );
 		$billing_address  = $request->get_param( 'billing_address' );
 
-		$this->assertSame( 'BB10000', $shipping_address['postcode'] );
-		$this->assertSame( 'GU52000', $billing_address['postcode'] );
+		$this->assertSame( 'BB100AA', $shipping_address['postcode'] );
+		$this->assertSame( 'GU520AA', $billing_address['postcode'] );
 	}
 
 	public function test_tokenized_cart_gb_address_unknown_outward_code_postcode_normalization() {
@@ -260,8 +260,53 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$shipping_address = $request->get_param( 'shipping_address' );
 		$billing_address  = $request->get_param( 'billing_address' );
 
-		$this->assertSame( 'ZZZY000', $shipping_address['postcode'] );
+		$this->assertSame( 'ZZZY0AA', $shipping_address['postcode'] );
 		$this->assertSame( 'ZQQZZZZ', $billing_address['postcode'] );
+	}
+
+	/**
+	 * Carrier plugins send the padded postcode to their own APIs, so it needs to be a valid postcode,
+	 * not only one that the validation bypass lets through.
+	 *
+	 * @dataProvider provider_redacted_postcodes
+	 *
+	 * @param string $country           The country code.
+	 * @param string $redacted_postcode The postcode as Apple Pay sends it.
+	 */
+	public function test_tokenized_cart_redacted_postcode_normalization_returns_valid_postcode( string $country, string $redacted_postcode ) {
+		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => $country,
+				'postcode' => $redacted_postcode,
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		remove_filter( 'woocommerce_validate_postcode', [ $this->ajax_handler, 'maybe_skip_postcode_validation' ], 10 );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+
+		$this->assertTrue( WC_Validation::is_postcode( $shipping_address['postcode'], $country ) );
+	}
+
+	/**
+	 * Redacted postcodes for the countries that get padded.
+	 *
+	 * @return array
+	 */
+	public function provider_redacted_postcodes(): array {
+		return [
+			'CA forward sortation area' => [ Country_Code::CANADA, 'H3B' ],
+			'GB 2 character outward'    => [ Country_Code::UNITED_KINGDOM, 'B1' ],
+			'GB 3 character outward'    => [ Country_Code::UNITED_KINGDOM, 'N1C' ],
+			'GB 4 character outward'    => [ Country_Code::UNITED_KINGDOM, 'SW1A' ],
+		];
 	}
 
 	public function test_tokenized_cart_avoid_address_postcode_normalization_if_route_incorrect() {
