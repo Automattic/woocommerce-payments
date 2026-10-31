@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Opt WooPayments abilities into usage tracking when supported by WooCommerce and enabled by the merchant.

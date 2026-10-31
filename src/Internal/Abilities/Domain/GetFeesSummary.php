@@ -62,6 +62,9 @@ class GetFeesSummary extends AbstractWCPayAbility implements AbilityDefinition {
 			'execute_callback'    => [ self::class, 'execute' ],
 			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
 			'meta'                => [
+				'woocommerce'  => [
+					'track_usage' => true,
+				],
 				'annotations'  => [
 					'readonly'    => true,
 					'destructive' => false,
