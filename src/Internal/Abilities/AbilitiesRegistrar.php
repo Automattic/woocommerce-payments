@@ -18,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * `woocommerce` category.
  * All abilities gate on `manage_woocommerce` and are gated by the
  * `woocommerce_payments_abilities_enabled` filter (default `false`).
+ * Definitions explicitly opt into WooCommerce usage tracking through their
+ * metadata; tracking still requires the store's consent.
  *
  * Delegation errors are logged under the `woopayments-abilities` source.
  */

@@ -53,6 +53,9 @@ class GetAccount implements AbilityDefinition {
 			// output_schema omitted: payload shape comes straight from the
 			// backing controller.
 			'meta'                => [
+				'woocommerce'  => [
+					'track_usage' => true,
+				],
 				'annotations'  => [
 					'readonly'    => true,
 					'destructive' => false,

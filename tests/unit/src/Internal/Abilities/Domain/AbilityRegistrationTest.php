@@ -40,6 +40,7 @@ class AbilityRegistrationTest extends WCPAY_UnitTestCase {
 		$this->assertSame( [ $ability_class, 'execute' ], $args['execute_callback'] );
 		$this->assertSame( [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ], $args['permission_callback'] );
 		$this->assertTrue( $args['meta']['show_in_rest'] );
+		$this->assertTrue( $args['meta']['woocommerce']['track_usage'] );
 		$this->assertSame(
 			$flags,
 			[
