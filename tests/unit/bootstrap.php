@@ -147,7 +147,9 @@ require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-a
 require $_tests_dir . '/includes/bootstrap.php';
 
 // WP 7.2+ deletes its test uploads dir after wp_upload_dir() has cached it as created, so nothing recreates it.
-wp_mkdir_p( wp_upload_dir()['path'] );
+if ( version_compare( $GLOBALS['wp_version'], '7.2-alpha', '>=' ) ) {
+	wp_mkdir_p( wp_upload_dir()['path'] );
+}
 
 require __DIR__ . '/../WCPAY_UnitTestCase.php';
 
