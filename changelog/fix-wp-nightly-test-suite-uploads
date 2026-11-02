@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix the PHP unit tests on WordPress 7.2, which moves test uploads into a directory that its test bootstrap deletes after loading.
