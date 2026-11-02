@@ -143,14 +143,13 @@ tests_add_filter( 'setup_theme', 'wcpay_install_woocommerce_roles' );
 // Need those polyfills to run tests in CI.
 require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
-// Start up the WP testing environment.
-require $_tests_dir . '/includes/bootstrap.php';
-
-// WP 7.2+ deletes its test uploads dir after wp_upload_dir() has cached it as created, so nothing recreates it.
-if ( version_compare( $GLOBALS['wp_version'], '7.2-alpha', '>=' ) ) {
-	wp_mkdir_p( wp_upload_dir()['path'] );
+// WP 7.2+ deletes its own test uploads dir after plugins load (Trac #63532), so keep the classic one.
+if ( ! defined( 'UPLOADS' ) ) {
+	define( 'UPLOADS', 'wp-content/uploads' );
 }
 
+// Start up the WP testing environment.
+require $_tests_dir . '/includes/bootstrap.php';
 require __DIR__ . '/../WCPAY_UnitTestCase.php';
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
