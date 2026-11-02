@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "46419712aea9a55227548370fa351f57",
+    "content-hash": "5f0ec5885db8299e5ef7523995ee4b48",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -239,16 +239,16 @@
         },
         {
             "name": "automattic/jetpack-config",
-            "version": "v4.0.0",
+            "version": "v4.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-config.git",
-                "reference": "76004eab9208b900a54f0ae1a23b5f7a3853f06c"
+                "reference": "43e9991ba4fcd7128519b7f0146cd18f7eb252c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/76004eab9208b900a54f0ae1a23b5f7a3853f06c",
-                "reference": "76004eab9208b900a54f0ae1a23b5f7a3853f06c",
+                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/43e9991ba4fcd7128519b7f0146cd18f7eb252c1",
+                "reference": "43e9991ba4fcd7128519b7f0146cd18f7eb252c1",
                 "shasum": ""
             },
             "require": {
@@ -259,7 +259,6 @@
             },
             "type": "jetpack-library",
             "extra": {
-                "autotagger": true,
                 "textdomain": "jetpack-config",
                 "mirror-repo": "Automattic/jetpack-config",
                 "branch-alias": {
@@ -297,9 +296,9 @@
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-config/tree/v4.0.0"
+                "source": "https://github.com/Automattic/jetpack-config/tree/v4.0.1"
             },
-            "time": "2026-08-26T20:01:42+00:00"
+            "time": "2026-10-20T16:01:39+00:00"
         },
         {
             "name": "automattic/jetpack-connection",
