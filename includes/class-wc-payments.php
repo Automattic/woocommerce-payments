@@ -1074,6 +1074,7 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
+				'wc_payments_capital_loans_hidden_columns',
 				// Reports DataViews per-tab persisted view. Expected shape:
 				// { fields: string[], perPage?: number, layout?: object }.
 				// Stored verbatim via WC Admin's user-data-fields filter, so
