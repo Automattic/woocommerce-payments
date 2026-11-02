@@ -25,6 +25,24 @@ generate_worktree_id() {
     echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/_/g'
 }
 
+# Get a worktree's ID from its .env, falling back to the same defaults as docker-compose.yml for the main checkout
+get_worktree_id() {
+    local wt_path="$1"
+    local worktree_id=""
+
+    if [[ -f "$wt_path/.env" ]]; then
+        worktree_id=$(grep '^WORKTREE_ID=' "$wt_path/.env" 2>/dev/null | cut -d= -f2)
+    fi
+
+    if [[ -n "$worktree_id" ]]; then
+        echo "$worktree_id"
+    elif [[ "$wt_path" == "$MAIN_CHECKOUT" ]]; then
+        echo "default"
+    else
+        generate_worktree_id "$(basename "$wt_path")"
+    fi
+}
+
 # Get all git worktrees
 worktrees=()
 while IFS= read -r line; do
@@ -32,6 +50,9 @@ while IFS= read -r line; do
         worktrees+=("${BASH_REMATCH[1]}")
     fi
 done < <(git -C "$REPO_ROOT" worktree list --porcelain)
+
+# Git always lists the main checkout first, while REPO_ROOT is whichever checkout this script runs from
+MAIN_CHECKOUT="${worktrees[0]}"
 
 # Get all wcpay WordPress containers
 containers=$(docker ps -a --filter "name=wcpay_wp_" --format '{{.Names}}' 2>/dev/null || true)
@@ -48,22 +69,16 @@ for wt_path in "${worktrees[@]}"; do
     port=""
     status="no container"
     url="n/a"
-    worktree_id=""
+    worktree_id=$(get_worktree_id "$wt_path")
 
     # Check for .env file
     if [[ -f "$wt_path/.env" ]]; then
         port=$(grep '^WORDPRESS_PORT=' "$wt_path/.env" 2>/dev/null | cut -d= -f2)
-        worktree_id=$(grep '^WORKTREE_ID=' "$wt_path/.env" 2>/dev/null | cut -d= -f2)
     fi
 
-    # Use defaults for main checkout if no .env
-    if [[ -z "$worktree_id" ]]; then
-        if [[ "$wt_path" == "$REPO_ROOT" ]]; then
-            worktree_id="default"
-            [[ -z "$port" ]] && port="8082"
-        else
-            worktree_id=$(generate_worktree_id "$wt_name")
-        fi
+    # Use default port for main checkout if not set in .env
+    if [[ -z "$port" && "$worktree_id" == "default" ]]; then
+        port="8082"
     fi
 
     container_name="wcpay_wp_$worktree_id"
@@ -79,7 +94,7 @@ for wt_path in "${worktrees[@]}"; do
 
     # Build display name with markers
     display_name="$wt_name"
-    [[ "$wt_path" == "$REPO_ROOT" ]] && display_name="$wt_name (main)"
+    [[ "$wt_path" == "$MAIN_CHECKOUT" ]] && display_name="$wt_name (main)"
     [[ "$wt_path" == "$CURRENT_DIR" ]] && display_name="* $display_name"
 
     printf "  %-6s %-30s %-14s %s\n" "${port:-n/a}" "$url" "$status" "$display_name"
@@ -92,15 +107,7 @@ for container_name in $containers; do
     found=false
 
     for wt_path in "${worktrees[@]}"; do
-        wt_name=$(basename "$wt_path")
-        if [[ -f "$wt_path/.env" ]]; then
-            wt_id=$(grep '^WORKTREE_ID=' "$wt_path/.env" 2>/dev/null | cut -d= -f2)
-            [[ -z "$wt_id" ]] && wt_id=$(generate_worktree_id "$wt_name")
-        elif [[ "$wt_path" == "$REPO_ROOT" ]]; then
-            wt_id="default"
-        else
-            wt_id=$(generate_worktree_id "$wt_name")
-        fi
+        wt_id=$(get_worktree_id "$wt_path")
         [[ "$container_wt_id" == "$wt_id" ]] && found=true && break
     done
 
