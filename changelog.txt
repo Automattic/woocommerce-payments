@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 9.2.2 - 2026-11-03 =
+* Update - Security update.
+
 = 9.2.1 - 2025-04-23 =
 * Update - Update account session creation route definition to use POST rather than GET.
 
