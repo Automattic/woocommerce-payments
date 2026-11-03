@@ -210,6 +210,31 @@ const openFeesDateRangePopover = async () => {
 	return screen.findByRole( 'dialog' );
 };
 
+// Ignore DataViews 14's one-time inert warning while keeping Jest's console spy.
+/* eslint-disable no-console */
+const originalConsoleError = console.error;
+
+beforeAll( () => {
+	console.error = new Proxy( originalConsoleError, {
+		apply( target, thisArg, args ) {
+			if (
+				args[ 0 ] ===
+					'Received the string `%s` for the boolean attribute `%s`. %s Did you mean %s={%s}?' &&
+				args[ 1 ] === 'true' &&
+				args[ 2 ] === 'inert'
+			) {
+				return;
+			}
+			return Reflect.apply( target, thisArg, args );
+		},
+	} );
+} );
+
+afterAll( () => {
+	console.error = originalConsoleError;
+} );
+/* eslint-enable no-console */
+
 beforeEach( () => {
 	mockUseReportsFees.mockReset();
 	mockUseReportsFeesSummary.mockReset();
@@ -717,9 +742,6 @@ describe( 'FeesReport (DataViews)', () => {
 		rerender( <FeesReport /> );
 
 		expect( mockSpeak ).toHaveBeenCalledWith( 'Loading fees', 'polite' );
-		// DataViews 14 passes `inert="true"`, which React 19 warns about once
-		// per run. The first test to render the loading table sees it.
-		expect( console ).toHaveErrored();
 	} );
 
 	it( 'does not render the export action in the Fees DataViews controls', () => {

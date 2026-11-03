@@ -42,7 +42,8 @@ overrides:
   'd3-interpolate': '^3.0.1'
   'd3-scale': '^4.0.2'
   'd3-scale-chromatic': '^3.1.0'
-  # Many @wordpress/* packages still pin react ^18; force one React 19 copy so tests match what WP 6.8+ hosts load.
+  # Run tests on one React 19 copy ahead of WordPress core, which still ships React 18.
+  # ESLint cannot catch ref props on function components; keep using forwardRef.
   'react': '19.2.9'
   'react-dom': '19.2.9'
   'react-is': '19.2.9'
