@@ -570,6 +570,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					],
 				],
 				'last_setup_error'       => [],
+				'metadata'               => [ 'order_id' => (string) $order_id ],
 			]
 		);
 
