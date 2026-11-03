@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 9.9.1 - 2026-11-03 =
+* Update - Security update.
+
 = 9.9.0 - 2025-09-03 =
 * Fix - Conditionally set Stripe Link wallet option based on payment method configuration
 * Fix - fix: adding some missing i18n wrappers
