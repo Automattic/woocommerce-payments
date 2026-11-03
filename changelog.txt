@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 9.6.1 - 2026-11-03 =
+* Update - Security update.
+
 = 9.6.0 - 2025-07-02 =
 * Add - Add cover letter for the new evidence submission screen for Product Unacceptable chargeback reason
 * Add - Added a URL parameter to allow merchants to access the VAT details modal.
