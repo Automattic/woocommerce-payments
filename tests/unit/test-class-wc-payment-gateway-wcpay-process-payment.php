@@ -2429,7 +2429,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturnOnConsecutiveCalls(
 				$this->throwException(
 					new API_Exception(
-						'No such customer: cus_mock',
+						"Error: No such customer: 'cus_mock'",
 						'resource_missing',
 						400
 					)
@@ -2518,7 +2518,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturnOnConsecutiveCalls(
 				$this->throwException(
 					new API_Exception(
-						'No such customer: cus_mock',
+						"Error: No such customer: 'cus_mock'",
 						'resource_missing',
 						400
 					)
@@ -2553,8 +2553,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function provider_non_customer_resource_missing_errors() {
 		return [
-			'missing payment method' => [ 'No such payment_method: pm_123' ],
-			'missing price'          => [ 'No such price: price_123' ],
+			'missing payment method'          => [ 'No such payment_method: pm_123' ],
+			'missing price'                   => [ 'No such price: price_123' ],
+			'ID containing the word customer' => [ "Error: No such PaymentMethod: 'pm_customer'" ],
+			'ID imitating a missing customer' => [ "Error: No such token: 'No such customer: cus_mock'" ],
+			'customer mentioned elsewhere'    => [ 'Error: The customer has no such source.' ],
 		];
 	}
 
