@@ -1027,14 +1027,15 @@ class MultiCurrency {
 	/**
 	 * Gets the converted price using the current currency with the rounding and charm pricing settings.
 	 *
-	 * @param mixed  $price The price to be converted.
-	 * @param string $type The type of price being converted. One of 'product', 'shipping', 'tax', 'coupon', or 'exchange_rate'.
+	 * @param mixed         $price    The price to be converted.
+	 * @param string        $type     The type of price being converted. One of 'product', 'shipping', 'tax', 'coupon', or 'exchange_rate'.
+	 * @param Currency|null $currency The currency to convert the price to. Defaults to the selected currency.
 	 *
 	 * @return float The converted price.
 	 */
-	public function get_price( $price, string $type ): float {
+	public function get_price( $price, string $type, ?Currency $currency = null ): float {
 		$supported_types = [ 'product', 'shipping', 'tax', 'coupon', 'exchange_rate' ];
-		$currency        = $this->get_selected_currency();
+		$currency        = $currency ?? $this->get_selected_currency();
 
 		if ( ! in_array( $type, $supported_types, true ) || $currency->get_is_default() ) {
 			return (float) $price;
