@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 10.5.2 - 2026-11-03 =
+* Update - Security update.
+
 = 10.5.1 - 2026-02-11 =
 * Fix - Cache the affected orders check for the canceled auth fee remediation note to avoid an expensive query on every admin page load
 
