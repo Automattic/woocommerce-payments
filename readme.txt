@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.3
-Stable tag: 10.4.0
+Stable tag: 10.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 10.4.1 - 2026-11-03 =
+* Update - Security update.
 
 = 10.4.0 - 2026-01-07 =
 * Add - Add duplicate charge documentation field for "Not Duplicate" dispute scenario.

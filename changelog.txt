@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 10.4.1 - 2026-11-03 =
+* Update - Security update.
+
 = 10.4.0 - 2026-01-07 =
 * Add - Add duplicate charge documentation field for "Not Duplicate" dispute scenario.
 * Add - Adding ability to support payment method promotional campaigns (spotlight and badge treatments).
