@@ -378,9 +378,17 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$currencies = [
 			'USD' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
 			'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ),
+			'EUR' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR', 0.9 ),
 		];
 		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $currencies['USD'] );
-		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( $currencies );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( $currencies );
+		// EUR is supported but disabled, as when the merchant turns a currency off after checkout.
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn(
+			[
+				'USD' => $currencies['USD'],
+				'JPY' => $currencies['JPY'],
+			]
+		);
 		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
 
 		$order = WC_Helper_Order::create_order();
@@ -403,12 +411,13 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		return [
 			'store currency'       => [ 'USD', 'USD' ],
 			'enabled currency'     => [ 'JPY', 'JPY' ],
-			'not enabled currency' => [ 'EUR', 'USD' ],
+			'disabled currency'    => [ 'EUR', 'EUR' ],
+			'unsupported currency' => [ 'BTC', 'USD' ],
 		];
 	}
 
 	public function test_get_coupon_amount_does_not_convert_coupon_rebuilt_from_the_order() {
-		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ 'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ) ] );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ) ] );
 		$this->mock_multi_currency->expects( $this->never() )->method( 'get_price' );
 		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
 
@@ -430,7 +439,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$jpy = new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 );
 
 		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $usd );
-		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn(
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn(
 			[
 				'USD' => $usd,
 				'JPY' => $jpy,
@@ -474,7 +483,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_coupon_amount_converts_other_coupons_to_the_selected_currency() {
 		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
-		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ 'USD' => $usd ] );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
 		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
 
 		$this->frontend_prices->set_order_coupon( new WC_Coupon(), 'code', new WC_Order_Item_Coupon(), WC_Helper_Order::create_order() );
@@ -494,7 +503,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 		try {
 			$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
-			$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ 'USD' => $usd ] );
+			$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
 			$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
 
 			$coupon = new WC_Coupon();
@@ -529,7 +538,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 				'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ),
 			];
 			$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $currencies['USD'] );
-			$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( $currencies );
+			$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( $currencies );
 			$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
 
 			$order = WC_Helper_Order::create_order();
@@ -558,7 +567,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 	public function test_recalculate_coupons_uses_the_order_currency_instead_of_the_selected_one() {
 		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
-		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ 'USD' => $usd ] );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
 		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
 
 		// JPY is selected, at 150 JPY for 1 USD: the selected-currency path (currency omitted) returns
