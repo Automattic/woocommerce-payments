@@ -5793,10 +5793,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks whether an API error reports the Stripe customer itself as missing.
 	 *
-	 * `resource_missing` is also returned for other missing objects (payment methods, prices, ...),
-	 * and the message reads "No such <object>: '<ID>'" where the ID can be a value the shopper
-	 * submitted. Only the object named right after "No such" tells what is missing, so the rest of
-	 * the message must not be searched for the word "customer".
+	 * `resource_missing` also covers other objects, and the ID in "No such <object>: '<ID>'" can be
+	 * shopper input, so only the object named after "No such" counts.
 	 *
 	 * @param API_Exception $e The exception thrown by the intent request.
 	 *
