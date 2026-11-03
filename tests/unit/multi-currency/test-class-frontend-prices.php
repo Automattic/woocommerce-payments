@@ -434,7 +434,10 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( '1500', $this->frontend_prices->get_coupon_amount( '1500', $coupon ) );
 	}
 
-	public function test_legacy_virtual_coupon_is_converted_to_the_order_currency() {
+	/**
+	 * @dataProvider legacy_coupon_data_provider
+	 */
+	public function test_legacy_virtual_coupon_is_converted_to_the_order_currency( $coupon_data ) {
 		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
 		$jpy = new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 );
 
@@ -465,20 +468,26 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 		$coupon_item = new WC_Order_Item_Coupon();
 		$coupon_item->set_code( 'legacy5' );
-		$coupon_item->add_meta_data(
-			'coupon_data',
-			[
-				'id'            => 0,
-				'code'          => 'legacy5',
-				'discount_type' => 'fixed_cart',
-				'amount'        => 5,
-			]
-		);
+		$coupon_item->add_meta_data( 'coupon_data', $coupon_data );
 
 		$this->frontend_prices->set_order_coupon( $coupon, 'legacy5', $coupon_item, $order );
 
 		// The 5 USD coupon was worth 750 JPY on this order, so the rebuild must convert it.
 		$this->assertSame( 750.0, $this->frontend_prices->get_coupon_amount( '5', $coupon ) );
+	}
+
+	public function legacy_coupon_data_provider() {
+		$coupon_data = [
+			'id'            => 0,
+			'code'          => 'legacy5',
+			'discount_type' => 'fixed_cart',
+			'amount'        => 5,
+		];
+
+		return [
+			'array'  => [ $coupon_data ],
+			'object' => [ (object) $coupon_data ],
+		];
 	}
 
 	public function test_get_coupon_amount_converts_other_coupons_to_the_selected_currency() {

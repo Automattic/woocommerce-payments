@@ -379,8 +379,9 @@ class FrontendPrices {
 		// converted at checkout, while legacy `coupon_data` holds the raw store-currency amount, which must
 		// still be converted. A coupon rebuilt with no stored amount takes its value from the order line,
 		// already in the order's currency, so it is left as is.
-		$legacy_data                         = $coupon_item->get_meta( 'coupon_data', true );
-		$legacy_amount                       = is_array( $legacy_data ) ? (float) ( $legacy_data['amount'] ?? 0 ) : 0.0;
+		// Cast like WC_Abstract_Order::get_temporary_coupon(), which also accepts object-valued meta.
+		$legacy_data                         = (array) $coupon_item->get_meta( 'coupon_data', true );
+		$legacy_amount                       = (float) ( $legacy_data['amount'] ?? 0 );
 		$has_coupon_info                     = (bool) $coupon_item->get_meta( 'coupon_info', true );
 		$this->order_coupon_needs_conversion = $coupon instanceof \WC_Coupon && (
 			! $coupon->get_virtual()
