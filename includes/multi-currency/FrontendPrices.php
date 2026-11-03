@@ -363,7 +363,8 @@ class FrontendPrices {
 	 * @return \WC_Coupon|false The unmodified coupon.
 	 */
 	public function set_order_coupon( $coupon, $_unused_code, $coupon_item, $order ) {
-		// Only the Store API pay-for-order route needs this; standard REST order writes already force the store currency.
+		// Runs on any frontend request except standard REST order writes, which already force the store currency:
+		// the Store API pay-for-order route, and frontend calls such as `$order->apply_coupon()`.
 		if ( WC()->is_rest_api_request() && ! Utils::is_store_api_request() && ! Utils::is_store_batch_request() ) {
 			$this->order_coupon = null;
 			return $coupon;
@@ -379,6 +380,9 @@ class FrontendPrices {
 		// converted at checkout, while legacy `coupon_data` holds the raw store-currency amount, which must
 		// still be converted. A coupon rebuilt with no stored amount takes its value from the order line,
 		// already in the order's currency, so it is left as is.
+		// Known gap: WooCommerce's coupon data conversion tool (WC >= 8.7) rebuilt `coupon_info` from
+		// `coupon_data` without Multi-Currency, so on those orders a deleted coupon's amount is still in the
+		// store currency but is treated as converted.
 		// Cast like WC_Abstract_Order::get_temporary_coupon(), which also accepts object-valued meta.
 		$legacy_data                         = (array) $coupon_item->get_meta( 'coupon_data', true );
 		$legacy_amount                       = (float) ( $legacy_data['amount'] ?? 0 );
