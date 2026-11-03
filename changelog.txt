@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 10.0.1 - 2026-11-03 =
+* Update - Security update.
+
 = 10.0.0 - 2025-09-24 =
 * Add - Add new feature flag for the dynamic checkout place order button, and new option on payment settings.
 * Add - New AccountDetails: Add feature flag, TypeScript definition, and basic component
