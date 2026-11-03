@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 9.7.1 - 2026-11-03 =
+* Update - Security update.
+
 = 9.7.0 - 2025-07-24 =
 * Add - Add a confirmation screen to the new flow for submitting dispute evidence.
 * Add - Add Credit not processed logic for the new evidence submission form.
