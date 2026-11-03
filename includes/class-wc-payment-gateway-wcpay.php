@@ -3517,7 +3517,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
 	 */
 	protected function get_capture_type() {
-		return 'yes' === $this->get_option( 'manual_capture' ) ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
+		return $this->is_manual_capture_enabled() ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
+	}
+
+	/**
+	 * Checks whether payments are authorized at checkout and captured later.
+	 *
+	 * The setting applies to the whole store, but only the card gateway saves it. Every other
+	 * payment method's gateway has its own settings row, so they all read it from the card gateway.
+	 *
+	 * @return bool
+	 */
+	private function is_manual_capture_enabled(): bool {
+		return 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' );
 	}
 
 	/**
@@ -5097,12 +5109,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_upe_enabled_payment_method_ids_based_on_manual_capture() {
-		$automatic_capture = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
-		if ( $automatic_capture ) {
+		if ( ! $this->is_manual_capture_enabled() ) {
 			return $this->get_upe_enabled_payment_method_ids();
 		}
 
-		return array_intersect( $this->get_upe_enabled_payment_method_ids(), [ Payment_Method::CARD, Payment_Method::LINK ] );
+		return array_filter(
+			$this->get_upe_enabled_payment_method_ids(),
+			function ( $payment_method_id ) {
+				// Link follows the card's capture behavior.
+				if ( Payment_Method::LINK === $payment_method_id ) {
+					return true;
+				}
+
+				$payment_method = $this->payment_methods[ $payment_method_id ] ?? null;
+				return null !== $payment_method && $payment_method->allows_manual_capture();
+			}
+		);
 	}
 
 	/**
