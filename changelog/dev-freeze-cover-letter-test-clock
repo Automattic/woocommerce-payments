@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+Comment: Stop a dispute cover letter test from failing when the minute changes mid-test.
+

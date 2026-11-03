@@ -834,6 +834,19 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 	} );
 
 	describe( 'cover letter', () => {
+		// The letter shows the current time, down to the minute here. Freeze
+		// the clock so a restored letter matches the first one.
+		const frozenNow = Date.UTC( 2024, 2, 20, 12, 0, 30 );
+		let dateNowSpy: jest.SpyInstance;
+
+		beforeEach( () => {
+			dateNowSpy = jest.spyOn( Date, 'now' ).mockReturnValue( frozenNow );
+		} );
+
+		afterEach( () => {
+			dateNowSpy.mockRestore();
+		} );
+
 		const openCoverLetter = async () => {
 			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
 			fireEvent.click(
