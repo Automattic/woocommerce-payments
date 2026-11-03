@@ -51,6 +51,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 	public function tear_down() {
 		wp_set_current_user( $this->previous_user_id );
 		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'] );
+		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] );
 		unset( $_COOKIE[ 'wp_woocommerce_session_' . COOKIEHASH ] );
 		remove_filter( 'woocommerce_set_cookie_enabled', [ $this, '__cookie_handler' ] );
 		$this->cookies_jar = [];
@@ -88,6 +89,23 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 				$cookie_hash,
 			]
 		);
+	}
+
+	/**
+	 * Code outside the handler, like Multi-Currency switching the currency from a `?currency=` param,
+	 * can ask for the session cookie directly. An ephemeral cart must not send it either way.
+	 */
+	public function test_ephemeral_cart_does_not_send_session_cookie_when_asked_directly() {
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']           = '';
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] = '1';
+
+		$session_handler = new WC_Payments_Payment_Request_Session_Handler();
+		$session_handler->init();
+
+		$session_handler->set_customer_session_cookie( true );
+
+		$this->assertArrayNotHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
+		$this->assertFalse( $session_handler->has_session() );
 	}
 
 	/**
