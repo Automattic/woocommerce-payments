@@ -3435,6 +3435,66 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
+	public function test_create_setup_intent_ajax_rejects_invalid_fraud_token_when_session_is_not_loaded() {
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+		$fraud_prevention_service_mock
+			->method( 'is_enabled' )
+			->willReturn( true );
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'wrong_token' )
+			->willReturn( false );
+
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+
+		$_POST = [
+			'wcpay-payment-method'         => 'pm_mock',
+			'wcpay-fraud-prevention-token' => 'wrong_token',
+		];
+
+		[ $response, $session_was_loaded ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertTrue( $session_was_loaded );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( "We're not able to add this payment method. Please refresh the page and try again.", $response['data']['error']['message'] );
+	}
+
+	public function test_create_setup_intent_ajax_creates_setup_intent_with_valid_fraud_token_when_session_is_not_loaded() {
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+		$fraud_prevention_service_mock
+			->method( 'is_enabled' )
+			->willReturn( true );
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'valid_token' )
+			->willReturn( true );
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
+
+		$_POST = [
+			'wcpay-payment-method'         => 'pm_mock',
+			'wcpay-fraud-prevention-token' => 'valid_token',
+		];
+
+		[ $response ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertTrue( $response['success'] );
+		$this->assertSame( 'seti_mock_123', $response['data']['id'] );
+	}
+
 	public function test_manage_customer_details_for_order_skips_customer_update_when_changing_subscription_payment_method() {
 		$order = WC_Helper_Order::create_order();
 
@@ -6212,6 +6272,35 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
 
 		return $fraud_prevention_service_mock;
+	}
+
+	/**
+	 * Calls `create_setup_intent_ajax()` with no session loaded.
+	 *
+	 * @return array The decoded JSON response, and whether the handler loaded a session.
+	 */
+	private function call_create_setup_intent_ajax_without_session(): array {
+		$_REQUEST['_ajax_nonce'] = wp_create_nonce( 'wcpay_create_setup_intent_nonce' );
+
+		$session      = WC()->session;
+		WC()->session = null;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->create_setup_intent_ajax();
+			$response           = json_decode( ob_get_clean(), true );
+			$session_was_loaded = null !== WC()->session;
+		} finally {
+			WC()->session = $session;
+			unset( $_REQUEST['_ajax_nonce'] );
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		return [ $response, $session_was_loaded ];
 	}
 
 	private function create_charge_object() {
