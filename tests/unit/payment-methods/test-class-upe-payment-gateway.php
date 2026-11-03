@@ -845,6 +845,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id       = $order->get_id();
 		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$_GET['key'] = $order->get_order_key();
+		wp_set_current_user( $order->get_user_id() );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );

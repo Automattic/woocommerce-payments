@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Only use the order from a Pay for order link to pick payment methods when the link is valid.
