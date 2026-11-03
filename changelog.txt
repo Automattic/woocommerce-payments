@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 9.8.1 - 2026-11-03 =
+* Update - Security update.
+
 = 9.8.0 - 2025-08-13 =
 * Add - Add address autocomplete to Checkout
 * Add - Add support for small screens on the evidence submission form.
