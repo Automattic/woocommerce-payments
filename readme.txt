@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.3
-Stable tag: 11.1.0
+Stable tag: 11.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 11.1.1 - 2026-11-03 =
+* Update - Security update.
 
 = 11.1.0 - 2026-09-02 =
 * Add - Show which risk filters fired when a payment is blocked or held for review, in the order note and the Fraud & Risk meta box.
