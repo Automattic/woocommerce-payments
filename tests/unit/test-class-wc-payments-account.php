@@ -3405,10 +3405,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_note() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
 		$action_hook = 'wcpay_instant_deposit_reminder';
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
@@ -3442,11 +3438,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$account = [
 			'is_live'                   => true,
 			'instant_deposits_eligible' => false,
@@ -3465,11 +3456,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder_will_not_schedule_job_if_pending_action_exist() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
@@ -3493,11 +3479,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
@@ -3537,11 +3518,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_handle_loan_approved_inbox_note_not_created( $account ) {
 
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$this->wcpay_account->handle_loan_approved_inbox_note( $account );
 		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
@@ -3554,11 +3530,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_throws_exception() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$request = $this->mock_wcpay_request( Get_Request::class );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -3570,11 +3541,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_returns_invalid_data() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$request = $this->mock_wcpay_request( Get_Request::class );
 		$request->expects( $this->once() )
 			->method( 'set_api' )
@@ -3590,11 +3556,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$advance_amount = 1234567;
 		$time           = time();
 
@@ -3626,11 +3587,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
-		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
 		$advance_amount = 1234567;
 		$time           = time();
 

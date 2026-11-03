@@ -937,14 +937,14 @@ parameters:
 			path: includes/class-wc-payments-woopay-button-handler.php
 
 		-
-			rawMessage: 'Call to function method_exists() with ''WC_Pre_Orders…'' and ''product_is_charged…'' will always evaluate to false.'
-			identifier: function.impossibleType
+			rawMessage: 'Call to function method_exists() with ''WC_Pre_Orders…'' and ''product_is_charged…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/class-wc-payments-woopay-button-handler.php
 
 		-
-			rawMessage: 'Call to method get_requires_confirmation() on an unknown class WC_Product_Booking.'
-			identifier: class.notFound
+			rawMessage: 'Call to function method_exists() with WC_Product_Booking and ''get_requires…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/class-wc-payments-woopay-button-handler.php
 
@@ -1093,26 +1093,8 @@ parameters:
 			path: includes/compat/blocks/class-blocks-data-extractor.php
 
 		-
-			rawMessage: 'Call to static method getInstance() on an unknown class MailPoet\DI\ContainerWrapper.'
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: 'Call to static method getInstance() on an unknown class MailPoet\Settings\SettingsController.'
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: Class MailPoet\WooCommerce\Subscription not found.
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: Instantiated class Automatewoo\Blocks\Marketing_Optin_Block not found.
-			identifier: class.notFound
+			rawMessage: 'Call to an undefined method MailPoet\WooCommerce\Subscription::isCurrentUserSubscribed().'
+			identifier: method.notFound
 			count: 1
 			path: includes/compat/blocks/class-blocks-data-extractor.php
 
@@ -1479,12 +1461,6 @@ parameters:
 		-
 			rawMessage: 'Call to function is_countable() with array<WC_Order_Item> will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
-
-		-
-			rawMessage: If condition is always false.
-			identifier: if.alwaysFalse
 			count: 1
 			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
 
@@ -1861,8 +1837,8 @@ parameters:
 			path: includes/woopay/class-woopay-adapted-extensions.php
 
 		-
-			rawMessage: 'Call to function method_exists() with ''WC_Points_Rewards…'' and ''get_users_points'' will always evaluate to false.'
-			identifier: function.impossibleType
+			rawMessage: 'Call to function method_exists() with ''WC_Points_Rewards…'' and ''get_users_points'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/woopay/class-woopay-adapted-extensions.php
 

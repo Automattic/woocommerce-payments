@@ -12,9 +12,9 @@ if [[ -f "$QIT_ROOT/config/local.env" ]]; then
 	. "$QIT_ROOT/config/local.env"
 fi
 
-# Check if QIT_USER and QIT_APP_PASSWORD are set and not empty
+# Check if QIT_USER and QIT_PASSWORD are set and not empty
 if [[ -z $QIT_USER ]] || [[ -z $QIT_PASSWORD ]]; then
-	echo "QIT_USER or QIT_APP_PASSWORD environment variables are not set or empty. Please set them in the local env file before running the script."
+	echo "QIT_USER or QIT_PASSWORD environment variables are not set or empty. Please set them in the local env file before running the script."
 	exit 1
 fi
 

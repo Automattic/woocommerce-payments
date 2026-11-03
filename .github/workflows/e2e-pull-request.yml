@@ -64,8 +64,8 @@ jobs:
           echo "Using L-1 version: $L1_VERSION" >&2
 
           # Create PR matrix with L-1 and latest versions
-          # For PRs, we test against L-1 and latest with PHP 8.3 (stable)
-          PHP_STABLE="8.3"
+          # For PRs, we test against L-1 and latest with PHP 8.4 (stable)
+          PHP_STABLE="8.4"
           TEST_GROUPS_WCPAY="wcpay"
           TEST_GROUPS_SUBSCRIPTIONS="subscriptions"
           TEST_GROUPS_BLOCKS="blocks"
@@ -79,7 +79,7 @@ jobs:
           # so it is split into shards, each with its own isolated environment.
           WCPAY_SHOPPER_SHARDS=3
 
-          # Add L-1 version with PHP 8.3
+          # Add L-1 version with PHP 8.4
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
           for SHARD in $(seq 1 $WCPAY_SHOPPER_SHARDS); do
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"shard_index\":\"$SHARD\",\"shard_total\":\"$WCPAY_SHOPPER_SHARDS\"}")
@@ -88,7 +88,7 @@ jobs:
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_BLOCKS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
-          # Add latest with PHP 8.3
+          # Add latest with PHP 8.4
           MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
           for SHARD in $(seq 1 $WCPAY_SHOPPER_SHARDS); do
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"shard_index\":\"$SHARD\",\"shard_total\":\"$WCPAY_SHOPPER_SHARDS\"}")

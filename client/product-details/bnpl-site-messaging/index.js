@@ -17,6 +17,9 @@ const elementsLocations = {
 	bnplClassicCart: 'bnpl_classic_cart',
 };
 
+// Tracks the height of the cart's BNPL message. Replaced each time a cart update re-mounts the element.
+let resizeObserver;
+
 export const initializeBnplSiteMessaging = async () => {
 	const {
 		productVariations,
@@ -149,31 +152,47 @@ export const initializeBnplSiteMessaging = async () => {
 				// An element that won't be removed with the cart total update.
 				const cartCollaterals =
 					document.querySelector( '.cart-collaterals' );
-				const wcBnplHeight = getComputedStyle( cartCollaterals )
-					.getPropertyValue( '--wc-bnpl-height' )
-					.trim();
 
-				if ( wcBnplHeight ) {
-					return;
-				}
+				const pmme = paymentMessageContainer;
+				const pmmeContainer = pmme.querySelector(
+					'.__PrivateStripeElement'
+				);
 
-				const pmme = document.getElementById(
-					'payment-method-message'
-				);
-				const pmmeContainer = document.querySelector(
-					'.cart_totals .__PrivateStripeElement'
-				);
-				setTimeout( () => {
-					const pmmeComputedStyle = window.getComputedStyle( pmme );
-					const pmmeHeight = parseFloat( pmmeComputedStyle.height );
+				// Stripe doesn't size the iframe until it's on screen, which can be long after `ready` when the cart
+				// totals are below the fold. Track its size instead of measuring once, so the reserved height
+				// never ends up shorter than the message.
+				resizeObserver?.disconnect();
+				resizeObserver = new ResizeObserver( () => {
+					const pmmeContainerRect =
+						pmmeContainer.getBoundingClientRect();
+
+					// Skip while the element is hidden, which happens during cart total updates.
+					if ( pmmeContainerRect.height === 0 ) {
+						return;
+					}
+
+					// Measure up to the bottom of the Stripe container, because the PMME's own height is the
+					// fixed one set below.
+					const pmmeHeight =
+						pmmeContainerRect.bottom -
+						pmme.getBoundingClientRect().top;
 					const pmmeMarginBottom = parseFloat( bottomMargin );
 					const pmmeTotalHeight = pmmeHeight + pmmeMarginBottom;
+					const pmmeContainerHeight = pmmeContainerRect.height;
 
-					const pmmeContainerComputedStyle =
-						window.getComputedStyle( pmmeContainer );
-					const pmmeContainerHeight = parseFloat(
-						pmmeContainerComputedStyle.height
+					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
+
+					// Only ever grow the reserved space. A smaller size is Stripe's placeholder or its opening
+					// animation after a cart update re-mounts the element, and following it would move the button
+					// up and back down while the shopper is looking at it.
+					const reservedHeight = parseFloat(
+						cartCollaterals.style.getPropertyValue(
+							'--wc-bnpl-height'
+						)
 					);
+					if ( pmmeTotalHeight < reservedHeight ) {
+						return;
+					}
 
 					cartCollaterals.style.setProperty(
 						'--wc-bnpl-height',
@@ -188,9 +207,8 @@ export const initializeBnplSiteMessaging = async () => {
 						'--wc-bnpl-loader-margin',
 						pmmeMarginBottom + 2 + 'px'
 					);
-
-					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
-				}, 2000 );
+				} );
+				resizeObserver.observe( pmmeContainer );
 			} else {
 				paymentMessageLoading?.remove();
 			}

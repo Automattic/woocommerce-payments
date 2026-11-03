@@ -22,6 +22,7 @@ interface UserPreferences {
 	wc_payments_payouts_hidden_columns: string[] | '';
 	wc_payments_disputes_hidden_columns: string[] | '';
 	wc_payments_documents_hidden_columns: string[] | '';
+	wc_payments_capital_loans_hidden_columns: string[] | '';
 }
 
 /**
