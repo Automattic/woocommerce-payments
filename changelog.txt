@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 9.1.1 - 2026-11-03 =
+* Update - Security update.
+
 = 9.1.0 - 2025-03-19 =
 * Add - Add a prompt to encourage merchants to provide feedback or leave a WordPress.org review for WooPayments
 * Add - Add order failure message on Order Received page.
