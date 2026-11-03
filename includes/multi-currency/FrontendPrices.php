@@ -31,6 +31,27 @@ class FrontendPrices {
 	protected $multi_currency;
 
 	/**
+	 * The coupon WooCommerce is re-applying to an existing order, if any.
+	 *
+	 * @var \WC_Coupon|false|null
+	 */
+	protected $order_coupon;
+
+	/**
+	 * The currency of the order that coupon is being re-applied to.
+	 *
+	 * @var Currency|null
+	 */
+	protected $order_coupon_currency;
+
+	/**
+	 * Whether the coupon being re-applied holds a store-currency amount that still needs converting.
+	 *
+	 * @var bool
+	 */
+	protected $order_coupon_needs_conversion = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
@@ -73,6 +94,7 @@ class FrontendPrices {
 		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 99, 2 );
 		add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
 		add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
+		add_filter( 'woocommerce_order_recalculate_coupons_coupon_object', [ $this, 'set_order_coupon' ], 99, 4 );
 
 		// Order hooks.
 		add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 99, 2 );
@@ -317,7 +339,54 @@ class FrontendPrices {
 			return $amount;
 		}
 
+		// A coupon re-applied to an existing order is converted to the order's currency,
+		// no matter which currency the shopper has selected since the order was placed.
+		if ( $coupon === $this->order_coupon ) {
+			// set_order_coupon() works out whether the amount is still in the store currency.
+			return $this->order_coupon_needs_conversion
+				? $this->multi_currency->get_price( $amount, 'coupon', $this->order_coupon_currency )
+				: $amount;
+		}
+
 		return $this->multi_currency->get_price( $amount, 'coupon' );
+	}
+
+	/**
+	 * Remembers the coupon WC_Abstract_Order::recalculate_coupons() is about to re-apply to an order,
+	 * so that its amount is converted to the currency of the order instead of the selected currency.
+	 *
+	 * @param \WC_Coupon|false      $coupon       The coupon about to be re-applied.
+	 * @param string                $_unused_code The coupon code.
+	 * @param \WC_Order_Item_Coupon $coupon_item  The order's coupon line item.
+	 * @param WC_Order              $order        The order the coupon is re-applied to.
+	 *
+	 * @return \WC_Coupon|false The unmodified coupon.
+	 */
+	public function set_order_coupon( $coupon, $_unused_code, $coupon_item, $order ) {
+		// Only the Store API pay-for-order route needs this; standard REST order writes already force the store currency.
+		if ( WC()->is_rest_api_request() && ! Utils::is_store_api_request() && ! Utils::is_store_batch_request() ) {
+			$this->order_coupon = null;
+			return $coupon;
+		}
+
+		$this->order_coupon          = $coupon;
+		$this->order_coupon_currency = $this->multi_currency->get_enabled_currencies()[ $order->get_currency() ] ?? $this->multi_currency->get_default_currency();
+
+		// Decide whether the amount read back for this coupon is in the store currency and so needs
+		// converting. A live coupon's amount is the store-currency value. A deleted coupon is rebuilt by
+		// recalculate_coupons() from the order line: `coupon_info` (WC >= 8.7) holds the amount already
+		// converted at checkout, while legacy `coupon_data` holds the raw store-currency amount, which must
+		// still be converted. A coupon rebuilt with no stored amount takes its value from the order line,
+		// already in the order's currency, so it is left as is.
+		$legacy_data                         = $coupon_item->get_meta( 'coupon_data', true );
+		$legacy_amount                       = is_array( $legacy_data ) ? (float) ( $legacy_data['amount'] ?? 0 ) : 0.0;
+		$has_coupon_info                     = (bool) $coupon_item->get_meta( 'coupon_info', true );
+		$this->order_coupon_needs_conversion = $coupon instanceof \WC_Coupon && (
+			! $coupon->get_virtual()
+			|| ( ! $has_coupon_info && $legacy_amount > 0 )
+		);
+
+		return $coupon;
 	}
 
 	/**
