@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 9.4.1 - 2026-11-03 =
+* Update - Security update.
+
 = 9.4.0 - 2025-05-21 =
 * Add - Add support for rendering fee tax details in the transaction timeline where available
 * Fix - Keep the shipping costs structure intact when applying multi-currency adjustments.
