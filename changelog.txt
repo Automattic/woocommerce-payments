@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 10.3.2 - 2026-11-03 =
+* Update - Security update.
+
 = 10.3.1 - 2025-12-22 =
 * Fix - Fix fatal error on WooCommerce Settings Payments tab caused by missing hook in Get_PM_Promotions request class
 
