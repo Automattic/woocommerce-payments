@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 10.8.1 - 2026-11-03 =
+* Update - Security update.
+
 = 10.8.0 - 2026-05-20 =
 * Add - Add a terminal payment preparation endpoint for single-step Interac and EFTPOS capture flows.
 * Add - Add card brand logo and last 4 digits to the WooPay express checkout button when available
