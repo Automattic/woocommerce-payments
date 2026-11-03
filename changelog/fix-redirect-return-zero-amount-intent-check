@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Check that the intent on a redirect return belongs to the order for zero-amount orders too, including setup intents.

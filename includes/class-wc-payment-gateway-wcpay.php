@@ -2536,9 +2536,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// Perform additional checks for non-zero-amount. For zero-amount orders, we can't compare intents because they are not attached to the order at this stage.
-		// Once https://github.com/Automattic/woocommerce-payments/issues/6575 is closed, this check can be applied for zero-amount orders as well.
-		if ( $order->get_total() > 0 && ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
+		// The intent named in the request must be the one attached to the order by process_payment_for_order().
+		// Zero-amount orders are no exception: their setup intent is attached the same way, and without this
+		// check any succeeded setup intent on the account (e.g. a card saved under My Account) would complete them.
+		if ( ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
 			return;
 		}
 
@@ -2589,15 +2590,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
 
-				// This check applies to payment intents only due to two reasons:
-				// (1) metadata is missed for setup intents. See https://github.com/Automattic/woocommerce-payments/issues/6575.
-				// (2) most issues so far affect only payment intents.
 				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
 				$request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent            = $request->send();
+				$intent = $request->send();
+
+				// Setup intents created by process_payment_for_order() carry the order id in their metadata too.
+				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent->get_metadata() );
+
 				$client_secret     = $intent->get_client_secret();
 				$status            = $intent->get_status();
 				$charge_id         = '';
