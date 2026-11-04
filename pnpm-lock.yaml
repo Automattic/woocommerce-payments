@@ -94,8 +94,8 @@ importers:
         specifier: 0.1.22
         version: 0.1.22
       '@playwright/test':
-        specifier: 1.59.1
-        version: 1.59.1
+        specifier: 1.61.0
+        version: 1.61.0
       '@pmmmwh/react-refresh-webpack-plugin':
         specifier: 0.5.7
         version: 0.5.7(@types/webpack@4.41.40)(react-refresh@0.18.0)(type-fest@2.19.0)(webpack-dev-server@5.2.3)(webpack@5.106.2)
@@ -251,7 +251,7 @@ importers:
         version: 3.30.0
       '@wordpress/scripts':
         specifier: 30.18.0
-        version: 30.18.0(@playwright/test@1.59.1)(@types/node@20.9.0)(@types/react@18.3.28)(@types/webpack@4.41.40)(babel-plugin-macros@3.1.0)(esbuild@0.25.12)(eslint-import-resolver-typescript@2.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(stylelint-scss@6.14.0(stylelint@13.13.1))(type-fest@2.19.0)(typescript@5.9.3)
+        version: 30.18.0(@playwright/test@1.61.0)(@types/node@20.9.0)(@types/react@18.3.28)(@types/webpack@4.41.40)(babel-plugin-macros@3.1.0)(esbuild@0.25.12)(eslint-import-resolver-typescript@2.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(stylelint-scss@6.14.0(stylelint@13.13.1))(type-fest@2.19.0)(typescript@5.9.3)
       '@wordpress/stylelint-config':
         specifier: 19.1.0
         version: 19.1.0(stylelint@13.13.1)
@@ -367,8 +367,8 @@ importers:
         specifier: 7.3.0
         version: 7.3.0
       playwright:
-        specifier: 1.59.1
-        version: 1.59.1
+        specifier: 1.61.0
+        version: 1.61.0
       postcss:
         specifier: 8.3.5
         version: 8.3.5
@@ -2509,8 +2509,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@playwright/test@1.59.1':
-    resolution: {integrity: sha512-PG6q63nQg5c9rIi4/Z5lR5IVF7yU5MqmKaPOe0HSc0O2cX1fPi96sUQu5j7eo4gKCkB2AnNGoWt7y4/Xx3Kcqg==}
+  '@playwright/test@1.61.0':
+    resolution: {integrity: sha512-cKA5B6lpFEMyMGjxF54QihfYpB4FkEGH+qZhtArDEG+wezQAJY8Pq6C7T1SjWz+FFzt3TbyoXBQYk/0292TdJA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -9159,8 +9159,8 @@ packages:
     resolution: {integrity: sha512-emEcLuomt2j03vxD54giVB4SxTjnsqkU692xZOZXHDVoYyypEm+b3jpiTcc+Cf+myooc+/Ly0z01jqeNHVgJGw==}
     engines: {node: '>=16.0.0'}
 
-  playwright-core@1.59.1:
-    resolution: {integrity: sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg==}
+  playwright-core@1.61.0:
+    resolution: {integrity: sha512-caX7TrY3Ml6egyDX0WUcTHDxodl/b51y5wJOdCEA36QviK/s2g081hvmGs8eaE3DWb6NYZQ6BjO/QkNRPenoPA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -9169,8 +9169,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.59.1:
-    resolution: {integrity: sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw==}
+  playwright@1.61.0:
+    resolution: {integrity: sha512-Z+7BeeqQPRRzklHsVFP4KTGIyMxKUmfeRA4WisM6G3/XW6nwGeX6fX9qYaDa+CiUqpOkb2f6X3nar05R3kSuJQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -14846,9 +14846,9 @@ snapshots:
       playwright: 1.64.0-alpha-1790635538000
       playwright-core: 1.64.0-alpha-1790635538000
 
-  '@playwright/test@1.59.1':
+  '@playwright/test@1.61.0':
     dependencies:
-      playwright: 1.59.1
+      playwright: 1.61.0
 
   '@pmmmwh/react-refresh-webpack-plugin@0.5.17(@types/webpack@4.41.40)(react-refresh@0.14.2)(type-fest@2.19.0)(webpack-dev-server@4.15.2)(webpack@5.106.2)':
     dependencies:
@@ -18215,9 +18215,9 @@ snapshots:
     dependencies:
       '@wordpress/deprecated': 4.50.0
 
-  '@wordpress/e2e-test-utils-playwright@1.50.0(@playwright/test@1.59.1)(@types/node@20.9.0)':
+  '@wordpress/e2e-test-utils-playwright@1.50.0(@playwright/test@1.61.0)(@types/node@20.9.0)':
     dependencies:
-      '@playwright/test': 1.59.1
+      '@playwright/test': 1.61.0
       '@types/node': 20.9.0
       change-case: 4.1.2
       get-port: 5.1.1
@@ -19000,16 +19000,16 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.28
 
-  '@wordpress/scripts@30.18.0(@playwright/test@1.59.1)(@types/node@20.9.0)(@types/react@18.3.28)(@types/webpack@4.41.40)(babel-plugin-macros@3.1.0)(esbuild@0.25.12)(eslint-import-resolver-typescript@2.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(stylelint-scss@6.14.0(stylelint@13.13.1))(type-fest@2.19.0)(typescript@5.9.3)':
+  '@wordpress/scripts@30.18.0(@playwright/test@1.61.0)(@types/node@20.9.0)(@types/react@18.3.28)(@types/webpack@4.41.40)(babel-plugin-macros@3.1.0)(esbuild@0.25.12)(eslint-import-resolver-typescript@2.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(stylelint-scss@6.14.0(stylelint@13.13.1))(type-fest@2.19.0)(typescript@5.9.3)':
     dependencies:
       '@babel/core': 7.25.7
-      '@playwright/test': 1.59.1
+      '@playwright/test': 1.61.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(@types/webpack@4.41.40)(react-refresh@0.14.2)(type-fest@2.19.0)(webpack-dev-server@4.15.2)(webpack@5.106.2)
       '@svgr/webpack': 8.1.0(typescript@5.9.3)
       '@wordpress/babel-preset-default': 8.44.0
       '@wordpress/browserslist-config': 6.44.0
       '@wordpress/dependency-extraction-webpack-plugin': 6.50.0(webpack@5.106.2)
-      '@wordpress/e2e-test-utils-playwright': 1.50.0(@playwright/test@1.59.1)(@types/node@20.9.0)
+      '@wordpress/e2e-test-utils-playwright': 1.50.0(@playwright/test@1.61.0)(@types/node@20.9.0)
       '@wordpress/eslint-plugin': 15.1.0(@babel/core@7.25.7)(eslint-import-resolver-typescript@2.4.0)(eslint@8.57.1)(jest@29.7.0(@types/node@20.9.0)(babel-plugin-macros@3.1.0))(typescript@5.9.3)(wp-prettier@3.0.3)
       '@wordpress/jest-preset-default': 12.44.0(@babel/core@7.25.7)(jest@29.7.0(@types/node@20.9.0)(babel-plugin-macros@3.1.0))
       '@wordpress/npm-package-json-lint-config': 5.50.0(npm-package-json-lint@6.4.0(typescript@5.9.3))
@@ -24739,13 +24739,13 @@ snapshots:
       pvutils: 1.1.5
       tslib: 2.8.1
 
-  playwright-core@1.59.1: {}
+  playwright-core@1.61.0: {}
 
   playwright-core@1.64.0-alpha-1790635538000: {}
 
-  playwright@1.59.1:
+  playwright@1.61.0:
     dependencies:
-      playwright-core: 1.59.1
+      playwright-core: 1.61.0
     optionalDependencies:
       fsevents: 2.3.2
 
