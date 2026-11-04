@@ -65,7 +65,7 @@ class SessionService {
 	 *
 	 * @return string The session ID, or an empty string if there is no session.
 	 */
-	public function get_customer_id(): string {
+	public function get_session_id(): string {
 		return $this->has_wc_session() ? (string) $this->get_wc_session()->get_customer_id() : '';
 	}
 

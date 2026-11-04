@@ -97,7 +97,7 @@ class DuplicatePaymentPreventionService {
 		$val = $this->session_service->get( self::SESSION_KEY_PROCESSING_ORDER );
 
 		// The order is only used in the session that stored it.
-		if ( null === $val || $this->session_service->get( self::SESSION_KEY_PROCESSING_ORDER_OWNER ) !== $this->session_service->get_customer_id() ) {
+		if ( null === $val || $this->session_service->get( self::SESSION_KEY_PROCESSING_ORDER_OWNER ) !== $this->session_service->get_session_id() ) {
 			return null;
 		}
 

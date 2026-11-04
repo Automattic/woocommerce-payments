@@ -127,7 +127,7 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 				]
 			);
 		$this->mock_session_service
-			->method( 'get_customer_id' )
+			->method( 'get_session_id' )
 			->willReturn( 't_current' );
 
 		// Act.
