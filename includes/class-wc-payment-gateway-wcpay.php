@@ -926,8 +926,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return mixed
 	 */
 	public function remove_all_actions_on_preflight_check( $response, $handler, $request ) {
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
 		$payment_data = $this->get_request_payment_data( $request );
 		if ( ! empty( $payment_data['is-woopay-preflight-check'] ) ) {
+			// Only WooPay can request a dry run that skips checkout side effects.
+			if ( ! $this->is_request_composed_by_woopay() ) {
+				// A malformed or stale vouch logs its own reason; a missing one and an ignored
+				// signature do not, and those are what a legitimate WooPay preflight would hit.
+				Logger::log(
+					sprintf(
+						'WooPay preflight rejected: %s, and %s.',
+						isset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] ) ? 'the vouch did not verify' : 'no vouch was sent',
+						WC_Payments_Features::is_woopay_force_signed_requests_enabled() ? 'the request is not signed with the blog token' : 'this store does not accept a blog token signature'
+					)
+				);
+
+				return new WP_Error(
+					'wcpay_invalid_woopay_preflight',
+					__( "We're not able to verify this WooPay preflight request. Please try again.", 'woocommerce-payments' ),
+					[ 'status' => 403 ]
+				);
+			}
+
 			remove_all_actions( 'woocommerce_store_api_checkout_update_order_meta' );
 			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
 			// Avoid increasing coupon usage count during preflight check.
@@ -936,12 +959,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Avoid creating new accounts during preflight check.
 			remove_all_filters( 'woocommerce_checkout_registration_required' );
 
-			add_filter( 'woocommerce_coupon_get_usage_limit', '__return_null' );
-
-			add_filter( 'woocommerce_coupon_get_usage_limit_per_user', '__return_zero' );
+			// Keep coupon usage limits on, but don't hold a use: the dry run never releases it, so
+			// the real checkout would count it. Last, so no other filter can put the hold back.
+			add_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Whether WooPay authenticated the current request with an attestation or signature.
+	 *
+	 * @return bool True if the request carries valid WooPay proof.
+	 */
+	private function is_request_composed_by_woopay(): bool {
+		return WooPay_Session::is_request_vouched_by_woopay() || WooPay_Session::is_authenticated_by_blog_token_signature();
 	}
 
 	/**
@@ -964,10 +996,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array
 	 */
 	private function get_request_payment_data( \WP_REST_Request $request ) {
-		static $payment_data = [];
-		if ( ! empty( $payment_data ) ) {
-			return $payment_data;
-		}
+		$payment_data = [];
 		if ( ! empty( $request['payment_data'] ) ) {
 			foreach ( $request['payment_data'] as $data ) {
 				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
@@ -1437,6 +1466,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		try {
+			$is_request_composed_by_woopay = $this->is_request_composed_by_woopay();
+			// Reject an unverified dry run instead of turning it into a payment attempt.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( ! empty( $_POST['is-woopay-preflight-check'] ) && ! $is_request_composed_by_woopay ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to verify this WooPay preflight request. Please try again.", 'woocommerce-payments' ),
+					'wcpay_invalid_woopay_preflight'
+				);
+			}
+
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
 				throw new Invalid_Phone_Number_Exception(
 					__( 'Invalid phone number.', 'woocommerce-payments' ),
@@ -1451,11 +1490,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// card-testing protection off is not something a shopper should be able to ask for
 			// by sending a header. WooPay seals that proof in the vouch envelope or, for a store
 			// the platform keeps on the signed path, signs the request instead of sending one.
-			if (
-				WC()->session &&
-				! WooPay_Session::is_request_vouched_by_woopay() &&
-				! WooPay_Session::is_authenticated_by_blog_token_signature()
-			) {
+			if ( WC()->session && ! $is_request_composed_by_woopay ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {

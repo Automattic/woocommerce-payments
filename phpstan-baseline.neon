@@ -1849,12 +1849,6 @@ parameters:
 			path: includes/woopay/class-woopay-session.php
 
 		-
-			rawMessage: 'Call to an undefined method WC_Session::set_customer_session_cookie().'
-			identifier: method.notFound
-			count: 1
-			path: includes/woopay/class-woopay-session.php
-
-		-
 			rawMessage: 'Call to function is_array() with Automattic\Jetpack\Connection\_WP_Remote_Response_Array will always evaluate to false.'
 			identifier: function.impossibleType
 			count: 1
