@@ -5757,7 +5757,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $request->send();
 		} catch ( API_Exception $e ) {
-			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
+			if ( ! $this->is_missing_customer_error( $e ) ) {
 				throw $e;
 			}
 
@@ -5789,6 +5789,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$request->set_customer( $customer_id );
 			return $request->send();
 		}
+	}
+
+	/**
+	 * Checks whether an API error reports the Stripe customer itself as missing.
+	 *
+	 * `resource_missing` also covers other objects, so only the object named after "No such" counts.
+	 *
+	 * @param API_Exception $e The exception thrown by the intent request.
+	 *
+	 * @return bool True when the missing resource is the customer.
+	 */
+	private function is_missing_customer_error( API_Exception $e ): bool {
+		if ( 'resource_missing' !== $e->get_error_code() ) {
+			return false;
+		}
+
+		return 1 === preg_match( '/No such (\w+)/', $e->getMessage(), $missing ) && 'customer' === strtolower( $missing[1] );
 	}
 
 	/**
