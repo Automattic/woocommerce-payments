@@ -15,7 +15,6 @@ use WCPay\Exceptions\Amount_Too_Large_Exception;
 use WCPay\Exceptions\Blocked_By_Fraud_Rules_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Constants\Currency_Code;
@@ -3126,22 +3125,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
 		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
 		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
-	}
-
-	/**
-	 * Returns a list of fingerprinting metadata to attach to order.
-	 *
-	 * @param string $fingerprint User fingerprint.
-	 *
-	 * @return array List of fingerprinting metadata.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	private function get_fingerprint_metadata( $fingerprint = '' ): array {
-		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer( $fingerprint );
-		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
-
-		return $customer_fingerprint_metadata;
 	}
 
 	/**

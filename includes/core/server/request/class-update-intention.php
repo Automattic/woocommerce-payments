@@ -134,29 +134,31 @@ class Update_Intention extends Request {
 	/**
 	 * Metadata setter.
 	 *
-	 * @param  array $metadata Meta data values to be sent along with payment intent creation.
+	 * @param array          $metadata Meta data values to be sent along with payment intent creation.
+	 * @param \WC_Order|null $order    Payment order being charged, when known.
 	 */
-	public function set_metadata( $metadata ) {
+	public function set_metadata( $metadata, ?\WC_Order $order = null ) {
 		// The description is based on the order number here.
 		$description = $this->get_intent_description( $metadata['order_number'] ?? 0 );
 		$this->set_param( 'description', $description );
 
 		// Combine the metadata with the fingerprint.
-		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata() );
+		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( '', $order ) );
 		$this->set_param( 'metadata', $metadata );
 	}
 
 	/**
 	 * Set fingerprint.
 	 *
-	 * @param string $fingerprint Fingerprint data.
+	 * @param string         $fingerprint Fingerprint data.
+	 * @param \WC_Order|null $order       Payment order being charged, when known.
 	 *
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function set_fingerprint( $fingerprint = '' ) {
+	public function set_fingerprint( $fingerprint = '', ?\WC_Order $order = null ) {
 		$metadata = $this->get_param( 'metadata' );
-		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
+		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint, $order ) );
 		$this->set_param( 'metadata', $metadata );
 	}
 
