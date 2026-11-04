@@ -134,7 +134,7 @@ jobs:
           retention-days: 14
 
   wcpay-e2e-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [ generate-matrix, build-client ]
     if: ${{ ! cancelled() && needs.generate-matrix.result == 'success' && (needs.build-client.result == 'success' || (inputs.wcpay-use-build-artifact && needs.build-client.result == 'skipped')) }}
     timeout-minutes: 60
