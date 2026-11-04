@@ -150,7 +150,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'jetpack_site_disconnected', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
-		// Refresh instead of clearing the cache, so a failed fetch keeps the saved account data.
+		// If the fetch fails, the store keeps its saved account data and stays connected.
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'refresh_cache' ] );
 		// Hook into the recurring store setup sync action and do the store setup sync.
 		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
