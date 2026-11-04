@@ -10,6 +10,7 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
+import { encodePathSegment } from 'utils/path-segment';
 import {
 	updateErrorForCardReaderStats,
 	updateCardReaderStats,
@@ -20,7 +21,9 @@ import {
 export function* getCardReaderStats( id, transactionId ) {
 	try {
 		const results = yield apiFetch( {
-			path: `${ NAMESPACE }/readers/charges/${ transactionId }`,
+			path: `${ NAMESPACE }/readers/charges/${ encodePathSegment(
+				transactionId
+			) }`,
 		} );
 		yield updateCardReaderStats( id, results );
 	} catch ( e ) {

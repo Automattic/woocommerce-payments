@@ -1188,3 +1188,153 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 		expect( productTypeSelect ).toHaveValue( 'multiple' );
 	} );
 } );
+
+describe( 'NewEvidence - Request paths', () => {
+	const dispute = {
+		id: 'dp_test_789',
+		amount: 1000,
+		currency: 'usd',
+		created: 1609459200,
+		reason: 'fraudulent',
+		status: 'needs_response',
+		evidence_details: {
+			due_by: 1610064000,
+		},
+		evidence: {},
+		metadata: {},
+		charge: {
+			id: 'ch_test_789',
+			payment_method_details: {
+				type: 'card',
+				card: {
+					issuer: 'Test Bank',
+				},
+			},
+		},
+		enhanced_eligibility_types: [],
+		balance_transactions: [],
+		payment_intent: 'pi_test_789',
+	};
+
+	const invalidDisputeId = '../x';
+	const invalidFileId = 'file_1/../../x';
+	const siblingRouteId = 'summary';
+	const mockCreateErrorNotice = jest.fn();
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		mockApiFetch.mockResolvedValue( dispute );
+		mockUseGetSettings.mockReturnValue( {} );
+		mockUseDisputeEvidence.mockReturnValue( { updateDispute: jest.fn() } );
+		( mockUseDispatch as jest.Mock ).mockReturnValue( {
+			createSuccessNotice: jest.fn(),
+			createErrorNotice: mockCreateErrorNotice,
+			createInfoNotice: jest.fn(),
+		} );
+		( window as any ).location.href = '';
+	} );
+
+	it( 'encodes the dispute ID when loading', async () => {
+		render( <NewEvidence query={ { id: invalidDisputeId } } /> );
+
+		await waitFor( () => {
+			expect( mockApiFetch ).toHaveBeenCalledWith( {
+				path: '/wc/v3/payments/disputes/..%2Fx',
+			} );
+		} );
+	} );
+
+	it( 'saves to the loaded dispute rather than the ID from the URL', async () => {
+		render( <NewEvidence query={ { id: siblingRouteId } } /> );
+
+		fireEvent.click(
+			await screen.findByRole( 'button', { name: 'Save for later' } )
+		);
+
+		await waitFor( () => {
+			expect( mockApiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					path: '/wc/v3/payments/disputes/dp_test_789',
+					method: 'post',
+				} )
+			);
+		} );
+		expect( mockApiFetch ).not.toHaveBeenCalledWith(
+			expect.objectContaining( {
+				method: 'post',
+				path: expect.stringContaining( 'summary' ),
+			} )
+		);
+	} );
+
+	it( 'does not save when the loaded data has no dispute ID', async () => {
+		const { id, ...disputeWithoutId } = dispute;
+		mockApiFetch.mockResolvedValue( disputeWithoutId );
+
+		render( <NewEvidence query={ { id: siblingRouteId } } /> );
+
+		fireEvent.click(
+			await screen.findByRole( 'button', { name: 'Save for later' } )
+		);
+
+		await waitFor( () => {
+			expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
+				'Failed to save evidence. (Invalid identifier.)'
+			);
+		} );
+		expect( mockApiFetch ).not.toHaveBeenCalledWith(
+			expect.objectContaining( { method: 'post' } )
+		);
+	} );
+
+	it( 'does not load a dispute with an invalid ID', async () => {
+		render( <NewEvidence query={ { id: '..' } } /> );
+
+		await waitFor( () => {
+			expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
+				'Invalid identifier.'
+			);
+		} );
+		expect( mockApiFetch ).not.toHaveBeenCalled();
+	} );
+
+	it( 'encodes evidence file IDs', async () => {
+		mockApiFetch.mockImplementation( ( { path } ) =>
+			Promise.resolve(
+				path?.startsWith( '/wc/v3/payments/file/' )
+					? { filename: 'receipt.pdf', size: 1 }
+					: {
+							...dispute,
+							evidence: { receipt: invalidFileId },
+						}
+			)
+		);
+
+		render( <NewEvidence query={ { id: 'dp_test_789' } } /> );
+
+		await waitFor( () => {
+			expect( mockApiFetch ).toHaveBeenCalledWith( {
+				path: '/wc/v3/payments/file/file_1%2F..%2F..%2Fx/details',
+			} );
+		} );
+	} );
+
+	it( 'shows an error notice when an evidence file cannot be loaded', async () => {
+		mockApiFetch.mockImplementation( ( { path } ) =>
+			path?.startsWith( '/wc/v3/payments/file/' )
+				? Promise.reject( new Error( 'File error' ) )
+				: Promise.resolve( {
+						...dispute,
+						evidence: { receipt: 'file_1' },
+					} )
+		);
+
+		render( <NewEvidence query={ { id: 'dp_test_789' } } /> );
+
+		await waitFor( () => {
+			expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
+				'Error retrieving file.'
+			);
+		} );
+	} );
+} );
