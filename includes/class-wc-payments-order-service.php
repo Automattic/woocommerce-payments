@@ -511,7 +511,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		if ( $this->skip_payment_failure_for_closed_order( $order, $intent_id, $charge_id ) ) {
+		if ( $this->skip_payment_failure_for_closed_order( $order, $intent_id, $intent_status, $charge_id, $message ) ) {
 			return;
 		}
 
@@ -527,13 +527,15 @@ class WC_Payments_Order_Service {
 	 * that could not be delivered is recovered later. Failing the order then would overwrite that
 	 * decision and make WooCommerce email the customer about a payment the order no longer awaits.
 	 *
-	 * @param WC_Order $order     Order object, locked for processing.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param WC_Order $order         Order object, locked for processing.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 * @param string   $message       Optional failure message to add to the note.
 	 *
 	 * @return bool True when the failure was skipped and the order unlocked, false otherwise.
 	 */
-	private function skip_payment_failure_for_closed_order( $order, $intent_id, $charge_id ): bool {
+	private function skip_payment_failure_for_closed_order( $order, $intent_id, $intent_status, $charge_id, $message = '' ): bool {
 		if ( ! $order->has_status( [ Order_Status::CANCELLED, Order_Status::REFUNDED ] ) ) {
 			return false;
 		}
@@ -551,11 +553,15 @@ class WC_Payments_Order_Service {
 			$transaction_url
 		);
 
+		if ( ! empty( $message ) ) {
+			$note .= ' ' . $message;
+		}
+
 		if ( ! $this->order_note_exists( $order, $note ) ) {
 			$order->add_order_note( $note );
 		}
 
-		$this->complete_order_processing( $order );
+		$this->complete_order_processing( $order, $intent_status );
 
 		return true;
 	}
@@ -911,7 +917,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		if ( $this->skip_payment_failure_for_closed_order( $order, $intent_id, $charge_id ) ) {
+		if ( $this->skip_payment_failure_for_closed_order( $order, $intent_id, $intent_status, $charge_id, $message ) ) {
 			return;
 		}
 

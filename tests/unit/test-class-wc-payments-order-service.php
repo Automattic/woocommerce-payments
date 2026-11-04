@@ -1067,11 +1067,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected_status, wc_get_order( $this->order->get_id() )->get_status() );
 		$this->assertSame( $failed_actions_before, did_action( 'woocommerce_order_status_failed' ) );
 
-		// Assert: One note says why the status was left alone, with a link to the payment.
+		// Assert: One note says why the status was left alone, with a link to the payment and the failure reason.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( count( $notes_before ) + 1, $notes );
 		$this->assertStringContainsString( 'arrived after this order was cancelled or refunded, so the order status was not changed', $notes[0]->content );
 		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( 'Your card was declined.', $notes[0]->content );
+
+		// Assert: The intent status is still recorded on the order.
+		$this->assertSame( 'requires_payment_method', $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: The order is not left locked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -2569,10 +2573,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $failed_actions_before, did_action( 'woocommerce_order_status_failed' ) );
 		$this->assertSame( $failed_notifications_before, did_action( 'woocommerce_order_status_failed_notification' ) );
 
-		// Assert: One note says why the status was left alone.
+		// Assert: One note says why the status was left alone, with the failure reason.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( count( $notes_before ) + 1, $notes );
 		$this->assertStringContainsString( 'arrived after this order was cancelled or refunded, so the order status was not changed', $notes[0]->content );
+		$this->assertStringContainsString( 'Card declined', $notes[0]->content );
 
 		// Assert: The order is not left locked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
