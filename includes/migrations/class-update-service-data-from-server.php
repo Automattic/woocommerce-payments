@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * If the fees are not present, the plugin shows "missing fees" text next to the UPE payment methods.
  *
  * @since 2.8.0
+ * @deprecated 11.3.0 WC_Payments_Account refreshes the account data on every plugin update.
  */
 class Update_Service_Data_From_Server {
 	/**
@@ -37,8 +38,12 @@ class Update_Service_Data_From_Server {
 
 	/**
 	 * Checks whether it's worth doing the migration.
+	 *
+	 * @deprecated 11.3.0
 	 */
 	public function maybe_migrate() {
+		wc_deprecated_function( __METHOD__, '11.3.0' );
+
 		$account_data = $this->account->get_cached_account_data();
 		// no need to migrate anything, maybe the site is disconnected.
 		// the plugin will eventually fetch new account data.
