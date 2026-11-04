@@ -1978,12 +1978,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::FAILED ] ]
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::CANCELLED, Order_Status::REFUNDED ] ]
 			)
 			->willReturn( false );
 
@@ -2050,12 +2051,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::FAILED ] ]
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::CANCELLED, Order_Status::REFUNDED ] ]
 			)
 			->willReturn( false );
 
@@ -2138,12 +2140,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::FAILED ] ]
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::CANCELLED, Order_Status::REFUNDED ] ]
 			)
 			->willReturn( false );
 
