@@ -311,8 +311,9 @@ class WC_Payments_Abstract_Admin_Notice_Test extends WCPAY_UnitTestCase {
 		add_filter( 'wp_redirect', $intercept );
 		try {
 			$invoke();
-		} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Redirect intercept throws to short-circuit exit().
-			// Expected.
+		} catch ( \Exception $e ) {
+			// The intercept throws to stop the handler before exit(); anything else is a real failure.
+			$this->assertSame( 'redirect', $e->getMessage() );
 		}
 		remove_filter( 'wp_redirect', $intercept );
 
