@@ -341,6 +341,35 @@ describe( 'Direct document download', () => {
 		expect( window.open ).not.toHaveBeenCalled();
 	} );
 
+	it( 'should not download the document if document ID is invalid', () => {
+		const invalidId = '..';
+		updateQueryString(
+			{ document_id: invalidId, document_type: 'vat_invoice' },
+			'/',
+			{}
+		);
+
+		render( <DocumentsList /> );
+
+		expect( window.open ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should encode the document ID from the query', () => {
+		const traversalId = '../../wp/v2/users/me';
+		updateQueryString(
+			{ document_id: traversalId, document_type: 'vat_invoice' },
+			'/',
+			{}
+		);
+
+		render( <DocumentsList /> );
+
+		expect( window.open ).toHaveBeenCalledWith(
+			'https://site.com/wp-json/wc/v3/payments/documents/..%2F..%2Fwp%2Fv2%2Fusers%2Fme?_wpnonce=random_wp_rest_nonce',
+			'_self'
+		);
+	} );
+
 	it( 'should download the document in the same tab if document type and ID are in the query', () => {
 		updateQueryString(
 			{ document_id: 'vat_invoice_123456', document_type: 'vat_invoice' },

@@ -95,18 +95,29 @@ describe( 'getDeposit resolver', () => {
 	} );
 
 	describe( 'validation', () => {
-		let generator = null;
+		const traversalId = '../path?a=b&c=d';
+		const invalidId = '..';
 
-		beforeEach( () => {
-			jest.clearAllMocks();
+		test( 'should encode characters that would change the request', () => {
+			// `apiFetch` is auto-mocked here, so assert on the call rather than the yielded value.
+			getDeposit( traversalId ).next();
+
+			expect( apiFetch ).toHaveBeenCalledWith( {
+				path: '/wc/v3/payments/deposits/..%2Fpath%3Fa%3Db%26c%3Dd',
+			} );
 		} );
 
-		test( "shouldn't fetch deposit with non-word-character deposit id", () => {
-			generator = getDeposit( '../path?a=b&c=d' );
-			const next = generator.next();
-			expect( next.value ).toStrictEqual( undefined );
-			expect( next.done ).toStrictEqual( true );
-			expect( apiFetch ).not.toHaveBeenCalled();
+		test( 'should show an error for an invalid ID without a request', () => {
+			const generator = getDeposit( invalidId );
+
+			expect( generator.next().value ).toEqual(
+				controls.dispatch(
+					'core/notices',
+					'createErrorNotice',
+					'Error retrieving payout.'
+				)
+			);
+			expect( generator.next().done ).toStrictEqual( true );
 		} );
 	} );
 } );

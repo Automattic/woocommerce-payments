@@ -14,6 +14,7 @@ import { snakeCase } from 'lodash';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
+import { encodePathSegment } from 'utils/path-segment';
 import {
 	updateDispute,
 	updateDisputes,
@@ -57,10 +58,10 @@ export function getDisputesCSVRequestURL( query ) {
  * @param {string} id Identifier for specified dispute to retrieve.
  */
 export function* getDispute( id ) {
-	const path = addQueryArgs( `${ NAMESPACE }/disputes/${ id }` );
-
 	try {
-		const result = yield apiFetch( { path } );
+		const result = yield apiFetch( {
+			path: `${ NAMESPACE }/disputes/${ encodePathSegment( id ) }`,
+		} );
 		yield updateDispute( result );
 	} catch ( e ) {
 		// Intentionally no error notice here: the only consumer is the dispute
