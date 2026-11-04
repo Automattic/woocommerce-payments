@@ -114,6 +114,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		'merchant_refund_reason',
 		// Address autocomplete JWT is a credential; keep it out of logs.
 		'token',
+		// WooPay order status webhook signing secret and Terminal connection token.
+		'webhook_secret',
+		'secret',
+		// The customer description repeats the billing name and username, so redact it like `name`.
+		'description',
+		'order_key',
+		// Return URLs include the order key.
+		'return_url',
 	];
 
 	const EVENT_AUTHORIZED            = 'authorized';
