@@ -871,10 +871,13 @@ class WC_Payments_Subscription_Service {
 		$data = [];
 
 		foreach ( $subscription->get_items() as $item ) {
-			$data[] = [
+			// A line with no units has no unit price. It stays in the data so invoice repairs set its WCPay price to 0;
+			// skipping it would leave Stripe billing the old amount.
+			$unit_amount = $item->get_quantity() ? $item->get_subtotal() / $item->get_quantity() : 0;
+			$data[]      = [
 				'metadata'   => $this->get_item_metadata( $item ),
 				'quantity'   => $item->get_quantity(),
-				'price_data' => static::format_item_price_data( $subscription->get_currency(), $this->product_service->get_or_create_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval() ),
+				'price_data' => static::format_item_price_data( $subscription->get_currency(), $this->product_service->get_or_create_wcpay_product_id( $item->get_product() ), $unit_amount, $subscription->get_billing_period(), $subscription->get_billing_interval() ),
 			];
 		}
 
