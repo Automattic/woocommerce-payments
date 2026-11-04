@@ -677,13 +677,20 @@ class WC_Payments_Subscription_Service {
 			$order_id = WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id );
 			$order    = $order_id ? wc_get_order( $order_id ) : false;
 
-			if ( $order && $order->needs_payment() ) {
+			if ( ! $order ) {
+				return;
+			}
+
+			// Store the successful token on the order, even if it isn't completed here. Paying for a failed renewal copies
+			// the order's token to the subscription, so the failing token would otherwise replace the successful one.
+			$order->add_payment_token( $token );
+
+			// The invoice.paid webhook puts mismatched orders on hold.
+			if ( $order->needs_payment() && WC_Payments_Invoice_Service::does_invoice_payment_match_order_total( $order, $response['amount_paid'] ?? null, $response['currency'] ?? '' ) ) {
 				// We're about to record a successful payment, temporarily remove the "is request to change payment method" flag as it prevents us from activating the subscrption via WC_Subscription::payment_complete().
 				$is_change_payment_request = WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment;
 				WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment = false;
 
-				// We need to store the successful token on the order otherwise WC_Subscriptions_Change_Payment_Gateway::change_failing_payment_method() will override the successful token with the failing one.
-				$order->add_payment_token( $token );
 				$order->payment_complete();
 
 				// Reinstate the "is request to change payment method" flag.

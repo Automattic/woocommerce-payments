@@ -1475,6 +1475,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
+			// WooCommerce keeps copying the cart into a checkout-draft order, so its total could change
+			// after the intent is created. Core's checkout moves drafts to pending first; pay-for-order doesn't.
+			if ( $order->has_status( 'checkout-draft' ) ) {
+				$order->update_status( Order_Status::PENDING );
+			}
+
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
 				return $check_session_order;

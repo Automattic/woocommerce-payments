@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 
@@ -109,6 +110,93 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 
 		$mock_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, 'in_foo' );
 		$this->assertEquals( 'in_foo', $this->invoice_service->get_order_invoice_id( $mock_order ) );
+	}
+
+	/**
+	 * Tests for WC_Payments_Invoice_Service::does_invoice_payment_match_order_total()
+	 *
+	 * @dataProvider provider_does_invoice_payment_match_order_total
+	 *
+	 * @param float  $order_total      The order total.
+	 * @param string $order_currency   The order currency.
+	 * @param mixed  $amount_paid      The invoice's amount_paid.
+	 * @param string $invoice_currency The invoice's currency.
+	 * @param bool   $expected         Whether the invoice should match the order.
+	 */
+	public function test_does_invoice_payment_match_order_total( $order_total, $order_currency, $amount_paid, $invoice_currency, $expected ) {
+		$order = $this->create_order_with_two_lines( $order_total, $order_currency );
+
+		$this->assertSame( $expected, WC_Payments_Invoice_Service::does_invoice_payment_match_order_total( $order, $amount_paid, $invoice_currency ) );
+	}
+
+	/**
+	 * Invoices compared with an order of two lines, in a store priced with two decimals.
+	 *
+	 * @return array
+	 */
+	public function provider_does_invoice_payment_match_order_total(): array {
+		return [
+			'exact match'                     => [ 50, 'USD', 5000, 'usd', true ],
+			'a cent per line below'           => [ 50, 'USD', 4998, 'usd', true ],
+			'a cent per line above'           => [ 50, 'USD', 5002, 'usd', true ],
+			'beyond a cent per line below'    => [ 50, 'USD', 4997, 'usd', false ],
+			'beyond a cent per line above'    => [ 50, 'USD', 5003, 'usd', false ],
+			'zero-decimal currency'           => [ 50, 'JPY', 50, 'jpy', true ],
+			'zero-decimal currency, in cents' => [ 50, 'JPY', 5000, 'jpy', false ],
+			'different currency'              => [ 50, 'CAD', 5000, 'usd', false ],
+			'missing currency'                => [ 50, 'USD', 5000, '', false ],
+			// A free order is within the allowance of 0, so only the guard rejects a missing amount.
+			'missing amount'                  => [ 0, 'USD', null, 'usd', false ],
+			'non-numeric amount'              => [ 0, 'USD', 'free', 'usd', false ],
+		];
+	}
+
+	/**
+	 * Tests that does_invoice_payment_match_order_total() allows a whole forint per line in a store priced without decimals.
+	 *
+	 * @dataProvider provider_does_invoice_payment_match_order_total_without_decimals
+	 *
+	 * @param float $order_total The order total, in HUF.
+	 * @param int   $amount_paid The invoice's amount_paid, in fillér.
+	 * @param bool  $expected    Whether the invoice should match the order.
+	 */
+	public function test_does_invoice_payment_match_order_total_without_decimals( $order_total, $amount_paid, $expected ) {
+		update_option( 'woocommerce_currency', Currency_Code::HUNGARIAN_FORINT );
+		update_option( 'woocommerce_price_num_decimals', 0 );
+		$order = $this->create_order_with_two_lines( $order_total, Currency_Code::HUNGARIAN_FORINT );
+
+		$this->assertSame( $expected, WC_Payments_Invoice_Service::does_invoice_payment_match_order_total( $order, $amount_paid, 'huf' ) );
+	}
+
+	/**
+	 * Stripe rounds each line to a fillér, while WooCommerce rounds the order total to a forint.
+	 *
+	 * @return array
+	 */
+	public function provider_does_invoice_payment_match_order_total_without_decimals(): array {
+		return [
+			'fractional forint above'        => [ 1000, 100040, true ],
+			'fractional forint below'        => [ 1269, 126873, true ],
+			'a forint per line'              => [ 1000, 100200, true ],
+			'beyond a forint per line'       => [ 1000, 100201, false ],
+			'beyond a forint per line below' => [ 1000, 99799, false ],
+		];
+	}
+
+	/**
+	 * Tests that does_invoice_payment_match_order_total() uses the decimals Multi-Currency prices a non-store currency in.
+	 */
+	public function test_does_invoice_payment_match_order_total_uses_multi_currency_decimals() {
+		add_filter(
+			'wcpay_huf_format',
+			function ( $currency_format ) {
+				$currency_format['num_decimals'] = 0;
+				return $currency_format;
+			}
+		);
+		$order = $this->create_order_with_two_lines( 1000, Currency_Code::HUNGARIAN_FORINT );
+
+		$this->assertTrue( WC_Payments_Invoice_Service::does_invoice_payment_match_order_total( $order, 100040, 'huf' ) );
 	}
 
 	/**
@@ -460,5 +548,21 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 				return $value;
 			}
 		);
+	}
+
+	/**
+	 * Creates an order with a product line and a shipping line.
+	 *
+	 * @param float  $total    The order total.
+	 * @param string $currency The order currency.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_with_two_lines( $total, string $currency ): WC_Order {
+		$order = WC_Helper_Order::create_order( 1, $total );
+		$order->set_currency( $currency );
+		$order->save();
+
+		return $order;
 	}
 }
