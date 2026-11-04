@@ -63,7 +63,7 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 		$message    = "Test log entry...\non two lines";
 		$level      = WC_Log_Levels::INFO;
 
-		$filtered_entry = apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$filtered_entry = apply_filters(
 			'woocommerce_format_log_entry',
 			$message,
 			[
@@ -133,7 +133,7 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 
 		$this->sut->set_value( 'foo', 'bar' );
 
-		$filtered_entry = apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$filtered_entry = apply_filters(
 			'woocommerce_format_log_entry',
 			$message,
 			[
@@ -146,7 +146,7 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 
 		$this->assertSame( $message, $filtered_entry, 'Filtered entry is the same as the original message' );
 
-		$filtered_entry = apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$filtered_entry = apply_filters(
 			'woocommerce_format_log_entry',
 			$message,
 			[

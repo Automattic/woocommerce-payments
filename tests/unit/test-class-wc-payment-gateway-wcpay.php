@@ -3459,7 +3459,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			[ 'is_changing_payment_method_for_subscription' => true ]
 		);
 
-		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		do_action( 'shutdown' );
 
 		$this->assertSame( 'cus_existing', $customer_id );
 	}
@@ -3484,7 +3484,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$manage->setAccessible( true );
 		$manage->invoke( $this->card_gateway, $order, [] );
 
-		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		do_action( 'shutdown' );
 	}
 
 	public function test_add_payment_method_success() {

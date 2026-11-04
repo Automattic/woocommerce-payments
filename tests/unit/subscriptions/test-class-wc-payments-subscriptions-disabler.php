@@ -619,8 +619,8 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		// Simulate renewal order creation (what happens in webhook handler), including the
 		// filters subscriptions core passes each new renewal order through before returning it.
 		$renewal_order = wcs_create_renewal_order( $mock_subscription );
-		$renewal_order = apply_filters( 'wcs_new_order_created', $renewal_order, $mock_subscription, 'renewal_order' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
-		$renewal_order = apply_filters( 'wcs_renewal_order_created', $renewal_order, $mock_subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$renewal_order = apply_filters( 'wcs_new_order_created', $renewal_order, $mock_subscription, 'renewal_order' );
+		$renewal_order = apply_filters( 'wcs_renewal_order_created', $renewal_order, $mock_subscription );
 
 		// Verify renewal order was created successfully.
 		$this->assertInstanceOf( 'WC_Order', $renewal_order, 'Renewal order should be created even with disabler active' );

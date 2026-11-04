@@ -119,6 +119,10 @@
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
 
+	<rule ref="WooCommerce.Commenting.CommentHooks">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
 	<rule ref="Squiz.Commenting.FunctionCommentThrowTag.Missing" />
 
 	<rule ref="Universal.Files.SeparateFunctionsFromOO.Mixed">

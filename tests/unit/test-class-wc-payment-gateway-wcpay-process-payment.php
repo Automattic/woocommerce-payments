@@ -886,7 +886,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				],
 			]
 		);
-		apply_filters( 'rest_request_before_callbacks', [], [], $request ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		apply_filters( 'rest_request_before_callbacks', [], [], $request );
 
 		// Arrange: Create an order to test with.
 		$order_data = [
@@ -1737,7 +1737,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Act: process a successful payment.
 		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
-		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		do_action( 'shutdown' );
 	}
 
 	public function test_process_payment_check_session_order_redirect_to_previous_order() {
