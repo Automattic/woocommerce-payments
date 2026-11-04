@@ -593,8 +593,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 
 	public function rest_api_ensure_filter_vals_provider() {
 		return [
-			// phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-			// [ $request_uri, $store_currency_args, $product_price_args ]
+			// Request URI, store currency arguments, product price arguments.
 			[ '', [ false ], [ true ] ],
 			[ '/wp-json/wc/v2/products/1', [ true ], [ false ] ],
 		];

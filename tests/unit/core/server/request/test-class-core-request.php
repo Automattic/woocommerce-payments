@@ -11,7 +11,7 @@ use WCPay\Core\Server\Request\Paginated;
 use WCPay\Core\Server\Request\List_Transactions;
 use WCPay\Core\Server\Request\Update_Intention;
 
-// phpcs:disable
+// phpcs:disable Squiz.Commenting.ClassComment.Missing
 class My_Request extends Request {
 	const DEFAULT_PARAMS = [
 		'default_1' => 1,
@@ -60,7 +60,7 @@ class Another_ThirdParty_Request extends WooPay_Request {
 class Request_With_Id extends Update_Intention {
 
 }
-// phpcs:enable
+// phpcs:enable Squiz.Commenting.ClassComment.Missing
 
 /**
  * WCPay\Core\Server\Capture_Intention_Test unit tests.

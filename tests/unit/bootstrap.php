@@ -154,7 +154,7 @@ require __DIR__ . '/../WCPAY_UnitTestCase.php';
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
-	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore
+	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_error_reporting, WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
 }
 
 /**
