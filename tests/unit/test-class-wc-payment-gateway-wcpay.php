@@ -1707,8 +1707,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $_unused_order ) {
-				return true;
+			function ( $order ) {
+				// Only the subscription id (10), not the order being completed, is a subscription.
+				return is_numeric( $order ) && 10 === (int) $order;
 			}
 		);
 
@@ -1838,8 +1839,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $_unused_order ) {
-				return true;
+			function ( $order ) {
+				// Only the subscription id (10), not the order being completed, is a subscription.
+				return is_numeric( $order ) && 10 === (int) $order;
 			}
 		);
 

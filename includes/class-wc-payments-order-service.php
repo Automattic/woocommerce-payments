@@ -421,6 +421,12 @@ class WC_Payments_Order_Service {
 	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
 	 */
 	public function update_order_status_from_intent( $order, $intent ) {
+		// Only orders are completed from an intent, never a subscription. The webhook, the duplicate payment
+		// check and the redirect handler all pass through here.
+		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) {
+			return;
+		}
+
 		$intent_data = $this->get_intent_data( $intent );
 
 		if ( ! isset( $intent_data['intent_id'] ) || ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {

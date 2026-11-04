@@ -170,4 +170,23 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test extends WCPAY_UnitTestCa
 			'Amazon Pay failing payment method hook should be registered'
 		);
 	}
+
+	public function test_is_changing_payment_method_for_subscription_is_true_for_a_subscription_object() {
+		// With no change_payment_method in the query string, the decision must come from the object.
+		unset( $_GET['change_payment_method'] );
+
+		$subscription = new WC_Subscription();
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) use ( $subscription ) {
+				return $order === $subscription;
+			}
+		);
+
+		// A subscription handed to the gateway is always a payment method change.
+		$this->assertTrue( $this->mock_wcpay_subscriptions_trait->is_changing_payment_method_for_subscription( $subscription ) );
+		// With no order and no query arg, nothing marks it as a change-payment request.
+		$this->assertFalse( $this->mock_wcpay_subscriptions_trait->is_changing_payment_method_for_subscription() );
+
+		WC_Subscriptions::set_wcs_is_subscription( null );
+	}
 }
