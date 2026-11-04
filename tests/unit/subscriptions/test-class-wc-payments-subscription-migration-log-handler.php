@@ -92,7 +92,6 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 			$new_filename  = preg_replace( '/\d{4}-\d{2}-\d{2}/', $old_date, $old_filename );
 			$new_file_path = $log_dir . $new_filename;
 
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
 			rename( $log_file, $new_file_path );
 		}
 
@@ -102,7 +101,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		$this->assertStringContainsString( $old_date, basename( $log_files_after_rename[0] ) );
 
 		// Trigger WC's log cleanup - our handler runs at priority 5 to rename files before WC deletes them.
-		do_action( 'woocommerce_cleanup_logs' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		do_action( 'woocommerce_cleanup_logs' );
 
 		// Verify migration file still exists and has been renamed to today's date.
 		$migration_file_found = false;
@@ -116,7 +115,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 				// Verify file exists and has today's date in the filename.
 				$this->assertFileExists( $migration_file_path );
 				$this->assertStringContainsString( $today, $log_file_name, 'Migration file should be renamed to today\'s date.' );
-				$this->assertStringContainsString( $message, file_get_contents( $migration_file_path ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+				$this->assertStringContainsString( $message, file_get_contents( $migration_file_path ) );
 			}
 		}
 
@@ -147,11 +146,9 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		wp_mkdir_p( $log_dir );
 
 		// Create an "old" log file with old date in filename.
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 		file_put_contents( $old_file_path, $old_message . "\n" );
 
 		// Create a "new" log file with today's date in filename.
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 		file_put_contents( $new_file_path, $new_message . "\n" );
 
 		// Verify both files exist before cleanup.
@@ -159,7 +156,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		$this->assertFileExists( $new_file_path, 'New log file should exist before cleanup.' );
 
 		// Trigger WC's log cleanup - our handler merges and renames files.
-		do_action( 'woocommerce_cleanup_logs' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		do_action( 'woocommerce_cleanup_logs' );
 
 		// Old file should be gone (merged into new file).
 		$this->assertFileDoesNotExist( $old_file_path, 'Old log file should be deleted after merge.' );
@@ -167,7 +164,6 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		// New file should exist with merged content.
 		$this->assertFileExists( $new_file_path, 'New log file should exist after merge.' );
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		$merged_content = file_get_contents( $new_file_path );
 
 		// Verify both messages are present.
@@ -233,7 +229,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		$this->assertEquals( 1, $results[ $this->test_log_source ] );
 
 		// Trigger WC's log cleanup.
-		do_action( 'woocommerce_cleanup_logs' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		do_action( 'woocommerce_cleanup_logs' );
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(

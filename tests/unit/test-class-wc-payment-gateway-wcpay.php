@@ -347,11 +347,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'_wpnonce',
 		];
 		foreach ( $payment_method_keys as $key ) {
-			// phpcs:disable WordPress.Security.NonceVerification.Missing
 			if ( isset( $_POST[ $key ] ) ) {
 				unset( $_POST[ $key ] );
 			}
-			// phpcs:enable WordPress.Security.NonceVerification.Missing
 		}
 
 		$_REQUEST = [];
@@ -2366,7 +2364,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
 
-		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		unset( $_POST['payment_method'] );
 	}
 
 	public function test_get_payment_methods_without_post_request_context() {
@@ -2374,7 +2372,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order               = WC_Helper_Order::create_order();
 		$payment_information = new Payment_Information( 'pm_mock', $order, null, $token );
 
-		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		unset( $_POST['payment_method'] );
 
 		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
 
@@ -3691,7 +3689,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Simulate being inside the wcpay_track_new_order action callback.
 		global $wp_current_filter;
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
 		$wp_current_filter[] = 'wcpay_track_new_order';
 
 		try {
@@ -3717,7 +3714,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Simulate being inside the wcpay_track_update_order action callback.
 		global $wp_current_filter;
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
 		$wp_current_filter[] = 'wcpay_track_update_order';
 
 		try {
@@ -3802,7 +3798,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$callback();
 		} finally {
 			if ( null !== $original_action ) {
-				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
 				$wp_actions['init'] = $original_action;
 			}
 		}
@@ -5797,7 +5792,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		return base64_encode( wp_json_encode( $envelope ) );
 	}
 

@@ -3780,12 +3780,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		global $current_screen;
 
 		if ( ! $is_admin ) {
-			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+			$current_screen = null;
 
 			return;
 		}
 
-		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->setMethods( [ 'in_admin' ] )
 			->getMock();

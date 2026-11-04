@@ -872,7 +872,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	public function test_maybe_modify_price_ranges_query_var_not_product() {
 		$query = [
 			'post_type'  => 'page',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			'meta_query' => [
 				[
 					'key'     => '_price',
@@ -900,7 +899,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$modified_query = $this->frontend_prices->maybe_modify_price_ranges_query_var( $query, $block, $page );
 		$this->assertSame( $query, $modified_query, 'Query should remain unchanged if meta_query is missing.' );
 
-		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		$query['meta_query'] = 'string_value'; // meta_query is not an array.
 		$modified_query      = $this->frontend_prices->maybe_modify_price_ranges_query_var( $query, $block, $page );
 		$this->assertSame( $query, $modified_query, 'Query should remain unchanged if meta_query is not an array.' );
@@ -920,7 +918,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 		$query = [
 			'post_type'  => 'product',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			'meta_query' => [
 				[
 					'key'     => '_price',
@@ -961,7 +958,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 		$query = [
 			'post_type'  => 'product',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			'meta_query' => [
 				[
 					'key'     => '_price',

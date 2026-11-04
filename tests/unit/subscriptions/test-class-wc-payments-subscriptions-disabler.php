@@ -1092,7 +1092,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 		// Need to manually set this since we're not running a full WordPress request.
 		global $wp_the_query;
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Required for testing is_main_query() in isolation.
 		$wp_the_query = $query;
 
 		$this->disabler->init_hooks();
@@ -1105,7 +1104,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Clean up.
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring original state.
 		$wp_the_query = null;
 	}
 

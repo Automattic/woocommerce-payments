@@ -933,11 +933,10 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		global $current_screen;
 
 		if ( ! $is_admin ) {
-			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+			$current_screen = null;
 			return;
 		}
 
-		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->setMethods( [ 'in_admin' ] )
 			->getMock();
@@ -1468,7 +1467,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_terminal_card_brand_icon_base64_returns_existing_asset_contents() {
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		$expected = base64_encode( file_get_contents( WCPAY_ABSPATH . 'assets/images/cards/eftpos_au.svg' ) );
 
 		$this->assertSame( $expected, WC_Payments_Utils::get_terminal_card_brand_icon_base64( 'eftpos_au' ) );

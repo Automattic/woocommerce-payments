@@ -39,7 +39,7 @@ class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 			[
 				'file_name'     => 'evil.exe',
 				'file_type'     => 'application/x-msdownload',
-				'file_contents' => base64_encode( 'data' ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+				'file_contents' => base64_encode( 'data' ),
 			]
 		);
 		$this->assertInstanceOf( \WP_Error::class, $result );
@@ -66,7 +66,7 @@ class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 			[
 				'file_name'     => 'receipt.pdf',
 				'file_type'     => 'application/pdf',
-				'file_contents' => base64_encode( str_repeat( 'A', $max + 1 ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+				'file_contents' => base64_encode( str_repeat( 'A', $max + 1 ) ),
 			]
 		);
 		$this->assertInstanceOf( \WP_Error::class, $result );
@@ -74,7 +74,7 @@ class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_execute_sanitizes_file_name_path_traversal(): void {
-		$contents     = base64_encode( 'file-bytes' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		$contents     = base64_encode( 'file-bytes' );
 		$mock_service = $this->createMock( FileService::class );
 		$mock_service->expects( $this->once() )->method( 'upload_evidence_file' )
 			->with( $contents, 'evil.pdf', 'application/pdf', 'dispute_evidence' )
@@ -94,7 +94,7 @@ class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_execute_delegates_to_file_service(): void {
-		$contents     = base64_encode( 'file-bytes' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		$contents     = base64_encode( 'file-bytes' );
 		$mock_service = $this->createMock( FileService::class );
 		$mock_service->expects( $this->once() )->method( 'upload_evidence_file' )
 			->with( $contents, 'receipt.pdf', 'application/pdf', 'dispute_evidence' )

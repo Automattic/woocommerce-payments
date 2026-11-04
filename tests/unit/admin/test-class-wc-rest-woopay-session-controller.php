@@ -302,9 +302,9 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$ciphertext = openssl_encrypt( $payload, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
 
 		return [
-			'data' => base64_encode( $ciphertext ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-			'iv'   => base64_encode( $iv ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-			'hash' => base64_encode( hash_hmac( 'sha256', $iv . $ciphertext, $key ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+			'data' => base64_encode( $ciphertext ),
+			'iv'   => base64_encode( $iv ),
+			'hash' => base64_encode( hash_hmac( 'sha256', $iv . $ciphertext, $key ) ),
 		];
 	}
 }

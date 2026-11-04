@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
-
 /**
  * Class WC_Deposits_Product_Manager.
  *

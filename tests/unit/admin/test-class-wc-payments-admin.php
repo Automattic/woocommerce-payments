@@ -83,12 +83,12 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		global $menu, $submenu;
 
-		$menu    = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
-		$submenu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$menu    = null;
+		$submenu = null;
 
 		// Mock screen.
 		$this->current_screen_backup = $GLOBALS['current_screen'] ?? null;
-		$GLOBALS['current_screen']   = $this->get_screen_mock(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$GLOBALS['current_screen']   = $this->get_screen_mock();
 		if ( ! did_action( 'current_screen' ) ) {
 			do_action( 'current_screen', $GLOBALS['current_screen'] );
 		}
@@ -148,7 +148,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		// Restore screen backup.
 		if ( $this->current_screen_backup ) {
-			$GLOBALS['current_screen'] = $this->current_screen_backup; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			$GLOBALS['current_screen'] = $this->current_screen_backup;
 		}
 
 		parent::tear_down();
@@ -638,8 +638,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	public function test_enqueue_wc_payment_settings_spotlight( string $request_query, string $wc_version, bool $should_enqueue ) {
 		global $wp_scripts, $wp_styles;
 
-		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_scripts = null;
+		$wp_styles  = null;
 		parse_str( $request_query, $_REQUEST );
 
 		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';

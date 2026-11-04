@@ -61,7 +61,6 @@ class Request_With_Id extends Update_Intention {
 
 }
 // phpcs:enable
-// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
 
 /**
  * WCPay\Core\Server\Capture_Intention_Test unit tests.

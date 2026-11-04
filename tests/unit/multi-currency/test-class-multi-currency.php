@@ -801,7 +801,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->init_multi_currency();
 
 		// Simulate an active session (e.g. after add-to-cart) by setting the session cookie.
-		$cookie_name             = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		$cookie_name             = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 		$_COOKIE[ $cookie_name ] = 'test-session-id';
 
 		try {
@@ -1466,7 +1466,6 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$this->assertArrayHasKey( '/wc/v3/payments/multi-currency/currencies', $routes );
 		} finally {
 			$wp_rest_server = $previous_server;
-			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the screen snapshot taken above.
 			$current_screen = $previous_screen;
 		}
 	}

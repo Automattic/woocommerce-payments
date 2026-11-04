@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
-
 use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
 
 /**
