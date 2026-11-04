@@ -2,7 +2,9 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import user from '@testing-library/user-event';
+import { useUserPreferences } from '@woocommerce/data';
 /**
  * Internal dependencies
  */
@@ -14,6 +16,37 @@ jest.mock( 'wcpay/data/capital', () => ( {
 	useLoans: jest.fn(),
 	useActiveLoanSummary: jest.fn(),
 } ) );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
+
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
+>;
+
+const mockLoans = [
+	{
+		wcpay_capital_loan_id: 1,
+		stripe_account_id: 'acct_1QD3WwR45o7u2iE3',
+		stripe_offer_id: 'financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S',
+		stripe_loan_id: 'financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S',
+		amount: 100000,
+		currency: 'usd',
+		fee_amount: 10000,
+		withhold_rate: 0.15,
+		accepted_at: '2024-10-28 10:10:50',
+		paid_out_at: '2024-10-28 10:11:40',
+		first_paydown_at: null,
+		fully_paid_at: null,
+		deleted_at: null,
+	},
+];
 
 declare const global: {
 	wcpaySettings: {
@@ -40,28 +73,17 @@ describe( 'CapitalPage', () => {
 			testMode: true,
 			dateFormat: 'M j, Y',
 		};
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_capital_loans_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 	} );
 
 	it( 'renders the TableCard component with loan data', () => {
-		const loans = [
-			{
-				wcpay_capital_loan_id: 1,
-				stripe_account_id: 'acct_1QD3WwR45o7u2iE3',
-				stripe_offer_id: 'financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S',
-				stripe_loan_id: 'financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S',
-				amount: 100000,
-				currency: 'usd',
-				fee_amount: 10000,
-				withhold_rate: 0.15,
-				accepted_at: '2024-10-28 10:10:50',
-				paid_out_at: '2024-10-28 10:11:40',
-				first_paydown_at: null,
-				fully_paid_at: null,
-				deleted_at: null,
-			},
-		];
 		( useLoans as jest.Mock ).mockReturnValue( {
-			loans,
+			loans: mockLoans,
 			isLoading: false,
 		} );
 
@@ -105,5 +127,63 @@ describe( 'CapitalPage', () => {
 		expect(
 			screen.getByText( 'Your requested data is loading' )
 		).toBeInTheDocument();
+	} );
+
+	it( 'hides the columns saved as hidden in user preferences', () => {
+		( useLoans as jest.Mock ).mockReturnValue( {
+			loans: mockLoans,
+			isLoading: false,
+		} );
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_capital_loans_hidden_columns: [ 'fee_amount' ],
+			isRequesting: false,
+		} as any );
+
+		render( <CapitalPage /> );
+
+		expect(
+			screen.queryByRole( 'columnheader', { name: /Fixed fee/ } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'columnheader', { name: /Withhold rate/ } )
+		).toBeInTheDocument();
+		const table = within( screen.getByRole( 'table' ) );
+		expect( table.queryByText( '$100.00' ) ).not.toBeInTheDocument();
+		expect( table.getByText( '15%' ) ).toBeInTheDocument();
+	} );
+
+	it( 'saves hidden columns to user preferences when a column is toggled', async () => {
+		const updateUserPreferences = jest.fn();
+		( useLoans as jest.Mock ).mockReturnValue( {
+			loans: mockLoans,
+			isLoading: false,
+		} );
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences,
+			wc_payments_capital_loans_hidden_columns: '',
+			isRequesting: false,
+		} as any );
+
+		render( <CapitalPage /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Choose which values to display',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'menuitemcheckbox', { name: 'Fixed fee' } )
+		);
+
+		expect( updateUserPreferences ).toHaveBeenCalledWith( {
+			wc_payments_capital_loans_hidden_columns: [ 'fee_amount' ],
+		} );
+		expect(
+			screen.queryByRole( 'menuitemcheckbox', { name: 'Disbursed' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'menuitemcheckbox', { name: 'Amount' } )
+		).not.toBeInTheDocument();
 	} );
 } );

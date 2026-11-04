@@ -927,6 +927,26 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $response['redirect'] );
 	}
 
+	public function test_checkout_draft_order_is_pending_before_its_intent_is_created() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'checkout-draft' );
+		$order->save();
+		$status_when_intent_created = null;
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnCallback(
+				function () use ( $order, &$status_when_intent_created ) {
+					$status_when_intent_created = wc_get_order( $order->get_id() )->get_status();
+					return WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
+				}
+			);
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'pending', $status_when_intent_created );
+	}
+
 	public function test_bad_request_exception_thrown() {
 		$error_message = 'Test error.';
 		$error_notice  = 'We\'re not able to process this request. Please refresh the page and try again.';
@@ -2429,7 +2449,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturnOnConsecutiveCalls(
 				$this->throwException(
 					new API_Exception(
-						'No such customer: cus_mock',
+						"Error: No such customer: 'cus_mock'",
 						'resource_missing',
 						400
 					)
@@ -2518,7 +2538,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturnOnConsecutiveCalls(
 				$this->throwException(
 					new API_Exception(
-						'No such customer: cus_mock',
+						"Error: No such customer: 'cus_mock'",
 						'resource_missing',
 						400
 					)
@@ -2553,8 +2573,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function provider_non_customer_resource_missing_errors() {
 		return [
-			'missing payment method' => [ 'No such payment_method: pm_123' ],
-			'missing price'          => [ 'No such price: price_123' ],
+			'missing payment method'          => [ 'No such payment_method: pm_123' ],
+			'missing price'                   => [ 'No such price: price_123' ],
+			'ID containing the word customer' => [ "Error: No such PaymentMethod: 'pm_customer'" ],
+			'missing token'                   => [ "Error: No such token: 'No such customer: cus_mock'" ],
+			'customer mentioned elsewhere'    => [ 'Error: The customer has no such source.' ],
 		];
 	}
 

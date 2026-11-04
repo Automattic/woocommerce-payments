@@ -624,6 +624,32 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( [], $level_3_data );
 	}
 
+	public function test_zero_quantity_items_are_left_out() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+
+		$mock_items   = [];
+		$mock_items[] = $this->create_mock_item( 'Beanie', 1, 18, 0, 30 );
+		$mock_items[] = $this->create_mock_item( 'Removed', 0, 0, 0, 31 );
+		$this->mock_order( $mock_items, '98012' );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertCount( 1, $level_3_data['line_items'] );
+		$this->assertSame( '30', $level_3_data['line_items'][0]->product_code );
+	}
+
+	public function test_no_level3_data_when_a_zero_quantity_item_carries_money() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+
+		$mock_items   = [];
+		$mock_items[] = $this->create_mock_item( 'Beanie', 0, 18, 2.7, 30 );
+		$this->mock_order( $mock_items, '98012' );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertSame( [], $level_3_data );
+	}
+
 	public function test_no_level3_data_when_an_order_without_items_charges_more_than_shipping() {
 		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_order( [], '98012', 5 + 38 );

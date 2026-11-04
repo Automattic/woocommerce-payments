@@ -13,6 +13,7 @@ Before working in an area below, read its linked reference and follow the applic
 | Public signatures, hooks, subclass overrides, REST/Abilities, asset handles, options/meta, migrations, upstream contracts, multisite or install paths | [Compatibility and migrations](.claude/docs/agent-compatibility.md) |
 | Writing or reviewing tests, PHPCS method-ordering scope, styles cache, Abilities, ExPlat/Tracks, query encoding or agent documentation | [Feature rules and documentation](.claude/docs/agent-feature-rules.md) |
 | E2E execution, setup or debugging | [E2E skill](.claude/skills/e2e-testing/SKILL.md) and [test overview](tests/README.md) |
+| Checking a change by hand in a browser on the dev site | [Browse skill](.claude/skills/browse/SKILL.md) |
 | Code review | [.claude/review-rules.md](.claude/review-rules.md), plus the references for the affected areas |
 
 For feature-specific investigations, the architecture reference indexes payment flow, mode, promotions, capital, disputes and payment-method lifecycle guides. Read [src/README.md](src/README.md) for DI and PSR-4 work, [includes/core/README.md](includes/core/README.md) for the Request/Response API, and [includes/core/CONTRIBUTING.md](includes/core/CONTRIBUTING.md) before adding Request classes.
@@ -40,8 +41,9 @@ For feature-specific investigations, the architecture reference indexes payment 
 - Match checks to the affected behavior and complete required repository checks. Distinguish passes, failures and checks that could not run. Add tests that protect meaningful behavior; broaden or repeat checks only for a new change, failure or unresolved risk.
 - Tests must exercise the changed behavior and assert an observable outcome. Do not mock away the behavior being checked; await asynchronous assertions and restore shared test state. Confirm a regression test fails without the fix where practical. Check version and feature gates before citing green CI.
 - In tests, use named constants for arrange/act values and plain literals for expected values and `->with()` payloads. The feature rules reference has the exceptions.
+- To see a checkout, payment or admin change working, check it on the dev site with `pnpm run browse` ([browse skill](.claude/skills/browse/SKILL.md)) rather than a one-off script, and report what you saw.
 - PHP tests require Docker. Read the development reference for commands and use the E2E skill when an E2E check is needed. Confirm tested code and built assets match the intended revision; run `pnpm run watch` when testing local frontend/admin edits.
-- Check `.env` for the WordPress port. Preserve existing data, unrelated containers and user processes. Do not reset the local admin password unless explicitly requested; the development login is `admin` / `admin`.
+- Check `.env` for the WordPress port. Preserve existing data, unrelated containers and user processes. Do not reset the local admin password unless explicitly requested; the default development login is `admin` / `admin`.
 - Never remove a worktree that is the current working directory; perform any authorised cleanup from the main clone.
 
 ## Git and delivery

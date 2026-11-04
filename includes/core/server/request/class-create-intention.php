@@ -161,14 +161,15 @@ class Create_Intention extends Request {
 	/**
 	 * Set fingerprint.
 	 *
-	 * @param string $fingerprint Fingerprint data.
+	 * @param string         $fingerprint Fingerprint data.
+	 * @param \WC_Order|null $order       Payment order being charged, when known.
 	 *
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function set_fingerprint( string $fingerprint = '' ) {
+	public function set_fingerprint( string $fingerprint = '', ?\WC_Order $order = null ) {
 		$metadata = $this->get_param( 'metadata' );
-		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
+		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint, $order ) );
 		$this->set_param( 'metadata', $metadata );
 	}
 

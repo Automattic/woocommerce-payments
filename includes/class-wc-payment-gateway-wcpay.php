@@ -1147,8 +1147,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( in_array( $this->payment_method->get_id(), [ Payment_Method::AFTERPAY, Payment_Method::AFFIRM ], true ) && is_wc_endpoint_url( 'order-pay' ) ) {
-			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-			$order = is_a( $order, 'WC_Order' ) ? $order : null;
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
 			if ( $order ) {
 				$address = $this->retrieve_usable_shipping_data_from_order( $order );
@@ -1474,6 +1473,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'result'   => 'success',
 					'redirect' => '',
 				];
+			}
+
+			// WooCommerce keeps copying the cart into a checkout-draft order, so its total could change
+			// after the intent is created. Core's checkout moves drafts to pending first; pay-for-order doesn't.
+			if ( $order->has_status( 'checkout-draft' ) ) {
+				$order->update_status( Order_Status::PENDING );
 			}
 
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
@@ -2108,7 +2113,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
-				$request->set_fingerprint( $payment_information->get_fingerprint() );
+				$request->set_fingerprint( $payment_information->get_fingerprint(), $order );
 				if ( $save_payment_method_to_store ) {
 					// Only set setup_future_usage for reusable payment methods.
 					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
@@ -2230,7 +2235,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->set_customer( $customer_id );
 					$request->set_payment_method( $payment_credential );
 					$request->set_metadata( $metadata );
-					$request->set_fingerprint( $payment_information->get_fingerprint() );
+					$request->set_fingerprint( $payment_information->get_fingerprint(), $order );
 					$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
 					$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 
@@ -2536,9 +2541,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// Perform additional checks for non-zero-amount. For zero-amount orders, we can't compare intents because they are not attached to the order at this stage.
-		// Once https://github.com/Automattic/woocommerce-payments/issues/6575 is closed, this check can be applied for zero-amount orders as well.
-		if ( $order->get_total() > 0 && ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
+		// The intent named in the request must be the one attached to the order by process_payment_for_order().
+		// Zero-amount orders are no exception: their setup intent is attached the same way, and without this
+		// check any succeeded setup intent on the account (e.g. a card saved under My Account) would complete them.
+		if ( ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
 			return;
 		}
 
@@ -2589,15 +2595,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
 
-				// This check applies to payment intents only due to two reasons:
-				// (1) metadata is missed for setup intents. See https://github.com/Automattic/woocommerce-payments/issues/6575.
-				// (2) most issues so far affect only payment intents.
 				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
 				$request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent            = $request->send();
+				$intent = $request->send();
+
+				// Setup intents created by process_payment_for_order() carry the order id in their metadata too.
+				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent->get_metadata() );
+
 				$client_secret     = $intent->get_client_secret();
 				$status            = $intent->get_status();
 				$charge_id         = '';
@@ -5756,7 +5763,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $request->send();
 		} catch ( API_Exception $e ) {
-			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
+			if ( ! $this->is_missing_customer_error( $e ) ) {
 				throw $e;
 			}
 
@@ -5788,6 +5795,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$request->set_customer( $customer_id );
 			return $request->send();
 		}
+	}
+
+	/**
+	 * Checks whether an API error reports the Stripe customer itself as missing.
+	 *
+	 * `resource_missing` also covers other objects, so only the object named after "No such" counts.
+	 *
+	 * @param API_Exception $e The exception thrown by the intent request.
+	 *
+	 * @return bool True when the missing resource is the customer.
+	 */
+	private function is_missing_customer_error( API_Exception $e ): bool {
+		if ( 'resource_missing' !== $e->get_error_code() ) {
+			return false;
+		}
+
+		return 1 === preg_match( '/No such (\w+)/', $e->getMessage(), $missing ) && 'customer' === strtolower( $missing[1] );
 	}
 
 	/**

@@ -22,6 +22,8 @@ if ( ! class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
 		public static $will_update_all_return = false;
 		/** @var bool */
 		public static $update_all_return = false;
+		/** @var bool */
+		public static $is_request_to_change_payment = false;
 
 		/**
 		 * Stub for update_payment_method.

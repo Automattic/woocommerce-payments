@@ -1363,12 +1363,6 @@ parameters:
 			path: includes/fraud-prevention/class-buyer-fingerprinting-service.php
 
 		-
-			rawMessage: Ternary operator condition is always true.
-			identifier: ternary.alwaysTrue
-			count: 1
-			path: includes/fraud-prevention/class-buyer-fingerprinting-service.php
-
-		-
 			rawMessage: Negated boolean expression is always false.
 			identifier: booleanNot.alwaysFalse
 			count: 1
@@ -1732,12 +1726,6 @@ parameters:
 			rawMessage: 'Call to function is_wp_error() with array will always evaluate to false.'
 			identifier: function.impossibleType
 			count: 5
-			path: includes/wc-payment-api/class-wc-payments-api-client.php
-
-		-
-			rawMessage: 'Method WC_Payments_API_Client::get_fingerprint_metadata() is unused.'
-			identifier: method.unused
-			count: 1
 			path: includes/wc-payment-api/class-wc-payments-api-client.php
 
 		-

@@ -95,6 +95,9 @@ importers:
       '@emotion/jest':
         specifier: 11.14.2
         version: 11.14.2(@types/jest@30.0.0)
+      '@playwright/cli':
+        specifier: 0.1.22
+        version: 0.1.22
       '@playwright/test':
         specifier: 1.59.1
         version: 1.59.1
@@ -422,6 +425,9 @@ importers:
       ts-loader:
         specifier: 9.6.2
         version: 9.6.2(loader-utils@2.0.4)(typescript@5.9.3)(webpack@5.106.2)
+      tsx:
+        specifier: 4.20.6
+        version: 4.20.6
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -2496,6 +2502,11 @@ packages:
   '@pkgr/core@0.3.6':
     resolution: {integrity: sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==}
     engines: {node: ^14.18.0 || >=16.0.0}
+
+  '@playwright/cli@0.1.22':
+    resolution: {integrity: sha512-6WMkQNM4VEzqMkdr/l60X9Cr7i+tI/arK87IWz2K7pB6j8I2ZJ8KN+1JfhJDLnK+SXnab6Op8xGt4adcGLsyfA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@playwright/test@1.59.1':
     resolution: {integrity: sha512-PG6q63nQg5c9rIi4/Z5lR5IVF7yU5MqmKaPOe0HSc0O2cX1fPi96sUQu5j7eo4gKCkB2AnNGoWt7y4/Xx3Kcqg==}
@@ -6992,6 +7003,9 @@ packages:
     resolution: {integrity: sha512-w9UMqWwJxHNOvoNzSJ2oPF5wvYcvP7jUvYzhp67yEhTi17ZDBBC1z9pTdGuzjD+EFIqLSYRweZjqfiPzQ06Ebg==}
     engines: {node: '>= 0.4'}
 
+  get-tsconfig@4.14.3:
+    resolution: {integrity: sha512-++QEw4DIY7WGoukz+/+A/8dGYPT9l9yIadnmSgZ8Rjr3YVSVDipQSO9CdnJo9ePqFqUUqh+wk9uIaoiAwsiPkA==}
+
   get-uri@6.0.5:
     resolution: {integrity: sha512-b1O07XYq8eRuVzBNgJLstU6FYc1tS6wnMtF1I1D9lE8LxZSOGZ7LhxN54yPP6mGw5f2CkXY2BQUL9Fx41qvcIg==}
     engines: {node: '>= 14'}
@@ -9095,9 +9109,19 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  playwright-core@1.64.0-alpha-1790635538000:
+    resolution: {integrity: sha512-pNwaXirhXMRLaRQs4NQ18EpTdtDoFwyPH9FOaaDC7YXG4hpwE2xmwCic/1srbuExVQC7zT9LJSJpDBAru+Vo9A==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   playwright@1.59.1:
     resolution: {integrity: sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw==}
     engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.64.0-alpha-1790635538000:
+    resolution: {integrity: sha512-/5XDUMxpOd/9AojJtWDFIRV3EJZNQ0AwvK69wgt3CPzy8wTgiBG9pX45VfxtqtvIRGwfWzMhrvawNKreG69Snw==}
+    engines: {node: '>=20'}
     hasBin: true
 
   please-upgrade-node@3.2.0:
@@ -9909,6 +9933,9 @@ packages:
   resolve-from@5.0.0:
     resolution: {integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==}
     engines: {node: '>=8'}
+
+  resolve-pkg-maps@1.0.0:
+    resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
 
   resolve.exports@2.0.3:
     resolution: {integrity: sha512-OcXjMsGdhL4XnbShKpAcSqPMzQoYkYyhbEaeSko47MjRP9NfEQMhZkXL1DoFlt9LWQn4YttrdnV6X2OiyzBi+A==}
@@ -10824,6 +10851,11 @@ packages:
     engines: {node: '>= 6'}
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
+
+  tsx@4.20.6:
+    resolution: {integrity: sha512-ytQKuwgmrrkDTFP4LjR0ToE2nqgy886GpvRSpU0JAnrdBYppuY5rLkRUYPU1yCryb24SsKBTL/hlDQAEFVwtZg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
 
   tsyringe@4.10.0:
     resolution: {integrity: sha512-axr3IdNuVIxnaK5XGEUFTu3YmAQ6lllgrvqfEoR16g/HGnYY/6We4oWENtAnzK6/LpJ2ur9PAb80RBt7/U4ugw==}
@@ -14710,6 +14742,11 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.3.6': {}
+
+  '@playwright/cli@0.1.22':
+    dependencies:
+      playwright: 1.64.0-alpha-1790635538000
+      playwright-core: 1.64.0-alpha-1790635538000
 
   '@playwright/test@1.59.1':
     dependencies:
@@ -21911,6 +21948,10 @@ snapshots:
       es-errors: 1.3.0
       get-intrinsic: 1.3.0
 
+  get-tsconfig@4.14.3:
+    dependencies:
+      resolve-pkg-maps: 1.0.0
+
   get-uri@6.0.5:
     dependencies:
       basic-ftp: 5.3.1
@@ -24557,11 +24598,17 @@ snapshots:
 
   playwright-core@1.59.1: {}
 
+  playwright-core@1.64.0-alpha-1790635538000: {}
+
   playwright@1.59.1:
     dependencies:
       playwright-core: 1.59.1
     optionalDependencies:
       fsevents: 2.3.2
+
+  playwright@1.64.0-alpha-1790635538000:
+    dependencies:
+      playwright-core: 1.64.0-alpha-1790635538000
 
   please-upgrade-node@3.2.0:
     dependencies:
@@ -25427,6 +25474,8 @@ snapshots:
   resolve-from@4.0.0: {}
 
   resolve-from@5.0.0: {}
+
+  resolve-pkg-maps@1.0.0: {}
 
   resolve.exports@2.0.3: {}
 
@@ -26495,6 +26544,13 @@ snapshots:
     dependencies:
       tslib: 1.14.1
       typescript: 5.9.3
+
+  tsx@4.20.6:
+    dependencies:
+      esbuild: 0.25.12
+      get-tsconfig: 4.14.3
+    optionalDependencies:
+      fsevents: 2.3.3
 
   tsyringe@4.10.0:
     dependencies:

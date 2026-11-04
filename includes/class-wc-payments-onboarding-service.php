@@ -30,6 +30,15 @@ class WC_Payments_Onboarding_Service {
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
+	/**
+	 * The WooCommerce core options that store whether the store had WooPayments in use,
+	 * for incentive eligibility.
+	 *
+	 * @see \Automattic\WooCommerce\Internal\Admin\Suggestions\Incentives\WooPayments
+	 */
+	private const STORE_HAD_WOOPAYMENTS_OPTION         = 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments';
+	private const STORE_HAD_WOOPAYMENTS_VERSION_OPTION = 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version';
+
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
 	// This should be very sticky as opposed to the `from` value which is meant to represent the immediately previous step.
@@ -933,13 +942,10 @@ class WC_Payments_Onboarding_Service {
 		update_option( self::TEST_MODE_OPTION, 'no' );
 		self::clear_account_options();
 
-		// Clear the stored flag for whether the store had WooPayments in use,
+		// Clear WooCommerce core's stored flag for whether the store had WooPayments in use,
 		// so incentive eligibility is re-determined for the fresh onboarding.
-		// Deleting is safe even though WooCommerce core shares these options: if an
-		// older core copy re-freezes a stale positive from test-mode usage, the logic
-		// version marker gets it re-determined on the next evaluation. See WOOPMNT-6320.
-		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_OPTION_NAME );
-		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME );
+		delete_option( self::STORE_HAD_WOOPAYMENTS_OPTION );
+		delete_option( self::STORE_HAD_WOOPAYMENTS_VERSION_OPTION );
 
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
