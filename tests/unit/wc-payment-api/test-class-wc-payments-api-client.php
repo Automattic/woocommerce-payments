@@ -14,7 +14,6 @@ use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
