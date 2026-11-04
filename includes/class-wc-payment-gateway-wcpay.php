@@ -2107,7 +2107,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
-				$request->set_fingerprint( $payment_information->get_fingerprint() );
+				$request->set_fingerprint( $payment_information->get_fingerprint(), $order );
 				if ( $save_payment_method_to_store ) {
 					// Only set setup_future_usage for reusable payment methods.
 					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
@@ -2229,7 +2229,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->set_customer( $customer_id );
 					$request->set_payment_method( $payment_credential );
 					$request->set_metadata( $metadata );
-					$request->set_fingerprint( $payment_information->get_fingerprint() );
+					$request->set_fingerprint( $payment_information->get_fingerprint(), $order );
 					$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
 					$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 
@@ -5757,7 +5757,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $request->send();
 		} catch ( API_Exception $e ) {
-			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
+			if ( ! $this->is_missing_customer_error( $e ) ) {
 				throw $e;
 			}
 
@@ -5789,6 +5789,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$request->set_customer( $customer_id );
 			return $request->send();
 		}
+	}
+
+	/**
+	 * Checks whether an API error reports the Stripe customer itself as missing.
+	 *
+	 * `resource_missing` also covers other objects, so only the object named after "No such" counts.
+	 *
+	 * @param API_Exception $e The exception thrown by the intent request.
+	 *
+	 * @return bool True when the missing resource is the customer.
+	 */
+	private function is_missing_customer_error( API_Exception $e ): bool {
+		if ( 'resource_missing' !== $e->get_error_code() ) {
+			return false;
+		}
+
+		return 1 === preg_match( '/No such (\w+)/', $e->getMessage(), $missing ) && 'customer' === strtolower( $missing[1] );
 	}
 
 	/**

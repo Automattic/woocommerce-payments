@@ -106,3 +106,42 @@ describe( 'getChargeFromOrder resolver', () => {
 		} );
 	} );
 } );
+
+describe.each( [
+	[ 'getCharge', getCharge ],
+	[ 'getChargeFromOrder', getChargeFromOrder ],
+] )( '%s resolver with an invalid ID', ( name, resolver ) => {
+	const invalidId = '..';
+
+	test( 'should record an error without requesting another endpoint', () => {
+		const generator = resolver( invalidId );
+
+		expect( generator.next().value ).toEqual(
+			controls.dispatch(
+				'core/notices',
+				'createErrorNotice',
+				expect.any( String )
+			)
+		);
+		expect( generator.next().value ).toEqual(
+			updateErrorForCharge(
+				'..',
+				null,
+				expect.objectContaining( {
+					code: 'wcpay_invalid_path_segment',
+				} )
+			)
+		);
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+} );
+
+describe( 'getCharge resolver with special characters', () => {
+	test( 'should encode them into a single path segment', () => {
+		const generator = getCharge( '../ch_1' );
+
+		expect( generator.next().value ).toEqual(
+			apiFetch( { path: '/wc/v3/payments/charges/..%2Fch_1' } )
+		);
+	} );
+} );

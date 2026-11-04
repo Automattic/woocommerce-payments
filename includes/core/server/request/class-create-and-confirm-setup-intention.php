@@ -84,11 +84,12 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	 * Adds hashed fingerprint metadata to the setup intent request
 	 * to help detect and prevent card testing attacks.
 	 *
-	 * @param string $fingerprint Fingerprint data from the client.
+	 * @param string         $fingerprint Fingerprint data from the client.
+	 * @param \WC_Order|null $order       Payment order being charged, when known.
 	 *
 	 * @return void
 	 */
-	public function set_fingerprint( string $fingerprint = '' ) {
+	public function set_fingerprint( string $fingerprint = '', ?\WC_Order $order = null ) {
 		// The setup intent flow doesn't call set_metadata() first, and get_param() throws on a
 		// missing key, so default to an empty array rather than assume metadata is present.
 		try {
@@ -96,7 +97,7 @@ class Create_And_Confirm_Setup_Intention extends Request {
 		} catch ( Invalid_Request_Parameter_Exception $e ) {
 			$metadata = [];
 		}
-		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
+		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint, $order ) );
 		$this->set_param( 'metadata', $metadata );
 	}
 

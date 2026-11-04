@@ -23,6 +23,22 @@ describe( 'Utilities', () => {
 			'https://site.com/wp-json/wc/v3/payments/documents/documentID?_wpnonce=random_wp_rest_nonce'
 		);
 	} );
+
+	test( 'document url encodes characters that would change the request', () => {
+		const traversalId = '../../wp/v2/users/me?x=1#';
+
+		expect( getDocumentUrl( traversalId ) ).toEqual(
+			'https://site.com/wp-json/wc/v3/payments/documents/..%2F..%2Fwp%2Fv2%2Fusers%2Fme%3Fx%3D1%23?_wpnonce=random_wp_rest_nonce'
+		);
+	} );
+
+	test( 'document url rejects an invalid document ID', () => {
+		const invalidId = '..';
+
+		expect( () => getDocumentUrl( invalidId ) ).toThrow(
+			expect.objectContaining( { code: 'wcpay_invalid_path_segment' } )
+		);
+	} );
 } );
 
 describe( 'isVersionGreaterOrEqual', () => {

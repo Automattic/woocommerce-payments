@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
+import { encodePathSegment } from 'utils/path-segment';
 import { updateFiles, updateErrorForFiles } from './actions';
 import { File } from './types';
 import { ApiError } from 'wcpay/types/errors';
@@ -23,7 +24,7 @@ import { ApiError } from 'wcpay/types/errors';
 export function* getFile( id: string ): Generator< unknown > {
 	try {
 		const result = yield apiFetch( {
-			path: `${ NAMESPACE }/file/${ id }/details`,
+			path: `${ NAMESPACE }/file/${ encodePathSegment( id ) }/details`,
 		} );
 		yield updateFiles( id, result as File );
 	} catch ( e ) {
