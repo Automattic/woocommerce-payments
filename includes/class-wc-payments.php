@@ -576,6 +576,7 @@ class WC_Payments {
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$session_service->init_hooks();
 		self::$woopay_tracker->init_hooks();
 		self::$order_service->init_hooks();
 		self::$order_success_page->init_hooks();
