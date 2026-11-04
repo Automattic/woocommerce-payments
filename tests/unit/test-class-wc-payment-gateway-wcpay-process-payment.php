@@ -2556,7 +2556,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			'missing payment method'          => [ 'No such payment_method: pm_123' ],
 			'missing price'                   => [ 'No such price: price_123' ],
 			'ID containing the word customer' => [ "Error: No such PaymentMethod: 'pm_customer'" ],
-			'ID imitating a missing customer' => [ "Error: No such token: 'No such customer: cus_mock'" ],
+			'missing token'                   => [ "Error: No such token: 'No such customer: cus_mock'" ],
 			'customer mentioned elsewhere'    => [ 'Error: The customer has no such source.' ],
 		];
 	}
