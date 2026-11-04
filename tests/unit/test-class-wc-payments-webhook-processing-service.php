@@ -701,6 +701,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -725,6 +727,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -802,6 +808,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -820,6 +828,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1044,6 +1057,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1062,6 +1077,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1140,6 +1160,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1158,6 +1180,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1232,6 +1259,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1257,6 +1286,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1359,6 +1393,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1385,6 +1421,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -1460,6 +1500,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1484,6 +1526,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -1620,6 +1666,51 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a payment_intent.succeeded event for a Stripe Billing invoice records the charge
+	 * but leaves the order status to the invoice handlers.
+	 */
+	public function test_payment_intent_successful_for_invoice_does_not_complete_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_invoice123',
+			'object'   => 'payment_intent',
+			'amount'   => 1000,
+			'charges'  => [
+				'data' => [
+					[
+						'id'             => 'ch_invoice123',
+						'payment_method' => 'pm_foo',
+					],
+				],
+			],
+			'currency' => 'usd',
+			'status'   => Intent_Status::SUCCEEDED,
+			'invoice'  => 'in_renewal123',
+			'metadata' => [],
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_invoice123' )
+			->willReturn( $order );
+
+		$this->mock_api_client
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] ) );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$stored_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $stored_order->get_status() );
+		$this->assertSame( 'ch_invoice123', $stored_order->get_meta( '_charge_id' ) );
+	}
+
+	/**
 	 * Tests that a payment_intent.succeeded event will complete the order and
 	 * send the card reader receipt to the customer.
 	 */
@@ -1661,7 +1752,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
-						'status' => $intent_status,
+						'amount'   => 1500,
+						'currency' => 'eur',
+						'status'   => $intent_status,
 					]
 				)
 			);
@@ -1680,6 +1773,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->once() )
@@ -1764,6 +1861,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1785,6 +1884,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )

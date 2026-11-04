@@ -927,6 +927,26 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $response['redirect'] );
 	}
 
+	public function test_checkout_draft_order_is_pending_before_its_intent_is_created() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'checkout-draft' );
+		$order->save();
+		$status_when_intent_created = null;
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnCallback(
+				function () use ( $order, &$status_when_intent_created ) {
+					$status_when_intent_created = wc_get_order( $order->get_id() )->get_status();
+					return WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
+				}
+			);
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'pending', $status_when_intent_created );
+	}
+
 	public function test_bad_request_exception_thrown() {
 		$error_message = 'Test error.';
 		$error_notice  = 'We\'re not able to process this request. Please refresh the page and try again.';

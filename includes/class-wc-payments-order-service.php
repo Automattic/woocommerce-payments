@@ -434,6 +434,8 @@ class WC_Payments_Order_Service {
 			case Intent_Status::SUCCEEDED:
 				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
 					$this->mark_payment_capture_completed( $order, $intent );
+				} elseif ( $intent instanceof WC_Payments_API_Payment_Intention && ! $this->intent_amount_matches_order( $intent, $order ) ) {
+					$this->mark_payment_held_for_amount_mismatch( $order, $intent, $intent_data );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
@@ -1765,6 +1767,73 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
+		$order->add_order_note( $note );
+		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Checks whether a payment intent is for the order's current total and currency.
+	 *
+	 * The order total can change after the intent is created, for example when a merchant edits a pending order.
+	 *
+	 * @param WC_Payments_API_Payment_Intention $intent The intent to compare.
+	 * @param WC_Order                          $order  The order to compare against.
+	 *
+	 * @return bool
+	 */
+	private function intent_amount_matches_order( WC_Payments_API_Payment_Intention $intent, WC_Order $order ): bool {
+		return strtolower( $intent->get_currency() ) === strtolower( $order->get_currency() )
+			&& (int) $intent->get_amount() === WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+	}
+
+	/**
+	 * Puts an order on hold when its payment succeeded for an amount or currency that differs from the order total.
+	 *
+	 * @param WC_Order                          $order       Order object.
+	 * @param WC_Payments_API_Payment_Intention $intent      The succeeded intent.
+	 * @param array                             $intent_data The data of the intent associated with this order.
+	 *
+	 * @return void
+	 */
+	private function mark_payment_held_for_amount_mismatch( $order, WC_Payments_API_Payment_Intention $intent, $intent_data ) {
+		$charged_currency = strtoupper( $intent->get_currency() );
+		$order_currency   = strtoupper( $order->get_currency() );
+		// Always show the codes: USD and CAD both render as "$", and single-currency stores hide codes by default.
+		$charged_amount  = wc_price( WC_Payments_Utils::interpret_stripe_amount( (int) $intent->get_amount(), $charged_currency ), [ 'currency' => $charged_currency ] ) . ' ' . $charged_currency;
+		$order_amount    = wc_price( $order->get_total(), [ 'currency' => $order_currency ] ) . ' ' . $order_currency;
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_data['intent_id'], $intent_data['charge_id'] );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: the order total, %5: transaction details URL */
+				__( 'A payment of %1$s was charged using %2$s (<a>%3$s</a>), but the order total is %4$s. The order was put <strong>on hold</strong>; review it before fulfilling.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%5$s" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$charged_amount,
+			'WooPayments',
+			WC_Payments_Utils::get_transaction_url_id( $intent_data['intent_id'], $intent_data['charge_id'] ),
+			$order_amount,
+			$transaction_url
+		);
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		Logger::error(
+			sprintf(
+				'Order %1$d put on hold: intent %2$s succeeded for %3$d %4$s, but the order total is %5$s %6$s.',
+				$order->get_id(),
+				$intent_data['intent_id'],
+				$intent->get_amount(),
+				$intent->get_currency(),
+				$order->get_total(),
+				$order->get_currency()
+			)
+		);
+
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
 	}

@@ -655,6 +655,133 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Keeps the successful token without completing an order the paid invoice does not match.
+	 *
+	 * @dataProvider provider_invoice_payments_that_cannot_complete_order
+	 *
+	 * @param array $response The paid invoice response.
+	 */
+	public function test_maybe_attempt_payment_for_subscription_does_not_complete_order_without_matching_invoice( array $response ) {
+		$mock_subscription       = new WC_Subscription();
+		$mock_pending_invoice_id = 'wcpay_pending_invoice_idtest123';
+
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service::PENDING_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_123' );
+		$mock_subscription->payment_method = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$mock_subscription->save();
+
+		$mock_renewal_order = WC_Helper_Order::create_order( 1, 50 );
+		$mock_renewal_order->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_renewal_order->save();
+		$new_token = WC_Helper_Token::create_token( 'pm_new_card' );
+
+		$invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->createMock( WC_Payments_Order_Service::class ) );
+		$subscription_service = new WC_Payments_Subscription_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_product_service, $invoice_service );
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_subscription ) {
+				return true;
+			}
+		);
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'charge_invoice' )
+			->with( 'wcpay_pending_invoice_idtest123' )
+			->willReturn( $response );
+
+		$original_session = WC()->session;
+		WC()->session     = new WC_Session_Handler();
+
+		try {
+			$subscription_service->maybe_attempt_payment_for_subscription( $mock_subscription, $new_token );
+
+			$stored_order = wc_get_order( $mock_renewal_order->get_id() );
+			$this->assertSame( 'pending', $stored_order->get_status() );
+			$this->assertFalse( $stored_order->is_paid() );
+			$this->assertSame( [ $new_token->get_id() ], $stored_order->get_payment_tokens() );
+			$this->assertSame( '', $mock_subscription->get_meta( '_wcpay_pending_invoice_id', true ) );
+			$this->assertSame( [], wc_get_notices( 'success' ) );
+		} finally {
+			WC()->session = $original_session;
+		}
+	}
+
+	/**
+	 * Paid invoices that cannot establish whether the 50 USD order is covered.
+	 *
+	 * @return array
+	 */
+	public function provider_invoice_payments_that_cannot_complete_order(): array {
+		return [
+			'amount below order total' => [
+				[
+					'status'      => 'paid',
+					'amount_paid' => 1000,
+					'currency'    => 'usd',
+				],
+			],
+			'missing amount'           => [
+				[
+					'status'   => 'paid',
+					'currency' => 'usd',
+				],
+			],
+			'missing currency'         => [
+				[
+					'status'      => 'paid',
+					'amount_paid' => 5000,
+				],
+			],
+			'missing both fields'      => [ [ 'status' => 'paid' ] ],
+		];
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->maybe_attempt_payment_for_subscription() completes the
+	 * order when the invoice collected the order total.
+	 */
+	public function test_maybe_attempt_payment_for_subscription_completes_order_when_amount_matches() {
+		$mock_subscription       = new WC_Subscription();
+		$mock_pending_invoice_id = 'wcpay_pending_invoice_idtest123';
+
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service_Test::PENDING_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_123' );
+		$mock_subscription->payment_method = 'woocommerce_payments';
+		$mock_subscription->save();
+
+		$mock_renewal_order = WC_Helper_Order::create_order( 1, 50 );
+		$mock_renewal_order->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_renewal_order->save();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_subscription ) {
+				return true;
+			}
+		);
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'charge_invoice' )
+			->with( $mock_pending_invoice_id )
+			->willReturn(
+				[
+					'status'      => 'paid',
+					'amount_paid' => 5000,
+					'currency'    => 'usd',
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->subscription_service,
+			'maybe_attempt_payment_for_subscription',
+			[ $mock_subscription, new WC_Payment_Token_CC() ]
+		);
+
+		$stored_order = wc_get_order( $mock_renewal_order->get_id() );
+		$this->assertSame( 'processing', $stored_order->get_status() );
+		$this->assertTrue( $stored_order->is_paid() );
+	}
+
+	/**
 	 * Test WC_Payments_Subscription_Service->prevent_wcpay_subscription_changes()
 	 */
 	public function test_prevent_wcpay_subscription_changes() {

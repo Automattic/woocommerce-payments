@@ -205,6 +205,80 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_order_is_held_when_intent_amount_does_not_match_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2267,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		// The payment_intent.succeeded webhook replays the same intent after the checkout request.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( '22.67', $notes[0]->content );
+		$this->assertStringContainsString( '25.19', $notes[0]->content );
+		$this->assertCount( count( $notes ), wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+	}
+
+	public function test_order_is_held_when_intent_currency_does_not_match_order_currency() {
+		$this->order->set_currency( 'CAD' );
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'   => 2519,
+				'currency' => 'usd',
+				'status'   => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $25.19 USD', $note_text );
+		$this->assertStringContainsString( 'the order total is $25.19 CAD', $note_text );
+	}
+
+	public function test_partial_capture_completes_order_despite_amount_below_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2000,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'processing', $this->order->get_status() );
+	}
+
+	public function test_order_is_completed_when_intent_amount_matches_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2519,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'processing', $this->order->get_status() );
+	}
+
 	/**
 	 * A successful payment processed while the order was in test mode should produce a
 	 * persistent order note that flags the test mode and clarifies no funds were collected.
