@@ -579,7 +579,7 @@ parameters:
 		-
 			rawMessage: Ternary operator condition is always true.
 			identifier: ternary.alwaysTrue
-			count: 2
+			count: 1
 			path: includes/class-wc-payments-customer-service.php
 
 		-

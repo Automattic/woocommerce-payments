@@ -98,6 +98,8 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		delete_user_option( 1, '_wcpay_customer_id' );
 		WC_Payments::mode()->live();
 		WC()->session->__unset( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY );
+		WC()->session->__unset( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_OWNER_KEY );
+		WC_Subscriptions::set_wcs_is_checkout_blocks_api_request( null );
 		parent::tear_down();
 	}
 
@@ -311,6 +313,115 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY ),
 			$customer_id
 		);
+	}
+
+	/**
+	 * Test a customer id stored in another session is not reused.
+	 */
+	public function test_non_logged_in_user_does_not_get_customer_id_stored_in_another_session() {
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->willReturn( 'cus_test12345' );
+
+		$this->customer_service->create_customer_for_user( new WP_User( 0 ), $this->get_mock_customer_data() );
+		$session_owner = WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_OWNER_KEY );
+		$this->assertSame( WC()->session->get_customer_id(), $session_owner );
+
+		WC()->session->set( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_OWNER_KEY, 't_another_session' );
+
+		$this->assertNull( $this->customer_service->get_customer_id_by_user_id( 0 ) );
+	}
+
+	/**
+	 * Test a customer id without the session it was stored in is not reused.
+	 */
+	public function test_non_logged_in_user_does_not_get_customer_id_stored_in_unknown_session() {
+		WC()->session->set( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY, 'cus_test12345' );
+
+		$this->assertNull( $this->customer_service->get_customer_id_by_user_id( 0 ) );
+	}
+
+	/**
+	 * Test the customer id in the session is added to the account created during checkout.
+	 */
+	public function test_add_customer_id_to_user() {
+		WC_Subscriptions::set_wcs_is_checkout_blocks_api_request( '__return_true' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->willReturn( 'cus_test12345' );
+
+		$this->customer_service->create_customer_for_user( new WP_User( 0 ), $this->get_mock_customer_data() );
+		$this->customer_service->add_customer_id_to_user( 1 );
+
+		$this->assertSame( 'cus_test12345', $this->customer_service->get_customer_id_by_user_id( 1 ) );
+	}
+
+	/**
+	 * Test a customer id stored in another session is not added to the account created during checkout.
+	 */
+	public function test_add_customer_id_to_user_ignores_customer_id_stored_in_another_session() {
+		WC_Subscriptions::set_wcs_is_checkout_blocks_api_request( '__return_true' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->willReturn( 'cus_test12345' );
+
+		$this->customer_service->create_customer_for_user( new WP_User( 0 ), $this->get_mock_customer_data() );
+		WC()->session->set( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_OWNER_KEY, 't_another_session' );
+		$this->customer_service->add_customer_id_to_user( 1 );
+
+		$this->assertNull( $this->customer_service->get_customer_id_by_user_id( 1 ) );
+	}
+
+	/**
+	 * Test a customer id that already belongs to another user is not added to the account created during checkout.
+	 */
+	public function test_add_customer_id_to_user_ignores_customer_id_bound_to_another_user() {
+		WC_Subscriptions::set_wcs_is_checkout_blocks_api_request( '__return_true' );
+		$other_user_id = self::factory()->user->create();
+		update_user_option( $other_user_id, self::CUSTOMER_LIVE_META_KEY, 'cus_test12345' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->willReturn( 'cus_test12345' );
+
+		$this->customer_service->create_customer_for_user( new WP_User( 0 ), $this->get_mock_customer_data() );
+		$this->customer_service->add_customer_id_to_user( 1 );
+
+		$this->assertNull( $this->customer_service->get_customer_id_by_user_id( 1 ) );
+	}
+
+	/**
+	 * Test a customer id that belongs to another user under the deprecated key is not added to the account created during checkout.
+	 */
+	public function test_add_customer_id_to_user_ignores_customer_id_bound_to_another_user_under_deprecated_key() {
+		WC_Subscriptions::set_wcs_is_checkout_blocks_api_request( '__return_true' );
+		$other_user_id = self::factory()->user->create();
+		update_user_option( $other_user_id, '_wcpay_customer_id', 'cus_test12345' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->willReturn( 'cus_test12345' );
+
+		$this->customer_service->create_customer_for_user( new WP_User( 0 ), $this->get_mock_customer_data() );
+		$this->customer_service->add_customer_id_to_user( 1 );
+
+		$this->assertNull( $this->customer_service->get_customer_id_by_user_id( 1 ) );
+	}
+
+	/**
+	 * Test a registered user's customer id is not stored in the session.
+	 */
+	public function test_create_customer_for_registered_user_does_not_save_customer_id_in_session() {
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->willReturn( 'cus_test12345' );
+
+		$this->customer_service->create_customer_for_user( new WP_User( 1 ), $this->get_mock_customer_data() );
+
+		$this->assertNull( WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY ) );
+		$this->assertNull( WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_OWNER_KEY ) );
 	}
 
 	/**
