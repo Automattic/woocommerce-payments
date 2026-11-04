@@ -1116,6 +1116,18 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'coupon' ) );
 	}
 
+	public function test_get_price_converts_to_the_given_currency_instead_of_the_selected_one() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
+
+		$this->assertSame( 10.0, $this->multi_currency->get_price( '10.0', 'coupon', $this->multi_currency->get_default_currency() ) );
+
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
+
+		// 0.708099 * 10 = 7.08099.
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'coupon', $this->multi_currency->get_enabled_currencies()['GBP'] ) );
+	}
+
 	public function test_get_price_returns_converted_exchange_rate_without_adjustments() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );

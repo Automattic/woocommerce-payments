@@ -501,6 +501,41 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_maybe_process_upe_redirect_ignores_setup_intent_not_attached_to_zero_amount_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0 );
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// An otherwise processable return, so the unattached intent is the only thing that may stop it.
+		$_SERVER['REQUEST_METHOD']          = 'GET';
+		$_GET['wc_payment_method']          = 'woocommerce_payments';
+		$_GET['_wpnonce']                   = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['setup_intent']               = 'seti_mock';
+		$_GET['setup_intent_client_secret'] = 'seti_mock_secret';
+		$_GET['key']                        = $order->get_order_key();
+
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 0 );
+
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['setup_intent'],
+			$_GET['setup_intent_client_secret'],
+			$_GET['key']
+		);
+	}
+
 	public function test_process_redirect_payment_intent_succeded() {
 		$order = WC_Helper_Order::create_order();
 
@@ -1311,6 +1346,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order_id             = $order->get_id();
 		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
 		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
+		$this->authorize_order_pay_request( $order );
 
 		$affirm_method   = $this->payment_methods['affirm'];
 		$afterpay_method = $this->payment_methods['afterpay_clearpay'];
@@ -1331,12 +1367,37 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
 		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$this->authorize_order_pay_request( $order );
 
 		$affirm_method   = $this->payment_methods['affirm'];
 		$afterpay_method = $this->payment_methods['afterpay_clearpay'];
 
 		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
+	}
+
+	public function test_payment_methods_ignore_order_total_in_order_pay_without_order_key() {
+		global $wp;
+		global $wp_query;
+
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
+
+		// Cart total is 100 USD, which is above Affirm minimum.
+		WC()->session->init();
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 10 );
+		WC()->cart->calculate_totals();
+
+		// Order total is 30 USD, which is below Affirm minimum.
+		$order                = WC_Helper_Order::create_order( 1, 30 );
+		$wp->query_vars       = [ 'order-pay' => strval( $order->get_id() ) ];
+		$wp_query->query_vars = [ 'order-pay' => strval( $order->get_id() ) ];
+		$_GET['key']          = 'wc_order_wrongkey';
+		wp_set_current_user( $order->get_user_id() );
+
+		$this->assertTrue( $this->payment_methods['affirm']->is_enabled_at_checkout( 'US' ) );
+
+		WC()->cart->empty_cart();
 	}
 
 	public function test_only_valid_payment_methods_returned_for_currency() {
@@ -1423,6 +1484,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order_id       = $order->get_id();
 		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$this->authorize_order_pay_request( $order );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
@@ -1436,6 +1498,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 		$wp->query_vars                              = [];
+	}
+
+	public function test_payment_method_ignores_order_currency_in_order_pay_without_order_key() {
+		global $wp;
+
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
+		$account_domestic_currency                   = Currency_Code::UNITED_STATES_DOLLAR;
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->save();
+		$wp->query_vars = [ 'order-pay' => strval( $order->get_id() ) ];
+		$_GET['key']    = 'wc_order_wrongkey';
+		wp_set_current_user( $order->get_user_id() );
+
+		$this->assertTrue( $this->payment_methods['bancontact']->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $this->payment_methods['affirm']->is_currency_valid( $account_domestic_currency ) );
 	}
 
 	public function test_create_token_from_setup_intent_adds_token() {
@@ -1599,6 +1678,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					],
 				],
 				'last_setup_error'       => [],
+				'metadata'               => [ 'order_id' => (string) $order_id ],
 			]
 		);
 
@@ -1642,6 +1722,42 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
 		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
 		$this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
+	}
+
+	public function test_process_redirect_payment_does_not_complete_zero_amount_order_with_setup_intent_for_another_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0 );
+		$order->update_meta_data( '_intent_id', 'seti_for_another_order' );
+		$order->save();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'seti_for_another_order' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'       => 'seti_for_another_order',
+						'status'   => Intent_Status::SUCCEEDED,
+						'metadata' => [ 'order_id' => (string) ( $order->get_id() + 1 ) ],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_mock' ) );
+
+		$mock_gateway->process_redirect_payment( $order, 'seti_for_another_order', false );
+
+		$result_order = wc_get_order( $order->get_id() );
+
+		$this->assertFalse( $result_order->is_paid() );
+		$this->assertSame( Order_Status::PENDING, $result_order->get_status() );
+		$this->assertStringContainsString( WC_Payment_Gateway_WCPay::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE . '=yes', $redirect_url );
 	}
 
 	// This test uses a mock of the gateway class due to get_selected_payment_method()'s reliance on the static method WC_Payments::get_payment_method_map(), which can't be mocked. Refactoring the gateway class to avoid using this static method would allow mocking it in tests.
@@ -4698,6 +4814,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Gives the request the order key from the order's payment link, as the order's customer.
+	 *
+	 * @param WC_Order $order Order being paid.
+	 */
+	private function authorize_order_pay_request( WC_Order $order ) {
+		$_GET['key'] = $order->get_order_key();
+		wp_set_current_user( $order->get_user_id() );
+	}
+
+	/**
 	 * Tests that BNPL gateways are disabled on the order pay page when shipping data is missing.
 	 *
 	 * @dataProvider provider_test_bnpl_on_order_pay_page
@@ -4721,6 +4847,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		set_query_var( 'order-pay', $order->get_id() );
 		$wp->set_query_var( 'order-pay', $order->get_id() );
+		$this->authorize_order_pay_request( $order );
 
 		$this->card_gateway->update_option( 'enabled', 'yes' );
 
@@ -4751,6 +4878,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		set_query_var( 'order-pay', $order->get_id() );
 		$wp->set_query_var( 'order-pay', $order->get_id() );
+		$this->authorize_order_pay_request( $order );
 
 		$this->card_gateway->update_option( 'enabled', 'yes' );
 
@@ -4777,6 +4905,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		set_query_var( 'order-pay', $order->get_id() );
 		$wp->set_query_var( 'order-pay', $order->get_id() );
+		$this->authorize_order_pay_request( $order );
 
 		$this->card_gateway->update_option( 'enabled', 'yes' );
 
@@ -4803,6 +4932,35 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		set_query_var( 'order-pay', $order->get_id() );
 		$wp->set_query_var( 'order-pay', $order->get_id() );
+		$this->authorize_order_pay_request( $order );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$affirm_gateway = $this->get_gateway( Payment_Method::AFFIRM );
+		$affirm_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFFIRM ] );
+		$this->prepare_gateway_for_availability_testing( $affirm_gateway );
+
+		$this->assertTrue( $affirm_gateway->is_available() );
+	}
+
+	public function test_affirm_gateway_ignores_order_address_on_order_pay_page_without_order_key() {
+		global $wp;
+
+		// Missing name, which would disable Affirm if the order were read.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( '' );
+		$order->set_shipping_last_name( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+		$_GET['key'] = 'wc_order_wrongkey';
+		wp_set_current_user( $order->get_user_id() );
 
 		$this->card_gateway->update_option( 'enabled', 'yes' );
 
@@ -4829,6 +4987,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		set_query_var( 'order-pay', $order->get_id() );
 		$wp->set_query_var( 'order-pay', $order->get_id() );
+		$this->authorize_order_pay_request( $order );
 
 		$this->card_gateway->update_option( 'enabled', 'yes' );
 
@@ -4854,6 +5013,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		set_query_var( 'order-pay', $order->get_id() );
 		$wp->set_query_var( 'order-pay', $order->get_id() );
+		$this->authorize_order_pay_request( $order );
 
 		$this->card_gateway->update_option( 'enabled', 'yes' );
 
