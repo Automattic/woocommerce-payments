@@ -50,6 +50,35 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Only orders are completed from an intent, never a subscription.
+	 */
+	public function test_update_order_status_from_intent_skips_subscriptions() {
+		// A succeeded intent that would otherwise mark the order paid, on an order reported as a subscription.
+		$intent = WC_Helper_Intention::create_intention();
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$order_id       = $this->order->get_id();
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $order_id ] );
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) use ( $order_id ) {
+				return $order instanceof WC_Order && $order->get_id() === $order_id;
+			}
+		);
+
+		// Act.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: nothing was completed. No transaction id, no intent status, status and notes unchanged.
+		$this->assertSame( '', $this->order->get_transaction_id() );
+		$this->assertSame( '', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertSame( Order_Status::ON_HOLD, wc_get_order( $order_id )->get_status() );
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $order_id ] ) );
+
+		WC_Subscriptions::set_wcs_is_subscription( null );
+	}
+
+	/**
 	 * Private method of `order_prepared_for_processing` stops processing if order passed isn't an order.
 	 */
 	public function test_order_status_not_updated_if_order_is_invalid() {
