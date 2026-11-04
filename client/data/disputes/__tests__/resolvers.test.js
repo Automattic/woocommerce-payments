@@ -69,6 +69,36 @@ describe( 'getDispute resolver', () => {
 	} );
 } );
 
+describe( 'getDispute resolver with an invalid ID', () => {
+	const traversalId = '../../wp/v2/users';
+	const invalidId = '..';
+
+	test( 'should record an error without requesting another endpoint', () => {
+		const generator = getDispute( invalidId );
+
+		expect( generator.next().value ).toEqual(
+			updateErrorForDispute(
+				'..',
+				undefined,
+				expect.objectContaining( {
+					code: 'wcpay_invalid_path_segment',
+				} )
+			)
+		);
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	test( 'should encode characters that would change the request', () => {
+		const generator = getDispute( traversalId );
+
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: '/wc/v3/payments/disputes/..%2F..%2Fwp%2Fv2%2Fusers',
+			} )
+		);
+	} );
+} );
+
 describe( 'getDisputes resolver', () => {
 	let generator = null;
 	const query = { paged: 1, perPage: 25, orderBy: 'someKey' };
