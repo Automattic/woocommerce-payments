@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Disable WordPress automatic updates on the local Docker development site.
