@@ -2392,6 +2392,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// from a leaked order key.
 			if ( WC()->session && '' !== (string) $intent_id ) {
 				WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, (string) $intent_id );
+				WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY, (string) WC()->session->get_customer_id() );
 			}
 		}
 		// Set the branded payment method title + card meta from the charge details BEFORE the status update.
