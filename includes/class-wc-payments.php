@@ -576,6 +576,7 @@ class WC_Payments {
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$session_service->init_hooks();
 		self::$woopay_tracker->init_hooks();
 		self::$order_service->init_hooks();
 		self::$order_success_page->init_hooks();
@@ -739,7 +740,6 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Qualitative_Feedback_Admin_Note_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );

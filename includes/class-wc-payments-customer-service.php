@@ -43,6 +43,11 @@ class WC_Payments_Customer_Service {
 	const CUSTOMER_ID_SESSION_KEY = 'wcpay_customer_id';
 
 	/**
+	 * Key used to store the ID of the WooCommerce Session which the customer id above was stored in.
+	 */
+	const CUSTOMER_ID_SESSION_OWNER_KEY = 'wcpay_customer_id_session';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -119,8 +124,7 @@ class WC_Payments_Customer_Service {
 		// User ID might be 0 if fetched from a WP_User instance for a user who isn't logged in.
 		if ( null === $user_id || 0 === $user_id ) {
 			// Try to retrieve the customer id from the session if stored previously.
-			$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
-			return is_string( $customer_id ) ? $customer_id : null;
+			return $this->get_customer_id_from_session();
 		}
 
 		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
@@ -154,11 +158,10 @@ class WC_Payments_Customer_Service {
 
 		if ( $user instanceof WP_User && $user->ID > 0 ) {
 			$this->update_user_customer_id( $user->ID, $customer_id );
-		}
-
-		if ( isset( WC()->session ) ) {
+		} elseif ( isset( WC()->session ) ) {
 			// Save the customer id in the session for non logged in users to reuse it in payments.
 			WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
+			WC()->session->set( self::CUSTOMER_ID_SESSION_OWNER_KEY, (string) WC()->session->get_customer_id() );
 		}
 
 		return $customer_id;
@@ -384,6 +387,23 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Returns the customer ID stored in the current session for a shopper who isn't logged in.
+	 *
+	 * The customer ID is only used in the session that stored it.
+	 *
+	 * @return string|null The customer ID, or null if there's none or it was stored in another session.
+	 */
+	private function get_customer_id_from_session(): ?string {
+		$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
+
+		if ( ! is_string( $customer_id ) || WC()->session->get( self::CUSTOMER_ID_SESSION_OWNER_KEY ) !== (string) WC()->session->get_customer_id() ) {
+			return null;
+		}
+
+		return $customer_id;
+	}
+
+	/**
 	 * Returns the name of the customer option meta, taking test mode into account.
 	 *
 	 * @return string The customer ID option name.
@@ -475,13 +495,46 @@ class WC_Payments_Customer_Service {
 		}
 
 		// Retrieve the WooCommerce Payments customer ID from the user session.
-		$customer_id = WC()->session ? WC()->session->get( self::CUSTOMER_ID_SESSION_KEY ) : null;
+		$customer_id = $this->get_customer_id_from_session();
 
-		if ( ! $customer_id ) {
+		if ( ! $customer_id || $this->is_customer_id_bound_to_another_user( $customer_id, (int) $user_id ) ) {
 			return;
 		}
 
 		$this->update_user_customer_id( $user_id, $customer_id );
+	}
+
+	/**
+	 * Checks whether a customer ID is already stored on a user other than the given one.
+	 *
+	 * A customer ID from the session is only added to a new account when no other account has it.
+	 *
+	 * @param string $customer_id The WooCommerce Payments customer ID.
+	 * @param int    $user_id     The WordPress user ID to leave out of the check.
+	 *
+	 * @return bool True if another user has the customer ID.
+	 */
+	private function is_customer_id_bound_to_another_user( string $customer_id, int $user_id ): bool {
+		global $wpdb;
+
+		// User options are stored with the blog prefix, or without it when they're network-wide.
+		$prefix     = $wpdb->get_blog_prefix();
+		$option     = $this->get_customer_id_option();
+		$deprecated = self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION;
+
+		$other_user_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key IN ( %s, %s, %s, %s ) AND meta_value = %s AND user_id <> %d LIMIT 1",
+				$prefix . $option,
+				$option,
+				$prefix . $deprecated,
+				$deprecated,
+				$customer_id,
+				$user_id
+			)
+		);
+
+		return null !== $other_user_id;
 	}
 
 	/**

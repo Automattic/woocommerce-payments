@@ -333,7 +333,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
-		$this->card_gateway->update_option( 'saved_cards', 'yes' );
+		// Saving through the gateway would also save every setting this test changed, after the rollback.
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'saved_cards' => 'yes' ] );
 
 		// Some tests simulate payment method parameters.
 		$payment_method_keys = [
@@ -438,7 +439,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// below would be processed if this were a GET. The request-method gate is the only
 		// thing that may stop it.
 		$_GET['wc_payment_method']            = 'woocommerce_payments';
-		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce_' . $order->get_id() );
 		$_GET['payment_intent']               = 'pi_mock';
 		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
 		$_GET['key']                          = $order->get_order_key();
@@ -514,7 +515,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// An otherwise processable return, so the unattached intent is the only thing that may stop it.
 		$_SERVER['REQUEST_METHOD']          = 'GET';
 		$_GET['wc_payment_method']          = 'woocommerce_payments';
-		$_GET['_wpnonce']                   = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['_wpnonce']                   = wp_create_nonce( 'wcpay_process_redirect_order_nonce_' . $order->get_id() );
 		$_GET['setup_intent']               = 'seti_mock';
 		$_GET['setup_intent_client_secret'] = 'seti_mock_secret';
 		$_GET['key']                        = $order->get_order_key();
@@ -532,6 +533,41 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$_GET['_wpnonce'],
 			$_GET['setup_intent'],
 			$_GET['setup_intent_client_secret'],
+			$_GET['key']
+		);
+	}
+
+	public function test_maybe_process_upe_redirect_ignores_previous_nonce_format() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// An otherwise processable return, so the nonce is the only thing that may stop it.
+		$_SERVER['REQUEST_METHOD']            = 'GET';
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
+
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
 			$_GET['key']
 		);
 	}
@@ -1707,8 +1743,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $_unused_order ) {
-				return true;
+			function ( $order ) {
+				// Only the subscription id (10), not the order being completed, is a subscription.
+				return is_numeric( $order ) && 10 === (int) $order;
 			}
 		);
 
@@ -1838,8 +1875,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $_unused_order ) {
-				return true;
+			function ( $order ) {
+				// Only the subscription id (10), not the order being completed, is a subscription.
+				return is_numeric( $order ) && 10 === (int) $order;
 			}
 		);
 
@@ -3435,6 +3473,66 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
+	public function test_create_setup_intent_ajax_rejects_invalid_fraud_token_when_session_is_not_loaded() {
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+		$fraud_prevention_service_mock
+			->method( 'is_enabled' )
+			->willReturn( true );
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'wrong_token' )
+			->willReturn( false );
+
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+
+		$_POST = [
+			'wcpay-payment-method'         => 'pm_mock',
+			'wcpay-fraud-prevention-token' => 'wrong_token',
+		];
+
+		[ $response, $session_was_loaded ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertTrue( $session_was_loaded );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( "We're not able to add this payment method. Please refresh the page and try again.", $response['data']['error']['message'] );
+	}
+
+	public function test_create_setup_intent_ajax_creates_setup_intent_with_valid_fraud_token_when_session_is_not_loaded() {
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+		$fraud_prevention_service_mock
+			->method( 'is_enabled' )
+			->willReturn( true );
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'valid_token' )
+			->willReturn( true );
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
+
+		$_POST = [
+			'wcpay-payment-method'         => 'pm_mock',
+			'wcpay-fraud-prevention-token' => 'valid_token',
+		];
+
+		[ $response ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertTrue( $response['success'] );
+		$this->assertSame( 'seti_mock_123', $response['data']['id'] );
+	}
+
 	public function test_manage_customer_details_for_order_skips_customer_update_when_changing_subscription_payment_method() {
 		$order = WC_Helper_Order::create_order();
 
@@ -3502,8 +3600,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_setup_intention(
 					[
-						'status'         => Intent_Status::SUCCEEDED,
-						'payment_method' => 'pm_mock',
+						'status'            => Intent_Status::SUCCEEDED,
+						'customer_id'       => 'cus_12345',
+						'payment_method_id' => 'pm_mock',
 					]
 				)
 			);
@@ -3516,6 +3615,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$result = $this->card_gateway->add_payment_method();
 
 		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	public function test_add_payment_method_rejects_intent_for_another_customer() {
+		$_POST = [ 'wcpay-setup-intent' => 'seti_other' ];
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'seti_other' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'                => 'seti_other',
+						'status'            => Intent_Status::SUCCEEDED,
+						'customer_id'       => 'cus_other',
+						'payment_method_id' => 'pm_other',
+					]
+				)
+			);
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$result = $this->card_gateway->add_payment_method();
+
+		$this->assertEquals( 'error', $result['result'] );
+		$this->assertSame( "We're not able to add this payment method. Please try again later", wc_get_notices( 'error' )[0]['notice'] );
+		wc_clear_notices();
 	}
 
 	public function test_add_payment_method_no_customer() {
@@ -4749,6 +4881,28 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $afterpay->is_available() );
 	}
 
+	/**
+	 * @dataProvider manual_capture_gateway_provider
+	 */
+	public function test_manual_capture_keeps_only_payment_methods_that_can_capture_later( $payment_method_id ) {
+		$this->card_gateway->update_option( 'manual_capture', 'yes' );
+		$gateway = $this->get_gateway( $payment_method_id );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::KLARNA, Payment_Method::AMAZON_PAY ] );
+
+		$this->assertSame(
+			[ 'card', 'link', 'amazon_pay' ],
+			array_values( $gateway->get_upe_enabled_payment_method_ids_based_on_manual_capture() )
+		);
+	}
+
+	public function manual_capture_gateway_provider() {
+		return [
+			'card'       => [ Payment_Method::CARD ],
+			'amazon_pay' => [ Payment_Method::AMAZON_PAY ],
+			'klarna'     => [ Payment_Method::KLARNA ],
+		];
+	}
+
 	public function test_gateway_disabled_when_card_gateway_is_disabled() {
 		$this->card_gateway->update_option( 'enabled', 'no' );
 		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
@@ -5237,6 +5391,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( $error_notices );
 		$this->assertEquals( 'The selected payment method requires a total amount of at least $60.00.', $error_notices['error'][0]['notice'] );
 		$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+	}
+
+	public function test_process_payment_through_another_payment_method_gateway_uses_manual_capture() {
+		$this->card_gateway->update_option( 'manual_capture', 'yes' );
+		$amazon_pay_gateway = $this->get_gateway( Payment_Method::AMAZON_PAY );
+		$this->set_payment_gateway_map( [ Payment_Method::AMAZON_PAY => $amazon_pay_gateway ] );
+		$order = WC_Helper_Order::create_order();
+
+		$_POST = [
+			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => 'woocommerce_payments_amazon_pay',
+		];
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		// process_payment() catches every exception, a failed mock expectation included, so the
+		// argument is recorded and checked after the call instead.
+		$capture_methods = [];
+		$request         = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->method( 'set_capture_method' )
+			->willReturnCallback(
+				function ( $manual_capture ) use ( &$capture_methods ) {
+					$capture_methods[] = $manual_capture;
+				}
+			);
+		$request->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
+
+		$amazon_pay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( [ true ], $capture_methods );
 	}
 
 	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
@@ -5946,7 +6133,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * Tests that no payment is processed when the $_POST 'is-woopay-preflight-check` is present.
 	 */
 	public function test_no_payment_is_processed_for_woopay_preflight_check_request() {
-		$_POST['is-woopay-preflight-check'] = true;
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+		$_POST['is-woopay-preflight-check']      = true;
 
 		// Arrange: Create an order to test with.
 		$order_data = [
@@ -5964,7 +6154,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' );
 
 		// Act: process payment.
-		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		try {
+			$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		} finally {
+			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+		}
 
 		$this->assertSame(
 			[
@@ -5974,6 +6168,313 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$result
 		);
 		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	/**
+	 * An unverified preflight must neither charge the shopper nor report success.
+	 */
+	public function test_payment_is_rejected_for_an_unverified_preflight_check_request() {
+		// A Cart-Token and `User-Agent: WooPay`, but no vouch or signature.
+		$_SERVER['HTTP_USER_AGENT']         = 'WooPay';
+		$_SERVER['HTTP_CART_TOKEN']         = 'the.cart.token';
+		$_POST['is-woopay-preflight-check'] = true;
+
+		$order = WC_Helper_Order::create_order();
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+
+		// Assert: A failed preflight must not become a payment attempt.
+		$mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'process_payment_for_order' );
+
+		// Act: process payment.
+		try {
+			$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+			$this->assertSame(
+				[
+					'result'   => 'fail',
+					'redirect' => '',
+				],
+				$result
+			);
+			$this->assertFalse( wc_get_order( $order->get_id() )->is_paid() );
+		} finally {
+			unset( $_SERVER['HTTP_USER_AGENT'], $_SERVER['HTTP_CART_TOKEN'], $_POST['is-woopay-preflight-check'] );
+		}
+	}
+
+	/**
+	 * Coupon usage limits still apply when a preflight can't be verified.
+	 *
+	 * @dataProvider invalid_preflight_proof_provider
+	 * @param string $proof Invalid or missing WooPay credential.
+	 */
+	public function test_unverified_preflight_keeps_coupon_usage_limits( string $proof ) {
+		$server = $_SERVER;
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
+
+		if ( 'malformed' === $proof ) {
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = 'invalid!';
+		} elseif ( 'stale' === $proof ) {
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header( time() - 3600 );
+		} elseif ( 'different_cart' === $proof ) {
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+			$_SERVER['HTTP_CART_TOKEN']              = 'another.cart.token';
+		} elseif ( 'signature_off_signed_path' === $proof ) {
+			$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => false ] );
+			add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		}
+
+		$order   = WC_Helper_Order::create_order( 0 );
+		$request = $this->create_woopay_preflight_request();
+
+		try {
+			$response = $this->card_gateway->remove_all_actions_on_preflight_check( null, [], $request );
+
+			foreach ( [ 'global', 'per_user' ] as $limit ) {
+				$coupon = new WC_Coupon();
+				$coupon->set_code( 'spent-' . $limit );
+				$coupon->set_discount_type( 'fixed_cart' );
+				$coupon->set_amount( 25 );
+				if ( 'global' === $limit ) {
+					$coupon->set_usage_limit( 1 );
+				} else {
+					$coupon->set_usage_limit_per_user( 1 );
+				}
+				$coupon->save();
+				$coupon->increase_usage_count( $order->get_billing_email() );
+
+				$validation = $order->apply_coupon( $coupon );
+				$this->assertWPError( $validation );
+				$this->assertStringContainsStringIgnoringCase( 'usage limit', $validation->get_error_message() );
+				$this->assertSame( 1, ( new WC_Coupon( $coupon->get_id() ) )->get_usage_count() );
+			}
+
+			$this->assertWPError( $response );
+			$this->assertSame( 'wcpay_invalid_woopay_preflight', $response->get_error_code() );
+		} finally {
+			$_SERVER = $server;
+			remove_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
+		}
+	}
+
+	/**
+	 * @return array Invalid WooPay credentials.
+	 */
+	public function invalid_preflight_proof_provider(): array {
+		return [
+			'missing'                   => [ 'missing' ],
+			'malformed'                 => [ 'malformed' ],
+			'stale'                     => [ 'stale' ],
+			'different cart'            => [ 'different_cart' ],
+			'signature off signed path' => [ 'signature_off_signed_path' ],
+		];
+	}
+
+	/**
+	 * The last coupon use must remain available after an authenticated dry run.
+	 *
+	 * @dataProvider valid_preflight_proof_provider
+	 * @param string $proof WooPay credential used for the preflight.
+	 */
+	public function test_verified_preflight_preserves_the_last_coupon_use( string $proof ) {
+		$server          = $_SERVER;
+		$applied_coupons = WC()->cart->get_applied_coupons();
+		if ( 'vouch' === $proof ) {
+			Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+		} else {
+			$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => true ] );
+			add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		}
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'checkout-draft' );
+		$order->save();
+
+		$coupon = new WC_Coupon();
+		$coupon->set_code( 'last-use' );
+		$coupon->set_discount_type( 'fixed_cart' );
+		$coupon->set_amount( 25 );
+		$coupon->set_usage_limit( 1 );
+		$coupon->set_usage_limit_per_user( 1 );
+		$coupon->save();
+		$coupon_item = new WC_Order_Item_Coupon();
+		$coupon_item->set_code( $coupon->get_code() );
+		$coupon_item->set_discount( 25 );
+		$order->add_item( $coupon_item );
+		$order->save();
+		WC()->cart->set_applied_coupons( [ $coupon->get_code() ] );
+
+		$discounts = new WC_Discounts( $order );
+		$gateway   = $this->get_partial_mock_for_gateway( [ 'process_payment_for_order' ] );
+		$gateway->expects( $this->never() )->method( 'process_payment_for_order' );
+		$_POST['is-woopay-preflight-check'] = true;
+		// Another plugin setting its own hold time must not bring the hold back.
+		$hold_minutes = function () {
+			return 60;
+		};
+		add_filter( 'woocommerce_coupon_hold_minutes', $hold_minutes, 20 );
+
+		try {
+			$response = $gateway->remove_all_actions_on_preflight_check( null, [], $this->create_woopay_preflight_request() );
+			$this->assertNull( $response );
+			$order->hold_applied_coupons( $order->get_billing_email() );
+			$this->assertTrue( $discounts->is_coupon_valid( new WC_Coupon( $coupon->get_id() ) ) );
+			$this->assertSame(
+				[
+					'result'   => 'success',
+					'redirect' => '',
+				],
+				$gateway->process_payment( $order->get_id() )
+			);
+			$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
+			$this->assertSame( 0, ( new WC_Coupon( $coupon->get_id() ) )->get_usage_count() );
+		} finally {
+			$_SERVER = $server;
+			unset( $_POST['is-woopay-preflight-check'] );
+			remove_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
+			remove_filter( 'woocommerce_coupon_hold_minutes', $hold_minutes, 20 );
+			$order->get_data_store()->release_held_coupons( $order );
+			WC()->cart->set_applied_coupons( $applied_coupons );
+		}
+
+		$this->assertTrue( $discounts->is_coupon_valid( new WC_Coupon( $coupon->get_id() ) ) );
+		$order->payment_complete();
+		$this->assertSame( 1, ( new WC_Coupon( $coupon->get_id() ) )->get_usage_count() );
+		$this->assertWPError( $discounts->is_coupon_valid( new WC_Coupon( $coupon->get_id() ) ) );
+	}
+
+	/**
+	 * @return array Supported WooPay credentials.
+	 */
+	public function valid_preflight_proof_provider(): array {
+		return [
+			'vouch'     => [ 'vouch' ],
+			'signature' => [ 'signature' ],
+		];
+	}
+
+	/**
+	 * On a fully discounted cart the preflight completes the order, so it must keep per-customer limits.
+	 *
+	 * @dataProvider valid_preflight_proof_provider
+	 * @param string $proof WooPay credential used for the preflight.
+	 */
+	public function test_verified_preflight_keeps_per_customer_limit_on_a_free_cart( string $proof ) {
+		$server = $_SERVER;
+		if ( 'vouch' === $proof ) {
+			Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+		} else {
+			$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => true ] );
+			add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		}
+		wp_set_current_user( 0 );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( true );
+		$product->set_regular_price( 25 );
+		$product->save();
+
+		$coupon = new WC_Coupon();
+		$coupon->set_code( 'free-once-per-customer' );
+		$coupon->set_discount_type( 'percent' );
+		$coupon->set_amount( 100 );
+		$coupon->set_usage_limit_per_user( 1 );
+		$coupon->save();
+		$coupon->increase_usage_count( 'guest@example.com' );
+
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $product->get_id() );
+		WC()->cart->apply_coupon( $coupon->get_code() );
+
+		$request = $this->create_woopay_preflight_request();
+		$request->set_param(
+			'billing_address',
+			[
+				'first_name' => 'Jane',
+				'last_name'  => 'Doe',
+				'address_1'  => '60 29th Street',
+				'city'       => 'San Francisco',
+				'state'      => 'CA',
+				'postcode'   => '94110',
+				'country'    => 'US',
+				'email'      => 'guest@example.com',
+				'phone'      => '555-32123',
+			]
+		);
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		add_filter( 'rest_request_before_callbacks', [ $this->card_gateway, 'remove_all_actions_on_preflight_check' ], 10, 3 );
+		// A free order needs no gateway, and other tests leave partly built ones registered.
+		$gateways                                  = WC()->payment_gateways()->payment_gateways;
+		WC()->payment_gateways()->payment_gateways = [];
+
+		try {
+			$response = rest_do_request( $request );
+		} finally {
+			WC()->payment_gateways()->payment_gateways = $gateways;
+			$_SERVER                                   = $server;
+			remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			remove_filter( 'rest_request_before_callbacks', [ $this->card_gateway, 'remove_all_actions_on_preflight_check' ], 10 );
+			remove_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
+			WC()->cart->empty_cart();
+			// Store API keeps the draft order ID in the session, which outlives this test's order.
+			WC()->session->set( 'store_api_draft_order', null );
+		}
+
+		$this->assertSame( 'woocommerce_rest_cart_coupon_errors', $response->get_data()['code'] ?? null );
+		$this->assertSame( 1, ( new WC_Coupon( $coupon->get_id() ) )->get_usage_count() );
+		$this->assertSame( [], wc_get_orders( [ 'status' => [ 'processing', 'completed' ] ] ) );
+	}
+
+	/**
+	 * A request an earlier filter already rejected keeps that error, and is not treated as a preflight.
+	 */
+	public function test_preflight_check_returns_an_earlier_error_unchanged() {
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+		$error                                   = new WP_Error( 'earlier_error', 'An earlier filter rejected this request.' );
+
+		try {
+			$response = $this->card_gateway->remove_all_actions_on_preflight_check( $error, [], $this->create_woopay_preflight_request() );
+		} finally {
+			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+		}
+
+		$this->assertSame( $error, $response );
+		$this->assertFalse( has_filter( 'woocommerce_coupon_hold_minutes', '__return_zero' ) );
+	}
+
+	/**
+	 * Each REST request is checked for its own preflight flag.
+	 */
+	public function test_preflight_flag_is_read_from_each_rest_request() {
+		$this->card_gateway->remove_all_actions_on_preflight_check( null, [], $this->create_woopay_preflight_request() );
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$this->assertNull( $this->card_gateway->remove_all_actions_on_preflight_check( null, [], $request ) );
+	}
+
+	/**
+	 * @return WP_REST_Request Store API request carrying the preflight marker.
+	 */
+	private function create_woopay_preflight_request(): WP_REST_Request {
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$request->set_body_params(
+			[
+				'payment_data' => [
+					[
+						'key'   => 'is-woopay-preflight-check',
+						'value' => '1',
+					],
+				],
+			]
+		);
+		return $request;
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
@@ -6212,6 +6713,35 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
 
 		return $fraud_prevention_service_mock;
+	}
+
+	/**
+	 * Calls `create_setup_intent_ajax()` with no session loaded.
+	 *
+	 * @return array The decoded JSON response, and whether the handler loaded a session.
+	 */
+	private function call_create_setup_intent_ajax_without_session(): array {
+		$_REQUEST['_ajax_nonce'] = wp_create_nonce( 'wcpay_create_setup_intent_nonce' );
+
+		$session      = WC()->session;
+		WC()->session = null;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->create_setup_intent_ajax();
+			$response           = json_decode( ob_get_clean(), true );
+			$session_was_loaded = null !== WC()->session;
+		} finally {
+			WC()->session = $session;
+			unset( $_REQUEST['_ajax_nonce'] );
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		return [ $response, $session_was_loaded ];
 	}
 
 	private function create_charge_object() {

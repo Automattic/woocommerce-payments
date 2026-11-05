@@ -48,6 +48,15 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$this->service->init( $this->mock_gateway, $this->mock_order_service );
 	}
 
+	/**
+	 * Post-test teardown
+	 */
+	public function tear_down() {
+		WC()->session->set( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER, null );
+		WC()->session->set( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER_OWNER, null );
+		parent::tear_down();
+	}
+
 	public function test_check_session_order_redirect_to_previous_order() {
 		$same_cart_hash = 'FAKE_SAME_CART_HASH';
 		$return_url     = 'https://example.com';
@@ -57,10 +66,7 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$session_order->set_cart_hash( $same_cart_hash );
 		$session_order->set_status( Order_Status::COMPLETED );
 		$session_order->save();
-		WC()->session->set(
-			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER,
-			$session_order->get_id()
-		);
+		$this->service->maybe_update_session_processing_order( $session_order->get_id() );
 
 		// Arrange the order is being processed.
 		$current_order = WC_Helper_Order::create_order();
@@ -113,12 +119,40 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 			$current_order_id,
 			WC()->session->get( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER )
 		);
+		$this->assertSame(
+			WC()->session->get_customer_id(),
+			WC()->session->get( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER_OWNER )
+		);
 
 		// Destroy the session value after running test.
 		WC()->session->set(
 			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER,
 			null
 		);
+	}
+
+	public function test_check_session_order_ignores_processing_order_stored_in_another_session() {
+		$same_cart_hash = 'FAKE_SAME_CART_HASH';
+
+		// Arrange a paid processing order whose session ID differs from the current session.
+		$session_order = WC_Helper_Order::create_order();
+		$session_order->set_cart_hash( $same_cart_hash );
+		$session_order->set_status( Order_Status::COMPLETED );
+		$session_order->save();
+		$this->service->maybe_update_session_processing_order( $session_order->get_id() );
+		WC()->session->set( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER_OWNER, 't_another_session' );
+
+		// Arrange the order is being processed.
+		$current_order = WC_Helper_Order::create_order();
+		$current_order->set_cart_hash( $same_cart_hash );
+		$current_order->save();
+
+		// Act.
+		$result = $this->service->check_against_session_processing_order( $current_order );
+
+		// Assert: no redirect, and the current order is kept.
+		$this->assertNull( $result );
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $current_order->get_id() )->get_status() );
 	}
 
 	/**
@@ -553,10 +587,7 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->set_status( Order_Status::PROCESSING );
 		$order->save();
-		WC()->session->set(
-			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER,
-			$order->get_id()
-		);
+		$this->service->maybe_update_session_processing_order( $order->get_id() );
 
 		// Act: attempt to pay for the order a second time.
 		$this->service->check_order_already_paid( $order );

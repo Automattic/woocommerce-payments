@@ -25,6 +25,13 @@ class DuplicatePaymentPreventionService {
 	const SESSION_KEY_PROCESSING_ORDER = 'wcpay_processing_order';
 
 	/**
+	 * Key name for saving the ID of the WC Session the processing order_id above was stored in.
+	 *
+	 * @type string
+	 */
+	const SESSION_KEY_PROCESSING_ORDER_OWNER = 'wcpay_processing_order_session';
+
+	/**
 	 * HooksProxy instance.
 	 *
 	 * @var HooksProxy
@@ -88,7 +95,13 @@ class DuplicatePaymentPreventionService {
 	 */
 	public function get_session_processing_order(): ?int {
 		$val = $this->session_service->get( self::SESSION_KEY_PROCESSING_ORDER );
-		return null === $val ? null : absint( $val );
+
+		// The order is only used in the session that stored it.
+		if ( null === $val || $this->session_service->get( self::SESSION_KEY_PROCESSING_ORDER_OWNER ) !== $this->session_service->get_session_id() ) {
+			return null;
+		}
+
+		return absint( $val );
 	}
 
 	/**

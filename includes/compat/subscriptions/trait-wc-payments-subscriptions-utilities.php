@@ -33,9 +33,18 @@ trait WC_Payments_Subscriptions_Utilities {
 	/**
 	 * Returns whether this user is changing the payment method for a subscription.
 	 *
+	 * @param WC_Order|WC_Subscription|int|null $order Optional. The order being processed, or its ID.
+	 *                                                 When it is a subscription, the request is always a
+	 *                                                 payment method change.
+	 *
 	 * @return bool
 	 */
-	public function is_changing_payment_method_for_subscription() {
+	public function is_changing_payment_method_for_subscription( $order = null ) {
+		// A subscription only ever reaches the gateway to change its payment method.
+		if ( null !== $order && function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) {
+			return true;
+		}
+
 		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return wcs_is_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		}

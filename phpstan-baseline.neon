@@ -319,12 +319,6 @@ parameters:
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
-			rawMessage: If condition is always true.
-			identifier: if.alwaysTrue
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
 			rawMessage: Instanceof between WC_Cart and WC_Cart will always evaluate to true.
 			identifier: instanceof.alwaysTrue
 			count: 1
@@ -579,7 +573,7 @@ parameters:
 		-
 			rawMessage: Ternary operator condition is always true.
 			identifier: ternary.alwaysTrue
-			count: 2
+			count: 1
 			path: includes/class-wc-payments-customer-service.php
 
 		-
@@ -1844,12 +1838,6 @@ parameters:
 
 		-
 			rawMessage: 'Call to an undefined method WC_Session::has_session().'
-			identifier: method.notFound
-			count: 1
-			path: includes/woopay/class-woopay-session.php
-
-		-
-			rawMessage: 'Call to an undefined method WC_Session::set_customer_session_cookie().'
 			identifier: method.notFound
 			count: 1
 			path: includes/woopay/class-woopay-session.php

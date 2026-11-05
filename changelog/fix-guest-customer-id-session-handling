@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Harden customer and payment details kept in checkout sessions.
