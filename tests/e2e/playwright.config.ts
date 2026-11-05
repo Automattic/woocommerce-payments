@@ -81,10 +81,6 @@ export default defineConfig( {
 		trace: 'on-first-retry',
 		video: 'on-first-retry',
 		viewport: { width: 1280, height: 720 },
-		// wp-admin turns on page-to-page view transitions unless the browser asks for
-		// reduced motion. Chromium 149 seems to stop painting after one, so clicks on
-		// the next admin page hang waiting for the element to be stable.
-		contextOptions: { reducedMotion: 'reduce' },
 	},
 	timeout: 120 * 1000, // Default is 30s, sometimes it is not enough for local tests due to long setup.
 	expect: {
