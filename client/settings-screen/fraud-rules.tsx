@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import InlineNotice from 'wcpay/components/inline-notice';
+import RuleCardInfoNoticesContext from '../settings/fraud-protection/advanced-settings/rule-card-notice-context';
 import FraudPreventionSettingsContext from '../settings/fraud-protection/advanced-settings/context';
 import AVSMismatchRuleCard from '../settings/fraud-protection/advanced-settings/cards/avs-mismatch';
 import CVCVerificationRuleCard from '../settings/fraud-protection/advanced-settings/cards/cvc-verification';
@@ -158,15 +159,17 @@ export const FraudRules = ( { data, onChange }: EditProps ) => {
 				setIsDirty: () => null,
 			} }
 		>
-			<div className="wcpay-settings-screen__fraud-rules">
-				<AVSMismatchRuleCard />
-				<InternationalIPAddressRuleCard />
-				<IPAddressMismatchRuleCard />
-				<AddressMismatchRuleCard />
-				<PurchasePriceThresholdRuleCard />
-				<OrderItemsThresholdRuleCard />
-				<CVCVerificationRuleCard />
-			</div>
+			<RuleCardInfoNoticesContext.Provider value={ true }>
+				<div className="wcpay-settings-screen__fraud-rules">
+					<AVSMismatchRuleCard />
+					<InternationalIPAddressRuleCard />
+					<IPAddressMismatchRuleCard />
+					<AddressMismatchRuleCard />
+					<PurchasePriceThresholdRuleCard />
+					<OrderItemsThresholdRuleCard />
+					<CVCVerificationRuleCard />
+				</div>
+			</RuleCardInfoNoticesContext.Provider>
 		</FraudPreventionSettingsContext.Provider>
 	);
 };

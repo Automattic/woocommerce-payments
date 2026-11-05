@@ -178,9 +178,11 @@
 		flex-direction: column;
 		gap: 16px;
 
+		// Sized like the screen's other card titles.
 		> h4 {
 			order: -2;
 			margin: 0;
+			font-size: 15px;
 		}
 
 		> .fraud-protection-rule-description {
