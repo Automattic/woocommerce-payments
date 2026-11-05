@@ -44,6 +44,7 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		unset( $wp->query_vars['order-received'] );
 		if ( WC()->session ) {
 			WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
+			WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY, null );
 		}
 		parent::tear_down();
 	}
@@ -83,6 +84,7 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 	 */
 	private function set_session_paid_intent_id( $intent_id ) {
 		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, $intent_id );
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY, (string) WC()->session->get_customer_id() );
 	}
 
 	public function test_skips_email_verification_for_the_session_that_paid() {
@@ -106,6 +108,16 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 	public function test_keeps_email_verification_when_the_session_intent_does_not_match_the_order() {
 		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
 		$this->set_session_paid_intent_id( 'pi_someone_elses' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_when_the_paid_intent_was_stored_in_another_session() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_abc123' );
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY, 't_another_session' );
 
 		$this->assertTrue(
 			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )

@@ -319,7 +319,9 @@ class WC_Payments_Onboarding_Service {
 	 *                                  indicating whether the capability should be requested when the account is created
 	 *                                  and enabled in the settings.
 	 * @param string|null $explicit_mode Optional. The user's explicit mode selection ('live' or 'test').
-	 *                                   When provided, overrides the auto-detected mode (unless dev mode is active).
+	 *                                   Used only before an account is connected, where it overrides the
+	 *                                   environment auto-detection (except in dev mode). Ignored in dev mode or
+	 *                                   once an account is connected, where the store keeps its onboarded mode.
 	 *
 	 * @return array Session data.
 	 *
@@ -339,9 +341,12 @@ class WC_Payments_Onboarding_Service {
 
 		$this->set_onboarding_init_in_progress();
 
-		// Determine setup mode: dev mode always forces test; explicit user selection overrides auto-detection.
+		// Determine the setup mode. Dev mode forces test. A connected store keeps the mode it was onboarded in;
+		// the requested mode and environment auto-detection apply only before an account is connected.
 		if ( WC_Payments::mode()->is_dev() ) {
 			$setup_mode = 'test';
+		} elseif ( WC_Payments::get_account_service()->is_stripe_connected() ) {
+			$setup_mode = self::is_test_mode_enabled() ? 'test' : 'live';
 		} elseif ( null !== $explicit_mode && in_array( strtolower( $explicit_mode ), [ 'live', 'test' ], true ) ) {
 			$setup_mode = $explicit_mode;
 		} else {
@@ -719,6 +724,11 @@ class WC_Payments_Onboarding_Service {
 		if ( $this->is_onboarding_init_in_progress() ) {
 			// We can't allow multiple onboarding initializations to happen at the same time.
 			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
+		}
+
+		// A connected store must reset onboarding before starting a test-drive account.
+		if ( WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new Exception( __( 'An account is already set up. Please reset the onboarding first.', 'woocommerce-payments' ) );
 		}
 
 		// Since there should be no Stripe KYC needed, make sure we start with a clean state.
@@ -1385,7 +1395,8 @@ class WC_Payments_Onboarding_Service {
 			)
 		) ) {
 			// Discriminate between the settings page and the NOX in-context onboarding.
-			if ( ! empty( $referer_params['path'] ) &&
+			// is_string() guards against an array `path` (a `path[]=` referer) that would make strpos() throw.
+			if ( ! empty( $referer_params['path'] ) && is_string( $referer_params['path'] ) &&
 				0 === strpos( $referer_params['path'], '/woopayments/onboarding' ) ) {
 				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
 			}

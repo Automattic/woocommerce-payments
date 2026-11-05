@@ -1707,8 +1707,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $_unused_order ) {
-				return true;
+			function ( $order ) {
+				// Only the subscription id (10), not the order being completed, is a subscription.
+				return is_numeric( $order ) && 10 === (int) $order;
 			}
 		);
 
@@ -1838,8 +1839,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $_unused_order ) {
-				return true;
+			function ( $order ) {
+				// Only the subscription id (10), not the order being completed, is a subscription.
+				return is_numeric( $order ) && 10 === (int) $order;
 			}
 		);
 
@@ -5946,7 +5948,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * Tests that no payment is processed when the $_POST 'is-woopay-preflight-check` is present.
 	 */
 	public function test_no_payment_is_processed_for_woopay_preflight_check_request() {
-		$_POST['is-woopay-preflight-check'] = true;
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+		$_POST['is-woopay-preflight-check']      = true;
 
 		// Arrange: Create an order to test with.
 		$order_data = [
@@ -5964,7 +5969,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' );
 
 		// Act: process payment.
-		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		try {
+			$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		} finally {
+			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+		}
 
 		$this->assertSame(
 			[
@@ -5974,6 +5983,313 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$result
 		);
 		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	/**
+	 * An unverified preflight must neither charge the shopper nor report success.
+	 */
+	public function test_payment_is_rejected_for_an_unverified_preflight_check_request() {
+		// A Cart-Token and `User-Agent: WooPay`, but no vouch or signature.
+		$_SERVER['HTTP_USER_AGENT']         = 'WooPay';
+		$_SERVER['HTTP_CART_TOKEN']         = 'the.cart.token';
+		$_POST['is-woopay-preflight-check'] = true;
+
+		$order = WC_Helper_Order::create_order();
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+
+		// Assert: A failed preflight must not become a payment attempt.
+		$mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'process_payment_for_order' );
+
+		// Act: process payment.
+		try {
+			$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+			$this->assertSame(
+				[
+					'result'   => 'fail',
+					'redirect' => '',
+				],
+				$result
+			);
+			$this->assertFalse( wc_get_order( $order->get_id() )->is_paid() );
+		} finally {
+			unset( $_SERVER['HTTP_USER_AGENT'], $_SERVER['HTTP_CART_TOKEN'], $_POST['is-woopay-preflight-check'] );
+		}
+	}
+
+	/**
+	 * Coupon usage limits still apply when a preflight can't be verified.
+	 *
+	 * @dataProvider invalid_preflight_proof_provider
+	 * @param string $proof Invalid or missing WooPay credential.
+	 */
+	public function test_unverified_preflight_keeps_coupon_usage_limits( string $proof ) {
+		$server = $_SERVER;
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
+
+		if ( 'malformed' === $proof ) {
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = 'invalid!';
+		} elseif ( 'stale' === $proof ) {
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header( time() - 3600 );
+		} elseif ( 'different_cart' === $proof ) {
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+			$_SERVER['HTTP_CART_TOKEN']              = 'another.cart.token';
+		} elseif ( 'signature_off_signed_path' === $proof ) {
+			$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => false ] );
+			add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		}
+
+		$order   = WC_Helper_Order::create_order( 0 );
+		$request = $this->create_woopay_preflight_request();
+
+		try {
+			$response = $this->card_gateway->remove_all_actions_on_preflight_check( null, [], $request );
+
+			foreach ( [ 'global', 'per_user' ] as $limit ) {
+				$coupon = new WC_Coupon();
+				$coupon->set_code( 'spent-' . $limit );
+				$coupon->set_discount_type( 'fixed_cart' );
+				$coupon->set_amount( 25 );
+				if ( 'global' === $limit ) {
+					$coupon->set_usage_limit( 1 );
+				} else {
+					$coupon->set_usage_limit_per_user( 1 );
+				}
+				$coupon->save();
+				$coupon->increase_usage_count( $order->get_billing_email() );
+
+				$validation = $order->apply_coupon( $coupon );
+				$this->assertWPError( $validation );
+				$this->assertStringContainsStringIgnoringCase( 'usage limit', $validation->get_error_message() );
+				$this->assertSame( 1, ( new WC_Coupon( $coupon->get_id() ) )->get_usage_count() );
+			}
+
+			$this->assertWPError( $response );
+			$this->assertSame( 'wcpay_invalid_woopay_preflight', $response->get_error_code() );
+		} finally {
+			$_SERVER = $server;
+			remove_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
+		}
+	}
+
+	/**
+	 * @return array Invalid WooPay credentials.
+	 */
+	public function invalid_preflight_proof_provider(): array {
+		return [
+			'missing'                   => [ 'missing' ],
+			'malformed'                 => [ 'malformed' ],
+			'stale'                     => [ 'stale' ],
+			'different cart'            => [ 'different_cart' ],
+			'signature off signed path' => [ 'signature_off_signed_path' ],
+		];
+	}
+
+	/**
+	 * The last coupon use must remain available after an authenticated dry run.
+	 *
+	 * @dataProvider valid_preflight_proof_provider
+	 * @param string $proof WooPay credential used for the preflight.
+	 */
+	public function test_verified_preflight_preserves_the_last_coupon_use( string $proof ) {
+		$server          = $_SERVER;
+		$applied_coupons = WC()->cart->get_applied_coupons();
+		if ( 'vouch' === $proof ) {
+			Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+		} else {
+			$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => true ] );
+			add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		}
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'checkout-draft' );
+		$order->save();
+
+		$coupon = new WC_Coupon();
+		$coupon->set_code( 'last-use' );
+		$coupon->set_discount_type( 'fixed_cart' );
+		$coupon->set_amount( 25 );
+		$coupon->set_usage_limit( 1 );
+		$coupon->set_usage_limit_per_user( 1 );
+		$coupon->save();
+		$coupon_item = new WC_Order_Item_Coupon();
+		$coupon_item->set_code( $coupon->get_code() );
+		$coupon_item->set_discount( 25 );
+		$order->add_item( $coupon_item );
+		$order->save();
+		WC()->cart->set_applied_coupons( [ $coupon->get_code() ] );
+
+		$discounts = new WC_Discounts( $order );
+		$gateway   = $this->get_partial_mock_for_gateway( [ 'process_payment_for_order' ] );
+		$gateway->expects( $this->never() )->method( 'process_payment_for_order' );
+		$_POST['is-woopay-preflight-check'] = true;
+		// Another plugin setting its own hold time must not bring the hold back.
+		$hold_minutes = function () {
+			return 60;
+		};
+		add_filter( 'woocommerce_coupon_hold_minutes', $hold_minutes, 20 );
+
+		try {
+			$response = $gateway->remove_all_actions_on_preflight_check( null, [], $this->create_woopay_preflight_request() );
+			$this->assertNull( $response );
+			$order->hold_applied_coupons( $order->get_billing_email() );
+			$this->assertTrue( $discounts->is_coupon_valid( new WC_Coupon( $coupon->get_id() ) ) );
+			$this->assertSame(
+				[
+					'result'   => 'success',
+					'redirect' => '',
+				],
+				$gateway->process_payment( $order->get_id() )
+			);
+			$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
+			$this->assertSame( 0, ( new WC_Coupon( $coupon->get_id() ) )->get_usage_count() );
+		} finally {
+			$_SERVER = $server;
+			unset( $_POST['is-woopay-preflight-check'] );
+			remove_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
+			remove_filter( 'woocommerce_coupon_hold_minutes', $hold_minutes, 20 );
+			$order->get_data_store()->release_held_coupons( $order );
+			WC()->cart->set_applied_coupons( $applied_coupons );
+		}
+
+		$this->assertTrue( $discounts->is_coupon_valid( new WC_Coupon( $coupon->get_id() ) ) );
+		$order->payment_complete();
+		$this->assertSame( 1, ( new WC_Coupon( $coupon->get_id() ) )->get_usage_count() );
+		$this->assertWPError( $discounts->is_coupon_valid( new WC_Coupon( $coupon->get_id() ) ) );
+	}
+
+	/**
+	 * @return array Supported WooPay credentials.
+	 */
+	public function valid_preflight_proof_provider(): array {
+		return [
+			'vouch'     => [ 'vouch' ],
+			'signature' => [ 'signature' ],
+		];
+	}
+
+	/**
+	 * On a fully discounted cart the preflight completes the order, so it must keep per-customer limits.
+	 *
+	 * @dataProvider valid_preflight_proof_provider
+	 * @param string $proof WooPay credential used for the preflight.
+	 */
+	public function test_verified_preflight_keeps_per_customer_limit_on_a_free_cart( string $proof ) {
+		$server = $_SERVER;
+		if ( 'vouch' === $proof ) {
+			Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+		} else {
+			$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => true ] );
+			add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		}
+		wp_set_current_user( 0 );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( true );
+		$product->set_regular_price( 25 );
+		$product->save();
+
+		$coupon = new WC_Coupon();
+		$coupon->set_code( 'free-once-per-customer' );
+		$coupon->set_discount_type( 'percent' );
+		$coupon->set_amount( 100 );
+		$coupon->set_usage_limit_per_user( 1 );
+		$coupon->save();
+		$coupon->increase_usage_count( 'guest@example.com' );
+
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $product->get_id() );
+		WC()->cart->apply_coupon( $coupon->get_code() );
+
+		$request = $this->create_woopay_preflight_request();
+		$request->set_param(
+			'billing_address',
+			[
+				'first_name' => 'Jane',
+				'last_name'  => 'Doe',
+				'address_1'  => '60 29th Street',
+				'city'       => 'San Francisco',
+				'state'      => 'CA',
+				'postcode'   => '94110',
+				'country'    => 'US',
+				'email'      => 'guest@example.com',
+				'phone'      => '555-32123',
+			]
+		);
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		add_filter( 'rest_request_before_callbacks', [ $this->card_gateway, 'remove_all_actions_on_preflight_check' ], 10, 3 );
+		// A free order needs no gateway, and other tests leave partly built ones registered.
+		$gateways                                  = WC()->payment_gateways()->payment_gateways;
+		WC()->payment_gateways()->payment_gateways = [];
+
+		try {
+			$response = rest_do_request( $request );
+		} finally {
+			WC()->payment_gateways()->payment_gateways = $gateways;
+			$_SERVER                                   = $server;
+			remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			remove_filter( 'rest_request_before_callbacks', [ $this->card_gateway, 'remove_all_actions_on_preflight_check' ], 10 );
+			remove_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
+			WC()->cart->empty_cart();
+			// Store API keeps the draft order ID in the session, which outlives this test's order.
+			WC()->session->set( 'store_api_draft_order', null );
+		}
+
+		$this->assertSame( 'woocommerce_rest_cart_coupon_errors', $response->get_data()['code'] ?? null );
+		$this->assertSame( 1, ( new WC_Coupon( $coupon->get_id() ) )->get_usage_count() );
+		$this->assertSame( [], wc_get_orders( [ 'status' => [ 'processing', 'completed' ] ] ) );
+	}
+
+	/**
+	 * A request an earlier filter already rejected keeps that error, and is not treated as a preflight.
+	 */
+	public function test_preflight_check_returns_an_earlier_error_unchanged() {
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
+		$error                                   = new WP_Error( 'earlier_error', 'An earlier filter rejected this request.' );
+
+		try {
+			$response = $this->card_gateway->remove_all_actions_on_preflight_check( $error, [], $this->create_woopay_preflight_request() );
+		} finally {
+			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+		}
+
+		$this->assertSame( $error, $response );
+		$this->assertFalse( has_filter( 'woocommerce_coupon_hold_minutes', '__return_zero' ) );
+	}
+
+	/**
+	 * Each REST request is checked for its own preflight flag.
+	 */
+	public function test_preflight_flag_is_read_from_each_rest_request() {
+		$this->card_gateway->remove_all_actions_on_preflight_check( null, [], $this->create_woopay_preflight_request() );
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$this->assertNull( $this->card_gateway->remove_all_actions_on_preflight_check( null, [], $request ) );
+	}
+
+	/**
+	 * @return WP_REST_Request Store API request carrying the preflight marker.
+	 */
+	private function create_woopay_preflight_request(): WP_REST_Request {
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$request->set_body_params(
+			[
+				'payment_data' => [
+					[
+						'key'   => 'is-woopay-preflight-check',
+						'value' => '1',
+					],
+				],
+			]
+		);
+		return $request;
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improve how WooPay checkout handles session and preflight requests.

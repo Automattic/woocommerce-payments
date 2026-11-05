@@ -283,6 +283,7 @@ declare global {
 		wcpayVersionNumber: string;
 		woopaySignatureNonce: string;
 		woopaySessionNonce: string;
+		woopaySaveUserNonce: string;
 		woopayMerchantId: string;
 		icon: string;
 		woopayMinimumSessionData: Record< string, unknown >;
