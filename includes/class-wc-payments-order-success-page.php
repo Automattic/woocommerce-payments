@@ -553,8 +553,8 @@ class WC_Payments_Order_Success_Page {
 	 * the express wallet at payment time, which stamps it on the order and trips core's guest email
 	 * verification even though the shopper just paid. We waive it only for the session that actually
 	 * completed the payment: at payment time we stored the paid intent id in the WC session, and here
-	 * we waive verification only when it matches the order's intent. A leaked order key in another
-	 * browser carries no such session, so it still has to verify.
+	 * we waive verification only when it matches the order's intent and was stored in this same session.
+	 * A leaked order key in another browser carries no such session, so it still has to verify.
 	 * See https://github.com/woocommerce/woocommerce/issues/48540
 	 *
 	 * @param bool|mixed     $required Whether email verification is required.
@@ -573,6 +573,11 @@ class WC_Payments_Order_Success_Page {
 
 		$session = WC()->session;
 		if ( null === $session ) {
+			return $required;
+		}
+
+		// The paid intent is only used in the session that stored it.
+		if ( $session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY ) !== (string) $session->get_customer_id() ) {
 			return $required;
 		}
 

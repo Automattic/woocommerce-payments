@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from './constants';
+import { getCurrencySettingsPath } from './paths';
 import {
 	updateCurrencies,
 	updateCurrencySettings,
@@ -39,10 +40,10 @@ export function* getCurrencies() {
  * @param {string} currencyCode The currency code to fetch settings for.
  */
 export function* getCurrencySettings( currencyCode ) {
-	const path = `${ NAMESPACE }/multi-currency/currencies/${ currencyCode }`;
-
 	try {
-		const result = yield apiFetch( { path } );
+		const result = yield apiFetch( {
+			path: getCurrencySettingsPath( currencyCode ),
+		} );
 		yield updateCurrencySettings( currencyCode, result );
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(

@@ -26,6 +26,8 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
 
+		WC()->session->__unset( WooPay_Session::WOOPAY_SESSION_KEY );
+
 		parent::tear_down();
 	}
 
@@ -458,6 +460,60 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		$this->assertNull(
 			WooPay_Utilities::decrypt_signed_data( $this->seal_for_store( [ 'timestamp' => time() ], 'not.the.blog.token' ), [ WooPay_Utilities::ATTESTATION_KEY_PURPOSE ] )
 		);
+	}
+
+	public function test_save_user_choice_made_in_the_current_session_is_used() {
+		wp_set_current_user( self::factory()->user->create() );
+		WC()->session->set( WooPay_Session::WOOPAY_SESSION_KEY, $this->save_user_choice_made_in( (string) WC()->session->get_customer_id() ) );
+
+		$woopay_utilities = new WooPay_Utilities();
+
+		$this->assertTrue( $woopay_utilities->should_save_platform_customer() );
+		$this->assertSame( '+14155550123', $woopay_utilities->get_woopay_phone() );
+		$this->assertSame( 'https://example.org/checkout/', $woopay_utilities->get_woopay_source_url() );
+		$this->assertTrue( $woopay_utilities->get_woopay_is_blocks() );
+		$this->assertSame( '1280x720', $woopay_utilities->get_woopay_viewport() );
+	}
+
+	/**
+	 * @dataProvider save_user_choice_of_another_session_provider
+	 */
+	public function test_save_user_choice_made_in_another_session_is_ignored( array $choice ) {
+		wp_set_current_user( self::factory()->user->create() );
+		WC()->session->set( WooPay_Session::WOOPAY_SESSION_KEY, $choice );
+
+		$woopay_utilities = new WooPay_Utilities();
+
+		$this->assertFalse( $woopay_utilities->should_save_platform_customer() );
+		$this->assertSame( '', $woopay_utilities->get_woopay_phone() );
+		$this->assertSame( '', $woopay_utilities->get_woopay_source_url() );
+		$this->assertFalse( $woopay_utilities->get_woopay_is_blocks() );
+		$this->assertSame( '', $woopay_utilities->get_woopay_viewport() );
+	}
+
+	public function save_user_choice_of_another_session_provider() {
+		return [
+			'made in another session' => [ $this->save_user_choice_made_in( 't_another_shoppers_session' ) ],
+			'session not recorded'    => [ array_diff_key( $this->save_user_choice_made_in( '' ), [ 'session_customer_id' => true ] ) ],
+		];
+	}
+
+	/**
+	 * What ajax_set_woopay_phone_number() saves when a shopper ticks "save my information".
+	 *
+	 * @param string $session_customer_id The ID of the session the choice was made in.
+	 *
+	 * @return array
+	 */
+	private function save_user_choice_made_in( string $session_customer_id ): array {
+		return [
+			'session_customer_id'     => $session_customer_id,
+			'save_user_in_woopay'     => true,
+			'woopay_source_url'       => 'https://example.org/checkout/',
+			'woopay_is_blocks'        => true,
+			'woopay_viewport'         => '1280x720',
+			'woopay_user_phone_field' => [ 'full' => '+14155550123' ],
+		];
 	}
 
 	/**

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Honor the manual capture setting for every payment method, not only cards.

@@ -6,6 +6,7 @@ import { capitalize, partial } from 'lodash';
 import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
+import { encodePathSegment } from 'utils/path-segment';
 import { numberFormat } from '@woocommerce/number';
 
 /**
@@ -121,12 +122,16 @@ export { redirectTo } from './navigation';
  * @param {string} documentId The document ID.
  *
  * @return {string} The URL to view the document.
+ *
+ * @throws {InvalidPathSegmentError} When the document ID cannot be used in the URL.
  */
 export const getDocumentUrl = ( documentId ) => {
 	// Remove trailing slash from wpApiSettings.root since NAMESPACE already includes it.
 	const baseUrl = `${ wpApiSettings.root.replace( /\/$/, '' ) }`;
 	return addQueryArgs(
-		`${ baseUrl }${ NAMESPACE }/documents/${ documentId }`,
+		`${ baseUrl }${ NAMESPACE }/documents/${ encodePathSegment(
+			documentId
+		) }`,
 		{
 			_wpnonce: wpApiSettings.nonce,
 		}

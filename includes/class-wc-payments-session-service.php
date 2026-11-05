@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -34,6 +35,43 @@ class WC_Payments_Session_Service {
 		WC_Payments_API_Client $payments_api_client
 	) {
 		$this->payments_api_client = $payments_api_client;
+	}
+
+	/**
+	 * Registers session hooks.
+	 */
+	public function init_hooks(): void {
+		// WooCommerce 8.8+ exposes both session IDs here; older versions retain the original stamps.
+		add_action( 'woocommerce_guest_session_to_user_id', [ $this, 'migrate_session_ownership' ], 10, 2 );
+	}
+
+	/**
+	 * Preserves ownership of checkout data when a guest session becomes a user session.
+	 *
+	 * @param mixed $guest_session_id The previous session ID, expected to be a string.
+	 * @param mixed $user_session_id  The new session ID, expected to be a string.
+	 */
+	public function migrate_session_ownership( $guest_session_id, $user_session_id ): void {
+		$session = WC()->session;
+		if (
+			! is_string( $guest_session_id ) || '' === $guest_session_id ||
+			! is_string( $user_session_id ) || '' === $user_session_id ||
+			$user_session_id !== (string) $session->get_customer_id()
+		) {
+			return;
+		}
+
+		$owner_keys = [
+			WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_OWNER_KEY,
+			WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY,
+			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER_OWNER,
+		];
+
+		foreach ( $owner_keys as $key ) {
+			if ( $session->get( $key ) === $guest_session_id ) {
+				$session->set( $key, $user_session_id );
+			}
+		}
 	}
 
 	/**

@@ -97,6 +97,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
+			[ 'woocommerce_order_recalculate_coupons_coupon_object', 'set_order_coupon' ],
 			[ 'woocommerce_new_order', 'add_order_meta' ],
 		];
 	}
@@ -368,6 +369,246 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 			->willReturn( true );
 
 		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $fixed_cart_coupon ) );
+	}
+
+	/**
+	 * @dataProvider order_coupon_currency_provider
+	 */
+	public function test_get_coupon_amount_converts_coupon_reapplied_to_order_to_the_order_currency( $order_currency, $expected_currency ) {
+		$currencies = [
+			'USD' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+			'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ),
+			'EUR' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR', 0.9 ),
+		];
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $currencies['USD'] );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( $currencies );
+		// EUR is supported but disabled, as when the merchant turns a currency off after checkout.
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn(
+			[
+				'USD' => $currencies['USD'],
+				'JPY' => $currencies['JPY'],
+			]
+		);
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( $order_currency );
+
+		$coupon = new WC_Coupon();
+		$coupon->set_discount_type( 'fixed_cart' );
+
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_price' )
+			->with( '10', 'coupon', $this->identicalTo( $currencies[ $expected_currency ] ) )
+			->willReturn( 25.0 );
+
+		$this->assertSame( $coupon, $this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), $order ) );
+		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $coupon ) );
+	}
+
+	public function order_coupon_currency_provider() {
+		return [
+			'store currency'       => [ 'USD', 'USD' ],
+			'enabled currency'     => [ 'JPY', 'JPY' ],
+			'disabled currency'    => [ 'EUR', 'EUR' ],
+			'unsupported currency' => [ 'BTC', 'USD' ],
+		];
+	}
+
+	public function test_get_coupon_amount_does_not_convert_coupon_rebuilt_from_the_order() {
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ) ] );
+		$this->mock_multi_currency->expects( $this->never() )->method( 'get_price' );
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+
+		// A coupon that no longer exists is rebuilt from the order's coupon line and flagged as virtual.
+		$coupon = new WC_Coupon();
+		$coupon->set_discount_type( 'fixed_cart' );
+		$coupon->set_virtual( true );
+
+		$this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), $order );
+
+		$this->assertSame( '1500', $this->frontend_prices->get_coupon_amount( '1500', $coupon ) );
+	}
+
+	/**
+	 * @dataProvider legacy_coupon_data_provider
+	 */
+	public function test_legacy_virtual_coupon_is_converted_to_the_order_currency( $coupon_data ) {
+		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+		$jpy = new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 );
+
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $usd );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn(
+			[
+				'USD' => $usd,
+				'JPY' => $jpy,
+			]
+		);
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+		$this->mock_multi_currency->method( 'get_price' )->willReturnCallback(
+			function ( $price ) {
+				return (float) $price * 150;
+			}
+		);
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+
+		// A coupon whose post was deleted, rebuilt from the legacy `coupon_data` line meta, whose amount
+		// is the raw store-currency value and so must still be converted to the order's currency.
+		$coupon = new WC_Coupon();
+		$coupon->set_code( 'legacy5' );
+		$coupon->set_discount_type( 'fixed_cart' );
+		$coupon->set_amount( 5 );
+		$coupon->set_virtual( true );
+
+		$coupon_item = new WC_Order_Item_Coupon();
+		$coupon_item->set_code( 'legacy5' );
+		$coupon_item->add_meta_data( 'coupon_data', $coupon_data );
+
+		$this->frontend_prices->set_order_coupon( $coupon, 'legacy5', $coupon_item, $order );
+
+		// The 5 USD coupon was worth 750 JPY on this order, so the rebuild must convert it.
+		$this->assertSame( 750.0, $this->frontend_prices->get_coupon_amount( '5', $coupon ) );
+	}
+
+	public function legacy_coupon_data_provider() {
+		$coupon_data = [
+			'id'            => 0,
+			'code'          => 'legacy5',
+			'discount_type' => 'fixed_cart',
+			'amount'        => 5,
+		];
+
+		return [
+			'array'  => [ $coupon_data ],
+			'object' => [ (object) $coupon_data ],
+		];
+	}
+
+	public function test_get_coupon_amount_converts_other_coupons_to_the_selected_currency() {
+		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		$this->frontend_prices->set_order_coupon( new WC_Coupon(), 'code', new WC_Order_Item_Coupon(), WC_Helper_Order::create_order() );
+
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_price' )
+			->with( '10', 'coupon', null )
+			->willReturn( 25.0 );
+
+		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', new WC_Coupon() ) );
+	}
+
+	public function test_set_order_coupon_leaves_non_store_api_rest_requests_to_the_selected_currency() {
+		$original_uri           = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc/v3/orders';
+
+		try {
+			$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+			$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
+			$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+			$coupon = new WC_Coupon();
+			$coupon->set_discount_type( 'fixed_cart' );
+
+			// Standard REST order write: keeps the selected-currency path (currency omitted), not the order currency.
+			$this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), WC_Helper_Order::create_order() );
+
+			$this->mock_multi_currency
+				->expects( $this->once() )
+				->method( 'get_price' )
+				->with( '10', 'coupon', null )
+				->willReturn( 25.0 );
+
+			$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $coupon ) );
+		} finally {
+			if ( null === $original_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_uri;
+			}
+		}
+	}
+
+	public function test_set_order_coupon_still_converts_store_api_requests_to_the_order_currency() {
+		$original_uri           = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc/store/v1/checkout/1';
+
+		try {
+			$currencies = [
+				'USD' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+				'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ),
+			];
+			$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $currencies['USD'] );
+			$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( $currencies );
+			$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+			$order = WC_Helper_Order::create_order();
+			$order->set_currency( 'JPY' );
+
+			$coupon = new WC_Coupon();
+			$coupon->set_discount_type( 'fixed_cart' );
+
+			// Store API pay-for-order: still converted to the order's currency.
+			$this->mock_multi_currency
+				->expects( $this->once() )
+				->method( 'get_price' )
+				->with( '10', 'coupon', $this->identicalTo( $currencies['JPY'] ) )
+				->willReturn( 25.0 );
+
+			$this->assertSame( $coupon, $this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), $order ) );
+			$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $coupon ) );
+		} finally {
+			if ( null === $original_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_uri;
+			}
+		}
+	}
+
+	public function test_recalculate_coupons_uses_the_order_currency_instead_of_the_selected_one() {
+		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		// JPY is selected, at 150 JPY for 1 USD: the selected-currency path (currency omitted) returns
+		// 150x and the order-currency path (USD passed explicitly) returns 1x. Asserting a $5 discount
+		// proves the order currency is used; a regression to the selected currency would yield $750. The
+		// exact currency object passed to get_price is pinned in
+		// test_get_coupon_amount_converts_coupon_reapplied_to_order_to_the_order_currency.
+		$this->mock_multi_currency
+			->method( 'get_price' )
+			->willReturnCallback(
+				function ( $price, $type, $currency = null ) use ( $usd ) {
+					return (float) $price * ( $usd === $currency ? 1 : 150 );
+				}
+			);
+
+		$coupon = new WC_Coupon();
+		$coupon->set_code( 'take5' );
+		$coupon->set_discount_type( 'fixed_cart' );
+		$coupon->set_amount( 5 );
+		$coupon->save();
+
+		$coupon_item = new WC_Order_Item_Coupon();
+		$coupon_item->set_code( 'take5' );
+
+		// A USD order for 4 products at 10 USD, plus 10 USD of shipping.
+		$order = WC_Helper_Order::create_order();
+		$order->add_item( $coupon_item );
+		$order->recalculate_coupons();
+
+		$this->assertSame( 'USD', $order->get_currency() );
+		$this->assertEquals( 5, $order->get_discount_total() );
+		$this->assertEquals( 45, $order->get_total() );
 	}
 
 	public function test_get_coupon_min_max_amount_returns_empty_amount() {

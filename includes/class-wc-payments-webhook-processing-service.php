@@ -661,9 +661,12 @@ class WC_Payments_Webhook_Processing_Service {
 			$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
 		}
 
-		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
-		$this->ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id );
-		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
+		// The invoice.paid handler settles Stripe Billing renewal orders, after checking the invoice covers the order total.
+		if ( empty( $event_object['invoice'] ) ) {
+			$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+			$this->ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id );
+			$this->order_service->update_order_status_from_intent( $order, $payment_intent );
+		}
 
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		// Send the customer a card reader receipt if it's an in person payment type.

@@ -22,6 +22,7 @@ import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
+import { encodePathSegment } from 'utils/path-segment';
 import VatFormModal from 'wcpay/vat/form-modal';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
@@ -92,13 +93,27 @@ type InterruptedDownload = {
 	newTab: boolean;
 } | null;
 
+// A document requested through the page URL is ignored unless its ID is a single path segment.
+const isRequestableDocumentId = ( documentId: string ): boolean => {
+	try {
+		encodePathSegment( documentId );
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 const getInitialInterruptedDownload = (): InterruptedDownload => {
 	const { document_id: documentId, document_type: documentType } =
 		getQuery() as {
 			document_id?: Document[ 'document_id' ];
 			document_type?: Document[ 'type' ];
 		};
-	if ( ! documentId || ! documentType ) {
+	if (
+		! documentId ||
+		! documentType ||
+		! isRequestableDocumentId( documentId )
+	) {
 		return null;
 	}
 	return { documentId, type: documentType, newTab: false };
@@ -175,7 +190,11 @@ export const DocumentsList = (): JSX.Element => {
 	} = getQuery();
 
 	useEffect( () => {
-		if ( ! requestedDocumentID || ! requestedDocumentType ) {
+		if (
+			! requestedDocumentID ||
+			! requestedDocumentType ||
+			! isRequestableDocumentId( requestedDocumentID )
+		) {
 			return;
 		}
 		const type = requestedDocumentType as Document[ 'type' ];

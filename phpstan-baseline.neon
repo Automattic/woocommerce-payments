@@ -319,12 +319,6 @@ parameters:
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
-			rawMessage: If condition is always true.
-			identifier: if.alwaysTrue
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
 			rawMessage: Instanceof between WC_Cart and WC_Cart will always evaluate to true.
 			identifier: instanceof.alwaysTrue
 			count: 1
@@ -579,7 +573,7 @@ parameters:
 		-
 			rawMessage: Ternary operator condition is always true.
 			identifier: ternary.alwaysTrue
-			count: 2
+			count: 1
 			path: includes/class-wc-payments-customer-service.php
 
 		-
@@ -1363,12 +1357,6 @@ parameters:
 			path: includes/fraud-prevention/class-buyer-fingerprinting-service.php
 
 		-
-			rawMessage: Ternary operator condition is always true.
-			identifier: ternary.alwaysTrue
-			count: 1
-			path: includes/fraud-prevention/class-buyer-fingerprinting-service.php
-
-		-
 			rawMessage: Negated boolean expression is always false.
 			identifier: booleanNot.alwaysFalse
 			count: 1
@@ -1735,12 +1723,6 @@ parameters:
 			path: includes/wc-payment-api/class-wc-payments-api-client.php
 
 		-
-			rawMessage: 'Method WC_Payments_API_Client::get_fingerprint_metadata() is unused.'
-			identifier: method.unused
-			count: 1
-			path: includes/wc-payment-api/class-wc-payments-api-client.php
-
-		-
 			rawMessage: 'Method WC_Payments_API_Client::get_intent_description() is unused.'
 			identifier: method.unused
 			count: 1
@@ -1856,12 +1838,6 @@ parameters:
 
 		-
 			rawMessage: 'Call to an undefined method WC_Session::has_session().'
-			identifier: method.notFound
-			count: 1
-			path: includes/woopay/class-woopay-session.php
-
-		-
-			rawMessage: 'Call to an undefined method WC_Session::set_customer_session_cookie().'
 			identifier: method.notFound
 			count: 1
 			path: includes/woopay/class-woopay-session.php
