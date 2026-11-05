@@ -5001,6 +5001,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
+			if ( ! $this->is_enabled() ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later.", 'woocommerce-payments' ),
+					'gateway_disabled'
+				);
+			}
+
 			// The fraud prevention token lives in the session, which isn't loaded for every admin-ajax request.
 			WC()->initialize_session();
 

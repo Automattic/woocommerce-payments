@@ -3473,7 +3473,22 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
+	public function test_create_setup_intent_ajax_does_not_create_setup_intent_when_gateway_is_disabled() {
+		$this->card_gateway->update_option( 'enabled', 'no' );
+
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		[ $response ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( "We're not able to add this payment method. Please try again later.", $response['data']['error']['message'] );
+	}
+
 	public function test_create_setup_intent_ajax_rejects_invalid_fraud_token_when_session_is_not_loaded() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
 		$fraud_prevention_service_mock
 			->method( 'is_enabled' )
@@ -3499,6 +3514,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_create_setup_intent_ajax_creates_setup_intent_with_valid_fraud_token_when_session_is_not_loaded() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
 		$fraud_prevention_service_mock
 			->method( 'is_enabled' )
