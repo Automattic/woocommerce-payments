@@ -1426,15 +1426,20 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
 			->willReturn( [] );
 
+		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'id' => 'first-promo__spotlight' ] ) ] );
+
 		// First call - should populate memo.
 		$first_result = $this->service->get_visible_promotions();
+
+		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'id' => 'second-promo__spotlight' ] ) ] );
 
 		// Reset memo.
 		$this->service->reset_memo();
 
-		// Second call - should work again.
+		// Second call - should read the updated cache.
 		$second_result = $this->service->get_visible_promotions();
 
-		$this->assertEquals( $first_result, $second_result );
+		$this->assertSame( [ 'first-promo__spotlight' ], array_column( $first_result, 'id' ) );
+		$this->assertSame( [ 'second-promo__spotlight' ], array_column( $second_result, 'id' ) );
 	}
 }

@@ -87,17 +87,22 @@ class PaymentMethodDefinitionRegistryTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that invalid payment method classes throw appropriate exceptions.
+	 * Test that a non-existent payment method class throws an exception.
 	 */
 	public function test_invalid_payment_method_registration() {
 		$registry = PaymentMethodDefinitionRegistry::instance();
 
-		// Test non-existent class.
 		$this->expectException( \InvalidArgumentException::class );
 		$this->expectExceptionMessage( 'Payment method definition class "NonExistentClass" does not exist.' );
 		$registry->register_payment_method( 'NonExistentClass' );
+	}
 
-		// Test class that doesn't implement interface.
+	/**
+	 * Test that a class that doesn't implement the definition interface throws an exception.
+	 */
+	public function test_payment_method_registration_without_interface() {
+		$registry = PaymentMethodDefinitionRegistry::instance();
+
 		$this->expectException( \InvalidArgumentException::class );
 		$this->expectExceptionMessage( 'Payment method definition class "' . InvalidMockPaymentMethod::class . '" must implement ' . PaymentMethodDefinitionInterface::class );
 		$registry->register_payment_method( InvalidMockPaymentMethod::class );

@@ -288,9 +288,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -334,9 +332,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -429,9 +425,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -512,9 +506,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -553,9 +545,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -636,7 +626,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		// A card change saves the card but must not complete the order, so it stays pending.
+		$this->assertEquals( 'pending', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
 		// Expect add token to order to be called, so it can be reused in renewals.
 		// This is an integration test, different scenarios for add_token_to_order method

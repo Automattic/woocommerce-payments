@@ -50,6 +50,35 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Only orders are completed from an intent, never a subscription.
+	 */
+	public function test_update_order_status_from_intent_skips_subscriptions() {
+		// A succeeded intent that would otherwise mark the order paid, on an order reported as a subscription.
+		$intent = WC_Helper_Intention::create_intention();
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$order_id       = $this->order->get_id();
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $order_id ] );
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) use ( $order_id ) {
+				return $order instanceof WC_Order && $order->get_id() === $order_id;
+			}
+		);
+
+		// Act.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: nothing was completed. No transaction id, no intent status, status and notes unchanged.
+		$this->assertSame( '', $this->order->get_transaction_id() );
+		$this->assertSame( '', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertSame( Order_Status::ON_HOLD, wc_get_order( $order_id )->get_status() );
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $order_id ] ) );
+
+		WC_Subscriptions::set_wcs_is_subscription( null );
+	}
+
+	/**
 	 * Private method of `order_prepared_for_processing` stops processing if order passed isn't an order.
 	 */
 	public function test_order_status_not_updated_if_order_is_invalid() {
@@ -203,6 +232,80 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::REVIEW_ALLOWED,
 			],
 		];
+	}
+
+	public function test_order_is_held_when_intent_amount_does_not_match_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2267,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		// The payment_intent.succeeded webhook replays the same intent after the checkout request.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( '22.67', $notes[0]->content );
+		$this->assertStringContainsString( '25.19', $notes[0]->content );
+		$this->assertCount( count( $notes ), wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+	}
+
+	public function test_order_is_held_when_intent_currency_does_not_match_order_currency() {
+		$this->order->set_currency( 'CAD' );
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'   => 2519,
+				'currency' => 'usd',
+				'status'   => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $25.19 USD', $note_text );
+		$this->assertStringContainsString( 'the order total is $25.19 CAD', $note_text );
+	}
+
+	public function test_partial_capture_completes_order_despite_amount_below_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2000,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'processing', $this->order->get_status() );
+	}
+
+	public function test_order_is_completed_when_intent_amount_matches_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2519,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'processing', $this->order->get_status() );
 	}
 
 	/**
@@ -2490,10 +2593,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $this->order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
 	}
 
-	public function set_wcpay_refund_transaction_id_for_order() {
+	public function test_set_wcpay_refund_transaction_id_for_order() {
 		$wcpay_refund_transaction_id = 'txn_mock';
-		$this->order_service->set_wcpay_refund_transaction_id_for_order( $this->order, $wcpay_refund_transaction_id );
-		$this->assertSame( $this->order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ), $wcpay_refund_transaction_id );
+		$refund                      = wc_create_refund(
+			[
+				'amount'   => $this->order->get_total(),
+				'order_id' => $this->order->get_id(),
+			]
+		);
+		$this->order_service->set_wcpay_refund_transaction_id_for_order( $refund, $wcpay_refund_transaction_id );
+		$this->assertSame( 'txn_mock', wc_get_order( $refund->get_id() )->get_meta( '_wcpay_refund_transaction_id', true ) );
 	}
 
 	public function test_get_wcpay_refund_id() {
@@ -2769,7 +2878,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order
 			->expects( $this->never() )
 			->method( 'update_meta_data' );
-		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
+		$charge = new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' );
+		$charge->set_captured( true );
+		$this->order_service->attach_transaction_fee_to_order( $mock_order, $charge );
 	}
 
 	public function test_attach_transaction_fee_to_order_uncaptured_charge() {

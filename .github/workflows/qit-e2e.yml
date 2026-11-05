@@ -56,7 +56,7 @@ jobs:
           [[ -n "$BETA_VERSION" ]] && echo "Beta version: $BETA_VERSION" >&2 || echo "No beta version available" >&2
           [[ -n "$RC_VERSION" ]] && echo "RC version: $RC_VERSION" >&2 || echo "No RC version available" >&2
 
-          # Build scheduled matrix: L-1 + latest stable + nightly WC, PHP 8.3, all projects
+          # Build push matrix: L-1 + latest stable + nightly WC, PHP 8.3, all projects
           # All combinations use WP latest by default
           MATRIX_ENTRIES=()
           for wc_version in "$L1_VERSION" "$LATEST_WC_VERSION" "nightly"; do

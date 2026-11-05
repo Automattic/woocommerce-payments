@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { TableCard } from '@woocommerce/components';
+import { TableCard, TableCardColumn } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -23,10 +23,15 @@ import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data/capital';
 import { getAdminUrl } from 'wcpay/utils';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
-const columns = [
+interface Column extends TableCardColumn {
+	cellClassName?: string;
+}
+
+const columns: Column[] = [
 	{
 		key: 'paid_out_at',
 		label: __( 'Disbursed', 'woocommerce-payments' ),
@@ -39,7 +44,6 @@ const columns = [
 		key: 'status',
 		label: __( 'Status', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
-		required: true,
 		cellClassName: 'is-center-aligned',
 	},
 	{
@@ -54,7 +58,6 @@ const columns = [
 		key: 'fee_amount',
 		label: __( 'Fixed fee', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Fixed fee', 'woocommerce-payments' ),
-		required: true,
 		isLeftAligned: false,
 		isNumeric: true,
 	},
@@ -62,7 +65,6 @@ const columns = [
 		key: 'withhold_rate',
 		label: __( 'Withhold rate', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Withhold rate', 'woocommerce-payments' ),
-		required: true,
 		isLeftAligned: false,
 		isNumeric: true,
 	},
@@ -70,7 +72,6 @@ const columns = [
 		key: 'first_paydown_at',
 		label: __( 'First paydown', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'First paydown', 'woocommerce-payments' ),
-		required: true,
 		isLeftAligned: false,
 		isNumeric: true, // Hack: this is not a numeric field, but "isNumeric" is needed for it to be right-aligned
 	},
@@ -95,7 +96,7 @@ const getLoanStatusChip = ( loan: CapitalLoan ) => {
 	);
 };
 
-const getRowsData = ( loans: CapitalLoan[] ) =>
+const getRowsData = ( loans: CapitalLoan[], columnsToDisplay: Column[] ) =>
 	loans.map( ( loan ) => {
 		const clickable = ( children: React.ReactNode ) => (
 			<ClickableCell
@@ -163,7 +164,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 			{ value: string | number; display: React.ReactNode }
 		>;
 
-		return columns.map( ( { key } ) => data[ key ] );
+		return columnsToDisplay.map( ( { key } ) => data[ key ] );
 	} );
 
 const getSummary = ( loans: CapitalLoan[] ) => {
@@ -208,6 +209,11 @@ const getSummary = ( loans: CapitalLoan[] ) => {
 
 const CapitalPage = (): JSX.Element => {
 	const { loans, isLoading } = useLoans();
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_capital_loans_hidden_columns',
+			columns
+		);
 
 	return (
 		<Page>
@@ -223,12 +229,12 @@ const CapitalPage = (): JSX.Element => {
 				title={ __( 'All loans', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				totalRows={ loans.length }
-				headers={ columns }
-				rows={ getRowsData( loans ) }
+				headers={ columnsToDisplay }
+				rows={ getRowsData( loans, columnsToDisplay ) }
 				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
-				// The Capital Loan table does not have column configuration enabled, see issue #10106.
-				showMenu={ false }
+				showMenu={ true }
+				onColumnsChange={ onColumnsChange }
 			/>
 		</Page>
 	);

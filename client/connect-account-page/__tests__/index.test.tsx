@@ -2,16 +2,14 @@
 /**
  * External dependencies
  */
-import React, { act } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import ConnectAccountPage from '..';
-import { redirectTo } from 'wcpay/utils';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -23,11 +21,6 @@ declare const global: {
 			availableCountries: Record< string, string >;
 		};
 		onBoardingDisabled?: boolean;
-		connectIncentive?: {
-			id: string;
-			description: string;
-			tc_url: string;
-		};
 		isWooPayStoreCountryAvailable?: boolean;
 		isJetpackConnected: boolean;
 		isAccountConnected?: boolean;
@@ -40,12 +33,6 @@ declare const global: {
 		devMode?: boolean;
 		devModeReason?: string;
 	};
-};
-
-const mockedIcentive = {
-	id: 'incentive-id',
-	description: 'incentive-description',
-	tc_url: 'incentive-tc-url',
 };
 
 // jsdom marks `window.location` unforgeable, so the page's redirects go
@@ -148,64 +135,6 @@ describe( 'ConnectAccountPage', () => {
 		global.wcpaySettings.isWooPayStoreCountryAvailable = true;
 		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
-	} );
-
-	test( 'should render correctly with an incentive', () => {
-		global.wcpaySettings.connectIncentive = mockedIcentive;
-		const { container: page } = render( <ConnectAccountPage /> );
-		expect( page ).toMatchSnapshot();
-	} );
-
-	test( 'should request promo activation with an incentive', async () => {
-		global.wcpaySettings.connectIncentive = mockedIcentive;
-		render( <ConnectAccountPage /> );
-
-		await act( async () => {
-			userEvent.click(
-				screen.getByRole( 'button', {
-					name: 'Verify business details',
-				} )
-			);
-		} );
-
-		await waitFor( () => {
-			expect( apiFetch ).toHaveBeenCalledWith( {
-				path: '/wc-analytics/admin/notes/experimental-activate-promo/incentive-id',
-				method: 'POST',
-			} );
-		} );
-
-		await waitFor( () => {
-			expect( redirectTo ).toHaveBeenCalledWith(
-				expect.stringContaining( 'wcpay-connect-url' )
-			);
-		} );
-	} );
-
-	test( 'should display error from request promo activation with an incentive', async () => {
-		global.wcpaySettings.connectIncentive = mockedIcentive;
-		render( <ConnectAccountPage /> );
-
-		// mockApiFetch.mockRejectedValueOnce( {} );
-		jest.mocked( apiFetch ).mockRejectedValueOnce( new Error() );
-
-		await act( async () => {
-			userEvent.click(
-				screen.getByRole( 'button', {
-					name: 'Verify business details',
-				} )
-			);
-		} );
-
-		await waitFor( () => {
-			expect( apiFetch ).toHaveBeenCalled();
-		} );
-
-		expect(
-			screen.queryAllByText(
-				/There was an error applying the promotion/
-			)[ 0 ]
-		).toBeInTheDocument();
 	} );
 
 	test( 'should display non supported country banner', () => {

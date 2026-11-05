@@ -302,7 +302,6 @@ class WC_Payments_Customer_Service {
 		// Where available, the order data takes precedence over the customer.
 		$object_to_parse = $wc_order ?? $wc_customer;
 		$name            = $object_to_parse->get_billing_first_name() . ' ' . $object_to_parse->get_billing_last_name();
-		$description     = '';
 		if ( null !== $wc_customer && ! empty( $wc_customer->get_username() ) ) {
 			// We have a logged in user, so add their username to the customer description.
 			// translators: %1$s Name, %2$s Username.

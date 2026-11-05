@@ -115,7 +115,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 				'method' => 'update_compatibility_data',
 			],
 			'after_switch_theme'                     => [
-				'filter' => 'woocommerce_payments_account_refreshed',
+				'filter' => 'after_switch_theme',
 				'method' => 'update_compatibility_data',
 			],
 			'wc_payments_get_onboarding_data_args'   => [

@@ -926,8 +926,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return mixed
 	 */
 	public function remove_all_actions_on_preflight_check( $response, $handler, $request ) {
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
 		$payment_data = $this->get_request_payment_data( $request );
 		if ( ! empty( $payment_data['is-woopay-preflight-check'] ) ) {
+			// Only WooPay can request a dry run that skips checkout side effects.
+			if ( ! $this->is_request_composed_by_woopay() ) {
+				// A malformed or stale vouch logs its own reason; a missing one and an ignored
+				// signature do not, and those are what a legitimate WooPay preflight would hit.
+				Logger::log(
+					sprintf(
+						'WooPay preflight rejected: %s, and %s.',
+						isset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] ) ? 'the vouch did not verify' : 'no vouch was sent',
+						WC_Payments_Features::is_woopay_force_signed_requests_enabled() ? 'the request is not signed with the blog token' : 'this store does not accept a blog token signature'
+					)
+				);
+
+				return new WP_Error(
+					'wcpay_invalid_woopay_preflight',
+					__( "We're not able to verify this WooPay preflight request. Please try again.", 'woocommerce-payments' ),
+					[ 'status' => 403 ]
+				);
+			}
+
 			remove_all_actions( 'woocommerce_store_api_checkout_update_order_meta' );
 			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
 			// Avoid increasing coupon usage count during preflight check.
@@ -936,12 +959,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Avoid creating new accounts during preflight check.
 			remove_all_filters( 'woocommerce_checkout_registration_required' );
 
-			add_filter( 'woocommerce_coupon_get_usage_limit', '__return_null' );
-
-			add_filter( 'woocommerce_coupon_get_usage_limit_per_user', '__return_zero' );
+			// Keep coupon usage limits on, but don't hold a use: the dry run never releases it, so
+			// the real checkout would count it. Last, so no other filter can put the hold back.
+			add_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Whether WooPay authenticated the current request with an attestation or signature.
+	 *
+	 * @return bool True if the request carries valid WooPay proof.
+	 */
+	private function is_request_composed_by_woopay(): bool {
+		return WooPay_Session::is_request_vouched_by_woopay() || WooPay_Session::is_authenticated_by_blog_token_signature();
 	}
 
 	/**
@@ -964,10 +996,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array
 	 */
 	private function get_request_payment_data( \WP_REST_Request $request ) {
-		static $payment_data = [];
-		if ( ! empty( $payment_data ) ) {
-			return $payment_data;
-		}
+		$payment_data = [];
 		if ( ! empty( $request['payment_data'] ) ) {
 			foreach ( $request['payment_data'] as $data ) {
 				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
@@ -1147,8 +1176,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( in_array( $this->payment_method->get_id(), [ Payment_Method::AFTERPAY, Payment_Method::AFFIRM ], true ) && is_wc_endpoint_url( 'order-pay' ) ) {
-			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-			$order = is_a( $order, 'WC_Order' ) ? $order : null;
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
 			if ( $order ) {
 				$address = $this->retrieve_usable_shipping_data_from_order( $order );
@@ -1425,7 +1453,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
+		// A subscription only reaches the gateway to change its payment method; refuse any other pay-for-order
+		// request for one. Returned as a failure, not thrown: a subscription rejects update_status( 'failed' ) in the catch.
+		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) && ! $this->is_changing_payment_method_for_subscription() ) {
+			Logger::error( sprintf( 'Refused to process a payment for subscription #%d outside of the change payment method flow.', $order->get_id() ) );
+			wc_add_notice( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ), 'error' );
+
+			return [
+				'result'   => 'fail',
+				'redirect' => '',
+			];
+		}
+
 		try {
+			$is_request_composed_by_woopay = $this->is_request_composed_by_woopay();
+			// Reject an unverified dry run instead of turning it into a payment attempt.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( ! empty( $_POST['is-woopay-preflight-check'] ) && ! $is_request_composed_by_woopay ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to verify this WooPay preflight request. Please try again.", 'woocommerce-payments' ),
+					'wcpay_invalid_woopay_preflight'
+				);
+			}
+
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
 				throw new Invalid_Phone_Number_Exception(
 					__( 'Invalid phone number.', 'woocommerce-payments' ),
@@ -1440,11 +1490,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// card-testing protection off is not something a shopper should be able to ask for
 			// by sending a header. WooPay seals that proof in the vouch envelope or, for a store
 			// the platform keeps on the signed path, signs the request instead of sending one.
-			if (
-				WC()->session &&
-				! WooPay_Session::is_request_vouched_by_woopay() &&
-				! WooPay_Session::is_authenticated_by_blog_token_signature()
-			) {
+			if ( WC()->session && ! $is_request_composed_by_woopay ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
@@ -1474,6 +1520,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'result'   => 'success',
 					'redirect' => '',
 				];
+			}
+
+			// WooCommerce keeps copying the cart into a checkout-draft order, so its total could change
+			// after the intent is created. Core's checkout moves drafts to pending first; pay-for-order doesn't.
+			if ( $order->has_status( 'checkout-draft' ) ) {
+				$order->update_status( Order_Status::PENDING );
 			}
 
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
@@ -1940,7 +1992,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->store_card_details_meta_for_order( $order, $zero_amount_pm_details['type'], $zero_amount_pm_details );
 			}
 
-			$order->payment_complete();
+			// A card change on a subscription saves the card without completing anything.
+			if ( ! ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) ) {
+				$order->payment_complete();
+			}
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
 				// We need to make sure the saved payment method is saved to the order so we can
@@ -2108,7 +2163,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
-				$request->set_fingerprint( $payment_information->get_fingerprint() );
+				$request->set_fingerprint( $payment_information->get_fingerprint(), $order );
 				if ( $save_payment_method_to_store ) {
 					// Only set setup_future_usage for reusable payment methods.
 					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
@@ -2230,7 +2285,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->set_customer( $customer_id );
 					$request->set_payment_method( $payment_credential );
 					$request->set_metadata( $metadata );
-					$request->set_fingerprint( $payment_information->get_fingerprint() );
+					$request->set_fingerprint( $payment_information->get_fingerprint(), $order );
 					$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
 					$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 
@@ -2255,7 +2310,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge_id     = '';
 			$charge        = null;
 			$client_secret = $intent->get_client_secret();
-			$currency      = $order->get_currency();
 			$next_action   = $intent->get_next_action();
 			$processing    = [];
 		}
@@ -2537,9 +2591,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// Perform additional checks for non-zero-amount. For zero-amount orders, we can't compare intents because they are not attached to the order at this stage.
-		// Once https://github.com/Automattic/woocommerce-payments/issues/6575 is closed, this check can be applied for zero-amount orders as well.
-		if ( $order->get_total() > 0 && ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
+		// The intent named in the request must be the one attached to the order by process_payment_for_order().
+		// Zero-amount orders are no exception: their setup intent is attached the same way, and without this
+		// check any succeeded setup intent on the account (e.g. a card saved under My Account) would complete them.
+		if ( ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
 			return;
 		}
 
@@ -2590,15 +2645,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
 
-				// This check applies to payment intents only due to two reasons:
-				// (1) metadata is missed for setup intents. See https://github.com/Automattic/woocommerce-payments/issues/6575.
-				// (2) most issues so far affect only payment intents.
 				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
 				$request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent            = $request->send();
+				$intent = $request->send();
+
+				// Setup intents created by process_payment_for_order() carry the order id in their metadata too.
+				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent->get_metadata() );
+
 				$client_secret     = $intent->get_client_secret();
 				$status            = $intent->get_status();
 				$charge_id         = '';
@@ -4258,7 +4314,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
-		$http_code                = null;
 		$error_code               = null;
 
 		try {
@@ -4312,7 +4367,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} catch ( API_Exception $ge ) {
 				// Ignore any errors during the intent retrieval, and add the failed capture note below with the
 				// original error message.
-				$status        = null;
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
 				$error_code    = $e->get_error_code();
@@ -4382,7 +4436,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} catch ( API_Exception $ge ) {
 				// Ignore any errors during the intent retrieval, and add the failed cancellation note below with the
 				// original error message.
-				$status        = null;
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
 			}
@@ -4552,7 +4605,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$is_changing_payment                   = isset( $_POST['is_changing_payment'] )
 				? filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN )
 				: null;
-			$is_subscription_payment_method_change = $this->is_changing_payment_method_for_subscription_from_request( $is_changing_payment );
+			$is_subscription_payment_method_change = $this->is_changing_payment_method_for_subscription_from_request( $is_changing_payment, $order );
 
 			if ( $amount > 0 && ! $is_subscription_payment_method_change ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
@@ -5760,7 +5813,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $request->send();
 		} catch ( API_Exception $e ) {
-			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
+			if ( ! $this->is_missing_customer_error( $e ) ) {
 				throw $e;
 			}
 
@@ -5795,6 +5848,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether an API error reports the Stripe customer itself as missing.
+	 *
+	 * `resource_missing` also covers other objects, so only the object named after "No such" counts.
+	 *
+	 * @param API_Exception $e The exception thrown by the intent request.
+	 *
+	 * @return bool True when the missing resource is the customer.
+	 */
+	private function is_missing_customer_error( API_Exception $e ): bool {
+		if ( 'resource_missing' !== $e->get_error_code() ) {
+			return false;
+		}
+
+		return 1 === preg_match( '/No such (\w+)/', $e->getMessage(), $missing ) && 'customer' === strtolower( $missing[1] );
+	}
+
+	/**
 	 * Modifies the create intent parameters when processing a payment.
 	 *
 	 * If the selected Stripe payment type is AFTERPAY, it updates the shipping data in the request.
@@ -5819,10 +5889,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * POST flag that reflects the intent of the client request. When that flag is present
 	 * we trust it; otherwise we fall back to the trait's live `$_GET`-based detection.
 	 *
-	 * @param bool|null $is_changing_payment Explicit flag from the current request, or null to rely on the trait.
+	 * @param bool|null     $is_changing_payment Explicit flag from the current request, or null to rely on the trait.
+	 * @param WC_Order|null $order               Optional. The order being processed; a subscription is always a card change.
 	 * @return bool
 	 */
-	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null ): bool {
+	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null, $order = null ): bool {
+		// A subscription is always a payment method change, whatever the request flag says.
+		if ( null !== $order && $this->is_changing_payment_method_for_subscription( $order ) ) {
+			return true;
+		}
 		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
 	}
 }

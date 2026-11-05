@@ -30,6 +30,8 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 	}
 
 	public function test_update_option_success() {
+		delete_option( 'wcpay_multi_currency_setup_completed' );
+
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_param( 'option_name', 'wcpay_multi_currency_setup_completed' );
 		$request->set_param( 'value', true );
@@ -38,6 +40,7 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertTrue( $response->get_data()['success'] );
+		$this->assertTrue( get_option( 'wcpay_multi_currency_setup_completed' ) );
 	}
 
 	public function provider_option_names(): array {

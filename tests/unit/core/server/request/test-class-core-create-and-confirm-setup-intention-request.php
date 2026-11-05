@@ -119,6 +119,7 @@ class Create_And_Confirm_Setup_Intention_Test extends WCPAY_UnitTestCase {
 		$params = $request->get_params();
 		$this->assertArrayHasKey( 'metadata', $params );
 		$this->assertTrue( $params['metadata']['fraud_prevention_data_available'] );
+		$this->assertArrayNotHasKey( 'fraud_prevention_data_cart_contents', $params['metadata'] );
 	}
 
 	public function test_set_fingerprint_preserves_existing_metadata() {
@@ -131,6 +132,7 @@ class Create_And_Confirm_Setup_Intention_Test extends WCPAY_UnitTestCase {
 		$params = $request->get_params();
 		$this->assertSame( 1, $params['metadata']['order_number'] );
 		$this->assertTrue( $params['metadata']['fraud_prevention_data_available'] );
+		$this->assertArrayNotHasKey( 'fraud_prevention_data_cart_contents', $params['metadata'] );
 	}
 
 	public function test_exception_will_throw_if_confirmation_token_is_invalid() {

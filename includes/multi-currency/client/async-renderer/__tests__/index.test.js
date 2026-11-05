@@ -99,6 +99,34 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			);
 		} );
 
+		it( 'shows the geolocation notice after fetching config', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () =>
+					Promise.resolve( {
+						...mockConfig,
+						geolocation_notice: {
+							country_name: 'Germany',
+							currency_name: 'Euro',
+							id: 'def4562',
+						},
+					} ),
+			} );
+			const template = document.createElement( 'template' );
+			template.id = 'wcpay-geolocation-notice';
+			template.innerHTML =
+				'<p class="woocommerce-store-notice" style="display:none;"><span data-wcpay-notice-country></span></p>';
+			document.body.appendChild( template );
+
+			await renderer.init();
+
+			const notice = document.querySelector(
+				'.woocommerce-store-notice'
+			);
+			expect( notice.textContent ).toBe( 'Germany' );
+			expect( notice.style.display ).toBe( 'block' );
+		} );
+
 		it( 'syncs the currency switcher after converting prices', async () => {
 			global.fetch = jest.fn().mockResolvedValue( {
 				ok: true,
@@ -1220,6 +1248,132 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			const select = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
 			renderer.syncCurrencySwitchers();
 			expect( select.value ).toBe( 'USD' );
+		} );
+	} );
+
+	describe( 'showGeolocationNotice', () => {
+		const NOTICE_ID = 'abc1232';
+		const DISMISSAL_COOKIE = `store_notice${ NOTICE_ID }`;
+
+		const createTemplate = () => {
+			const template = document.createElement( 'template' );
+			template.id = 'wcpay-geolocation-notice';
+			template.innerHTML =
+				'<p class="woocommerce-store-notice demo_store" data-notice-id="" style="display:none;">' +
+				"We noticed you're visiting from <span data-wcpay-notice-country></span>. " +
+				"We've updated our prices to <span data-wcpay-notice-currency></span> for your shopping convenience. " +
+				'<a href="?currency=USD">Use United States (US) dollar instead.</a>' +
+				' <a href="#" class="woocommerce-store-notice__dismiss-link">Dismiss</a></p>';
+			document.body.appendChild( template );
+		};
+
+		const getNotice = () =>
+			document.querySelector( '.woocommerce-store-notice' );
+
+		beforeEach( () => {
+			document.body.textContent = '';
+			renderer.config = {
+				...mockConfig,
+				geolocation_notice: {
+					country_name: 'Germany',
+					currency_name: 'Euro',
+					id: NOTICE_ID,
+				},
+			};
+		} );
+
+		afterEach( () => {
+			document.cookie = `${ DISMISSAL_COOKIE }=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+		} );
+
+		it( 'fills in the country and currency and shows the notice', () => {
+			createTemplate();
+
+			renderer.showGeolocationNotice();
+
+			expect( getNotice().textContent ).toContain(
+				"We noticed you're visiting from Germany. We've updated our prices to Euro for your shopping convenience."
+			);
+			expect( getNotice().dataset.noticeId ).toBe( 'abc1232' );
+			expect( getNotice().style.display ).toBe( 'block' );
+		} );
+
+		it( 'inserts the names as text, not markup', () => {
+			createTemplate();
+			renderer.config.geolocation_notice.country_name =
+				'<img src="x" onerror="alert(1)">';
+
+			renderer.showGeolocationNotice();
+
+			expect( getNotice().querySelector( 'img' ) ).toBeNull();
+			expect(
+				getNotice().querySelector( '[data-wcpay-notice-country]' )
+					.textContent
+			).toBe( '<img src="x" onerror="alert(1)">' );
+		} );
+
+		it( 'does nothing when the config has no notice', () => {
+			createTemplate();
+			renderer.config.geolocation_notice = null;
+
+			renderer.showGeolocationNotice();
+
+			expect( getNotice() ).toBeNull();
+		} );
+
+		it( 'does nothing when the page has no template', () => {
+			expect( () => renderer.showGeolocationNotice() ).not.toThrow();
+
+			expect( getNotice() ).toBeNull();
+		} );
+
+		it( 'keeps the notice hidden after the visitor dismissed it', () => {
+			createTemplate();
+			document.cookie = `${ DISMISSAL_COOKIE }=hidden; path=/`;
+
+			renderer.showGeolocationNotice();
+
+			expect( getNotice() ).toBeNull();
+		} );
+
+		it( 'sets the dismissal cookie and hides the notice on click', () => {
+			createTemplate();
+			renderer.showGeolocationNotice();
+
+			getNotice()
+				.querySelector( '.woocommerce-store-notice__dismiss-link' )
+				.click();
+
+			expect( document.cookie ).toContain( 'store_noticeabc1232=hidden' );
+			expect( getNotice().style.display ).toBe( 'none' );
+		} );
+
+		it.each( [ 'Enter', ' ' ] )( 'dismisses the notice on %p', ( key ) => {
+			createTemplate();
+			renderer.showGeolocationNotice();
+
+			getNotice()
+				.querySelector( '.woocommerce-store-notice__dismiss-link' )
+				.dispatchEvent(
+					new KeyboardEvent( 'keydown', { key, cancelable: true } )
+				);
+
+			expect( document.cookie ).toContain( 'store_noticeabc1232=hidden' );
+			expect( getNotice().style.display ).toBe( 'none' );
+		} );
+
+		it( 'ignores other keys on the dismiss link', () => {
+			createTemplate();
+			renderer.showGeolocationNotice();
+
+			getNotice()
+				.querySelector( '.woocommerce-store-notice__dismiss-link' )
+				.dispatchEvent(
+					new KeyboardEvent( 'keydown', { key: 'Tab' } )
+				);
+
+			expect( document.cookie ).not.toContain( 'store_noticeabc1232' );
+			expect( getNotice().style.display ).toBe( 'block' );
 		} );
 	} );
 

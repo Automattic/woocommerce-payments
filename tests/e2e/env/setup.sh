@@ -797,7 +797,6 @@ cli wp option set woocommerce_orders_report_date_tour_shown yes
 mkdir -p $WCP_ROOT/screenshots
 handle_permissions $WCP_ROOT/screenshots
 cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
-cli wp option set wcpay_fraud_protection_welcome_tour_dismissed 1
 
 info "Setting up test coupon..."
 cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m.post_id WHERE p.post_type = 'shop_coupon'"

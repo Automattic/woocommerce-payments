@@ -83,6 +83,14 @@ class Core_Request_Generic_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $value, $response->offsetGet( $key ) );
 		$this->expectException( Server_Response_Exception::class );
 		$response->offsetSet( 'key', 'value' );
+	}
+
+	public function test_format_response_returns_response_that_cannot_unset_keys() {
+		$data     = [
+			$key = 'foo' => 'bar',
+		];
+		$request  = new Generic( 'API', 'POST' );
+		$response = $request->format_response( $data );
 		$this->expectException( Server_Response_Exception::class );
 		$response->offsetUnset( $key );
 	}

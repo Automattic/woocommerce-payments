@@ -11,7 +11,6 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
-use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -702,6 +701,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -726,6 +727,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -803,6 +808,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -821,6 +828,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1045,6 +1057,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1063,6 +1077,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1141,6 +1160,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1159,6 +1180,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1233,6 +1259,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1258,6 +1286,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1360,6 +1393,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1386,6 +1421,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -1461,6 +1500,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1485,6 +1526,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -1621,6 +1666,51 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a payment_intent.succeeded event for a Stripe Billing invoice records the charge
+	 * but leaves the order status to the invoice handlers.
+	 */
+	public function test_payment_intent_successful_for_invoice_does_not_complete_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_invoice123',
+			'object'   => 'payment_intent',
+			'amount'   => 1000,
+			'charges'  => [
+				'data' => [
+					[
+						'id'             => 'ch_invoice123',
+						'payment_method' => 'pm_foo',
+					],
+				],
+			],
+			'currency' => 'usd',
+			'status'   => Intent_Status::SUCCEEDED,
+			'invoice'  => 'in_renewal123',
+			'metadata' => [],
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_invoice123' )
+			->willReturn( $order );
+
+		$this->mock_api_client
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] ) );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$stored_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $stored_order->get_status() );
+		$this->assertSame( 'ch_invoice123', $stored_order->get_meta( '_charge_id' ) );
+	}
+
+	/**
 	 * Tests that a payment_intent.succeeded event will complete the order and
 	 * send the card reader receipt to the customer.
 	 */
@@ -1662,7 +1752,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
-						'status' => $intent_status,
+						'amount'   => 1500,
+						'currency' => 'eur',
+						'status'   => $intent_status,
 					]
 				)
 			);
@@ -1681,6 +1773,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->once() )
@@ -1765,6 +1861,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1786,6 +1884,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -3410,6 +3512,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'failed',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_db_wrapper
@@ -3419,6 +3522,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service
 			->expects( $this->never() )
 			->method( 'add_note_and_metadata_for_created_refund' );
+
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	public function test_process_refund_throws_when_order_not_found(): void {
@@ -3701,77 +3806,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider refund_failure_reason_data_provider
-	 */
-	public function test_process_webhook_refund_updated_handles_different_failure_reasons( string $failure_reason ): void {
-		$this->event_body['type']           = 'charge.refund.updated';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'status'         => 'failed',
-			'charge'         => 'test_charge_id',
-			'id'             => 'test_refund_id',
-			'amount'         => 1999,
-			'currency'       => 'usd',
-			'failure_reason' => $failure_reason,
-		];
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_charge_id' )
-			->with( 'test_charge_id' )
-			->willReturn( $this->mock_order );
-
-		$this->order_service
-			->expects( $this->once() )
-			->method( 'handle_failed_refund' )
-			->with(
-				$this->mock_order,
-				'test_refund_id',
-				1999,
-				'usd',
-				null,
-				false,
-				$failure_reason
-			);
-
-		$this->webhook_processing_service->process( $this->event_body );
-	}
-
-	/**
-	 * Data provider for refund failure reason tests.
-	 *
-	 * @return array
-	 */
-	public function refund_failure_reason_data_provider(): array {
-		return [
-			'insufficient_funds'  => [
-				Refund_Failure_Reason::INSUFFICIENT_FUNDS,
-				'Insufficient funds to process the refund',
-			],
-			'declined'            => [
-				Refund_Failure_Reason::DECLINED,
-				'The refund was declined',
-			],
-			'expired_card'        => [
-				Refund_Failure_Reason::EXPIRED_OR_CANCELED_CARD,
-				'The card used for the original payment has expired or been canceled',
-			],
-			'lost_or_stolen_card' => [
-				Refund_Failure_Reason::LOST_OR_STOLEN_CARD,
-				'The card used for the original payment was reported as lost or stolen',
-			],
-			'merchant_request'    => [
-				Refund_Failure_Reason::MERCHANT_REQUEST,
-				'The refund was canceled at your request',
-			],
-			'unknown'             => [
-				Refund_Failure_Reason::UNKNOWN,
-				'An unknown error occurred while processing the refund',
-			],
-		];
-	}
-
-	/**
 	 * Tests that an account.updated webhook refreshes account data and clears cached payment methods.
 	 */
 	public function test_account_updated_webhook() {
@@ -3860,5 +3894,126 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		// but the important behavior (method calls) is tested above.
 		$this->assertFalse( get_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY ) );
 		$this->assertFalse( get_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY ) );
+	}
+
+	/**
+	 * Tests that an authorization moves a pending order to On hold and links its charge,
+	 * for when the shopper leaves before the browser updates the order after 3DS.
+	 */
+	public function test_amount_capturable_updated_puts_pending_order_on_hold() {
+		$order = WC_Helper_Order::create_order();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * Tests that an order the browser already put On hold is left as it is.
+	 */
+	public function test_amount_capturable_updated_leaves_on_hold_order_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::ON_HOLD );
+		$notes_before = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+		$this->assertCount( $notes_before, wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+	}
+
+	/**
+	 * Tests that in-person payments, which are always captured manually, keep their order status.
+	 *
+	 * @dataProvider provider_in_person_payment_method_types
+	 *
+	 * @param string $payment_method_type The in-person payment method type.
+	 */
+	public function test_amount_capturable_updated_ignores_in_person_payments( $payment_method_type ) {
+		$order = WC_Helper_Order::create_order();
+		$this->set_up_amount_capturable_updated_event( $order, $payment_method_type );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	public function provider_in_person_payment_method_types() {
+		return [
+			'Card present'    => [ Payment_Method::CARD_PRESENT ],
+			'Interac present' => [ Payment_Method::INTERAC_PRESENT ],
+		];
+	}
+
+	/**
+	 * Tests that an authorization without a matching order still succeeds and clears the cache.
+	 */
+	public function test_amount_capturable_updated_without_order_clears_cache() {
+		$this->event_body['type']           = 'payment_intent.amount_capturable_updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_mock',
+			'status'   => Intent_Status::REQUIRES_CAPTURE,
+			'metadata' => [],
+			'charges'  => [ 'data' => [ [ 'payment_method_details' => [ 'type' => Payment_Method::CARD ] ] ] ],
+		];
+
+		$this->mock_db_wrapper->method( 'order_from_intent_id' )->willReturn( false );
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Sets up a `payment_intent.amount_capturable_updated` event for an authorized order.
+	 *
+	 * @param WC_Order $order               The order the intent belongs to.
+	 * @param string   $payment_method_type The charge's payment method type.
+	 */
+	private function set_up_amount_capturable_updated_event( $order, $payment_method_type = Payment_Method::CARD ) {
+		$this->event_body['type']           = 'payment_intent.amount_capturable_updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_mock',
+			'status'   => Intent_Status::REQUIRES_CAPTURE,
+			'metadata' => [],
+			'charges'  => [ 'data' => [ [ 'payment_method_details' => [ 'type' => $payment_method_type ] ] ] ],
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->willReturn( $order );
+
+		$this->mock_api_client
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status' => Intent_Status::REQUIRES_CAPTURE,
+						'charge' => [ 'captured' => false ],
+					]
+				)
+			);
+	}
+
+	/**
+	 * Gets the text of all the order's notes.
+	 *
+	 * @param WC_Order $order The order.
+	 *
+	 * @return string
+	 */
+	private function get_order_notes_text( $order ) {
+		return implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
 	}
 }

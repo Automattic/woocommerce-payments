@@ -111,6 +111,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 0 );
 
 		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
+		unset( $_GET['email'], $_POST['email'], $_REQUEST['_ajax_nonce'] );
+
+		remove_filter( 'pre_option_home', [ $this, 'serve_home_on_port_8052' ] );
+		remove_all_filters( 'wcpay_woopay_session_allowed_origins' );
+
+		WC()->session->__unset( WooPay_Session::WOOPAY_SESSION_KEY );
 
 		// Here rather than after each assertion, so a failing test cannot leave every later
 		// one authenticated by a signature.
@@ -314,7 +320,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->setup_session( 0 );
 		$this->setup_adapted_extensions();
 
-		$this->assertEquals( WooPay_Session::get_user_id_from_cart_token(), 0 );
+		$this->assertNull( WooPay_Session::get_user_id_from_cart_token() );
 	}
 
 	public function test_get_user_id_from_cart_token_with_non_numeric_customer_id() {
@@ -356,7 +362,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->setup_session( 0 );
 		$this->setup_adapted_extensions();
 
-		$this->assertEquals( WooPay_Session::get_user_id_from_cart_token(), 0 );
+		$this->assertNull( WooPay_Session::get_user_id_from_cart_token() );
 	}
 
 	public function test_get_user_id_from_cart_token_with_verified_user_store_api_token_without_adapted_extensions() {
@@ -873,12 +879,10 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_attested_account_email_outranks_a_caller_supplied_email() {
-		$_GET['email']  = 'other@example.com';
 		$woopay_request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
+		$woopay_request->set_query_params( [ 'email' => 'other@example.com' ] );
 
 		$this->assertSame( 'shopper@example.com', WooPay_Session::get_user_email( wp_get_current_user(), $woopay_request ) );
-
-		unset( $_GET['email'] );
 	}
 
 	public function test_authenticated_cart_token_is_accepted_with_a_store_minted_nonce() {
@@ -960,15 +964,13 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
 		// Names the shopper in a plain parameter, which anyone can do.
-		$_GET['email'] = $shopper->user_email;
+		$woopay_request->set_query_params( [ 'email' => $shopper->user_email ] );
 
 		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
 		// The REST route hands this array back in plaintext, so an unattested caller must
 		// not be able to name an email and be given a nonce minted for that account.
 		$this->assertArrayNotHasKey( 'email_verified_session_nonce', $request );
-
-		unset( $_GET['email'] );
 	}
 
 	public function test_nonce_is_minted_for_the_rest_route_when_the_email_is_attested() {
@@ -986,7 +988,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_nonce_is_minted_without_an_attestation_when_it_is_not_disclosed() {
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
-		$_GET['email'] = $shopper->user_email;
+		$_POST['email'] = $shopper->user_email;
 
 		// No WP_REST_Request means the frontend or redirect caller, which encrypts the
 		// payload or POSTs it server-side. Nothing is disclosed, so nothing is withheld —
@@ -995,7 +997,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$this->assertArrayHasKey( 'email_verified_session_nonce', $request );
 
-		unset( $_GET['email'] );
+		unset( $_POST['email'] );
 	}
 
 	public function test_rest_route_withholds_extension_data_for_an_email_it_was_only_told_about() {
@@ -1004,7 +1006,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
 		// Names the shopper in a plain parameter, which anyone can do.
-		$_GET['email'] = $shopper->user_email;
+		$woopay_request->set_query_params( [ 'email' => $shopper->user_email ] );
 
 		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
@@ -1017,8 +1019,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// decides to ask for an OTP, so withholding it signs nobody in — a narrower question
 		// than whose balances to hand back, and answered separately.
 		$this->assertSame( $shopper->user_email, $request['email'] );
-
-		unset( $_GET['email'] );
 	}
 
 	public function test_a_guest_envelope_does_not_let_the_caller_name_someone_elses_email() {
@@ -1063,7 +1063,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// What WooPay sends a store the platform keeps on the signed path: a signed GET
 		// naming the shopper in the query string, with no envelope.
 		$woopay_request = $this->attested_request();
-		$_GET['email']  = $shopper->user_email;
+		$woopay_request->set_query_params( [ 'email' => $shopper->user_email ] );
 
 		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
@@ -1073,8 +1073,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'adapted_extensions', $request );
 		$this->assertNotEmpty( $request['adapted_extensions'] );
 		$this->assertArrayHasKey( 'email_verified_session_nonce', $request );
-
-		unset( $_GET['email'] );
 	}
 
 	public function test_rest_route_withholds_extension_data_for_a_signature_off_the_signed_path() {
@@ -1084,7 +1082,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
 		$woopay_request = $this->attested_request();
-		$_GET['email']  = $shopper->user_email;
+		$woopay_request->set_query_params( [ 'email' => $shopper->user_email ] );
 
 		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
@@ -1092,8 +1090,384 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// formed, so it names nobody, and the plain parameter is all that is left.
 		$this->assertArrayNotHasKey( 'adapted_extensions', $request );
 		$this->assertArrayNotHasKey( 'email_verified_session_nonce', $request );
+	}
 
-		unset( $_GET['email'] );
+	public function test_ajax_caller_ignores_the_email_in_the_query_string() {
+		// A logged-out shopper who typed their email at checkout.
+		wp_set_current_user( 0 );
+		WC()->customer->set_billing_email( 'shopper@example.com' );
+		WC()->customer->save();
+
+		// AJAX callers pass no request, so this must be ignored.
+		$_GET['email'] = 'other@example.com';
+
+		$request = WooPay_Session::get_init_session_request();
+
+		$this->assertSame( 'shopper@example.com', $request['email'] );
+		$this->assertSame( 'shopper@example.com', WC()->customer->get_billing_email() );
+	}
+
+	public function test_ajax_get_woopay_session_refuses_a_get_request() {
+		wp_set_current_user( 0 );
+		WC()->customer->set_billing_email( 'shopper@example.com' );
+		WC()->customer->save();
+
+		// A GET with a valid nonce.
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+		$_REQUEST['_ajax_nonce']   = wp_create_nonce( 'woopay_session_nonce' );
+		$_GET['email']             = 'other@example.com';
+
+		$response = $this->call_ajax_handler( 'ajax_get_woopay_session' );
+
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'You aren’t authorized to do that.',
+			],
+			$response
+		);
+		$this->assertSame( 'shopper@example.com', WC()->customer->get_billing_email() );
+	}
+
+	public function test_ajax_get_woopay_session_lets_a_first_party_post_past_the_guard() {
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = home_url();
+		$_REQUEST['_ajax_nonce']   = wp_create_nonce( 'woopay_session_nonce' );
+		Jetpack_Options::delete_option( 'id' );
+
+		$response = $this->call_ajax_handler( 'ajax_get_woopay_session' );
+
+		// Reaching the blog ID check means the guard and the nonce passed.
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'Could not determine the blog ID.',
+			],
+			$response
+		);
+	}
+
+	public function test_ajax_init_woopay_refuses_a_cross_origin_post() {
+		wp_set_current_user( 0 );
+		WC()->customer->set_billing_email( 'shopper@example.com' );
+		WC()->customer->save();
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = 'https://elsewhere.example';
+		$_REQUEST['_ajax_nonce']   = wp_create_nonce( 'wcpay_init_woopay_nonce' );
+		$_POST['email']            = 'other@example.com';
+
+		$response = $this->call_ajax_handler( 'ajax_init_woopay' );
+
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'You aren’t authorized to do that.',
+			],
+			$response
+		);
+		$this->assertSame( 'shopper@example.com', WC()->customer->get_billing_email() );
+	}
+
+	public function test_ajax_set_woopay_phone_number_refuses_a_cross_origin_post() {
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = 'https://elsewhere.example';
+		$_REQUEST['_ajax_nonce']   = wp_create_nonce( WooPay_Session::SAVE_USER_NONCE_ACTION );
+
+		$response = $this->call_ajax_handler( 'ajax_set_woopay_phone_number' );
+
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'You aren’t authorized to do that.',
+			],
+			$response
+		);
+	}
+
+	/**
+	 * @dataProvider provider_foreign_origins
+	 *
+	 * @param string $origin The Origin header, with `%s` standing for the store's host.
+	 */
+	public function test_is_disallowed_session_request_blocks_a_post_from_a_foreign_origin( string $origin ) {
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = sprintf( $origin, wp_parse_url( home_url(), PHP_URL_HOST ) );
+
+		$this->assertTrue( $this->is_disallowed_session_request() );
+	}
+
+	public function provider_foreign_origins() {
+		return [
+			'a subdomain of the store'       => [ 'https://blog.%s' ],
+			'another port on the store host' => [ 'http://%s:9999' ],
+			'the store host over https'      => [ 'https://%s' ],
+			// Sent by sandboxed iframes and some redirects.
+			'an opaque origin'               => [ 'null' ],
+		];
+	}
+
+	public function test_is_disallowed_session_request_allows_a_post_without_an_origin() {
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		unset( $_SERVER['HTTP_ORIGIN'] );
+
+		// Browsers always send an Origin on POST.
+		$this->assertFalse( $this->is_disallowed_session_request() );
+	}
+
+	public function test_is_disallowed_session_request_compares_hosts_case_insensitively() {
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = 'http://' . strtoupper( wp_parse_url( home_url(), PHP_URL_HOST ) );
+
+		$this->assertFalse( $this->is_disallowed_session_request() );
+	}
+
+	public function test_is_disallowed_session_request_allows_the_store_on_its_configured_port() {
+		add_filter( 'pre_option_home', [ $this, 'serve_home_on_port_8052' ] );
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = 'http://store.example:8052';
+
+		$this->assertFalse( $this->is_disallowed_session_request() );
+	}
+
+	public function test_is_disallowed_session_request_allows_an_origin_added_by_the_filter() {
+		add_filter( 'wcpay_woopay_session_allowed_origins', [ $this, 'allow_shop_example_origin' ] );
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = 'https://shop.example';
+
+		$this->assertFalse( $this->is_disallowed_session_request() );
+	}
+
+	public function test_is_disallowed_session_request_blocks_another_port_of_an_origin_added_by_the_filter() {
+		add_filter( 'wcpay_woopay_session_allowed_origins', [ $this, 'allow_shop_example_origin' ] );
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = 'https://shop.example:8443';
+
+		$this->assertTrue( $this->is_disallowed_session_request() );
+	}
+
+	public function test_is_disallowed_session_request_blocks_when_the_filter_returns_non_string_origins() {
+		add_filter(
+			'wcpay_woopay_session_allowed_origins',
+			function () {
+				return [ null, [ 'https://shop.example' ] ];
+			}
+		);
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = 'https://shop.example';
+
+		$this->assertTrue( $this->is_disallowed_session_request() );
+	}
+
+	public function test_is_disallowed_session_request_allows_a_same_origin_fetch_from_a_host_home_url_does_not_name() {
+		// Like a language subdomain, which home_url() doesn't name.
+		$_SERVER['REQUEST_METHOD']      = 'POST';
+		$_SERVER['HTTP_ORIGIN']         = 'https://de.shop.example';
+		$_SERVER['HTTP_SEC_FETCH_SITE'] = 'same-origin';
+
+		$this->assertFalse( $this->is_disallowed_session_request() );
+	}
+
+	public function test_is_disallowed_session_request_blocks_a_same_site_fetch() {
+		$_SERVER['REQUEST_METHOD']      = 'POST';
+		$_SERVER['HTTP_ORIGIN']         = sprintf( 'https://blog.%s', wp_parse_url( home_url(), PHP_URL_HOST ) );
+		$_SERVER['HTTP_SEC_FETCH_SITE'] = 'same-site';
+
+		$this->assertTrue( $this->is_disallowed_session_request() );
+	}
+
+	public function test_is_disallowed_session_request_logs_the_rejected_origin() {
+		WC_Payments::mode()->dev();
+
+		$messages = [];
+		$capture  = function ( $message ) use ( &$messages ) {
+			$messages[] = $message;
+
+			return $message;
+		};
+		add_filter( 'woocommerce_logger_log_message', $capture );
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = 'https://shop.example';
+
+		$this->is_disallowed_session_request();
+
+		$this->assertContains(
+			'WooPay session request rejected: origin https://shop.example:443 is not allowed. See the wcpay_woopay_session_allowed_origins filter.',
+			$messages
+		);
+	}
+
+	/**
+	 * Stands in for a store whose home URL carries a non-default port.
+	 *
+	 * @return string
+	 */
+	public function serve_home_on_port_8052() {
+		return 'http://store.example:8052';
+	}
+
+	/**
+	 * Stands in for a store that serves its checkout on a second domain.
+	 *
+	 * @param string[] $origins The allowed origins.
+	 *
+	 * @return string[]
+	 */
+	public function allow_shop_example_origin( $origins ) {
+		$origins[] = 'https://shop.example';
+
+		return $origins;
+	}
+
+	public function test_save_user_choice_is_saved_with_the_session_it_was_made_in() {
+		wp_set_current_user( self::factory()->user->create() );
+
+		$response = $this->post_save_user_choice( wp_create_nonce( WooPay_Session::SAVE_USER_NONCE_ACTION ) );
+		$data     = WC()->session->get( WooPay_Session::WOOPAY_SESSION_KEY );
+
+		$this->assertTrue( $response['success'] );
+		$this->assertTrue( $data['save_user_in_woopay'] );
+		$this->assertSame( '+14155550123', $data['woopay_user_phone_field']['full'] );
+		$this->assertSame( (string) WC()->session->get_customer_id(), $data['session_customer_id'] );
+	}
+
+	public function test_save_user_choice_does_not_start_a_session() {
+		// A caller with neither a session cookie nor an account.
+		$original_session = WC()->session;
+		WC()->session     = new WC_Session_Handler();
+
+		try {
+			$response = $this->post_save_user_choice( wp_create_nonce( WooPay_Session::SAVE_USER_NONCE_ACTION ) );
+
+			$this->assertFalse( $response['success'] );
+			$this->assertSame( 'Could not find the shopper session.', $response['data'] );
+			$this->assertFalse( WC()->session->has_session() );
+			$this->assertNull( WC()->session->get( WooPay_Session::WOOPAY_SESSION_KEY ) );
+		} finally {
+			WC()->session = $original_session;
+		}
+	}
+
+	public function test_save_user_choice_is_refused_with_the_woopay_session_nonce() {
+		wp_set_current_user( self::factory()->user->create() );
+
+		$response = $this->post_save_user_choice( wp_create_nonce( 'woopay_session_nonce' ) );
+
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'You aren’t authorized to do that.', $response['data'] );
+		$this->assertNull( WC()->session->get( WooPay_Session::WOOPAY_SESSION_KEY ) );
+	}
+
+	public function test_save_user_nonce_of_a_guest_is_tied_to_their_session() {
+		$original_session = WC()->session;
+		$original_cookies = $_COOKIE;
+		$original_user_id = get_current_user_id();
+		$first_session    = new WC_Session_Handler();
+		$second_session   = new WC_Session_Handler();
+		$disable_cookies  = static function () {
+			return false;
+		};
+
+		wp_set_current_user( 0 );
+		unset( $_COOKIE[ 'wp_woocommerce_session_' . COOKIEHASH ] );
+		add_filter( 'woocommerce_set_cookie_enabled', $disable_cookies );
+
+		try {
+			// Initialize session identity and nonce handling without registering unrelated lifecycle hooks.
+			WC()->session = $first_session;
+			$first_session->init_session_cookie();
+			$first_session->set_customer_session_cookie( true );
+			add_filter( 'nonce_user_logged_out', [ $first_session, 'maybe_update_nonce_user_logged_out' ], 10, 2 );
+
+			$first_nonce = wp_create_nonce( WooPay_Session::SAVE_USER_NONCE_ACTION );
+			$response    = $this->post_save_user_choice( $first_nonce );
+			$this->assertTrue( $response['success'] );
+
+			remove_filter( 'nonce_user_logged_out', [ $first_session, 'maybe_update_nonce_user_logged_out' ] );
+			WC()->session = $second_session;
+			$second_session->init_session_cookie();
+			$second_session->set_customer_session_cookie( true );
+			add_filter( 'nonce_user_logged_out', [ $second_session, 'maybe_update_nonce_user_logged_out' ], 10, 2 );
+
+			$response = $this->post_save_user_choice( $first_nonce );
+			$this->assertFalse( $response['success'] );
+			$this->assertNull( $second_session->get( WooPay_Session::WOOPAY_SESSION_KEY ) );
+
+			$second_nonce = wp_create_nonce( WooPay_Session::SAVE_USER_NONCE_ACTION );
+			$response     = $this->post_save_user_choice( $second_nonce );
+			$this->assertTrue( $response['success'] );
+		} finally {
+			remove_filter( 'woocommerce_set_cookie_enabled', $disable_cookies );
+			remove_filter( 'nonce_user_logged_out', [ $first_session, 'maybe_update_nonce_user_logged_out' ] );
+			remove_filter( 'nonce_user_logged_out', [ $second_session, 'maybe_update_nonce_user_logged_out' ] );
+			WC()->session = $original_session;
+			$_COOKIE      = $original_cookies;
+			wp_set_current_user( $original_user_id );
+		}
+	}
+
+	public function test_save_user_choice_follows_the_guest_who_made_it_to_their_account() {
+		WC()->session->set( WooPay_Session::WOOPAY_SESSION_KEY, [ 'session_customer_id' => 't_guest' ] );
+
+		WooPay_Session::keep_woopay_user_data_on_login( 't_guest', '123' );
+
+		$this->assertSame( '123', WC()->session->get( WooPay_Session::WOOPAY_SESSION_KEY )['session_customer_id'] );
+	}
+
+	public function test_save_user_choice_of_another_session_does_not_follow_a_guest_to_their_account() {
+		WC()->session->set( WooPay_Session::WOOPAY_SESSION_KEY, [ 'session_customer_id' => 't_another_guest' ] );
+
+		WooPay_Session::keep_woopay_user_data_on_login( 't_guest', '123' );
+
+		$this->assertSame( 't_another_guest', WC()->session->get( WooPay_Session::WOOPAY_SESSION_KEY )['session_customer_id'] );
+	}
+
+	/**
+	 * Sends what the blocks checkout sends when a shopper ticks "save my information".
+	 *
+	 * @param string $nonce The nonce sent with the request.
+	 *
+	 * @return array The decoded response.
+	 */
+	private function post_save_user_choice( string $nonce ): array {
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_REQUEST['_ajax_nonce']   = $nonce;
+		$_POST                     = [
+			'save_user_in_woopay'     => '1',
+			'woopay_source_url'       => 'https://example.org/checkout/',
+			'woopay_is_blocks'        => '1',
+			'woopay_viewport'         => '1280x720',
+			'woopay_user_phone_field' => [ 'full' => '+14155550123' ],
+		];
+
+		// wp_send_json_*() only goes through wp_die(), which can be intercepted, on AJAX requests.
+		$die_handler = function () {
+			return function () {
+				throw new WPDieException();
+			};
+		};
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', $die_handler );
+
+		ob_start();
+		try {
+			WooPay_Session::ajax_set_woopay_phone_number();
+		} catch ( WPDieException $e ) {
+			unset( $e );
+		} finally {
+			$response = json_decode( ob_get_clean(), true );
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', $die_handler );
+			unset( $_REQUEST['_ajax_nonce'] );
+			$_POST = [];
+		}
+
+		return $response;
 	}
 
 	/**
@@ -1212,6 +1586,67 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		}
 
 		return $request;
+	}
+
+	/**
+	 * Calls the private guard the AJAX handlers share.
+	 */
+	private function is_disallowed_session_request(): bool {
+		$method = new ReflectionMethod( WooPay_Session::class, 'is_disallowed_session_request' );
+		$method->setAccessible( true );
+
+		return $method->invoke( null );
+	}
+
+	/**
+	 * Runs a WooPay_Session AJAX handler and returns the JSON it sent.
+	 *
+	 * The die handler throws, so the handler stops at its first response.
+	 *
+	 * @param string $handler The handler method name.
+	 *
+	 * @return array|null The decoded response.
+	 *
+	 * @throws RuntimeException When the handler fails for any reason other than responding.
+	 */
+	private function call_ajax_handler( string $handler ) {
+		$die_handler = function () {
+			return function () {
+				throw new RuntimeException( 'wp_die' );
+			};
+		};
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', $die_handler );
+		// Handlers that pass the guard must not call WooPay.
+		add_filter( 'pre_http_request', [ $this, 'block_http_request' ] );
+
+		ob_start();
+
+		try {
+			call_user_func( [ WooPay_Session::class, $handler ] );
+		} catch ( RuntimeException $e ) {
+			if ( 'wp_die' !== $e->getMessage() ) {
+				throw $e;
+			}
+		} finally {
+			$output = ob_get_clean();
+
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', $die_handler );
+			remove_filter( 'pre_http_request', [ $this, 'block_http_request' ] );
+		}
+
+		return json_decode( $output, true );
+	}
+
+	/**
+	 * Short-circuits outgoing HTTP requests.
+	 *
+	 * @return WP_Error
+	 */
+	public function block_http_request() {
+		return new WP_Error( 'http_request_blocked', 'Outgoing requests are blocked in this test.' );
 	}
 
 	/**

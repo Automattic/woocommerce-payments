@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Make capital loan table columns configurable via column visibility menu

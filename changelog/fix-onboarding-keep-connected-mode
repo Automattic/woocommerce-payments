@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep a connected store in its current test or live mode during onboarding.

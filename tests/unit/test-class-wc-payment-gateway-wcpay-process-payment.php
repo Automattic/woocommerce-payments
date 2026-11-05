@@ -39,6 +39,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	private $wcpay_gateway;
 
 	/**
+	 * Original database cache.
+	 *
+	 * @var WCPay\Database_Cache
+	 */
+	private $database_cache;
+
+	/**
 	 * System under test.
 	 *
 	 * @var WC_Payment_Gateway_WCPay|MockObject
@@ -115,6 +122,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function set_up() {
 		parent::set_up();
+		$this->database_cache = WC_Payments::get_database_cache();
 
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
@@ -226,7 +234,22 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		wcpay_get_test_container()->reset_all_replacements();
 		WC_Payments::mode()->live();
 
+		// Some tests stand in for a request WooPay signed.
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		WC_Payments::set_database_cache( $this->database_cache );
+
 		parent::tear_down();
+	}
+
+	/**
+	 * Stands in for a request WooPay signed, on a store the platform keeps on the signed path.
+	 */
+	private function simulate_request_signed_by_woopay(): void {
+		$cache = $this->createMock( WCPay\Database_Cache::class );
+		$cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => true ] );
+
+		WC_Payments::set_database_cache( $cache );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 	}
 
 	/**
@@ -832,6 +855,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 * Tests that a draft order is updated to "pending" when the $_POST 'is-woopay-preflight-check' is present.
 	 */
 	public function test_draft_order_is_set_to_pending_for_woopay_preflight_check_request() {
+		$this->simulate_request_signed_by_woopay();
 		$_POST['is-woopay-preflight-check'] = true;
 
 		// Arrange: Create an order to test with.
@@ -874,6 +898,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Arrange: Create a request to simulate a woopay preflight request.
+		$this->simulate_request_signed_by_woopay();
 		$_POST['is-woopay-preflight-check'] = true;
 		$request                            = new WP_REST_Request( 'POST', '' );
 		$request->set_body_params(
@@ -903,12 +928,64 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		remove_all_actions( 'woocommerce_order_status_pending' );
 		remove_all_filters( 'woocommerce_default_order_status' );
+		remove_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
+	}
+
+	/**
+	 * An unverified preflight must not remove checkout listeners or coupon holds.
+	 */
+	public function test_preflight_flag_is_rejected_when_the_request_is_not_proven_to_be_from_woopay() {
+		// Arrange: Listeners the preflight check would remove.
+		$hooks = [
+			'woocommerce_store_api_checkout_update_order_meta',
+			'woocommerce_store_api_checkout_order_processed',
+			'woocommerce_order_status_pending',
+			'woocommerce_checkout_registration_required',
+		];
+		foreach ( $hooks as $hook ) {
+			add_filter( $hook, '__return_true' );
+		}
+
+		// Arrange: A request that looks like WooPay's but carries no vouch or signature.
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+		$request                    = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$request->set_body_params(
+			[
+				'payment_data' => [
+					[
+						'key'   => 'is-woopay-preflight-check',
+						'value' => true,
+					],
+				],
+			]
+		);
+
+		try {
+			$response = $this->mock_wcpay_gateway->remove_all_actions_on_preflight_check( null, [], $request );
+
+			$this->assertWPError( $response );
+			$this->assertSame( 'wcpay_invalid_woopay_preflight', $response->get_error_code() );
+			$this->assertSame( 403, $response->get_error_data()['status'] );
+
+			// Assert: The listeners and the coupon holds are left alone.
+			foreach ( $hooks as $hook ) {
+				$this->assertNotFalse( has_filter( $hook, '__return_true' ), $hook );
+			}
+			$this->assertFalse( has_filter( 'woocommerce_coupon_hold_minutes', '__return_zero' ) );
+		} finally {
+			unset( $_SERVER['HTTP_USER_AGENT'], $_SERVER['HTTP_CART_TOKEN'] );
+			foreach ( $hooks as $hook ) {
+				remove_filter( $hook, '__return_true' );
+			}
+		}
 	}
 
 	/**
 	 * Tests that a success response and no redirect is returned when the $_POST 'is-woopay-preflight-check' is present.
 	 */
 	public function test_successful_result_no_redirect_for_woopay_preflight_check_request() {
+		$this->simulate_request_signed_by_woopay();
 		$_POST['is-woopay-preflight-check'] = true;
 
 		// Arrange: Create an order to test with.
@@ -925,6 +1002,26 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: No payment was processed.
 		$this->assertEquals( $response['result'], 'success' );
 		$this->assertEmpty( $response['redirect'] );
+	}
+
+	public function test_checkout_draft_order_is_pending_before_its_intent_is_created() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'checkout-draft' );
+		$order->save();
+		$status_when_intent_created = null;
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnCallback(
+				function () use ( $order, &$status_when_intent_created ) {
+					$status_when_intent_created = wc_get_order( $order->get_id() )->get_status();
+					return WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
+				}
+			);
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'pending', $status_when_intent_created );
 	}
 
 	public function test_bad_request_exception_thrown() {
@@ -1716,13 +1813,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Arrange: WC_Payments_Customer_Service returns a valid customer ID.
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( $customer_id );
 
 		$this->mock_customer_service
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'update_customer_for_user' )
+			->with( 'cus_mock', wp_get_current_user(), $this->isType( 'array' ) )
 			->willReturn( self::CUSTOMER_ID );
 
 		// Arrange: Create a mock cart.
@@ -1730,8 +1828,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
+		// The customer update is deferred to shutdown; isolate it so do_action() only fires that callback.
+		remove_all_actions( 'shutdown' );
+
 		// Act: process a successful payment.
 		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
 	public function test_process_payment_check_session_order_redirect_to_previous_order() {
@@ -1924,7 +2027,12 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
+
+		$saves_before = did_action( 'woocommerce_payments_save_user_in_woopay' );
+
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 1, did_action( 'woocommerce_payments_save_user_in_woopay' ) - $saves_before );
 	}
 
 	public function test_process_payment_using_platform_payment_method_adds_platform_payment_method_flag_to_request() {
@@ -2418,7 +2526,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturnOnConsecutiveCalls(
 				$this->throwException(
 					new API_Exception(
-						'No such customer: cus_mock',
+						"Error: No such customer: 'cus_mock'",
 						'resource_missing',
 						400
 					)
@@ -2507,7 +2615,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturnOnConsecutiveCalls(
 				$this->throwException(
 					new API_Exception(
-						'No such customer: cus_mock',
+						"Error: No such customer: 'cus_mock'",
 						'resource_missing',
 						400
 					)
@@ -2542,8 +2650,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function provider_non_customer_resource_missing_errors() {
 		return [
-			'missing payment method' => [ 'No such payment_method: pm_123' ],
-			'missing price'          => [ 'No such price: price_123' ],
+			'missing payment method'          => [ 'No such payment_method: pm_123' ],
+			'missing price'                   => [ 'No such price: price_123' ],
+			'ID containing the word customer' => [ "Error: No such PaymentMethod: 'pm_customer'" ],
+			'missing token'                   => [ "Error: No such token: 'No such customer: cus_mock'" ],
+			'customer mentioned elsewhere'    => [ 'Error: The customer has no such source.' ],
 		];
 	}
 
