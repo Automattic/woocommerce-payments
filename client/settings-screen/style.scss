@@ -3,6 +3,10 @@
 		margin-block-end: 16px;
 		border-block-end: 1px solid $gray-200;
 	}
+
+	.components-tab-panel__tabs-item.is-active {
+		font-weight: 500;
+	}
 }
 
 .wcpay-settings-screen__card-description {
@@ -62,11 +66,19 @@
 
 	.payment-method-item__label {
 		font-weight: 400;
-		font-size: 15px;
+		font-size: 13px;
 	}
 
 	.payment-method-item__description {
 		color: $gray-700;
+		line-height: 20px;
+	}
+
+	// The designs use smaller descriptions in the longer payment methods list.
+	.wcpay-settings-screen__payment-methods-tab
+		.payment-method-item__description {
+		font-size: 12px;
+		line-height: 16px;
 	}
 
 	// A payment method's description runs under its fees, as far as the logo.

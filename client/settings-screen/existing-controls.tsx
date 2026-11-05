@@ -145,7 +145,7 @@ export const PaymentMethods = () => (
 					);
 				}
 				return (
-					<>
+					<div className="wcpay-settings-screen__payment-methods-tab">
 						<TabDescription
 							text={ __(
 								'Add and edit payments available to customers at checkout. ' +
@@ -160,7 +160,7 @@ export const PaymentMethods = () => (
 							) }
 						/>
 						<PaymentMethodsControl />
-					</>
+					</div>
 				);
 			} }
 		</TabPanel>
