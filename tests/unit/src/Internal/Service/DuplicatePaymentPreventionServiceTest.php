@@ -106,20 +106,29 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 
 	public function provider_get_session_processing_order() {
 		return [
-			'no session order ID'                  => [ null, null ],
-			'has session order ID but not integer' => [ '111', 111 ],
-			'has session order ID'                 => [ 555, 555 ],
+			'no session order ID'                  => [ null, 't_current', null ],
+			'has session order ID but not integer' => [ '111', 't_current', 111 ],
+			'has session order ID'                 => [ 555, 't_current', 555 ],
+			'stored in another session'            => [ 555, 't_another_session', null ],
+			'stored without a session ID'          => [ 555, null, null ],
 		];
 	}
 
 	/**
 	 * @dataProvider provider_get_session_processing_order
 	 */
-	public function test_get_session_processing_order( $session_order_id, $expected ) {
-		$this->mock_session_service->expects( $this->once() )
+	public function test_get_session_processing_order( $session_order_id, $session_order_owner, $expected ) {
+		$this->mock_session_service
 			->method( 'get' )
-			->with( $this->sut::SESSION_KEY_PROCESSING_ORDER )
-			->willReturn( $session_order_id );
+			->willReturnMap(
+				[
+					[ $this->sut::SESSION_KEY_PROCESSING_ORDER, null, $session_order_id ],
+					[ $this->sut::SESSION_KEY_PROCESSING_ORDER_OWNER, null, $session_order_owner ],
+				]
+			);
+		$this->mock_session_service
+			->method( 'get_session_id' )
+			->willReturn( 't_current' );
 
 		// Act.
 		$result = $this->sut->get_session_processing_order();

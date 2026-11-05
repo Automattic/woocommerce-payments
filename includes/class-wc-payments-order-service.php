@@ -50,6 +50,13 @@ class WC_Payments_Order_Service {
 	const PAID_INTENT_ID_SESSION_KEY = 'wcpay_paid_intent_id';
 
 	/**
+	 * Key used to store the ID of the WooCommerce session the paid intent ID above was stored in.
+	 *
+	 * @const string
+	 */
+	const PAID_INTENT_ID_SESSION_OWNER_KEY = 'wcpay_paid_intent_id_session';
+
+	/**
 	 * Meta key used to store payment method Id.
 	 *
 	 * @const string
