@@ -167,8 +167,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 	/**
 	 * Re-fetches the account data from WP.com, keeping the saved data if the fetch fails.
-	 *
-	 * Unlike refresh_account_data(), it returns nothing, so it can be used as an action callback.
 	 */
 	public function refresh_cache(): void {
 		$this->refresh_account_data();
