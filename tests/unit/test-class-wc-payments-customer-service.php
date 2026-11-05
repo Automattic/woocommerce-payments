@@ -851,7 +851,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$order->set_customer_id( 1 );
 
 		// test fetching and existing WCPay customer ID from and order.
-		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'wcpay_cus_12345' );
+		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'wcpay_cus_12345' ); // gitleaks:allow.
 		$this->assertEquals( $this->customer_service->get_customer_id_for_order( $order ), 'wcpay_cus_12345' );
 
 		// test creating a new WCPay customer ID if the order customer doesn't have one.
