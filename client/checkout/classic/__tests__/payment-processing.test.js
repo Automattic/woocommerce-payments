@@ -5,6 +5,7 @@ import {
 	createAndConfirmSetupIntent,
 	mountStripePaymentElement,
 	processPayment,
+	processPaymentIfNotUsingSavedMethod,
 	renderTerms,
 	updateLinkEmail,
 	__resetGatewayUPEComponentsElement,
@@ -20,12 +21,15 @@ import {
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import { waitFor } from '@testing-library/react';
 import {
+	appendFraudPreventionTokenInputToForm,
 	appendPaymentMethodErrorDataToForm,
 	appendPaymentMethodIdToForm,
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
+	isUsingSavedPaymentMethod,
 } from '../upe-utils';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import $ from 'jquery';
 
 jest.mock( '../../upe-styles' );
 jest.mock( 'wcpay/utils/appearance-cache' );
@@ -107,6 +111,51 @@ const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
 	paymentMethod: {
 		id: 'paymentMethodId',
 	},
+} );
+
+describe( 'saved card submissions', () => {
+	beforeEach( () => {
+		appendFraudPreventionTokenInputToForm.mockImplementation(
+			jest.requireActual( '../upe-utils' )
+				.appendFraudPreventionTokenInputToForm
+		);
+		getSelectedUPEGatewayPaymentMethod.mockReturnValue( 'card' );
+		isUsingSavedPaymentMethod.mockReturnValue( true );
+		window.wcpayFraudPreventionToken = 'first-token';
+	} );
+
+	afterEach( () => {
+		appendFraudPreventionTokenInputToForm.mockReset();
+		delete window.wcpayFraudPreventionToken;
+		document.body.innerHTML = '';
+		jest.clearAllMocks();
+	} );
+
+	test.each( [ 'checkout', 'order_review' ] )(
+		'adds the current fraud token once to the %s form',
+		( formId ) => {
+			const $form = $( `<form id="${ formId }"></form>` ).appendTo(
+				document.body
+			);
+
+			processPaymentIfNotUsingSavedMethod( apiMock, $form );
+			expect(
+				$form.find( 'input[name="wcpay-fraud-prevention-token"]' )
+			).toHaveLength( 1 );
+			expect(
+				$form.find( 'input[name="wcpay-fraud-prevention-token"]' ).val()
+			).toBe( 'first-token' );
+
+			window.wcpayFraudPreventionToken = 'second-token';
+			processPaymentIfNotUsingSavedMethod( apiMock, $form );
+			expect(
+				$form.find( 'input[name="wcpay-fraud-prevention-token"]' )
+			).toHaveLength( 1 );
+			expect(
+				$form.find( 'input[name="wcpay-fraud-prevention-token"]' ).val()
+			).toBe( 'second-token' );
+		}
+	);
 } );
 
 const apiMock = {
