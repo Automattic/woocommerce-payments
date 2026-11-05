@@ -140,8 +140,42 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'jetpack_site_registered', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_registered action does not exist.' );
 		$this->assertNotFalse( has_action( 'jetpack_site_disconnected', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_disconnected action does not exist.' );
 		$this->assertNotFalse( has_action( 'updated_option', [ $this->wcpay_account, 'possibly_update_wcpay_account_locale' ] ), 'updated_option action does not exist.' );
-		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'clear_cache' ] ), 'woocommerce_woocommerce_payments_updated action does not exist.' );
+		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'refresh_cache' ] ), 'woocommerce_woocommerce_payments_updated action does not exist.' );
+		$this->assertFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'clear_cache' ] ), 'A plugin update must not delete the saved account data.' );
 		$this->assertNotFalse( has_action( WC_Payments_Account::STORE_SETUP_SYNC_ACTION, [ $this->wcpay_account, 'store_setup_sync' ] ), 'store_setup_sync action does not exist.' );
+	}
+
+	public function test_plugin_update_keeps_the_saved_account_data_when_the_refresh_fails() {
+		$this->mock_jetpack_connection();
+		$database_cache = new Database_Cache();
+		$account        = new WC_Payments_Account( $this->mock_api_client, $database_cache, $this->mock_action_scheduler_service, $this->mock_onboarding_service, $this->mock_redirect_service );
+		$database_cache->add(
+			Database_Cache::ACCOUNT_KEY,
+			[
+				'account_id' => 'acc_test',
+				'is_live'    => true,
+			]
+		);
+
+		// Only this account's handlers run, so the global account instance can't write the same option.
+		remove_all_actions( 'woocommerce_woocommerce_payments_updated' );
+		$account->init_hooks();
+
+		$this->mock_wcpay_request( Get_Account::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Too many requests', 'wcpay_too_many_requests', 429 ) );
+
+		do_action( 'woocommerce_woocommerce_payments_updated' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+
+		$this->assertSame(
+			[
+				'account_id' => 'acc_test',
+				'is_live'    => true,
+			],
+			( new Database_Cache() )->get( Database_Cache::ACCOUNT_KEY, true )
+		);
+		$this->assertTrue( $account->is_stripe_connected() );
 	}
 
 	public function test_maybe_handle_onboarding_unauthorized_user() {

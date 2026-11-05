@@ -1772,4 +1772,33 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		return $notes[0]->content;
 	}
+
+	public function test_process_payment_refuses_a_subscription_outside_the_change_payment_method_flow() {
+		// A subscription paid without change_payment_method is refused.
+		$_GET  = [];
+		$token = WC_Helper_Token::create_token( 'pm_mock', self::USER_ID );
+
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$_POST        = [
+			'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => $token->get_id(),
+		];
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) use ( $subscription ) {
+				return $order instanceof WC_Order && $order->get_id() === $subscription->get_id();
+			}
+		);
+
+		// No PaymentIntent is ever created: the subscription is refused before any server request.
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0 );
+
+		$result = $this->wcpay_gateway->process_payment( $subscription->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
+		// Left untouched (not charged, completed, or moved to failed).
+		$this->assertSame( 'pending', wc_get_order( $subscription->get_id() )->get_status() );
+
+		WC_Subscriptions::set_wcs_is_subscription( null );
+	}
 }

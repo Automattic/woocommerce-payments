@@ -145,6 +145,15 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->onboarding_service->init_hooks();
 	}
 
+	/**
+	 * Swap in a mock account service that reports a connected account.
+	 */
+	private function mock_account_connected(): void {
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::set_account_service( $mock_account );
+	}
+
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
 		$this->assertNotFalse( has_filter( 'wc_payments_get_onboarding_data_args', [ $this->onboarding_service, 'add_woocommerce_store_id_to_request' ] ) );
@@ -566,6 +575,11 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function data_get_source(): array {
 		return [
+			'Array path in referer is ignored without a TypeError' => [
+				'wcadmin-settings-page',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout&path[]=/woopayments/onboarding',
+				[],
+			],
 			'Valid source GET param trumps everything'    => [
 				'wcpay-connect-page',
 				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
@@ -770,6 +784,103 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 		// Clean up: Reset mode to avoid affecting other tests.
 		WC_Payments::mode()->live();
+	}
+
+	/**
+	 * A connected store keeps the mode it was onboarded in, ignoring both the requested mode and auto-detection.
+	 *
+	 * @dataProvider data_connected_account_keeps_mode
+	 *
+	 * @param bool        $stored_test_mode Whether the store was onboarded in test mode.
+	 * @param string|null $requested_mode   The mode the request asks for.
+	 * @param string|null $ambient_mode     Gateway mode to force ('live' or 'test'), or null to leave the default.
+	 *                                      Forcing the opposite of the stored mode proves the connected-store
+	 *                                      branch beats auto-detection when no mode is requested.
+	 */
+	public function test_create_embedded_kyc_session_connected_account_keeps_mode( bool $stored_test_mode, ?string $requested_mode, ?string $ambient_mode = null ) {
+		// Arrange: a connected store already onboarded in the stored mode.
+		WC_Payments_Onboarding_Service::set_test_mode( $stored_test_mode );
+		$this->mock_account_connected();
+
+		if ( 'test' === $ambient_mode ) {
+			WC_Payments::mode()->test();
+		} elseif ( 'live' === $ambient_mode ) {
+			WC_Payments::mode()->live();
+		}
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		// The embedded session must be requested for the STORED mode, never the requested one.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( ! $stored_test_mode ) // First arg $live_account is true only when the stored mode is live.
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => ! $stored_test_mode,
+					'account_created'           => false,
+					'publishable_key'           => $stored_test_mode ? 'pk_test_123' : 'pk_live_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], [], $requested_mode );
+
+		// Assert: the stored mode is unchanged regardless of the requested mode or auto-detection.
+		$this->assertNotEmpty( $result );
+		$this->assertSame( $stored_test_mode, WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+
+		// Clean up: reset any forced mode so it does not leak into other tests.
+		if ( null !== $ambient_mode ) {
+			WC_Payments::mode()->live();
+		}
+	}
+
+	/**
+	 * Data provider for the connected-store keep-mode test.
+	 *
+	 * The requested-mode rows prove an explicit request is ignored. The no-requested-mode rows force the
+	 * opposite gateway mode, so auto-detection alone would switch the store's mode; they prove the connected-store
+	 * branch wins. The no-mode path is the one WC core uses (WooPaymentsService::get_onboarding_kyc_session()
+	 * sends no mode).
+	 *
+	 * @return array[]
+	 */
+	public function data_connected_account_keeps_mode(): array {
+		return [
+			'stored live, requested test -> stays live' => [ false, 'test' ],
+			'stored live, requested live -> stays live' => [ false, 'live' ],
+			'stored test, requested live -> stays test' => [ true, 'live' ],
+			'stored test, requested test -> stays test' => [ true, 'test' ],
+			'stored live, no mode, gateway test -> stays live' => [ false, null, 'test' ],
+			'stored test, no mode, gateway live -> stays test' => [ true, null, 'live' ],
+		];
+	}
+
+	/**
+	 * init_test_drive_account refuses to run when a Stripe account is already connected.
+	 */
+	public function test_init_test_drive_account_throws_when_account_connected() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_account_connected();
+
+		// Assert.
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'An account is already set up. Please reset the onboarding first.' );
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( Country_Code::UNITED_STATES );
 	}
 
 	/**
