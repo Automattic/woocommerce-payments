@@ -4868,6 +4868,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
+			// The form posts the setup intent ID, so only accept an intent created for this user's customer.
+			if ( $customer_id !== $setup_intent->get_customer_id() ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ),
+					'invalid_setup_intent_customer'
+				);
+			}
+
 			$payment_method = $setup_intent->get_payment_method_id();
 			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
 

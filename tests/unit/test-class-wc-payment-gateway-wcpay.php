@@ -3600,8 +3600,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_setup_intention(
 					[
-						'status'         => Intent_Status::SUCCEEDED,
-						'payment_method' => 'pm_mock',
+						'status'            => Intent_Status::SUCCEEDED,
+						'customer_id'       => 'cus_12345',
+						'payment_method_id' => 'pm_mock',
 					]
 				)
 			);
@@ -3614,6 +3615,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$result = $this->card_gateway->add_payment_method();
 
 		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	public function test_add_payment_method_rejects_intent_for_another_customer() {
+		$_POST = [ 'wcpay-setup-intent' => 'seti_other' ];
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'seti_other' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'                => 'seti_other',
+						'status'            => Intent_Status::SUCCEEDED,
+						'customer_id'       => 'cus_other',
+						'payment_method_id' => 'pm_other',
+					]
+				)
+			);
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$result = $this->card_gateway->add_payment_method();
+
+		$this->assertEquals( 'error', $result['result'] );
+		$this->assertSame( "We're not able to add this payment method. Please try again later", wc_get_notices( 'error' )[0]['notice'] );
+		wc_clear_notices();
 	}
 
 	public function test_add_payment_method_no_customer() {
