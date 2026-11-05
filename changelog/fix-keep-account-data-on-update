@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep the saved account details when they can't be refreshed after a plugin update.
