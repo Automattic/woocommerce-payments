@@ -93,7 +93,7 @@ runs:
             continue
           fi
 
-          TESTS=$(jq -r --argjson max "$MAX_TESTS" '
+          if ! TESTS=$(jq -r --argjson max "$MAX_TESTS" '
             def esc: gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
             [ .results.tests[] | select(.status == "failed") ] as $failed
             | if ($failed | length) == 0 then
@@ -105,11 +105,23 @@ runs:
                   | ((.message // "") | gsub("\u001b\\[[0-9;]*m"; "") | split("\n")[0] | .[0:120]) as $msg
                   | "    ◦ `\($spec)` › \($title | esc)" + (if $msg != "" then " — _\($msg | esc)_" else "" end) ),
                 ( if ($failed | length) > $max then "    ◦ …and \(($failed | length) - $max) more" else empty end )
-              end' "$ctrf")
-          FAILED_LINES+="$TESTS"$'\n'
+              end' "$ctrf"); then
+            FAILED_LINES+="    ◦ _Report unreadable; check the job log._"$'\n'
+            printf '%s\tunreadable\n' "$name" >> "$SIGNATURE_FILE"
+            continue
+          fi
 
-          jq -r --arg job "$name" '.results.tests[] | select(.status == "failed")
-            | [ $job, (.filePath | split("/") | last), (.suite // ""), .name ] | @tsv' "$ctrf" >> "$SIGNATURE_FILE"
+          if ! TEST_SIGNATURE=$(jq -r --arg job "$name" '.results.tests[] | select(.status == "failed")
+            | [ $job, (.filePath | split("/") | last), (.suite // ""), .name ] | @tsv' "$ctrf"); then
+            FAILED_LINES+="    ◦ _Report unreadable; check the job log._"$'\n'
+            printf '%s\tunreadable\n' "$name" >> "$SIGNATURE_FILE"
+            continue
+          fi
+
+          FAILED_LINES+="$TESTS"$'\n'
+          if [ -n "$TEST_SIGNATURE" ]; then
+            printf '%s\n' "$TEST_SIGNATURE" >> "$SIGNATURE_FILE"
+          fi
         done < <(printf '%s' "$JOBS_JSON" \
           | jq -r '.jobs[] | select(.conclusion == "failure") | [.name, .html_url] | @tsv')
 
