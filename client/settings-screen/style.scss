@@ -178,15 +178,24 @@
 		flex-direction: column;
 		gap: 16px;
 
-		// Sized like the screen's other card titles.
+		// The gap spaces the children, so drop the card body's margins.
+		> * {
+			margin-block: 0;
+		}
+
+		// Sized and spaced like the screen's other card titles.
 		> h4 {
 			order: -2;
-			margin: 0;
+			margin-block-end: 10px;
 			font-size: 15px;
 		}
 
 		> .fraud-protection-rule-description {
 			order: -1;
+
+			strong {
+				color: $gray-700;
+			}
 
 			p {
 				margin: 0;
@@ -195,7 +204,6 @@
 
 		> .wcpay-inline-notice {
 			order: 1;
-			margin: 0;
 		}
 	}
 }
