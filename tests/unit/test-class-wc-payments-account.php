@@ -166,7 +166,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'Too many requests', 'wcpay_too_many_requests', 429 ) );
 
-		do_action( 'woocommerce_woocommerce_payments_updated' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		do_action( 'woocommerce_woocommerce_payments_updated' );
 
 		$this->assertSame(
 			[
