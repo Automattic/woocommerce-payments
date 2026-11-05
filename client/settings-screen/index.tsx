@@ -16,6 +16,7 @@ declare global {
 	const wcpaySettingsScreenConfig: {
 		kind: string;
 		baseURL: string;
+		recordId: string;
 		entities: { name: string; label: string; fields: Field[] }[];
 		fraudRulesUrl: string;
 	};
@@ -24,17 +25,19 @@ declare global {
 	}
 }
 
-const { kind, baseURL, entities } = wcpaySettingsScreenConfig;
+const { kind, baseURL, recordId, entities } = wcpaySettingsScreenConfig;
 const fieldParts = getFieldParts();
 window.wcpaySettingsScreen = { fieldParts };
 
 // WooCommerce shows a page for each entity of its kind, so they're registered before the screen loads.
+// Sub-pages are named after their path below the main page, and every page edits the same settings record.
 dispatch( 'core' ).addEntities(
 	entities.map( ( { name, label } ) => ( {
 		kind,
 		name,
 		baseURL,
 		key: 'id',
+		recordId,
 		label,
 		getTitle: () => label,
 	} ) )

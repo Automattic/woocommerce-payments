@@ -322,7 +322,7 @@ const getExpressCheckoutParts = (): Record< string, FieldParts > => {
 							'woocommerce-payments'
 						),
 						methodNames[
-							getCurrentEntityName() === 'woopayments-woopay'
+							getCurrentEntityName() === 'woopayments/woopay'
 								? 'woopay'
 								: 'payment_request'
 						]

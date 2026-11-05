@@ -87,34 +87,44 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame(
 			[
 				'woopayments'                      => 'WooPayments settings',
-				'woopayments-woopay'               => 'WooPay',
-				'woopayments-apple-pay-google-pay' => 'Apple Pay / Google Pay',
-				'woopayments-amazon-pay'           => 'Amazon Pay',
-				'woopayments-fraud-protection'     => 'Advanced fraud protection',
+				'woopayments/woopay'               => 'WooPay',
+				'woopayments/apple-pay-google-pay' => 'Apple Pay / Google Pay',
+				'woopayments/amazon-pay'           => 'Amazon Pay',
+				'woopayments/fraud-protection'     => 'Advanced fraud protection',
 			],
 			array_column( $this->sut->get_entities(), 'label', 'name' )
 		);
 	}
 
-	public function test_read_returns_settings_with_entity_name_as_id(): void {
+	public function test_read_returns_settings_as_the_shared_record(): void {
 		update_option( 'wcpay_settings_screen_test', true );
 
-		$response = rest_do_request( new WP_REST_Request( 'GET', '/wc/v3/payments/settings-dataform/woopayments-woopay' ) );
+		$response = rest_do_request( new WP_REST_Request( 'GET', '/wc/v3/payments/settings-dataform/woopayments' ) );
 
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame(
 			[
 				'is_debug_log_enabled' => true,
-				'id'                   => 'woopayments-woopay',
+				'id'                   => 'woopayments',
 			],
 			$response->get_data()
 		);
 	}
 
-	public function test_route_rejects_other_ids(): void {
-		$response = rest_do_request( new WP_REST_Request( 'GET', '/wc/v3/payments/settings-dataform/other' ) );
+	/**
+	 * @dataProvider provide_other_ids
+	 */
+	public function test_route_rejects_other_ids( string $id ): void {
+		$response = rest_do_request( new WP_REST_Request( 'GET', '/wc/v3/payments/settings-dataform/' . $id ) );
 
 		$this->assertSame( 404, $response->get_status() );
+	}
+
+	public function provide_other_ids(): array {
+		return [
+			'other gateway' => [ 'other' ],
+			'sub-page name' => [ 'woopayments-woopay' ],
+		];
 	}
 
 	public function test_save_returns_saved_record(): void {

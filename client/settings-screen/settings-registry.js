@@ -17,15 +17,16 @@ import {
 } from '../data/settings/actions';
 import reducer from '../data/settings/reducer';
 
-/** The entity of the settings page being shown, such as `woopayments` or `woopayments-woopay`. */
+/** The entity of the settings page being shown, such as `woopayments` or `woopayments/woopay`. */
 export const getCurrentEntityName = () =>
 	new URLSearchParams( window.location.search )
 		.get( 'p' )
-		?.match( /^\/settings\/([^/]+)/ )?.[ 1 ] ?? 'woopayments';
+		?.match( /^\/settings\/payments\/(.+?)\/?$/ )?.[ 1 ] ?? 'woopayments';
 
 /** Adapt the existing hooks without copying settings into a second store. */
 export function createSettingsRegistry( parent, entityName = 'woopayments' ) {
-	const entity = [ 'woo_settings_payments', entityName, entityName ];
+	// Every page edits the same settings record.
+	const entity = [ 'woo_settings_payments', entityName, 'woopayments' ];
 	const registry = createRegistry( {}, parent );
 	const getState = () => ( {
 		data: parent.select( 'core' ).getEditedEntityRecord( ...entity ),

@@ -37,7 +37,7 @@ class SettingsScreenService {
 	const PAGE_SLUG = 'wc-settings-screen-wp-admin';
 
 	/**
-	 * REST route of the settings entities, under `wc/v3`. Each entity's record is at `{route}/{entity name}`.
+	 * REST route of the settings record, under `wc/v3`. Every page edits the record at `{route}/woopayments`.
 	 */
 	const REST_ROUTE = '/payments/settings-dataform';
 
@@ -48,7 +48,7 @@ class SettingsScreenService {
 
 	/**
 	 * Express checkout methods with their own customisation sub-page, keyed by the classic `method` argument.
-	 * Each sub-page is an entity named `woopayments-{path}`.
+	 * Each sub-page is an entity named `woopayments/{path}`.
 	 */
 	const EXPRESS_SUBPAGES = [
 		'woopay'          => 'woopay',
@@ -57,7 +57,7 @@ class SettingsScreenService {
 	];
 
 	/**
-	 * Path of the advanced fraud protection sub-page, the entity `woopayments-fraud-protection`.
+	 * Path of the advanced fraud protection sub-page, the entity `woopayments/fraud-protection`.
 	 */
 	const FRAUD_PROTECTION_SUBPAGE = 'fraud-protection';
 
@@ -96,13 +96,13 @@ class SettingsScreenService {
 	}
 
 	/**
-	 * Gets the name of a sub-page's entity. WooCommerce shows it at `/settings/payments/{name}`.
+	 * Gets the name of a sub-page's entity. WooCommerce shows it at `/settings/payments/{name}`, below the main page.
 	 *
 	 * @param string $path The sub-page's path, such as `woopay`.
 	 * @return string
 	 */
 	public static function get_subpage_name( string $path ): string {
-		return self::SCREEN_ID . '-' . $path;
+		return self::SCREEN_ID . '/' . $path;
 	}
 
 	/**
@@ -149,7 +149,7 @@ class SettingsScreenService {
 	public function register_routes(): void {
 		register_rest_route(
 			'wc/v3',
-			self::REST_ROUTE . '/(?P<id>' . self::SCREEN_ID . '(?:-[a-z-]+)?)',
+			self::REST_ROUTE . '/(?P<id>' . self::SCREEN_ID . ')',
 			[
 				'methods'             => [ 'GET', 'POST', 'PUT' ],
 				'permission_callback' => [ $this, 'check_permission' ],
@@ -446,6 +446,7 @@ class SettingsScreenService {
 			[
 				'kind'          => self::ENTITY_KIND,
 				'baseURL'       => '/wc/v3' . self::REST_ROUTE,
+				'recordId'      => self::SCREEN_ID,
 				'entities'      => $this->get_entities(),
 				'fraudRulesUrl' => self::get_page_url( self::get_subpage_name( self::FRAUD_PROTECTION_SUBPAGE ) ),
 			]
@@ -686,9 +687,9 @@ class SettingsScreenService {
 	}
 
 	/**
-	 * Reads the current settings as an entity's record.
+	 * Reads the current settings as the pages' record.
 	 *
-	 * @param string $id The entity's name, used as the record ID.
+	 * @param string $id The record ID.
 	 * @return WP_REST_Response|WP_Error
 	 */
 	private function get_record( string $id ) {

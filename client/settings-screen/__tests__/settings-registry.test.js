@@ -9,7 +9,10 @@ import { act, render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { createSettingsRegistry } from '../settings-registry';
+import {
+	createSettingsRegistry,
+	getCurrentEntityName,
+} from '../settings-registry';
 import { SETTINGS_STORE_NAME } from '../../data/store-names';
 import AppleGooglePayExpressCheckoutItem from '../../settings/express-checkout/apple-google-pay-item';
 
@@ -79,4 +82,26 @@ it( 'reuses the real express component and reacts to the shared Discard operatio
 	expect(
 		screen.getByRole( 'link', { name: /Customize/ } )
 	).toBeInTheDocument();
+} );
+
+describe( 'getCurrentEntityName', () => {
+	const { location } = window;
+	afterEach( () => {
+		window.history.replaceState( {}, '', location.href );
+	} );
+
+	it.each( [
+		[ '/settings/payments/woopayments', 'woopayments' ],
+		[ '/settings/payments/woopayments/woopay', 'woopayments/woopay' ],
+		[ '/settings/payments/woopayments/woopay/', 'woopayments/woopay' ],
+	] )( 'reads %s as %s', ( path, name ) => {
+		window.history.replaceState(
+			{},
+			'',
+			`/wp-admin/admin.php?page=wc-settings-screen-wp-admin&p=${ encodeURIComponent(
+				path
+			) }`
+		);
+		expect( getCurrentEntityName() ).toBe( name );
+	} );
 } );
