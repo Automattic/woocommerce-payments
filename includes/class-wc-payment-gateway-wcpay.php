@@ -4982,15 +4982,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			if ( WC()->session ) {
-				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
-					throw new Fraud_Prevention_Enabled_Exception(
-						__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
-						'fraud_prevention_enabled'
-					);
-				}
+			// The fraud prevention token lives in the session, which isn't loaded for every admin-ajax request.
+			WC()->initialize_session();
+
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
+				throw new Fraud_Prevention_Enabled_Exception(
+					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'fraud_prevention_enabled'
+				);
 			}
 
 			if ( WC_Rate_Limiter::retried_too_soon( 'add_payment_method_' . get_current_user_id() ) ) {

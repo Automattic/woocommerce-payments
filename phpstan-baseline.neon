@@ -319,12 +319,6 @@ parameters:
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
-			rawMessage: If condition is always true.
-			identifier: if.alwaysTrue
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
 			rawMessage: Instanceof between WC_Cart and WC_Cart will always evaluate to true.
 			identifier: instanceof.alwaysTrue
 			count: 1
