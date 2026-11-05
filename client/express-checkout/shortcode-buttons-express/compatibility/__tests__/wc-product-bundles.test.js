@@ -15,7 +15,7 @@ describe( 'ECE product bundles compatibility', () => {
 			{
 				items: [
 					{
-						key: 'd179a6924eafc82d7864f1e0caedbe95',
+						key: 'd179a6924eafc82d7864f1e0caedbe95', // gitleaks:allow
 						id: 261,
 						type: 'bundle',
 						quantity: 1,
@@ -81,7 +81,7 @@ describe( 'ECE product bundles compatibility', () => {
 						},
 					},
 					{
-						key: 'abda15f782e68dc63bd615d6a05fa3d2',
+						key: 'abda15f782e68dc63bd615d6a05fa3d2', // gitleaks:allow
 						id: 13,
 						type: 'simple',
 						quantity: 1,
@@ -106,7 +106,7 @@ describe( 'ECE product bundles compatibility', () => {
 						},
 					},
 					{
-						key: '4d16fa6ebc10a1d66013b0f85640eb2b',
+						key: '4d16fa6ebc10a1d66013b0f85640eb2b', // gitleaks:allow
 						id: 30,
 						type: 'simple',
 						quantity: 2,
@@ -131,7 +131,7 @@ describe( 'ECE product bundles compatibility', () => {
 						},
 					},
 					{
-						key: 'ff279cc5574ef1cf45aa76bde0d66baa',
+						key: 'ff279cc5574ef1cf45aa76bde0d66baa', // gitleaks:allow
 						id: 25,
 						type: 'variation',
 						quantity: 1,
@@ -156,7 +156,7 @@ describe( 'ECE product bundles compatibility', () => {
 						},
 					},
 					{
-						key: 'c51ce410c124a10e0db5e4b97fc2af39',
+						key: 'c51ce410c124a10e0db5e4b97fc2af39', // gitleaks:allow
 						id: 13,
 						type: 'simple',
 						quantity: 1,
@@ -233,7 +233,7 @@ describe( 'ECE product bundles compatibility', () => {
 							value: 'V-Neck T-Shirt - Medium &times; 1',
 						},
 					],
-					key: 'd179a6924eafc82d7864f1e0caedbe95',
+					key: 'd179a6924eafc82d7864f1e0caedbe95', // gitleaks:allow
 					quantity: 1,
 					type: 'bundle',
 				},
@@ -242,7 +242,7 @@ describe( 'ECE product bundles compatibility', () => {
 						bundles: [],
 					},
 					id: 13,
-					key: 'c51ce410c124a10e0db5e4b97fc2af39',
+					key: 'c51ce410c124a10e0db5e4b97fc2af39', // gitleaks:allow
 					quantity: 1,
 					type: 'simple',
 				},

@@ -231,6 +231,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 		WC()->session->set( 'wc_notices', [] );
 		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY, null );
 		wcpay_get_test_container()->reset_all_replacements();
 		WC_Payments::mode()->live();
 
@@ -359,6 +360,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Assert: The paid intent id is remembered in the session for the order confirmation page.
 		$this->assertSame( 'pi_mock', WC()->session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY ) );
+		$this->assertSame( WC()->session->get_customer_id(), WC()->session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY ) );
 	}
 
 	/**

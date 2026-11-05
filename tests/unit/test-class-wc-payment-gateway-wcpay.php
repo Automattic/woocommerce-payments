@@ -333,7 +333,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
-		$this->card_gateway->update_option( 'saved_cards', 'yes' );
+		// Saving through the gateway would also save every setting this test changed, after the rollback.
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'saved_cards' => 'yes' ] );
 
 		// Some tests simulate payment method parameters.
 		$payment_method_keys = [
@@ -4751,6 +4752,28 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $afterpay->is_available() );
 	}
 
+	/**
+	 * @dataProvider manual_capture_gateway_provider
+	 */
+	public function test_manual_capture_keeps_only_payment_methods_that_can_capture_later( $payment_method_id ) {
+		$this->card_gateway->update_option( 'manual_capture', 'yes' );
+		$gateway = $this->get_gateway( $payment_method_id );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::KLARNA, Payment_Method::AMAZON_PAY ] );
+
+		$this->assertSame(
+			[ 'card', 'link', 'amazon_pay' ],
+			array_values( $gateway->get_upe_enabled_payment_method_ids_based_on_manual_capture() )
+		);
+	}
+
+	public function manual_capture_gateway_provider() {
+		return [
+			'card'       => [ Payment_Method::CARD ],
+			'amazon_pay' => [ Payment_Method::AMAZON_PAY ],
+			'klarna'     => [ Payment_Method::KLARNA ],
+		];
+	}
+
 	public function test_gateway_disabled_when_card_gateway_is_disabled() {
 		$this->card_gateway->update_option( 'enabled', 'no' );
 		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
@@ -5239,6 +5262,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( $error_notices );
 		$this->assertEquals( 'The selected payment method requires a total amount of at least $60.00.', $error_notices['error'][0]['notice'] );
 		$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+	}
+
+	public function test_process_payment_through_another_payment_method_gateway_uses_manual_capture() {
+		$this->card_gateway->update_option( 'manual_capture', 'yes' );
+		$amazon_pay_gateway = $this->get_gateway( Payment_Method::AMAZON_PAY );
+		$this->set_payment_gateway_map( [ Payment_Method::AMAZON_PAY => $amazon_pay_gateway ] );
+		$order = WC_Helper_Order::create_order();
+
+		$_POST = [
+			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => 'woocommerce_payments_amazon_pay',
+		];
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		// process_payment() catches every exception, a failed mock expectation included, so the
+		// argument is recorded and checked after the call instead.
+		$capture_methods = [];
+		$request         = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->method( 'set_capture_method' )
+			->willReturnCallback(
+				function ( $manual_capture ) use ( &$capture_methods ) {
+					$capture_methods[] = $manual_capture;
+				}
+			);
+		$request->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
+
+		$amazon_pay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( [ true ], $capture_methods );
 	}
 
 	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
