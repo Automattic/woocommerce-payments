@@ -81,6 +81,7 @@ describe( 'WCPayAPI', () => {
 
 			expect( window.Stripe ).toHaveBeenCalledWith( 'pk_test_123', {
 				locale: undefined,
+				developerTools: { assistant: { enabled: false } },
 				betas: [
 					'card_country_event_beta_1',
 					'link_autofill_modal_beta_1',
@@ -102,6 +103,7 @@ describe( 'WCPayAPI', () => {
 
 			expect( window.Stripe ).toHaveBeenCalledWith( 'pk_test_123', {
 				locale: undefined,
+				developerTools: { assistant: { enabled: false } },
 				betas: [ 'card_country_event_beta_1' ],
 			} );
 		} );

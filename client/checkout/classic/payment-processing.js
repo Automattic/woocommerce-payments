@@ -286,6 +286,9 @@ async function createStripePaymentElement(
 	const upeSettings = getUpeSettings( paymentMethodType );
 	const createdStripePaymentElement = elements.create( 'payment', {
 		...upeSettings,
+		// Basil changed the default to `accordion`, which wraps our single
+		// payment method in a collapsible row. `tabs` is what v3 renders.
+		layout: 'tabs',
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',

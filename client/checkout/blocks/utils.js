@@ -44,6 +44,9 @@ export const getStripeElementOptions = (
 	email
 ) => {
 	const options = {
+		// Basil changed the default to `accordion`, which wraps our single
+		// payment method in a collapsible row. `tabs` is what v3 renders.
+		layout: 'tabs',
 		fields: {
 			billingDetails: {
 				name: 'never',

@@ -27,7 +27,12 @@ export default class WCPayAPI {
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
-		const options = { locale };
+		const options = {
+			locale,
+			// From Clover, test mode adds a floating developer tools button
+			// (another "Secure payment input frame" iframe) to the shopper's page.
+			developerTools: { assistant: { enabled: false } },
+		};
 
 		if ( accountId ) {
 			options.stripeAccount = accountId;

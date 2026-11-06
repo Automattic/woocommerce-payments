@@ -131,6 +131,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		return loadStripe( stripeSettings.publishableKey, {
 			stripeAccount: stripeSettings.accountId,
 			locale: stripeSettings.locale,
+			developerTools: { assistant: { enabled: false } },
 		} );
 	}, [] );
 
