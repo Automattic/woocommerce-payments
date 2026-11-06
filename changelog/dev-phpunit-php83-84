@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Run PHP unit tests on PHP 8.3 and 8.4 while retaining minimum-version coverage.
