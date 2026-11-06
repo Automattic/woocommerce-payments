@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Prevent account cache clearing during updates from disabling WooPayments on older WooCommerce versions, and handle missing dependencies safely.
