@@ -201,6 +201,8 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$tracker = $this->get_tracker_with_mocked_recording();
 		$tracker->expects( $this->never() )->method( 'maybe_record_event' );
 		$_REQUEST['tracksEvents'] = 'not json';
+		// A valid single event, so falling through to the single-event path would record it and succeed.
+		$_REQUEST['tracksEventName'] = 'cart_page_view';
 
 		$response = $this->call_ajax_tracks( $tracker );
 
