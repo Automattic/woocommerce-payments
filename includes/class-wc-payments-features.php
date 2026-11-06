@@ -34,6 +34,7 @@ class WC_Payments_Features {
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
+	const STRIPE_JS_DAHLIA_FLAG_NAME                          = '_wcpay_feature_stripe_js_dahlia';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -467,6 +468,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Stripe.js should load from the Dahlia release instead of v3. Disabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_js_dahlia_enabled(): bool {
+		return '1' === get_option( self::STRIPE_JS_DAHLIA_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -487,6 +497,7 @@ class WC_Payments_Features {
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 				'reportsArea'                              => self::is_reports_area_enabled(),
+				'stripeJsDahlia'                           => self::is_stripe_js_dahlia_enabled(),
 			]
 		);
 	}
