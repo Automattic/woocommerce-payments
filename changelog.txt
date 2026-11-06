@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 11.2.1 - 2026-11-03 =
+* Update - Security update.
+
 = 11.2.0 - 2026-10-08 =
 * Add - Add support for Onelink in Great Britain
 * Add - Flag payments with an active early fraud warning in the Payments Transactions list
