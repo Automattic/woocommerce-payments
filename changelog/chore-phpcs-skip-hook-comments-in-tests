@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Turn off the PHPCS sniffs that tests trip on purpose and remove the ignores they needed.

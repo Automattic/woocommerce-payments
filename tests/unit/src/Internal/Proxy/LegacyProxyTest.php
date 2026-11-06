@@ -13,7 +13,6 @@ use WCPay\Internal\Proxy\LegacyProxy;
 use PHPUnit\Framework\MockObject\MockObject;
 
 // We'll have a helper here, which is not used outside of this file.
-// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
 
 /**
  * An object, used as a helper for the test.

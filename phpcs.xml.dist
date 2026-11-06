@@ -119,6 +119,34 @@
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
 
+	<rule ref="WooCommerce.Commenting.CommentHooks">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.WP.GlobalVariablesOverride">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<rule ref="Generic.Files.OneObjectStructurePerFile">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.WP.EnqueuedResourceParameters">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.DB.SlowDBQuery">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
 	<rule ref="Squiz.Commenting.FunctionCommentThrowTag.Missing" />
 
 	<rule ref="Universal.Files.SeparateFunctionsFromOO.Mixed">

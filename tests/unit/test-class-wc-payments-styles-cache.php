@@ -320,11 +320,9 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_font_rules_from_registered_styles_extracts_cdn_urls() {
-		// phpcs:disable WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Test fixtures for CDN font stylesheets.
 		wp_register_style( 'test-google-font', 'https://fonts.googleapis.com/css?family=Roboto', [], null );
 		wp_register_style( 'test-bunny-font', 'https://fonts.bunny.net/css?family=Inter', [], null );
 		wp_register_style( 'test-wp-font', 'https://fonts.wp.com/css?family=Open+Sans', [], null );
-		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.MissingVersion
 
 		try {
 			$result = WC_Payments_Styles_Cache::get_font_rules_from_registered_styles();
@@ -341,7 +339,6 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_font_rules_from_registered_styles_ignores_non_cdn_urls() {
-		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Test fixture.
 		wp_register_style( 'test-non-cdn', 'https://example.com/styles.css', [], null );
 
 		try {
@@ -355,13 +352,11 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_font_rules_from_registered_styles_caps_at_10() {
 		$handles = [];
-		// phpcs:disable WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Test fixtures.
 		for ( $i = 0; $i < 12; $i++ ) {
 			$handle    = 'test-font-cap-' . $i;
 			$handles[] = $handle;
 			wp_register_style( $handle, 'https://fonts.googleapis.com/css?family=Font' . $i, [], null );
 		}
-		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.MissingVersion
 
 		try {
 			$result = WC_Payments_Styles_Cache::get_font_rules_from_registered_styles();

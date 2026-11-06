@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
-
 /**
  * Mock WC_Name_Your_Price function that returns WC_Name_Your_Price instance.
  */

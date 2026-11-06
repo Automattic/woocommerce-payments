@@ -153,7 +153,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			$this->assertArrayHasKey( '/wc/v3/payments/onboarding/fields', $routes );
 		} finally {
 			$wp_rest_server = $previous_server;
-			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the screen snapshot taken above.
 			$current_screen = $previous_screen;
 		}
 	}
@@ -174,7 +173,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
 
 	private function set_woopay_enabled( $is_enabled ) {
@@ -190,7 +189,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
 
 	public function test_set_woopayments_gateways_before_other_gateways_when_not_in_ordering() {

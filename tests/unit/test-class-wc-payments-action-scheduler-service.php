@@ -572,18 +572,15 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$original_filter = $wp_filter['action_scheduler_init'] ?? null;
 
 		unset( $wp_actions['action_scheduler_init'] );
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Isolating the hook for the duration of this test.
 		$wp_filter['action_scheduler_init'] = new WP_Hook();
 
 		try {
 			$callback();
 		} finally {
 			if ( null !== $original_action ) {
-				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
 				$wp_actions['action_scheduler_init'] = $original_action;
 			}
 			if ( null !== $original_filter ) {
-				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_filter snapshot taken above.
 				$wp_filter['action_scheduler_init'] = $original_filter;
 			} else {
 				unset( $wp_filter['action_scheduler_init'] );
@@ -605,22 +602,18 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$original_action = $wp_actions['action_scheduler_init'] ?? null;
 		$original_filter = $wp_filter['action_scheduler_init'] ?? null;
 
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulating a fired hook for the duration of this test.
 		$wp_actions['action_scheduler_init'] = 1;
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Isolating the hook for the duration of this test.
-		$wp_filter['action_scheduler_init'] = new WP_Hook();
+		$wp_filter['action_scheduler_init']  = new WP_Hook();
 
 		try {
 			$callback();
 		} finally {
 			if ( null !== $original_action ) {
-				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
 				$wp_actions['action_scheduler_init'] = $original_action;
 			} else {
 				unset( $wp_actions['action_scheduler_init'] );
 			}
 			if ( null !== $original_filter ) {
-				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_filter snapshot taken above.
 				$wp_filter['action_scheduler_init'] = $original_filter;
 			} else {
 				unset( $wp_filter['action_scheduler_init'] );

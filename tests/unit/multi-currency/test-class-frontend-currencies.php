@@ -161,7 +161,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		add_filter( 'woocommerce_currency', fn() => 'GBP', 5 );
 
 		// Run the filter chain as WooCommerce does, starting from the store currency.
-		$this->assertSame( 'GBP', apply_filters( 'woocommerce_currency', 'USD' ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		$this->assertSame( 'GBP', apply_filters( 'woocommerce_currency', 'USD' ) );
 	}
 
 	public function test_get_woocommerce_currency_passes_through_a_second_filtered_currency_when_idle() {
@@ -593,8 +593,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 
 	public function rest_api_ensure_filter_vals_provider() {
 		return [
-			// phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-			// [ $request_uri, $store_currency_args, $product_price_args ]
+			// Request URI, store currency arguments, product price arguments.
 			[ '', [ false ], [ true ] ],
 			[ '/wp-json/wc/v2/products/1', [ true ], [ false ] ],
 		];

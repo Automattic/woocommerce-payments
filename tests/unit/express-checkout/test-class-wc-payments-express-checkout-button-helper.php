@@ -1370,7 +1370,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * @param string $post_content The post content.
 	 */
 	private function set_current_post_content( string $post_content ) {
-		$GLOBALS['post'] = $this->factory->post->create_and_get( [ 'post_content' => $post_content ] ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$GLOBALS['post'] = $this->factory->post->create_and_get( [ 'post_content' => $post_content ] );
 	}
 
 	public function provider_block_page_content(): array {
@@ -1822,10 +1822,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	private function reset_main_query() {
 		unset( $GLOBALS['wp_query'], $GLOBALS['wp_the_query'] );
 
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Resetting the main query, as go_to() does.
 		$GLOBALS['wp_the_query'] = new WP_Query();
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Resetting the main query, as go_to() does.
-		$GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
+		$GLOBALS['wp_query']     = $GLOBALS['wp_the_query'];
 	}
 
 	/**
