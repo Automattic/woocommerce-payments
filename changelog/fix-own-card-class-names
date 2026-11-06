@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Style WooPayments admin cards through our own class names instead of the internal @wordpress/components ones.
