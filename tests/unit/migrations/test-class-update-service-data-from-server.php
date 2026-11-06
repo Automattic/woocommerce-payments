@@ -29,8 +29,13 @@ class Update_Service_Data_From_Server_Test extends WCPAY_UnitTestCase {
 	private $migration;
 
 	public function set_up() {
+		parent::set_up();
+
 		$this->account_mock = $this->getMockBuilder( \WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'get_cached_account_data', 'refresh_account_data' ] )->getMock();
 		$this->migration    = new Update_Service_Data_From_Server( $this->account_mock );
+
+		// Every test calls maybe_migrate().
+		$this->setExpectedDeprecated( 'WCPay\Migrations\Update_Service_Data_From_Server::maybe_migrate' );
 	}
 
 	/**

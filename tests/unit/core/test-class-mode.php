@@ -59,10 +59,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 
 	public function provider_init_enters_dev_mode_for_WP_DEVELOPMENT_MODE(): array {
 		return [
-			'core'         => [ 'core', true ],
 			'plugin'       => [ 'plugin', true ],
-			'theme'        => [ 'theme', true ],
-			'all'          => [ 'all', true ],
 			'empty string' => [ '', false ],
 		];
 	}

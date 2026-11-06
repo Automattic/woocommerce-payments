@@ -101,7 +101,7 @@ const receiveMultiCurrencies = (
 					...state.settings,
 					isDirty:
 						data.isSaving || data.error
-							? state.settings?.isDirty ?? false
+							? ( state.settings?.isDirty ?? false )
 							: false,
 					isSaving: data.isSaving,
 					savingError: data.error,

@@ -723,10 +723,10 @@ describe( 'Ruleset adapter utilities test', () => {
 							maxAmount !== ''
 								? [ Number( maxAmount ) * 100, 'USD' ].join(
 										'|'
-								  )
+									)
 								: [ Number( minAmount ) * 100, 'USD' ].join(
 										'|'
-								  ),
+									),
 					},
 				} );
 			} else {

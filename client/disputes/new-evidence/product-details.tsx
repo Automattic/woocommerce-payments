@@ -58,7 +58,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 						label: __( 'Other', 'woocommerce-payments' ),
 						value: 'other',
 					},
-			  ]
+				]
 			: [
 					{
 						label: __(
@@ -67,7 +67,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 						),
 						value: 'multiple',
 					},
-			  ] ),
+				] ),
 	];
 
 	return (
@@ -82,11 +82,11 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 					? __(
 							'Please ensure the product or service type and description have been entered accurately.',
 							'woocommerce-payments'
-					  )
+						)
 					: __(
 							'Please ensure the product type and description have been entered accurately.',
 							'woocommerce-payments'
-					  ) }
+						) }
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<SelectControl
@@ -97,7 +97,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 							? __(
 									'PRODUCT OR SERVICE TYPE',
 									'woocommerce-payments'
-							  )
+								)
 							: __( 'PRODUCT TYPE', 'woocommerce-payments' )
 					}
 					value={ productType }
@@ -115,11 +115,11 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 							? __(
 									'PRODUCT OR SERVICE DESCRIPTION',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'PRODUCT DESCRIPTION',
 									'woocommerce-payments'
-							  )
+								)
 					}
 					value={ productDescription }
 					onChange={ onProductDescriptionChange }

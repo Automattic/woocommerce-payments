@@ -75,6 +75,8 @@ class LegacyProxyTest extends WCPAY_UnitTestCase {
 	 * Instantiate the service under test.
 	 */
 	protected function setUp(): void {
+		parent::setUp();
+
 		$this->sut         = new LegacyProxy();
 		$this->mock_object = $this->createMock( ProxyObject::class );
 	}

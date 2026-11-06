@@ -20,6 +20,9 @@ services:
     build:
       context: .
       dockerfile: ./docker/wordpress_xdebug/Dockerfile
+      # Check for a newer base image on every build, so PHP security releases
+      # land with the next `pnpm run up` instead of waiting on a manual pull.
+      pull: true
       args:
         - XDEBUG_REMOTE_PORT=9000
         - XDEBUG_START_WITH_REQUEST=trigger

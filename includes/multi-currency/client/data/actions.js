@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
 import { recordEvent } from 'multi-currency/interface/functions';
 import TYPES from './action-types';
 import { NAMESPACE, STORE_NAME } from './constants';
+import { getCurrencySettingsPath } from './paths';
 
 export function updateCurrencies( data ) {
 	return {
@@ -111,7 +112,7 @@ export function* submitEnabledCurrenciesUpdate( currencies ) {
 export function* submitCurrencySettings( currencyCode, settings ) {
 	try {
 		const result = yield apiFetch( {
-			path: `${ NAMESPACE }/multi-currency/currencies/${ currencyCode }`,
+			path: getCurrencySettingsPath( currencyCode ),
 			method: 'POST',
 			data: settings,
 		} );

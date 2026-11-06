@@ -22,19 +22,18 @@ import './style.scss';
 
 const iconComponent =
 	( src: string, alt: string, border = true ): ReactImgFuncComponent =>
-	( { className, ...props } ) =>
-		(
-			<img
-				className={ clsx(
-					'payment-method__icon',
-					border ? '' : 'no-border',
-					className
-				) }
-				src={ src }
-				alt={ alt }
-				{ ...props }
-			/>
-		);
+	( { className, ...props } ) => (
+		<img
+			className={ clsx(
+				'payment-method__icon',
+				border ? '' : 'no-border',
+				className
+			) }
+			src={ src }
+			alt={ alt }
+			{ ...props }
+		/>
+	);
 
 export const AmericanExpressIcon = iconComponent(
 	AmexAsset,

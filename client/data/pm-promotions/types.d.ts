@@ -58,8 +58,7 @@ export interface ErrorPmPromotionsAction {
 }
 
 export type PmPromotionsActions =
-	| UpdatePmPromotionsAction
-	| ErrorPmPromotionsAction;
+	UpdatePmPromotionsAction | ErrorPmPromotionsAction;
 
 /**
  * Hook return type for usePmPromotionActions.

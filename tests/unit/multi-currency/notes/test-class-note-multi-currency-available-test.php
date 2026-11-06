@@ -12,16 +12,31 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
  * Class Note_Multi_Currency_Available_Test tests.
  */
 class Note_Multi_Currency_Available_Test extends WCPAY_UnitTestCase {
-	public function test_removes_note_on_extension_deactivation() {
-		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			// Trigger WCPay extension deactivation callback.
-			wcpay_multi_currency_deactivated();
+	/**
+	 * The account the note class held before the test.
+	 *
+	 * @var MultiCurrencyAccountInterface|null
+	 */
+	private $original_account;
 
-			$note_id = NoteMultiCurrencyAvailable::NOTE_NAME;
-			$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
-		} else {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-		}
+	public function set_up() {
+		parent::set_up();
+
+		$this->original_account = $this->get_account_property()->getValue();
+	}
+
+	public function tear_down() {
+		$this->get_account_property()->setValue( null, $this->original_account );
+
+		parent::tear_down();
+	}
+
+	public function test_removes_note_on_extension_deactivation() {
+		// Trigger WCPay extension deactivation callback.
+		wcpay_multi_currency_deactivated();
+
+		$note_id = NoteMultiCurrencyAvailable::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
 	}
 
 	public function test_get_note() {
@@ -73,5 +88,12 @@ class Note_Multi_Currency_Available_Test extends WCPAY_UnitTestCase {
 		NoteMultiCurrencyAvailable::possibly_add_note();
 
 		$this->assertSame( true, NoteMultiCurrencyAvailable::note_exists() );
+	}
+
+	private function get_account_property(): ReflectionProperty {
+		$property = new ReflectionProperty( NoteMultiCurrencyAvailable::class, 'account' );
+		$property->setAccessible( true );
+
+		return $property;
 	}
 }

@@ -93,12 +93,99 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 			[ 'woocommerce_variation_prices', 'get_variation_price_range' ],
 			[ 'woocommerce_get_variation_prices_hash', 'add_exchange_rate_to_variation_prices_hash' ],
 			[ 'woocommerce_shipping_method_add_rate_args', 'convert_shipping_method_rate_cost' ],
+			[ 'woocommerce_evaluate_shipping_cost_args', 'convert_shipping_cost_args_to_store_currency' ],
+			[ 'wc_get_price_decimals', 'use_store_currency_decimals_during_shipping_fee' ],
+			[ 'wc_get_price_decimal_separator', 'use_store_decimal_separator_during_shipping_fee' ],
 			[ 'woocommerce_shipping_zone_shipping_methods', 'convert_free_shipping_method_min_amount' ],
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
+			[ 'woocommerce_order_recalculate_coupons_coupon_object', 'set_order_coupon' ],
 			[ 'woocommerce_new_order', 'add_order_meta' ],
 		];
+	}
+
+	/**
+	 * The fee window opens once fee() reads its attributes, closes before other callbacks see the shortcode
+	 * output, and is cleared before each cart calculation.
+	 */
+	public function test_registers_shipping_fee_rendering_filters() {
+		$this->assertSame( 10, has_filter( 'shortcode_atts_fee', [ $this->frontend_prices, 'start_shipping_fee_rendering' ] ) );
+		$this->assertSame( PHP_INT_MIN, has_filter( 'do_shortcode_tag', [ $this->frontend_prices, 'end_shipping_fee_rendering' ] ) );
+		$this->assertSame( PHP_INT_MIN, has_action( 'woocommerce_before_calculate_totals', [ $this->frontend_prices, 'reset_shipping_fee_rendering' ] ) );
+	}
+
+	/**
+	 * @dataProvider charm_only_to_products_provider
+	 */
+	public function test_add_currency_to_shipping_packages_adds_marker_to_each_package( $charm_only_to_products, $expected_marker ) {
+		$currency = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::EURO, 0.9 );
+		$currency->set_rounding( '0.25' );
+		$currency->set_charm( -0.01 );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $currency );
+		$this->mock_multi_currency->method( 'get_apply_charm_only_to_products' )->willReturn( $charm_only_to_products );
+
+		$packages = [
+			0 => [ 'contents' => [ 'a' ] ],
+			1 => [ 'contents' => [ 'b' ] ],
+		];
+
+		$result = $this->frontend_prices->add_currency_to_shipping_packages( $packages );
+
+		// Marker is a ':'-delimited signature: code, rate, rounding, charm, charm-only flag.
+		$this->assertSame( $expected_marker, $result[0]['wcpay_multi_currency'] );
+		$this->assertSame( $expected_marker, $result[1]['wcpay_multi_currency'] );
+		// Existing package data is preserved.
+		$this->assertSame( [ 'a' ], $result[0]['contents'] );
+	}
+
+	public function charm_only_to_products_provider() {
+		return [
+			'charm applies to products only' => [ true, 'EUR:0.9:0.25:-0.01:1' ],
+			'charm applies to shipping too'  => [ false, 'EUR:0.9:0.25:-0.01:0' ],
+		];
+	}
+
+	public function test_add_currency_to_shipping_packages_skips_non_array_and_empty_packages() {
+		$currency = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::EURO, 0.9 );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $currency );
+		$this->mock_multi_currency->method( 'get_apply_charm_only_to_products' )->willReturn( true );
+
+		// A non-array passed on by an earlier filter is returned untouched.
+		$this->assertSame( 'not-an-array', $this->frontend_prices->add_currency_to_shipping_packages( 'not-an-array' ) );
+
+		// A non-array package entry is skipped; array entries still get the marker.
+		$result = $this->frontend_prices->add_currency_to_shipping_packages(
+			[
+				0 => [ 'contents' => [ 'a' ] ],
+				1 => 'skip-me',
+			]
+		);
+		$this->assertArrayHasKey( 'wcpay_multi_currency', $result[0] );
+		$this->assertSame( 'skip-me', $result[1] );
+
+		// An empty package stays empty, so WooCommerce still discards it instead of rating it.
+		$this->assertSame( [ [] ], $this->frontend_prices->add_currency_to_shipping_packages( [ [] ] ) );
+	}
+
+	/**
+	 * In the store currency the packages must hash the same as where Multi-Currency doesn't filter them. Otherwise each
+	 * switch between those contexts throws away the cached shipping rates and asks a live-rate carrier again.
+	 */
+	public function test_add_currency_to_shipping_packages_leaves_store_currency_packages_unchanged() {
+		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $usd );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $usd );
+		$packages = [ 0 => [ 'contents' => [ 'a' ] ] ];
+
+		$this->assertSame( [ 0 => [ 'contents' => [ 'a' ] ] ], $this->frontend_prices->add_currency_to_shipping_packages( $packages ) );
+	}
+
+	public function test_add_currency_to_shipping_packages_runs_last() {
+		$this->assertSame(
+			PHP_INT_MAX,
+			has_filter( 'woocommerce_cart_shipping_packages', [ $this->frontend_prices, 'add_currency_to_shipping_packages' ] )
+		);
 	}
 
 	public function test_convert_free_shipping_method_min_amount() {
@@ -336,6 +423,190 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( '10', $args['cost'] );
 	}
 
+	public function test_convert_shipping_cost_args_converts_cost_to_store_currency() {
+		$this->mock_compatibility->method( 'should_convert_shipping_amount' )->willReturn( true );
+		$this->use_selected_currency( Currency_Code::POUND_STERLING, 0.8 );
+		$method = $this->fee_reading_method();
+
+		$args = $this->frontend_prices->convert_shipping_cost_args_to_store_currency( [ 'cost' => '10' ], '[cost]', $method );
+
+		$this->assertSame( 12.5, $args['cost'] );
+		$this->assertSame( [ 2 ], $this->decimals_seen_by_shipping_fee_shortcode( '[fee]', $method ) );
+		// Outside the shortcode, the selected currency's decimals still apply.
+		$this->assertSame( 0, wc_get_price_decimals() );
+	}
+
+	public function test_convert_shipping_cost_args_skips_conversion_on_compatibility() {
+		$shipping_method = $this->fee_reading_method();
+		$this->mock_compatibility
+			->method( 'should_convert_shipping_amount' )
+			->with( $shipping_method )
+			->willReturn( false );
+		$this->use_selected_currency( Currency_Code::POUND_STERLING, 0.8 );
+
+		$args = $this->frontend_prices->convert_shipping_cost_args_to_store_currency( [ 'cost' => '10' ], '10', $shipping_method );
+
+		$this->assertSame( '10', $args['cost'] );
+		// An opted-out method keeps the selected currency's decimals.
+		$this->assertSame( [ 0 ], $this->decimals_seen_by_shipping_fee_shortcode( '[fee]', $shipping_method ) );
+	}
+
+	public function test_convert_shipping_cost_args_skips_conversion_in_store_currency() {
+		$this->mock_compatibility->method( 'should_convert_shipping_amount' )->willReturn( true );
+		$this->use_selected_currency( Currency_Code::UNITED_STATES_DOLLAR, 1.0 );
+		$method = $this->fee_reading_method();
+
+		$args = $this->frontend_prices->convert_shipping_cost_args_to_store_currency( [ 'cost' => '10' ], '10', $method );
+
+		$this->assertSame( '10', $args['cost'] );
+		$this->assertSame( [ 0 ], $this->decimals_seen_by_shipping_fee_shortcode( '[fee]', $method ) );
+	}
+
+	public function test_convert_shipping_cost_args_skips_conversion_for_non_positive_rate() {
+		$this->mock_compatibility->method( 'should_convert_shipping_amount' )->willReturn( true );
+		$this->use_selected_currency( Currency_Code::POUND_STERLING, 0.0 );
+		$method = $this->fee_reading_method();
+
+		$args = $this->frontend_prices->convert_shipping_cost_args_to_store_currency( [ 'cost' => '10' ], '10', $method );
+
+		$this->assertSame( '10', $args['cost'] );
+		$this->assertSame( [ 0 ], $this->decimals_seen_by_shipping_fee_shortcode( '[fee]', $method ) );
+	}
+
+	public function test_a_later_non_converting_evaluation_resets_store_currency_decimals() {
+		$this->mock_compatibility->method( 'should_convert_shipping_amount' )->willReturnOnConsecutiveCalls( true, false );
+		$this->use_selected_currency( Currency_Code::POUND_STERLING, 0.8 );
+		$method = $this->fee_reading_method();
+
+		$this->frontend_prices->convert_shipping_cost_args_to_store_currency( [ 'cost' => '10' ], '[fee]', $method );
+		$this->frontend_prices->convert_shipping_cost_args_to_store_currency( [ 'cost' => '10' ], '[fee]', $method );
+
+		$this->assertSame( [ 0 ], $this->decimals_seen_by_shipping_fee_shortcode( '[fee]', $method ) );
+	}
+
+	public function test_fee_shortcode_not_registered_by_a_shipping_method_keeps_selected_currency_format() {
+		update_option( 'woocommerce_price_decimal_sep', ',' );
+		$this->use_selected_currency( Currency_Code::POUND_STERLING, 0.8 );
+
+		$seen = [];
+		add_shortcode(
+			'fee',
+			function ( $atts ) use ( &$seen ) {
+				shortcode_atts( [], $atts, 'fee' );
+				$seen[] = wc_get_price_decimal_separator();
+				return '';
+			}
+		);
+		do_shortcode( '[fee]' );
+		remove_shortcode( 'fee' );
+
+		$this->assertSame( [ '.' ], $seen );
+	}
+
+	public function test_fee_shortcode_reads_store_decimal_separator_in_selected_currency() {
+		update_option( 'woocommerce_price_decimal_sep', ',' );
+		$this->use_selected_currency( Currency_Code::POUND_STERLING, 0.8 );
+
+		// No cost conversion is needed: the merchant types the fee in the store's format either way.
+		$this->assertSame( [ ',' ], $this->values_seen_by_shipping_fee_shortcode( '[fee percent="2,5"]', 'wc_get_price_decimal_separator' ) );
+		$this->assertSame( '.', wc_get_price_decimal_separator() );
+	}
+
+	public function test_fee_shortcode_keeps_decimal_separator_in_store_currency() {
+		update_option( 'woocommerce_price_decimal_sep', ',' );
+		$this->use_selected_currency( Currency_Code::UNITED_STATES_DOLLAR, 1.0 );
+
+		$this->assertSame( [ '.' ], $this->values_seen_by_shipping_fee_shortcode( '[fee percent="2,5"]', 'wc_get_price_decimal_separator' ) );
+	}
+
+	/**
+	 * Selects a currency on the mocked MultiCurrency, against a USD store, and stands in for the
+	 * selected currency's zero decimals and dot separator that FrontendCurrencies would otherwise report.
+	 *
+	 * @param string $code The selected currency code.
+	 * @param float  $rate Its rate against USD.
+	 */
+	private function use_selected_currency( string $code, float $rate ) {
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR ) );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, $code, $rate ) );
+		add_filter(
+			'wc_get_price_decimals',
+			function () {
+				return 0;
+			},
+			900
+		);
+		add_filter(
+			'wc_get_price_decimal_separator',
+			function () {
+				return '.';
+			},
+			900
+		);
+	}
+
+	/**
+	 * Renders a formula's `[fee]` shortcodes the way WC_Shipping_Flat_Rate::evaluate_cost() does, and
+	 * returns the decimals each shortcode saw.
+	 *
+	 * @param string                      $formula The formula to render.
+	 * @param \WC_Shipping_Flat_Rate|null $method  A method from fee_reading_method(), such as the one whose
+	 *                                             cost was converted. A new one when omitted.
+	 *
+	 * @return int[]
+	 */
+	private function decimals_seen_by_shipping_fee_shortcode( string $formula, $method = null ): array {
+		return $this->values_seen_by_shipping_fee_shortcode( $formula, 'wc_get_price_decimals', $method );
+	}
+
+	/**
+	 * Renders a formula's `[fee]` shortcodes the way WC_Shipping_Flat_Rate::evaluate_cost() does, and
+	 * returns what the given reader returned inside each shortcode.
+	 *
+	 * @param string                      $formula The formula to render.
+	 * @param callable                    $read    Reads the value, such as wc_get_price_decimals.
+	 * @param \WC_Shipping_Flat_Rate|null $method  A method from fee_reading_method(). A new one when omitted.
+	 *
+	 * @return array
+	 */
+	private function values_seen_by_shipping_fee_shortcode( string $formula, callable $read, $method = null ): array {
+		$method       = $method ?? $this->fee_reading_method();
+		$method->read = $read;
+		$method->seen = [];
+
+		add_shortcode( 'fee', [ $method, 'fee' ] );
+		do_shortcode( $formula );
+		remove_shortcode( 'fee' );
+
+		return $method->seen;
+	}
+
+	/**
+	 * A flat rate whose fee() records what its reader returns inside the shortcode.
+	 *
+	 * @return \WC_Shipping_Flat_Rate
+	 */
+	private function fee_reading_method() {
+		return new class() extends \WC_Shipping_Flat_Rate {
+			/**
+			 * @var callable
+			 */
+			public $read = 'wc_get_price_decimals';
+
+			/**
+			 * @var array
+			 */
+			public $seen = [];
+
+			public function fee( $atts ) {
+				// Like WC_Shipping_Flat_Rate::fee(), read the attributes before anything else.
+				shortcode_atts( [], $atts, 'fee' );
+				$this->seen[] = ( $this->read )();
+				return '';
+			}
+		};
+	}
+
 	public function test_get_coupon_amount_returns_empty_amount() {
 		$this->assertSame( '', $this->frontend_prices->get_coupon_amount( '', null ) );
 	}
@@ -370,14 +641,299 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $fixed_cart_coupon ) );
 	}
 
+	/**
+	 * @dataProvider order_coupon_currency_provider
+	 */
+	public function test_get_coupon_amount_converts_coupon_reapplied_to_order_to_the_order_currency( $order_currency, $expected_currency ) {
+		$currencies = [
+			'USD' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+			'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ),
+			'EUR' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR', 0.9 ),
+		];
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $currencies['USD'] );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( $currencies );
+		// EUR is supported but disabled, as when the merchant turns a currency off after checkout.
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn(
+			[
+				'USD' => $currencies['USD'],
+				'JPY' => $currencies['JPY'],
+			]
+		);
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( $order_currency );
+
+		$coupon = new WC_Coupon();
+		$coupon->set_discount_type( 'fixed_cart' );
+
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_price' )
+			->with( '10', 'coupon', $this->identicalTo( $currencies[ $expected_currency ] ) )
+			->willReturn( 25.0 );
+
+		$this->assertSame( $coupon, $this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), $order ) );
+		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $coupon ) );
+	}
+
+	public function order_coupon_currency_provider() {
+		return [
+			'store currency'       => [ 'USD', 'USD' ],
+			'enabled currency'     => [ 'JPY', 'JPY' ],
+			'disabled currency'    => [ 'EUR', 'EUR' ],
+			'unsupported currency' => [ 'BTC', 'USD' ],
+		];
+	}
+
+	public function test_get_coupon_amount_does_not_convert_coupon_rebuilt_from_the_order() {
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ) ] );
+		$this->mock_multi_currency->expects( $this->never() )->method( 'get_price' );
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+
+		// A coupon that no longer exists is rebuilt from the order's coupon line and flagged as virtual.
+		$coupon = new WC_Coupon();
+		$coupon->set_discount_type( 'fixed_cart' );
+		$coupon->set_virtual( true );
+
+		$this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), $order );
+
+		$this->assertSame( '1500', $this->frontend_prices->get_coupon_amount( '1500', $coupon ) );
+	}
+
+	/**
+	 * @dataProvider legacy_coupon_data_provider
+	 */
+	public function test_legacy_virtual_coupon_is_converted_to_the_order_currency( $coupon_data ) {
+		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+		$jpy = new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 );
+
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $usd );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn(
+			[
+				'USD' => $usd,
+				'JPY' => $jpy,
+			]
+		);
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+		$this->mock_multi_currency->method( 'get_price' )->willReturnCallback(
+			function ( $price ) {
+				return (float) $price * 150;
+			}
+		);
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+
+		// A coupon whose post was deleted, rebuilt from the legacy `coupon_data` line meta, whose amount
+		// is the raw store-currency value and so must still be converted to the order's currency.
+		$coupon = new WC_Coupon();
+		$coupon->set_code( 'legacy5' );
+		$coupon->set_discount_type( 'fixed_cart' );
+		$coupon->set_amount( 5 );
+		$coupon->set_virtual( true );
+
+		$coupon_item = new WC_Order_Item_Coupon();
+		$coupon_item->set_code( 'legacy5' );
+		$coupon_item->add_meta_data( 'coupon_data', $coupon_data );
+
+		$this->frontend_prices->set_order_coupon( $coupon, 'legacy5', $coupon_item, $order );
+
+		// The 5 USD coupon was worth 750 JPY on this order, so the rebuild must convert it.
+		$this->assertSame( 750.0, $this->frontend_prices->get_coupon_amount( '5', $coupon ) );
+	}
+
+	public function legacy_coupon_data_provider() {
+		$coupon_data = [
+			'id'            => 0,
+			'code'          => 'legacy5',
+			'discount_type' => 'fixed_cart',
+			'amount'        => 5,
+		];
+
+		return [
+			'array'  => [ $coupon_data ],
+			'object' => [ (object) $coupon_data ],
+		];
+	}
+
+	public function test_get_coupon_amount_converts_other_coupons_to_the_selected_currency() {
+		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		$this->frontend_prices->set_order_coupon( new WC_Coupon(), 'code', new WC_Order_Item_Coupon(), WC_Helper_Order::create_order() );
+
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_price' )
+			->with( '10', 'coupon', null )
+			->willReturn( 25.0 );
+
+		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', new WC_Coupon() ) );
+	}
+
+	public function test_set_order_coupon_leaves_non_store_api_rest_requests_to_the_selected_currency() {
+		$original_uri           = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc/v3/orders';
+
+		try {
+			$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+			$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
+			$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+			$coupon = new WC_Coupon();
+			$coupon->set_discount_type( 'fixed_cart' );
+
+			// Standard REST order write: keeps the selected-currency path (currency omitted), not the order currency.
+			$this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), WC_Helper_Order::create_order() );
+
+			$this->mock_multi_currency
+				->expects( $this->once() )
+				->method( 'get_price' )
+				->with( '10', 'coupon', null )
+				->willReturn( 25.0 );
+
+			$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $coupon ) );
+		} finally {
+			if ( null === $original_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_uri;
+			}
+		}
+	}
+
+	public function test_set_order_coupon_still_converts_store_api_requests_to_the_order_currency() {
+		$original_uri           = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc/store/v1/checkout/1';
+
+		try {
+			$currencies = [
+				'USD' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+				'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ),
+			];
+			$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $currencies['USD'] );
+			$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( $currencies );
+			$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+			$order = WC_Helper_Order::create_order();
+			$order->set_currency( 'JPY' );
+
+			$coupon = new WC_Coupon();
+			$coupon->set_discount_type( 'fixed_cart' );
+
+			// Store API pay-for-order: still converted to the order's currency.
+			$this->mock_multi_currency
+				->expects( $this->once() )
+				->method( 'get_price' )
+				->with( '10', 'coupon', $this->identicalTo( $currencies['JPY'] ) )
+				->willReturn( 25.0 );
+
+			$this->assertSame( $coupon, $this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), $order ) );
+			$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $coupon ) );
+		} finally {
+			if ( null === $original_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_uri;
+			}
+		}
+	}
+
+	public function test_recalculate_coupons_uses_the_order_currency_instead_of_the_selected_one() {
+		$usd = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'USD' => $usd ] );
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		// JPY is selected, at 150 JPY for 1 USD: the selected-currency path (currency omitted) returns
+		// 150x and the order-currency path (USD passed explicitly) returns 1x. Asserting a $5 discount
+		// proves the order currency is used; a regression to the selected currency would yield $750. The
+		// exact currency object passed to get_price is pinned in
+		// test_get_coupon_amount_converts_coupon_reapplied_to_order_to_the_order_currency.
+		$this->mock_multi_currency
+			->method( 'get_price' )
+			->willReturnCallback(
+				function ( $price, $type, $currency = null ) use ( $usd ) {
+					return (float) $price * ( $usd === $currency ? 1 : 150 );
+				}
+			);
+
+		$coupon = new WC_Coupon();
+		$coupon->set_code( 'take5' );
+		$coupon->set_discount_type( 'fixed_cart' );
+		$coupon->set_amount( 5 );
+		$coupon->save();
+
+		$coupon_item = new WC_Order_Item_Coupon();
+		$coupon_item->set_code( 'take5' );
+
+		// A USD order for 4 products at 10 USD, plus 10 USD of shipping.
+		$order = WC_Helper_Order::create_order();
+		$order->add_item( $coupon_item );
+		$order->recalculate_coupons();
+
+		$this->assertSame( 'USD', $order->get_currency() );
+		$this->assertEquals( 5, $order->get_discount_total() );
+		$this->assertEquals( 45, $order->get_total() );
+	}
+
 	public function test_get_coupon_min_max_amount_returns_empty_amount() {
 		$this->assertSame( '', $this->frontend_prices->get_coupon_min_max_amount( '' ) );
+	}
+
+	public function test_get_coupon_min_max_amount_skips_conversion_on_compatibility() {
+		$coupon = new WC_Coupon();
+		$this->mock_compatibility
+			->method( 'should_convert_coupon_min_max_amount' )
+			->with( $coupon )
+			->willReturn( false );
+		$this->assertSame( '5.0', $this->frontend_prices->get_coupon_min_max_amount( '5.0', $coupon ) );
 	}
 
 	public function test_get_coupon_min_max_amount_converts_amount_as_product() {
 		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'product' )->willReturn( 12.5 );
 
-		$this->assertSame( 12.5, $this->frontend_prices->get_coupon_min_max_amount( '5.0' ) );
+		$coupon = new WC_Coupon();
+		$this->mock_compatibility
+			->method( 'should_convert_coupon_min_max_amount' )
+			->with( $coupon )
+			->willReturn( true );
+
+		$this->assertSame( 12.5, $this->frontend_prices->get_coupon_min_max_amount( '5.0', $coupon ) );
+	}
+
+	/**
+	 * The coupon getters pass the coupon to the compatibility check through the registered filters.
+	 *
+	 * @dataProvider coupon_min_max_getter_provider
+	 */
+	public function test_coupon_min_max_getters_pass_coupon_to_compatibility( $setter, $getter ) {
+		$coupon = new WC_Coupon();
+		$coupon->$setter( 5 );
+
+		// WC_Coupon reads the prop twice in the view context: once to check for an empty value, once to return it.
+		$this->mock_compatibility
+			->expects( $this->atLeastOnce() )
+			->method( 'should_convert_coupon_min_max_amount' )
+			->with( $coupon )
+			->willReturn( false );
+		$this->mock_multi_currency
+			->expects( $this->never() )
+			->method( 'get_price' );
+
+		// Depending on the WooCommerce version, the getter returns the amount as a string or a float.
+		$this->assertEquals( 5, $coupon->$getter() );
+	}
+
+	public function coupon_min_max_getter_provider() {
+		return [
+			'minimum amount' => [ 'set_minimum_amount', 'get_minimum_amount' ],
+			'maximum amount' => [ 'set_maximum_amount', 'get_maximum_amount' ],
+		];
 	}
 
 	public function test_add_order_meta_skips_default_currency() {

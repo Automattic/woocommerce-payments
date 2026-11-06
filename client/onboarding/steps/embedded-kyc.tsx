@@ -2,8 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
-import { ExternalLink } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 import { LoadError } from '@stripe/connect-js';
 
 /**
@@ -21,7 +20,7 @@ import {
 import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';
 import { EmbeddedAccountOnboarding } from 'wcpay/embedded-components';
 import BannerNotice from 'wcpay/components/banner-notice';
-import interpolateComponents from '@automattic/interpolate-components';
+import DevModeMessage from 'wcpay/components/dev-mode-message';
 
 interface Props {
 	collectPayoutRequirements?: boolean;
@@ -94,37 +93,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					status="warning"
 					isDismissible={ false }
 				>
-					{ interpolateComponents( {
-						mixedString: sprintf(
-							/* translators: %1$s: WooPayments */
-							__(
-								'{{strong}}Your store is in development mode.{{/strong}} %1$s can only create test accounts in development or staging environments. ' +
-									'To set up a live account, switch to a production {{wpEnvLink}}WordPress environment{{/wpEnvLink}} or remove the WCPAY_DEV_MODE constant. ' +
-									'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
-								'woocommerce-payments'
-							),
-							'WooPayments'
-						),
-						components: {
-							strong: <strong />,
-							wpEnvLink: (
-								// @ts-expect-error: children is provided when interpolating the component
-								<ExternalLink
-									href={
-										'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/'
-									}
-								/>
-							),
-							learnMoreLink: (
-								// @ts-expect-error: children is provided when interpolating the component
-								<ExternalLink
-									href={
-										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/'
-									}
-								/>
-							),
-						},
-					} ) }
+					<DevModeMessage isOnboarding />
 				</BannerNotice>
 			) }
 			{ loading && (

@@ -92,7 +92,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 						],
 					],
 					'mode'            => [
-						'description' => 'The account mode the user selected: live or test. Overrides environment-based auto-detection (except dev mode).',
+						'description' => 'The account mode the user selected: live or test. Used only when no account is connected yet, where it overrides environment-based auto-detection. Ignored when dev mode is active or an account is already connected (the connected account keeps its onboarded mode).',
 						'type'        => 'string',
 						'required'    => false,
 						'enum'        => [ 'live', 'test' ],

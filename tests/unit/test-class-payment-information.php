@@ -30,6 +30,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'customer' ] ) );
 		$this->card_token = WC_Helper_Token::create_token( self::TOKEN );
 	}
 
@@ -93,11 +94,6 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_get_payment_token_returns_token() {
 		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, Payment_Type::SINGLE(), $this->card_token );
 		$this->assertEquals( $this->card_token, $payment_information->get_payment_token() );
-	}
-
-	public function is_using_saved_payment_method_returns_true_if_token() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, Payment_Type::SINGLE(), $this->card_token );
-		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 	}
 
 	public function test_set_token_updates_token() {
@@ -199,6 +195,43 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $token );
 	}
 
+	public function test_get_token_from_request_returns_null_for_ownerless_token_when_logged_out() {
+		wp_set_current_user( 0 );
+		$ownerless_token = WC_Helper_Token::create_token( 'pm_ownerless', 0 );
+
+		$token = Payment_Information::get_token_from_request(
+			[
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => $ownerless_token->get_id(),
+			]
+		);
+		$this->assertNull( $token );
+	}
+
+	public function test_get_token_from_request_returns_null_for_ownerless_token_when_logged_in() {
+		$ownerless_token = WC_Helper_Token::create_token( 'pm_ownerless', 0 );
+
+		$token = Payment_Information::get_token_from_request(
+			[
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => $ownerless_token->get_id(),
+			]
+		);
+		$this->assertNull( $token );
+	}
+
+	public function test_get_token_from_request_returns_null_for_owned_token_when_logged_out() {
+		wp_set_current_user( 0 );
+
+		$token = Payment_Information::get_token_from_request(
+			[
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
+			]
+		);
+		$this->assertNull( $token );
+	}
+
 	public function test_get_token_from_request_returns_null_when_missing_payment_method() {
 		$token = Payment_Information::get_token_from_request(
 			[ self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() + 1 ]
@@ -234,6 +267,36 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $payment_information->get_error() );
 	}
 
+	public function test_from_payment_request_rejects_ownerless_token_when_logged_out() {
+		wp_set_current_user( 0 );
+		$ownerless_token = WC_Helper_Token::create_token( 'pm_ownerless', 0 );
+
+		$this->expectException( \WCPay\Exceptions\Invalid_Payment_Method_Exception::class );
+
+		Payment_Information::from_payment_request(
+			[
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => $ownerless_token->get_id(),
+			]
+		);
+	}
+
+	public function test_from_payment_request_ignores_ownerless_token_and_uses_new_payment_method_when_logged_out() {
+		wp_set_current_user( 0 );
+		$ownerless_token = WC_Helper_Token::create_token( 'pm_ownerless', 0 );
+
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                 => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
+				self::CARD_TOKEN_REQUEST_KEY     => $ownerless_token->get_id(),
+			]
+		);
+		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
+		$this->assertNull( $payment_information->get_payment_token() );
+		$this->assertEquals( 'pm_mock', $payment_information->get_payment_method() );
+	}
+
 	public function test_from_payment_request_without_token() {
 		$payment_information = Payment_Information::from_payment_request(
 			[ self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD ]
@@ -261,6 +324,47 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( \WP_Error::class, $error );
 		$this->assertEquals( 'Invalid Card', $error->get_error_message() );
 		$this->assertEquals( 'invalid_card', $error->get_error_code() );
+	}
+
+	public function test_from_payment_request_cleans_error_details() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                     => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
+				'wcpay-payment-method-error-message' => "Invalid\nCard",
+				'wcpay-payment-method-error-code'    => "invalid\ncard",
+			]
+		);
+
+		$error = $payment_information->get_error();
+		$this->assertSame( 'Invalid Card', $error->get_error_message() );
+		$this->assertSame( 'invalid card', $error->get_error_code() );
+	}
+
+	public function test_from_payment_request_with_array_error_message_uses_default() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                     => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
+				'wcpay-payment-method-error-message' => [ 'Invalid Card' ],
+				'wcpay-payment-method-error-code'    => 'invalid_card',
+			]
+		);
+
+		$this->assertSame( "We're not able to process this payment. Please try again later.", $payment_information->get_error()->get_error_message() );
+	}
+
+	public function test_from_payment_request_with_array_error_code_uses_default() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                     => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
+				'wcpay-payment-method-error-message' => 'Invalid Card',
+				'wcpay-payment-method-error-code'    => [ 'invalid_card' ],
+			]
+		);
+
+		$this->assertSame( 'unknown-error', $payment_information->get_error()->get_error_code() );
 	}
 
 	public function test_from_payment_request_with_error_no_details() {

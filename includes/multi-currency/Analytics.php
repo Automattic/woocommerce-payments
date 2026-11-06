@@ -67,7 +67,7 @@ class Analytics {
 	 */
 	public function init_hooks() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 			$this->register_customer_currencies();
 		}
 

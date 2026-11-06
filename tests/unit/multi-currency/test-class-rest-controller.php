@@ -139,6 +139,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the response is what we expected.
 		$this->assertEquals( $expected, $response );
+		$this->assertSame( [ 'USD' ], get_option( 'wcpay_multi_currency_enabled_currencies' ) );
 	}
 
 	public function test_update_enabled_currencies_throws_exception_on_unavailable_currency() {

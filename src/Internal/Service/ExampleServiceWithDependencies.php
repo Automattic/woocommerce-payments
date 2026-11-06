@@ -74,7 +74,7 @@ class ExampleServiceWithDependencies {
 		try {
 			$this->example_service->do_something_with_exception();
 		} catch ( Exception $e ) {
-			// Do nothing, this is fine. We're just testing Psalm.
+			// Do nothing, this is fine.
 			return false;
 		}
 	}

@@ -16,11 +16,11 @@
 .wcpay-dispute-evidence {
 	$horizontal-card-padding: 24px;
 
-	.components-card__header {
+	.wcpay-card__header {
 		font-size: 20px;
 	}
 
-	.components-card {
+	.wcpay-card {
 		margin-bottom: 24px;
 	}
 
@@ -66,32 +66,36 @@
 		align-items: center;
 
 		// Selector here is super specific to ensure styles are overwritten.
-		.components-button.is-secondary:not( :disabled ):not( [aria-disabled='true'] ) {
-			&.is-success {
-				box-shadow: inset 0 0 0 1px $studio-green;
-				color: $studio-green;
+		.components-button.is-secondary:not( :disabled ) {
+			&:not( [aria-disabled='true'] ) {
+				&.is-success {
+					box-shadow: inset 0 0 0 1px $studio-green;
+					color: $studio-green;
 
-				&:hover {
-					box-shadow: inset 0 0 0 1px $studio-green-60;
-					color: $studio-green-60;
+					&:hover {
+						box-shadow: inset 0 0 0 1px $studio-green-60;
+						color: $studio-green-60;
+					}
 				}
-			}
 
-			&.is-destructive {
-				box-shadow: inset 0 0 0 1px $studio-red;
-				color: $studio-red;
+				&.is-destructive {
+					box-shadow: inset 0 0 0 1px $studio-red;
+					color: $studio-red;
 
-				&:hover {
-					box-shadow: inset 0 0 0 1px $studio-red-60;
-					color: $studio-red-60;
+					&:hover {
+						box-shadow: inset 0 0 0 1px $studio-red-60;
+						color: $studio-red-60;
+					}
 				}
 			}
 		}
 
-		.components-button.delete-uploaded-file-button:not( :disabled ):not( [aria-disabled='true'] ) {
-			&:hover {
-				color: $studio-red-60;
-				box-shadow: none;
+		.components-button.delete-uploaded-file-button:not( :disabled ) {
+			&:not( [aria-disabled='true'] ) {
+				&:hover {
+					color: $studio-red-60;
+					box-shadow: none;
+				}
 			}
 		}
 

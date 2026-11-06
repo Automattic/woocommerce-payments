@@ -94,15 +94,15 @@ const getDepositTimelineItem = (
 		headline = sprintf(
 			isPositive
 				? // translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout
-				  __(
+					__(
 						'%1$s was added to your <a>%2$s payout</a>.',
 						'woocommerce-payments'
-				  )
+					)
 				: // translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout
-				  __(
+					__(
 						'%1$s was deducted from your <a>%2$s payout</a>.',
 						'woocommerce-payments'
-				  ),
+					),
 			formattedAmount,
 			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
@@ -120,15 +120,15 @@ const getDepositTimelineItem = (
 		headline = sprintf(
 			isPositive
 				? // translators: %s - formatted amount
-				  __(
+					__(
 						'%s will be added to a future payout.',
 						'woocommerce-payments'
-				  )
+					)
 				: // translators: %s - formatted amount
-				  __(
+					__(
 						'%s will be deducted from a future payout.',
 						'woocommerce-payments'
-				  ),
+					),
 			formattedAmount
 		);
 	}
@@ -491,7 +491,7 @@ const getRefundTrackingDetails = ( event ) => {
 					'woocommerce-payments'
 				),
 				event.acquirer_reference_number
-		  )
+			)
 		: '';
 };
 
@@ -563,48 +563,48 @@ export const feeBreakdown = ( event ) => {
 						/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
 						'International card fee: %1$s%% + %2$s',
 						'woocommerce-payments'
-				  )
+					)
 				: __(
 						/* translators: %1$s% is the fee percentage */
 						'International card fee: %1$s%%',
 						'woocommerce-payments'
-				  ),
+					),
 		'additional-fx':
 			fixedRate !== 0
 				? __(
 						/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
 						'Currency conversion fee: %1$s%% + %2$s',
 						'woocommerce-payments'
-				  )
+					)
 				: __(
 						/* translators: %1$s% is the fee percentage */
 						'Currency conversion fee: %1$s%%',
 						'woocommerce-payments'
-				  ),
+					),
 		'additional-wcpay-subscription':
 			fixedRate !== 0
 				? __(
 						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
 						'Subscription transaction fee: %1$s%% + %2$s',
 						'woocommerce-payments'
-				  )
+					)
 				: __(
 						/* translators: %1$s% is the fee amount */
 						'Subscription transaction fee: %1$s%%',
 						'woocommerce-payments'
-				  ),
+					),
 		'additional-device':
 			fixedRate !== 0
 				? __(
 						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
 						'Tap to pay transaction fee: %1$s%% + %2$s',
 						'woocommerce-payments'
-				  )
+					)
 				: __(
 						/* translators: %1$s% is the fee amount */
 						'Tap to pay transaction fee: %1$s%%',
 						'woocommerce-payments'
-				  ),
+					),
 		discount: __( 'Discount', 'woocommerce-payments' ),
 	} );
 
@@ -701,9 +701,9 @@ const getManualFraudOutcomeTimelineItem = ( event, status ) => {
 
 	const headline = isBlock
 		? // translators: %s: the username that approved the payment, <a> - link to the user
-		  __( 'Payment was blocked by <a>%s</a>', 'woocommerce-payments' )
+			__( 'Payment was blocked by <a>%s</a>', 'woocommerce-payments' )
 		: // translators: %s: the username that approved the payment, <a> - link to the user
-		  __( 'Payment was approved by <a>%s</a>', 'woocommerce-payments' );
+			__( 'Payment was approved by <a>%s</a>', 'woocommerce-payments' );
 
 	const icon = isBlock ? (
 		<CrossIcon className="is-error" />
@@ -752,11 +752,11 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
 		? __(
 				'Payment was screened by your fraud filters and blocked.',
 				'woocommerce-payments'
-		  )
+			)
 		: __(
 				'Payment was screened by your fraud filters and placed in review.',
 				'woocommerce-payments'
-		  );
+			);
 
 	const icon = isBlock ? (
 		<CrossIcon className="is-error" />
@@ -807,7 +807,7 @@ const mapEventToTimelineItems = (
 				__( 'Dispute %1$d of %2$d', 'woocommerce-payments' ),
 				disputeNumber,
 				disputeOrder.total
-		  )
+			)
 		: undefined;
 	const withDisputeQualifier = ( item ) => {
 		if ( ! disputeNumberLabel || ! item ) {
@@ -916,7 +916,7 @@ const mapEventToTimelineItems = (
 							? composeTaxString( event )
 							: null,
 						composeNetString( event ),
-				  ].filter( Boolean );
+					].filter( Boolean );
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -948,7 +948,7 @@ const mapEventToTimelineItems = (
 				? formatExplicitCurrency(
 						event.transaction_details.store_amount,
 						event.transaction_details.store_currency
-				  )
+					)
 				: formattedAmount;
 			return [
 				getStatusChangeTimelineItem(
@@ -1069,7 +1069,7 @@ const mapEventToTimelineItems = (
 					? formatCurrency(
 							event.transaction_details.customer_amount,
 							event.transaction_details.customer_currency
-					  )
+						)
 					: formatCurrency( event.amount, event.currency );
 				depositTimelineItem = getDepositTimelineItem(
 					event,
@@ -1177,7 +1177,7 @@ const mapEventToTimelineItems = (
 							networkCost.currency.toUpperCase(),
 							false,
 							event?.fee?.currency?.toUpperCase()
-					  )
+						)
 					: '';
 			const isCrossCurrencyNetworkCost =
 				networkCost &&
@@ -1191,7 +1191,7 @@ const mapEventToTimelineItems = (
 							'woocommerce-payments'
 						),
 						formattedNetworkCost
-				  )
+					)
 				: formattedNetworkCost;
 			const networkCostItem =
 				networkCost?.amount != null && networkCost?.currency
@@ -1200,12 +1200,12 @@ const mapEventToTimelineItems = (
 								? __(
 										'Network costs associated with resolving Visa compliance disputes.',
 										'woocommerce-payments'
-								  )
+									)
 								: __(
 										'Network cost for the dispute.',
 										'woocommerce-payments'
-								  ),
-					  ] )
+									),
+						] )
 					: null;
 
 			// Only Klarna reports why it decided against the merchant. The event
@@ -1277,12 +1277,12 @@ const mapEventToTimelineItems = (
 								'woocommerce-payments'
 							),
 							bankName
-					  )
+						)
 					: __(
 							// eslint-disable-next-line max-len
 							"<strong>Dispute lost.</strong> Your customer's bank reviewed the evidence and decided in the customer's favor.",
 							'woocommerce-payments'
-					  );
+						);
 			}
 
 			return [
@@ -1369,7 +1369,7 @@ const mapEventToTimelineItems = (
 						/* translators: %s is the card network's reported fraud reason, e.g. "Made with stolen card" */
 						__( 'Reported reason: %s', 'woocommerce-payments' ),
 						fraudTypeLabel
-				  )
+					)
 				: null;
 
 			if ( ! event.efw_actionable ) {
@@ -1414,11 +1414,11 @@ const mapEventToTimelineItems = (
 								<Button variant="link" onClick={ onRefund } />
 							),
 						}
-				  )
+					)
 				: __(
 						'Refunding this payment now can prevent a dispute.',
 						'woocommerce-payments'
-				  );
+					);
 
 			return [
 				getStatusChangeTimelineItem(

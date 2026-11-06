@@ -98,7 +98,7 @@ exports[`AccountBalances renders the correct tooltip text for the total balance 
 
 <div>
   <div
-    class="components-surface components-card wcpay-account-balances emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card wcpay-account-balances emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -106,14 +106,14 @@ exports[`AccountBalances renders the correct tooltip text for the total balance 
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+        class="components-flex components-card__header components-card-header wcpay-card__header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Balance
       </div>
       <div
-        class="components-card__body components-card-body wcpay-account-balances__balances emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body wcpay-account-balances__balances emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >

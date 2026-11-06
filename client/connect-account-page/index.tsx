@@ -8,21 +8,15 @@ import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { Loader } from '@woocommerce/onboarding';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	Card,
-	CardBody,
-	Panel,
-	PanelBody,
-} from '@wordpress/components';
+import { Button, Panel, PanelBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card, CardBody } from 'wcpay/components/card';
 import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
-import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
@@ -33,9 +27,10 @@ import InlineNotice from 'components/inline-notice';
 import { WooPaymentsMethodsLogos } from 'components/payment-method-logos';
 import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
-import { isInTestModeOnboarding, redirectTo } from 'wcpay/utils';
+import { isInDevMode, isInTestModeOnboarding, redirectTo } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
+import DevModeMessage from 'wcpay/components/dev-mode-message';
 import { decodeEntities } from '@wordpress/html-entities';
 import { createRoot } from 'react-dom/client';
 
@@ -43,9 +38,14 @@ interface AccountData {
 	status: string;
 }
 
+// Development mode forces test mode onboarding and can't be switched off here, so it gets its own message.
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
-		{ strings.sandboxModeNotice }
+		{ isInDevMode() ? (
+			<DevModeMessage isOnboarding />
+		) : (
+			strings.sandboxModeNotice
+		) }
 	</BannerNotice>
 );
 
@@ -79,7 +79,6 @@ const TestDriveLoader: React.FunctionComponent< {
 
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
-	const incentive = wcpaySettings.connectIncentive;
 	const [ modalVisible, setModalVisible ] = useState( false );
 
 	const [ errorMessage, setErrorMessage ] = useState< string >(
@@ -161,9 +160,6 @@ const ConnectAccountPage: React.FC = () => {
 	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
 		recordEvent( 'wcpay_connect_account_clicked', {
 			wpcom_connection: isJetpackConnected ? 'Yes' : 'No',
-			...( incentive && {
-				incentive_id: incentive.id,
-			} ),
 			sandbox_mode: sandboxMode,
 			path: 'payments_connect_v2',
 			from: determineTrackingFrom(),
@@ -337,9 +333,6 @@ const ConnectAccountPage: React.FC = () => {
 	useEffect( () => {
 		recordEvent( 'page_view', {
 			path: 'payments_connect_v2',
-			...( incentive && {
-				incentive_id: incentive.id,
-			} ),
 			from: determineTrackingFrom(),
 			source: determineTrackingSource(),
 		} );
@@ -397,22 +390,6 @@ const ConnectAccountPage: React.FC = () => {
 		setSubmitted( true );
 
 		trackConnectAccountClicked( false );
-
-		// If there is an incentive available, request promo activation before redirecting.
-		// Display an error message if the request fails.
-		if ( incentive ) {
-			try {
-				const activatePromoRequest = await apiFetch< {
-					success: boolean;
-				} >( {
-					path: `/wc-analytics/admin/notes/experimental-activate-promo/${ incentive.id }`,
-					method: 'POST',
-				} );
-				if ( ! activatePromoRequest?.success ) throw new Error();
-			} catch ( _ ) {
-				setErrorMessage( strings.incentive.error );
-			}
-		}
 
 		// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
 		if ( ! isCountrySupported ) {
@@ -527,6 +504,7 @@ const ConnectAccountPage: React.FC = () => {
 								<SandboxModeSwitchToLiveNotice
 									from="WCPAY_CONNECT"
 									source="wcpay-connect-page"
+									isOnboarding
 								/>
 							)
 						)
@@ -618,12 +596,6 @@ const ConnectAccountPage: React.FC = () => {
 							}
 						</div>
 					</Card>
-					{
-						// Only show the incentive if an account is NOT connected.
-						! isAccountConnected && incentive && (
-							<Incentive { ...incentive } />
-						)
-					}
 					{
 						// Only show the sandbox mode panel if an account is NOT connected.
 						! isAccountConnected && (

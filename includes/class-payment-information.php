@@ -288,11 +288,15 @@ class Payment_Information {
 		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
 
 		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {
-			$error_message = empty( $request['wcpay-payment-method-error-message'] )
-				? __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' )
-				: $request['wcpay-payment-method-error-message'];
-			$error_code    = empty( $request['wcpay-payment-method-error-code'] ) ? 'unknown-error' : $request['wcpay-payment-method-error-code'];
-			$error         = new \WP_Error( $error_code, $error_message );
+			$error_message = wc_clean( $request['wcpay-payment-method-error-message'] ?? '' );
+			if ( empty( $error_message ) || ! is_string( $error_message ) ) {
+				$error_message = __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
+			}
+			$error_code = wc_clean( $request['wcpay-payment-method-error-code'] ?? '' );
+			if ( empty( $error_code ) || ! is_string( $error_code ) ) {
+				$error_code = 'unknown-error';
+			}
+			$error = new \WP_Error( $error_code, $error_message );
 			$payment_information->set_error( $error );
 		}
 
@@ -342,7 +346,13 @@ class Payment_Information {
 		$token = \WC_Payment_Tokens::get( wc_clean( $request[ $token_request_key ] ) );
 
 		// If the token doesn't belong to this gateway or the current user it's invalid.
-		if ( ! $token || $payment_method !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
+		// A logged-out request also has user ID 0, so a token without an owner must never count as owned.
+		if (
+			! $token ||
+			$payment_method !== $token->get_gateway_id() ||
+			$token->get_user_id() <= 0 ||
+			$token->get_user_id() !== get_current_user_id()
+		) {
 			return null;
 		}
 

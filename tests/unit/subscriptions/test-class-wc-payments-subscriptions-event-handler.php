@@ -180,10 +180,96 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoiceid );
 		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
+		$mock_subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, $wcpay_invoiceid );
 		$mock_subscription->next_payment = time();
 
+		WC_Subscriptions::set_wcs_get_subscriptions(
+			function ( $_unused_args ) use ( $mock_subscription ) {
+				return [ $mock_subscription ];
+			}
+		);
+
+		WC_Subscriptions::wcs_create_renewal_order(
+			function ( $_unused_subscription ) {
+				return WC_Helper_Order::create_order();
+			}
+		);
+
+		// The parent order's invoice is already paid, so no renewal order is created or marked paid.
+		$this->mock_invoice_service->expects( $this->never() )
+			->method( 'set_order_invoice_id' );
+
+		$this->mock_invoice_service->expects( $this->never() )
+			->method( 'mark_pending_invoice_paid_for_subscription' );
+
+		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
+
+		WC_Subscriptions::set_wcs_get_subscriptions( null );
+		WC_Subscriptions::wcs_create_renewal_order( null );
+	}
+
+	/**
+	 * Rejects an invoice missing payment data before creating a renewal order.
+	 *
+	 * @dataProvider provider_missing_invoice_payment_fields
+	 *
+	 * @param string $missing_field The missing invoice property.
+	 */
+	public function test_handle_invoice_paid_rejects_missing_payment_data( string $missing_field ) {
+		$test_body         = $this->get_mock_test_body();
+		$mock_subscription = new WC_Subscription();
+		unset( $test_body['data']['object'][ $missing_field ] );
+
+		WC_Subscriptions::set_wcs_get_subscriptions(
+			function ( $_unused_args ) use ( $mock_subscription ) {
+				return [ $mock_subscription ];
+			}
+		);
+		WC_Subscriptions::wcs_create_renewal_order(
+			function ( $_unused_subscription ) {
+				$this->fail( 'A malformed invoice must not create a renewal order.' );
+			}
+		);
+
 		$this->expectException( Invalid_Webhook_Data_Exception::class );
-		$this->expectExceptionMessage( 'Cannot find subscription for the incoming "invoice.paid" event.' );
+		$this->expectExceptionMessage( $missing_field . ' not found in array' );
+
+		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
+	}
+
+	/**
+	 * Invoice properties needed to match the payment to the order.
+	 *
+	 * @return array
+	 */
+	public function provider_missing_invoice_payment_fields(): array {
+		return [
+			'missing amount'   => [ 'amount_paid' ],
+			'missing currency' => [ 'currency' ],
+		];
+	}
+
+	/**
+	 * Ignores the parent invoice before requiring renewal payment data.
+	 */
+	public function test_handle_invoice_paid_ignores_parent_invoice_without_payment_data() {
+		$test_body         = $this->get_mock_test_body();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, 'ii_test1234' );
+		unset( $test_body['data']['object']['amount_paid'], $test_body['data']['object']['currency'] );
+
+		WC_Subscriptions::set_wcs_get_subscriptions(
+			function ( $_unused_args ) use ( $mock_subscription ) {
+				return [ $mock_subscription ];
+			}
+		);
+		WC_Subscriptions::wcs_create_renewal_order(
+			function ( $_unused_subscription ) {
+				$this->fail( 'The parent invoice must not create a renewal order.' );
+			}
+		);
+		$this->mock_invoice_service->expects( $this->never() )
+			->method( 'mark_pending_invoice_paid_for_subscription' );
 
 		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
 	}
@@ -239,6 +325,137 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 			->willReturn( [ 'charge' => 'ch_testxxx' ] );
 
 		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
+	}
+
+	/**
+	 * Test handle_invoice_paid puts the order on hold when the invoice doesn't match the order total,
+	 * and still records the payment so the merchant can refund it.
+	 *
+	 * @dataProvider handle_invoice_paid_mismatch_provider
+	 *
+	 * @param string $order_currency The currency of the 50 unit order.
+	 * @param int    $amount_paid    The amount the invoice collected, in minor units.
+	 * @param string $currency       The currency the invoice was collected in.
+	 * @param string $expected_note  The text the order note should contain.
+	 */
+	public function test_handle_invoice_paid_holds_order_when_amount_does_not_match_order_total( $order_currency, $amount_paid, $currency, $expected_note ) {
+		$wcpay_subscription_id = 'sub_invoiceUpcoming';
+		$wcpay_customer_id     = 'cus_test1234';
+		$wcpay_invoiceid       = 'ii_testInvoiceID';
+		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoiceid, 'pi_testPaymentIntentID', 1, $amount_paid, $currency );
+		$mock_renewal_order    = WC_Helper_Order::create_order();
+		$mock_subscription     = new WC_Subscription();
+		$mock_renewal_order->set_currency( $order_currency );
+		$mock_renewal_order->save();
+
+		WC_Subscriptions::set_wcs_get_subscriptions(
+			function ( $_unused_args ) use ( $mock_subscription ) {
+				return [ $mock_subscription ];
+			}
+		);
+
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $_unused_subscription_id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		WC_Subscriptions::wcs_create_renewal_order(
+			function ( $_unused_subscription ) use ( $mock_renewal_order ) {
+				return $mock_renewal_order;
+			}
+		);
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'set_order_invoice_id' )
+			->with( $mock_renewal_order, $wcpay_invoiceid )
+			->willReturn( null );
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'mark_pending_invoice_paid_for_subscription' )
+			->with( $mock_subscription )
+			->willReturn( null );
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'get_and_attach_intent_info_to_order' )
+			->with( $mock_renewal_order, 'pi_testPaymentIntentID' );
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'record_subscription_payment_context' )
+			->with( 'ii_testInvoiceID' )
+			->willReturn( [ 'charge' => 'ch_testxxx' ] );
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'update_charge_details' )
+			->with( [ 'charge' => 'ch_testxxx' ], $mock_renewal_order->get_id() );
+
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'update_transaction_details' )
+			->with( [ 'charge' => 'ch_testxxx' ], $mock_renewal_order );
+
+		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
+
+		$stored_order = wc_get_order( $mock_renewal_order->get_id() );
+		$notes        = wc_get_order_notes( [ 'order_id' => $stored_order->get_id() ] );
+
+		$this->assertSame( 'on-hold', $stored_order->get_status() );
+		$this->assertFalse( $stored_order->is_paid() );
+		$this->assertStringContainsString( $expected_note, wp_strip_all_tags( html_entity_decode( $notes[0]->content ) ) );
+	}
+
+	/**
+	 * Invoices that don't match a 50 unit order.
+	 *
+	 * @return array
+	 */
+	public function handle_invoice_paid_mismatch_provider(): array {
+		return [
+			'amount differs'        => [ 'USD', 1000, 'usd', 'collected $10.00 USD, but the order total is $50.00 USD' ],
+			'currency differs'      => [ 'USD', 5000, 'eur', 'collected 50,00 € EUR, but the order total is $50.00 USD' ],
+			'zero-decimal currency' => [ 'JPY', 1000, 'jpy', 'collected ¥1,000 JPY, but the order total is ¥50 JPY' ],
+		];
+	}
+
+	/**
+	 * Test a repeated invoice.paid event leaves a held order on hold, with a single note.
+	 */
+	public function test_handle_invoice_paid_holds_order_once_when_delivered_twice() {
+		$wcpay_invoiceid    = 'ii_testInvoiceID';
+		$test_body          = $this->get_mock_test_body( 'sub_invoiceUpcoming', 'cus_test1234', $wcpay_invoiceid, 'pi_testPaymentIntentID', 1, 1000 );
+		$mock_renewal_order = WC_Helper_Order::create_order();
+		$mock_subscription  = new WC_Subscription();
+		$mock_renewal_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $wcpay_invoiceid );
+		$mock_renewal_order->save();
+
+		WC_Subscriptions::set_wcs_get_subscriptions(
+			function ( $_unused_args ) use ( $mock_subscription ) {
+				return [ $mock_subscription ];
+			}
+		);
+
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $_unused_subscription_id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		$this->mock_invoice_service
+			->method( 'record_subscription_payment_context' )
+			->willReturn( [ 'charge' => 'ch_testxxx' ] );
+
+		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
+		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
+
+		$stored_order   = wc_get_order( $mock_renewal_order->get_id() );
+		$mismatch_notes = array_filter(
+			wc_get_order_notes( [ 'order_id' => $stored_order->get_id() ] ),
+			function ( $note ) {
+				return false !== strpos( $note->content, 'collected' );
+			}
+		);
+
+		$this->assertSame( 'on-hold', $stored_order->get_status() );
+		$this->assertCount( 1, $mismatch_notes );
 	}
 
 	/**
@@ -341,11 +558,13 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 	 * @param string $subscription_id The WCPay subscription ID.
 	 * @param string $customer_id     The WCPay customer ID.
 	 * @param string $invoice_id      The WCPay invoice ID.
-	 * @param inte   $attempt_count   The WCPay attempt count for failed renewals.
+	 * @param int    $attempt_count   The WCPay attempt count for failed renewals.
+	 * @param int    $amount_paid     The amount the invoice collected, in minor units.
+	 * @param string $currency        The currency the invoice was collected in.
 	 *
 	 * @return array
 	 */
-	private function get_mock_test_body( $subscription_id = 'sub_test1234', $customer_id = 'cust_test1234', $invoice_id = 'ii_test1234', $payment_intent_id = 'pi_test1234', $attempt_count = 1 ) {
+	private function get_mock_test_body( $subscription_id = 'sub_test1234', $customer_id = 'cust_test1234', $invoice_id = 'ii_test1234', $payment_intent_id = 'pi_test1234', $attempt_count = 1, $amount_paid = 5000, $currency = 'usd' ) {
 		return [
 			'data' => [
 				'object' => [
@@ -358,6 +577,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 						'data' => [],
 					],
 					'subscription'   => $subscription_id,
+					'amount_paid'    => $amount_paid,
+					'currency'       => $currency,
 				],
 			],
 		];

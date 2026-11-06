@@ -16,6 +16,26 @@ use WCPay\Internal\Logger;
  */
 class LoggerContext {
 	/**
+	 * Query parameters whose values help identify the request in logged URLs.
+	 * All other values are redacted.
+	 */
+	private const URL_QUERY_KEYS_TO_KEEP = [
+		'_locale',
+		'action',
+		'doing_wp_cron',
+		'file_id',
+		'page',
+		'path',
+		'redirect_status',
+		'rest_route',
+		'section',
+		'tab',
+		'view',
+		'wc-ajax',
+		'wc_payment_method',
+	];
+
+	/**
 	 * Request identifier.
 	 *
 	 * @var string
@@ -138,10 +158,14 @@ class LoggerContext {
 	 * @return void
 	 */
 	private function init_context() {
-		$this->set_value( 'WP_USER', is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)' );
-		$this->set_value( 'HTTP_REFERER', sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) ) );
+		// Keeps personal data out of the logs.
+		$this->set_value( 'WP_USER', is_user_logged_in() ? '#' . get_current_user_id() : 'Guest (non logged-in user)' );
+		// Redact before sanitizing, which turns "<" into "&lt;" and so splits one value across two query parameters.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$this->set_value( 'HTTP_REFERER', sanitize_text_field( $this->redact_url_query( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) ) ) );
 		$this->set_value( 'HTTP_USER_AGENT', sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) ) );
-		$this->set_value( 'REQUEST_URI', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) ) );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$this->set_value( 'REQUEST_URI', sanitize_text_field( $this->redact_url_query( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) ) ) );
 		$this->set_value( 'DOING_AJAX', defined( 'DOING_AJAX' ) && DOING_AJAX );
 		$this->set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
 		$this->set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
@@ -161,5 +185,68 @@ class LoggerContext {
 		$this->set_value( 'WOOPAYMENTS_MODE', $woopayments_mode );
 
 		$this->context_initialized = true;
+	}
+
+	/**
+	 * Redacts the query values of a URL, except the allowed keys.
+	 *
+	 * @param string $url The URL to redact.
+	 *
+	 * @return string
+	 */
+	private function redact_url_query( string $url ): string {
+		$url_parts = explode( '?', $url, 2 );
+		if ( ! isset( $url_parts[1] ) ) {
+			return $url;
+		}
+
+		/**
+		 * Filters the URL query keys whose values are kept in log entries.
+		 * Only include keys with non-sensitive values.
+		 *
+		 * @since 11.3.0
+		 *
+		 * @param string[] $keys_to_keep Query keys whose values are not redacted.
+		 */
+		$keys_to_keep = apply_filters( 'wcpay_logger_context_url_query_keys_to_keep', self::URL_QUERY_KEYS_TO_KEEP );
+		$keys_to_keep = $this->validate_url_query_keys_to_keep( $keys_to_keep );
+
+		$params = array_map(
+			function ( string $param ) use ( $keys_to_keep ): string {
+				$name_and_value = explode( '=', $param, 2 );
+				if ( ! isset( $name_and_value[1] ) ) {
+					// Encoded or malformed parameters can carry a value without a literal "=".
+					return preg_match( '/^[a-zA-Z0-9_.-]*$/D', $param ) ? $param : '(redacted)';
+				}
+				if ( ! in_array( $name_and_value[0], $keys_to_keep, true ) ) {
+					return $name_and_value[0] . '=(redacted)';
+				}
+
+				$value = rawurldecode( $name_and_value[1] );
+				// Nested queries and further encoding can carry other parameters under an allowed key.
+				if ( false !== strpbrk( $value, '?&=#%' ) ) {
+					return $name_and_value[0] . '=(redacted)';
+				}
+
+				return $name_and_value[0] . '=' . $value;
+			},
+			explode( '&', $url_parts[1] )
+		);
+
+		return $url_parts[0] . '?' . implode( '&', $params );
+	}
+
+	/**
+	 * Validates the allow-list returned by third-party filters.
+	 *
+	 * @param mixed $keys_to_keep Filtered query keys.
+	 * @return string[]
+	 */
+	private function validate_url_query_keys_to_keep( $keys_to_keep ): array {
+		if ( ! is_array( $keys_to_keep ) ) {
+			return self::URL_QUERY_KEYS_TO_KEEP;
+		}
+
+		return array_filter( $keys_to_keep, 'is_string' );
 	}
 }

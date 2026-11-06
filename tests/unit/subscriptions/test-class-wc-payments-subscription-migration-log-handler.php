@@ -40,6 +40,8 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 			)
 		);
 
+		Constants::clear_single_constant( 'WC_LOG_HANDLER' );
+
 		parent::tearDown();
 	}
 
@@ -140,6 +142,9 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		$new_file_name = WC_Payments_Subscription_Migration_Log_Handler::HANDLE . "-{$today}-{$hash}.log";
 		$old_file_path = $log_dir . $old_file_name;
 		$new_file_path = $log_dir . $new_file_name;
+
+		// The test writes into WC_LOG_DIR directly, so it must not rely on another test having created it.
+		wp_mkdir_p( $log_dir );
 
 		// Create an "old" log file with old date in filename.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents

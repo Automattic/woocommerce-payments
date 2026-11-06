@@ -8,11 +8,12 @@ import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Card, Notice, ExternalLink } from '@wordpress/components';
+import { Notice, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { Card } from 'wcpay/components/card';
 import AccountBalances from 'components/account-balances';
 import AccountDetails from 'components/account-details';
 import ActiveLoanSummary from 'components/active-loan-summary';
@@ -28,6 +29,7 @@ import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import DisputeReadinessCard from './dispute-readiness';
 import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
+import { useActiveEarlyFraudWarnings } from 'wcpay/data/early-fraud-warnings';
 import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
@@ -113,6 +115,9 @@ const OverviewPage = () => {
 			shouldLoadSingleDispute
 		);
 
+	const { activeEarlyFraudWarnings, hasLoaded: hasLoadedEarlyFraudWarnings } =
+		useActiveEarlyFraudWarnings();
+
 	const tasksUnsorted = getTasks( {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
@@ -120,6 +125,11 @@ const OverviewPage = () => {
 		activeDisputesSummary,
 		activeDisputeTaskIsLoading:
 			activeDisputesSummaryIsLoading || activeDisputesIsLoading,
+		// Withhold the list until the request settles, so the task does not render
+		// absent and then appear a beat later.
+		activeEarlyFraudWarnings: hasLoadedEarlyFraudWarnings
+			? activeEarlyFraudWarnings
+			: [],
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );

@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getTerms } from '../utils/upe';
+import { getLinkEmail, getTerms, isLinkEnabled } from '../utils/upe';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
 
 /**
@@ -144,6 +144,22 @@ export const getUpeSettings = ( paymentMethodType ) => {
 		};
 	}
 
+	const linkEmail =
+		paymentMethodType === 'card' &&
+		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+			? getLinkEmail( document.querySelector( '#billing_email' )?.value )
+			: undefined;
+
+	if ( linkEmail ) {
+		upeSettings.defaultValues = {
+			...upeSettings.defaultValues,
+			billingDetails: {
+				...upeSettings.defaultValues?.billingDetails,
+				email: linkEmail,
+			},
+		};
+	}
+
 	return upeSettings;
 };
 
@@ -202,6 +218,8 @@ export const appendPaymentMethodErrorDataToForm = (
  */
 export const appendFraudPreventionTokenInputToForm = ( $form ) => {
 	const fraudPreventionToken = window.wcpayFraudPreventionToken ?? '';
+	// cleaning up all the ones in the DOM, just in case
+	$form.find( 'input[name="wcpay-fraud-prevention-token"]' ).remove();
 	$form.append(
 		`<input type="hidden" id="wcpay-fraud-prevention-token" name="wcpay-fraud-prevention-token" value="${ fraudPreventionToken }" />`
 	);
@@ -354,7 +372,7 @@ export const isBillingInformationMissing = () => {
 	)
 		? document.querySelector(
 				`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }`
-		  )?.value
+			)?.value
 		: null;
 
 	// We need to just find one field with missing information. If even only one is missing, just return early.

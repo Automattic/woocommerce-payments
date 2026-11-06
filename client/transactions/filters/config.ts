@@ -146,11 +146,11 @@ export const getAdvancedFilters = (
 				? __(
 						'Transactions match {{select /}} filters',
 						'woocommerce-payments'
-				  )
+					)
 				: __(
 						'Transactions match <select /> filters',
 						'woocommerce-payments'
-				  ),
+					),
 		filters: {
 			date: {
 				labels: {
@@ -169,11 +169,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Date</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction date',
 						'woocommerce-payments'
@@ -214,11 +214,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Customer currency{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Customer currency</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a customer currency',
 						'woocommerce-payments'
@@ -311,11 +311,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Type</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction type',
 						'woocommerce-payments'
@@ -363,11 +363,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Device type{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Device type</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction device type',
 						'woocommerce-payments'
@@ -414,11 +414,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Sales channel{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Sales channel</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction sales channel',
 						'woocommerce-payments'
@@ -466,11 +466,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Customer country{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Customer country</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction customer country',
 						'woocommerce-payments'
@@ -518,11 +518,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Risk Level{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Risk Level</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction Risk Level',
 						'woocommerce-payments'
@@ -582,11 +582,11 @@ export const getAdvancedFilters = (
 						? __(
 								'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Loan</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a loan', 'woocommerce-payments' ),
 			},
 			input: {

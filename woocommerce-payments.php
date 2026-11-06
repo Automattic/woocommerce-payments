@@ -8,10 +8,10 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 11.2.0
+ * WC tested up to: 11.3.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
- * Version: 11.2.1
+ * Version: 11.3.0
  * Requires Plugins: woocommerce
  * License: GPLv3 or later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -78,11 +78,6 @@ if ( ! $is_autoloading_ready ) {
 
 /**
  * Initialize the Jetpack functionalities: connection, identity crisis, etc.
- *
- * PSR-11 containers declares to throw an un-throwable interface
- * (it does not extend Throwable), and Psalm does not accept it.
- *
- * @psalm-suppress MissingThrowsDocblock
  */
 function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
@@ -499,11 +494,6 @@ function wcpay_tasks_init() {
 
 add_action( 'plugins_loaded', 'wcpay_tasks_init' );
 
-/**
- * As the class is defined in later versions of WC, Psalm infers error.
- *
- * @psalm-suppress UndefinedClass
- */
 add_action(
 	'before_woocommerce_init',
 	function () {

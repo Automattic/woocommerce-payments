@@ -2,7 +2,7 @@
 
 Structured inventory of every test suite used in the WooPayments plugin — automated, semi-automated, and manual. Covers category, status, trigger, coverage areas, and reliability notes.
 
-**Last updated:** 2026-03-20
+**Last updated:** 2026-10-09
 
 ---
 
@@ -24,7 +24,7 @@ All test suites, CI workflows, and release processes are owned and maintained by
 | 6 | [Playwright E2E (Atomic)](#6-playwright-e2e--atomic) | E2E | WooPayments | Manual | No | No |
 | 7 | [Smoke Tests](#7-smoke-tests) | E2E / Release | WooPayments | Release workflow | No | Yes |
 | 8 | [QIT E2E (PR)](#8-qit-e2e--pr) | E2E | WooPayments (platform: QualityOps) | PR (develop/trunk) | Yes | No |
-| 9 | [QIT E2E (Scheduled)](#9-qit-e2e--scheduled) | E2E | WooPayments (platform: QualityOps) | Push (develop/trunk) | No | No |
+| 9 | [QIT E2E (Push)](#9-qit-e2e--push) | E2E | WooPayments (platform: QualityOps) | Push (develop/trunk) | No | No |
 | 10 | [QIT E2E (Pre-release)](#10-qit-e2e--pre-release) | E2E | WooPayments (platform: QualityOps) | Manual | No | Yes |
 | 11 | [QIT Security & Malware](#11-qit-security--malware) | Security | WooPayments (platform: QualityOps) | PR | Yes | No |
 | 12 | [Performance Tests](#12-performance-tests) | Performance | WooPayments | Manual | No | No |
@@ -269,7 +269,7 @@ QIT (Quality Insights Testing) runs tests on a WordPress.com cloud environment, 
 
 ---
 
-### 9. QIT E2E — Scheduled
+### 9. QIT E2E — Push
 
 | Field | Value |
 |-------|-------|
@@ -315,7 +315,7 @@ Runs two scans:
 - `qit run:security` — security vulnerability scanning
 - `qit run:malware` — malware detection
 
-Exit codes: 0 = pass, 1 = fail, 2 = warning only (warnings do NOT fail CI).
+Exit codes: 0 = pass, 1 = fail, 2 = invalid arguments or config, 3 = warning only (warnings do NOT fail CI).
 
 ---
 
@@ -518,7 +518,7 @@ QIT E2E and security tests run against the release branch. Uses `qit-e2e-prerele
 
 Package preparation also runs **QIT release checks** in `build-zip-and-run-smoke-tests.yml`, alongside smoke tests, against the built release ZIP. The suite uses the deployment action's pinned release configuration: activation, compatibility activation, security, malware, PHP compatibility, and WooCommerce API tests. Skipping smoke tests does not skip QIT.
 
-The release lead should confirm this job passes during release preparation and after every rebuild following cherry-picks, including patch releases, before starting deployment. For manual runs, use the workflow from `develop` and set `repo-branch` to the release branch, so existing release branches can use the current checks. The deployment workflow runs QIT again against its own build.
+The release lead should confirm this job passes during release preparation and after every rebuild following cherry-picks, including patch releases, before starting deployment. The deployment workflow builds the ZIP once, runs QIT against it and deploys that same ZIP.
 
 ---
 
@@ -605,7 +605,7 @@ Last 20 runs: **9 passed**, 11 failed. Three distinct failure patterns:
 
 **WP nightly blocks regression:** Two consecutive scheduled runs show all WC Blocks shopper specs failing on WP nightly — `checkout-failures`, `checkout-purchase`, and `saved-card-checkout` all fail. This suggests a breaking change in WordPress nightly affecting the blocks checkout integration. Stable WP versions are unaffected.
 
-#### QIT E2E — Scheduled (`qit-e2e.yml`)
+#### QIT E2E — Push (`qit-e2e.yml`)
 
 Baseline (March 1–9): **14 passed**, 6 failed. Two issues have since degraded the suite:
 

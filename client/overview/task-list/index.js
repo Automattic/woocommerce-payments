@@ -91,7 +91,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 							'woocommerce-payments'
 						),
 						optionName: 'woocommerce_dismissed_todo_tasks',
-				  }
+					}
 				: {
 						task,
 						dismissedTasks: deletedTodoTasks,
@@ -100,7 +100,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 							'woocommerce-payments'
 						),
 						optionName: 'woocommerce_deleted_todo_tasks',
-				  };
+					};
 		dismissSelectedTask( params );
 	};
 

@@ -81,13 +81,6 @@ class WC_Payments_Admin {
 	private $order_service;
 
 	/**
-	 * WC_Payments_Incentives_Service instance to get information for incentives.
-	 *
-	 * @var WC_Payments_Incentives_Service
-	 */
-	private $incentives_service;
-
-	/**
 	 * WC_Payments_PM_Promotions_Service instance to get information for payment method promotions.
 	 *
 	 * @var WC_Payments_PM_Promotions_Service
@@ -134,7 +127,6 @@ class WC_Payments_Admin {
 	 * @param WC_Payments_Account               $account               Account instance.
 	 * @param WC_Payments_Onboarding_Service    $onboarding_service    Onboarding service instance.
 	 * @param WC_Payments_Order_Service         $order_service         Order service instance.
-	 * @param WC_Payments_Incentives_Service    $incentives_service    Incentives service instance.
 	 * @param WC_Payments_PM_Promotions_Service $pm_promotions_service PM Promotions service instance.
 	 * @param WC_Payments_Fraud_Service         $fraud_service         Fraud service instance.
 	 * @param Database_Cache                    $database_cache        Database Cache instance.
@@ -145,7 +137,6 @@ class WC_Payments_Admin {
 		WC_Payments_Account $account,
 		WC_Payments_Onboarding_Service $onboarding_service,
 		WC_Payments_Order_Service $order_service,
-		WC_Payments_Incentives_Service $incentives_service,
 		WC_Payments_PM_Promotions_Service $pm_promotions_service,
 		WC_Payments_Fraud_Service $fraud_service,
 		Database_Cache $database_cache
@@ -155,7 +146,6 @@ class WC_Payments_Admin {
 		$this->account               = $account;
 		$this->onboarding_service    = $onboarding_service;
 		$this->order_service         = $order_service;
-		$this->incentives_service    = $incentives_service;
 		$this->pm_promotions_service = $pm_promotions_service;
 		$this->fraud_service         = $fraud_service;
 		$this->database_cache        = $database_cache;
@@ -968,19 +958,16 @@ class WC_Payments_Admin {
 			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if we should onboard accounts in test mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
-		$dev_mode = false;
+		$dev_mode        = false;
+		$dev_mode_reason = '';
 		try {
-			$dev_mode = WC_Payments::mode()->is_dev();
+			$dev_mode        = WC_Payments::mode()->is_dev();
+			$dev_mode_reason = WC_Payments_Utils::get_dev_mode_reason( WC_Payments::mode()->get_dev_mode_triggers() );
 		} catch ( Exception $e ) {
 			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if the gateway should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
-		$connect_url       = WC_Payments_Account::get_connect_url();
-		$connect_incentive = $this->incentives_service->get_connect_incentive();
-		// If we have an incentive ID, attach it to the connect URL.
-		if ( ! empty( $connect_incentive['id'] ) ) {
-			$connect_url = add_query_arg( [ 'promo' => sanitize_text_field( $connect_incentive['id'] ) ], $connect_url );
-		}
+		$connect_url = WC_Payments_Account::get_connect_url();
 
 		// Get the site logo URL, if available.
 		$site_logo_id  = get_theme_mod( 'custom_logo' );
@@ -995,8 +982,8 @@ class WC_Payments_Admin {
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],
-			'connectIncentive'                   => $connect_incentive,
 			'devMode'                            => $dev_mode,
+			'devModeReason'                      => $dev_mode_reason,
 			'testModeOnboarding'                 => $test_mode_onboarding,
 			'testMode'                           => $test_mode,
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
@@ -1034,9 +1021,6 @@ class WC_Payments_Admin {
 			'currencyData'                       => $currency_data,
 			'restUrl'                            => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'siteLogoUrl'                        => $site_logo_url,
-			'fraudProtection'                    => [
-				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
-			],
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
 			'storeCurrency'                      => get_option( 'woocommerce_currency' ),
 			'isWooPayStoreCountryAvailable'      => WooPay_Utilities::is_store_country_available(),
@@ -1459,7 +1443,7 @@ class WC_Payments_Admin {
 	 */
 	private function get_uncaptured_transactions_count() {
 		$test_mode = WC_Payments::mode()->is_test();
-		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
+		$cache_key = $test_mode ? Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : Database_Cache::AUTHORIZATION_SUMMARY_KEY;
 
 		$send_callback         = function () {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );

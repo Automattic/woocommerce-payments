@@ -2,11 +2,11 @@
  * External dependencies
  */
 import React from 'react';
-import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import DebugMode from './debug-mode';
 import MultiCurrencyToggle from './multi-currency-toggle';
 import WCPaySubscriptionsToggle from './wcpay-subscriptions-toggle';

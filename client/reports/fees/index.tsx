@@ -113,7 +113,7 @@ export const FeesReport = ( {
 				referenceDate
 					? {
 							dateFilterNow: referenceDate,
-					  }
+						}
 					: undefined
 			);
 		},

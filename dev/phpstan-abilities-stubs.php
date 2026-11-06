@@ -8,7 +8,7 @@
  * Domain class files can parse without the real interface present.
  *
  * Consumers:
- *  - PHPStan (loaded via `phpstan.neon` → `bootstrapFiles`).
+ *  - PHPStan (discovered via `phpstan.neon` → `scanFiles`).
  *  - PHPUnit (loaded from `tests/unit/bootstrap.php` after WC loads).
  *
  * Production runtime: `AbilitiesRegistrar::init()` short-circuits before

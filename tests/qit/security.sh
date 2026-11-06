@@ -13,7 +13,7 @@ done
 
 echo "Running security tests..." >&2
 set +e
-RAW="$($QIT_BINARY run:security woocommerce-payments --zip=woocommerce-payments.zip --wait 2>&1)"
+RAW="$($QIT_BINARY run:security woocommerce-payments --zip=woocommerce-payments.zip 2>&1)"
 EXIT_CODE=$?
 set -e
 
@@ -26,7 +26,7 @@ else
 	echo "$RAW"
 fi
 
-# QIT exit codes (dev-trunk):
+# QIT exit codes (qit-cli 1.3.x):
 # 0 = success
 # 1 = failure (critical security errors)
 # 3 = warning (non-critical issues that don't block marketplace listing)

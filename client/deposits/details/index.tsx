@@ -15,15 +15,13 @@ import clsx from 'clsx';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
-	Card,
-	CardBody,
-	CardHeader,
 	ExternalLink,
 } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { Card, CardBody, CardHeader } from 'wcpay/components/card';
 import type { CachedDeposit } from 'types/deposits';
 import { useDeposit } from 'wcpay/data/deposits';
 import TransactionsList from 'transactions/list';
@@ -40,6 +38,14 @@ import {
 import { depositStatusLabels, payoutFailureMessages } from '../strings';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+
+/**
+ * Checks if a deposit is an instant payout (as opposed to a manual deposit).
+ * Both instant and manual deposits have `automatic: false`, but only instant
+ * deposits have a non-zero service fee and/or `fee_percentage`.
+ */
+const isInstant = ( deposit: CachedDeposit ): boolean =>
+	! deposit.automatic && ( deposit.fee > 0 || deposit.fee_percentage > 0 );
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
@@ -107,8 +113,10 @@ interface DepositDateItemProps {
 
 const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 	let depositDateLabel = __( 'Payout date', 'woocommerce-payments' );
-	if ( ! deposit.automatic ) {
+	if ( isInstant( deposit ) ) {
 		depositDateLabel = __( 'Instant payout date', 'woocommerce-payments' );
+	} else if ( ! deposit.automatic ) {
+		depositDateLabel = __( 'Manual payout date', 'woocommerce-payments' );
 	}
 	if ( deposit.type === 'withdrawal' ) {
 		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
@@ -160,13 +168,13 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					</ul>
 				</Card>
 			) : (
-				<SummaryList // For instant deposits only
+				<SummaryList // For non-automatic (instant or manual) deposits
 					label={
 						isWithdrawal
 							? __(
 									'Withdrawal overview',
 									'woocommerce-payments'
-							  )
+								)
 							: __( 'Payout overview', 'woocommerce-payments' )
 					}
 				>
@@ -179,11 +187,11 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									? __(
 											'Withdrawal amount',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'Payout amount',
 											'woocommerce-payments'
-									  )
+										)
 							}
 							value={ formatExplicitCurrency(
 								deposit.amount + deposit.fee,
@@ -212,11 +220,11 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									? __(
 											'Net withdrawal amount',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'Net payout amount',
 											'woocommerce-payments'
-									  )
+										)
 							}
 							value={ formatExplicitCurrency(
 								deposit.amount,
@@ -325,7 +333,8 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 			{ deposit && (
 				<ErrorBoundary>
 					{ isInstantDeposit ? (
-						// If instant deposit, show a message instead of the transactions list.
+						// Stripe only links transactions to automatic payouts, so instant and
+						// manual payouts show a message instead of the transactions list.
 						// Matching the components used in @woocommerce/components TableCard for consistent UI.
 						<Card>
 							<CardHeader>
@@ -337,19 +346,24 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 								</Text>
 							</CardHeader>
 							<CardBody className="wcpay-deposit-overview--instant__transactions-list-message">
-								{ interpolateComponents( {
-									/* Translators: {{learnMoreLink}} is a link element (<a/>). */
-									mixedString: __(
-										`We're unable to show transaction history on instant payouts. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
-										'woocommerce-payments'
-									),
-									components: {
-										learnMoreLink: (
-											// @ts-expect-error: children is provided when interpolating the component
-											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout" />
-										),
-									},
-								} ) }
+								{ isInstant( deposit )
+									? interpolateComponents( {
+											/* Translators: {{learnMoreLink}} is a link element (<a/>). */
+											mixedString: __(
+												`We're unable to show transaction history on instant payouts. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
+												'woocommerce-payments'
+											),
+											components: {
+												learnMoreLink: (
+													// @ts-expect-error: children is provided when interpolating the component
+													<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout" />
+												),
+											},
+										} )
+									: __(
+											"We're unable to show transaction history on manual payouts.",
+											'woocommerce-payments'
+										) }
 							</CardBody>
 						</Card>
 					) : (

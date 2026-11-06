@@ -3,11 +3,11 @@
  */
 import React, { useCallback, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card, CardBody } from 'wcpay/components/card';
 import { TestModeNotice } from '../../components/test-mode-notice';
 import Page from '../../components/page';
 import ErrorBoundary from '../../components/error-boundary';

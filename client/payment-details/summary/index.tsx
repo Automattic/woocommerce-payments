@@ -15,8 +15,6 @@ import {
 	DropdownMenu,
 	MenuGroup,
 	MenuItem,
-	Card,
-	CardBody,
 	Flex,
 	ExternalLink,
 } from '@wordpress/components';
@@ -24,6 +22,7 @@ import {
 /**
  * Internal dependencies.
  */
+import { Card, CardBody } from 'wcpay/components/card';
 import {
 	canUseFeeBreakdownData,
 	getChargeAmounts,
@@ -172,7 +171,7 @@ const composePaymentSummaryItems = ( {
 				? formatDateTimeFromTimestamp( charge.created, {
 						separator: ', ',
 						includeTime: true,
-				  } )
+					} )
 				: '–',
 		},
 		{
@@ -184,7 +183,7 @@ const composePaymentSummaryItems = ( {
 						: getChargeChannel(
 								charge.payment_method_details?.type,
 								metadata
-						  ) }
+							) }
 				</span>
 			),
 		},
@@ -239,7 +238,7 @@ const composePaymentSummaryItemsForDispute = ( {
 			content: charge.created
 				? formatDateTimeFromTimestamp( charge.created, {
 						customFormat: 'F j, Y g:i A',
-				  } )
+					} )
 				: '–',
 		},
 		{
@@ -364,7 +363,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					( dispute ) => dispute.balance_transactions ?? []
 				),
 				'amount'
-		  )
+			)
 		: 0;
 
 	// Refunding is blocked while any single dispute blocks it, so the menu is
@@ -534,11 +533,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												? __(
 														'Deducted',
 														'woocommerce-payments'
-												  )
+													)
 												: __(
 														'Refunded',
 														'woocommerce-payments'
-												  )
+													)
 										}: ` }
 										{ formatExplicitCurrency(
 											-balance.refunded,
@@ -856,11 +855,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							disputes.length
 								? composePaymentSummaryItemsForDispute( {
 										charge,
-								  } )
+									} )
 								: composePaymentSummaryItems( {
 										charge,
 										metadata,
-								  } )
+									} )
 						}
 					/>
 				</LoadableBlock>

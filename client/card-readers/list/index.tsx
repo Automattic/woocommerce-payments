@@ -8,7 +8,8 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { Card, CardBody, CardDivider } from '@wordpress/components';
+import { Card, CardBody } from 'wcpay/components/card';
+import { CardDivider } from '@wordpress/components';
 import SettingsSection from 'wcpay/settings/settings-section';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';

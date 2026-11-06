@@ -3,9 +3,6 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-	Card,
-	CardBody,
-	CardHeader,
 	CardMedia,
 	CardFooter,
 	Button,
@@ -19,6 +16,7 @@ import { speak } from '@wordpress/a11y';
 /**
  * Internal dependencies
  */
+import { Card, CardBody, CardHeader } from 'wcpay/components/card';
 import { SpotlightProps } from './types';
 import Chip, { ChipType } from 'components/chip';
 import { sanitizeHTML } from 'utils/sanitize';

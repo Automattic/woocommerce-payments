@@ -34,6 +34,8 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 	private $attempted_redirect_location;
 
 	public function set_up() {
+		parent::set_up();
+
 		$this->mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -47,6 +49,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
+		WC_Payments::mode()->live();
 		unset( $_GET );
 		remove_filter( 'wp_redirect', [ $this, 'block_and_save_attempted_redirect' ] );
 		$this->attempted_redirect_location = '';
@@ -225,7 +228,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		// Assert.
 		$this->assertStringContainsStringIgnoringCase( 'WooPayments is in test mode', $result );
 		$this->assertStringContainsString( 'test card numbers', $result );
-		$this->assertStringNotContainsString( 'development or staging environment', $result );
+		$this->assertStringNotContainsString( 'Your store is in development mode', $result );
 		$this->assertStringNotContainsString( 'You are using a test account.', $result );
 		$this->assertStringNotContainsString( 'You are using a sandbox test account.', $result );
 	}
@@ -253,8 +256,9 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		// Assert.
-		$this->assertStringContainsStringIgnoringCase( 'WooPayments is in test mode', $result );
-		$this->assertStringContainsString( 'development or staging environment', $result );
+		$this->assertStringContainsString( '<b>Your store is in development mode, so payments are simulated.</b> Real payments only work on your live store.', $result );
+		$this->assertStringContainsString( 'test-accounts/#developer-notes', $result );
+		$this->assertStringNotContainsString( 'WooPayments is in test mode', $result );
 		$this->assertStringNotContainsString( 'test card numbers', $result );
 	}
 
@@ -362,6 +366,8 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 
 	public function test_it_renders_test_account_notice_for_test_account() {
 		// Arrange.
+		WC_Payments::mode()->live();
+
 		$this->mock_gateway
 			->expects( $this->any() )
 			->method( 'is_connected' )
@@ -393,6 +399,79 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'You are using a test account.', $result );
 		$this->assertStringNotContainsString( 'WooPayments is in test mode', $result );
 		$this->assertStringNotContainsString( 'You are using a sandbox test account.', $result );
+	}
+
+	public function test_it_renders_test_account_notice_with_dev_mode_explanation() {
+		// Arrange.
+		WC_Payments::mode()->dev();
+
+		$this->mock_gateway
+			->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+		$this->mock_account
+			->expects( $this->any() )
+			->method( 'is_stripe_account_valid' )
+			->willReturn( true );
+		$this->mock_account
+			->expects( $this->any() )
+			->method( 'get_is_live' )
+			->willReturn( false );
+		$this->mock_account
+			->expects( $this->any() )
+			->method( 'get_account_status_data' )
+			->willReturn(
+				[
+					'isLive'    => false,
+					'testDrive' => true,
+				]
+			);
+
+		// Act.
+		ob_start();
+		$this->payments_admin_settings->maybe_show_test_account_notice();
+		$result = ob_get_clean();
+
+		// Assert.
+		$this->assertStringContainsString( '<b>Your store is in development mode, so payments are simulated.</b> Real payments only work on your live store.', $result );
+		$this->assertStringNotContainsString( 'You are using a test account.', $result );
+		$this->assertStringNotContainsString( 'wcpay-activate-payments-button', $result );
+	}
+
+	public function test_it_names_the_dev_mode_trigger_in_the_test_account_notice() {
+		// Arrange.
+		$mode_property = new ReflectionProperty( WC_Payments::class, 'mode' );
+		$mode_property->setAccessible( true );
+		$original_mode = $mode_property->getValue();
+		$mock_mode     = $this->getMockBuilder( \WCPay\Core\Mode::class )
+			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'wp_get_development_mode' ] )
+			->getMock();
+		$mock_mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
+		$mock_mode->method( 'get_wp_environment_type' )->willReturn( 'staging' );
+		$mock_mode->method( 'wp_get_development_mode' )->willReturn( '' );
+
+		$this->mock_gateway->method( 'is_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'get_is_live' )->willReturn( false );
+		$this->mock_account->method( 'get_account_status_data' )->willReturn(
+			[
+				'isLive'    => false,
+				'testDrive' => true,
+			]
+		);
+
+		// Act.
+		$mode_property->setValue( null, $mock_mode );
+		try {
+			ob_start();
+			$this->payments_admin_settings->maybe_show_test_account_notice();
+			$result = ob_get_clean();
+		} finally {
+			$mode_property->setValue( null, $original_mode );
+		}
+
+		// Assert.
+		$this->assertStringContainsString( 'payments are simulated.</b> This site is set up as a staging site. Real payments only work on your live store.', $result );
 	}
 
 	public function test_it_does_not_show_sandbox_account_notice_when_not_connected() {
@@ -499,6 +578,8 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 
 	public function test_it_renders_sandbox_account_notice_for_sandbox_account() {
 		// Arrange.
+		WC_Payments::mode()->live();
+
 		$this->mock_gateway
 			->expects( $this->any() )
 			->method( 'is_connected' )
@@ -530,6 +611,43 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'You are using a sandbox test account.', $result );
 		$this->assertStringNotContainsString( 'You are using a test account.', $result );
 		$this->assertStringNotContainsString( 'WooPayments is in test mode', $result );
+	}
+
+	public function test_it_renders_sandbox_account_notice_with_dev_mode_explanation() {
+		// Arrange.
+		WC_Payments::mode()->dev();
+
+		$this->mock_gateway
+			->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+		$this->mock_account
+			->expects( $this->any() )
+			->method( 'is_stripe_account_valid' )
+			->willReturn( true );
+		$this->mock_account
+			->expects( $this->any() )
+			->method( 'get_is_live' )
+			->willReturn( false );
+		$this->mock_account
+			->expects( $this->any() )
+			->method( 'get_account_status_data' )
+			->willReturn(
+				[
+					'isLive'    => false,
+					'testDrive' => false,
+				]
+			);
+
+		// Act.
+		ob_start();
+		$this->payments_admin_settings->maybe_show_sandbox_account_notice();
+		$result = ob_get_clean();
+
+		// Assert.
+		$this->assertStringContainsString( '<b>Your store is in development mode, so payments are simulated.</b> Real payments only work on your live store.', $result );
+		$this->assertStringNotContainsString( 'You are using a sandbox test account.', $result );
+		$this->assertStringNotContainsString( 'reset your account', $result );
 	}
 
 	public function test_it_adds_plugin_links() {

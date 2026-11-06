@@ -2,7 +2,8 @@
 @font-face {
 	font-family: 'WCPay';
 	src: url( '../fonts/WCPay.eot' );
-	src: url( '../fonts/WCPay.eot?#iefix' ) format( 'embedded-opentype' ),
+	src:
+		url( '../fonts/WCPay.eot?#iefix' ) format( 'embedded-opentype' ),
 		url( '../fonts/WCPay.woff' ) format( 'woff' ),
 		url( '../fonts/WCPay.ttf' ) format( 'truetype' ),
 		url( '../fonts/WCPay.svg#WCPay' ) format( 'svg' );
@@ -143,6 +144,10 @@
 
 .payment-method__brand--link {
 	background-image: url( '../images/payment-methods/link.svg' );
+}
+
+.payment-method__brand--link.account-country--gb {
+	background-image: url( '../images/payment-methods/onelink.svg' );
 }
 
 .payment-method__brand--afterpay_clearpay {

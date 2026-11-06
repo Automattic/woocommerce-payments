@@ -184,9 +184,10 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @throws API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect ) {
-		// Register the site to wp.com.
+		// Register the site to wp.com. Every caller is a merchant's click, so force the attempt
+		// past the connection package's offline mode check and retry backoff.
 		if ( ! $this->connection_manager->is_connected() ) {
-			$result = $this->connection_manager->try_registration();
+			$result = $this->connection_manager->try_registration( true, true );
 			if ( is_wp_error( $result ) ) {
 				throw new API_Exception( $result->get_error_message(), 'wcpay_jetpack_register_site_failed', 500 );
 			}

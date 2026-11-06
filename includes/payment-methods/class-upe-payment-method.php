@@ -137,9 +137,9 @@ class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method ID
+	 * Returns whether this is an express checkout payment method.
 	 *
-	 * @return string
+	 * @return bool
 	 */
 	public function is_express_checkout() {
 		if ( null !== $this->definition ) {
@@ -221,7 +221,7 @@ class UPE_Payment_Method {
 
 		// Also check if we're on the order-pay page for a renewal order.
 		if ( ! $is_subscription_context && is_wc_endpoint_url( 'order-pay' ) && function_exists( 'wcs_order_contains_renewal' ) ) {
-			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 			if ( $order && wcs_order_contains_renewal( $order ) ) {
 				$is_subscription_context = true;
 			}
@@ -236,8 +236,7 @@ class UPE_Payment_Method {
 		if ( [] !== $this->limits_per_currency && ! $skip_limits_per_currency_check ) {
 			$order = null;
 			if ( is_wc_endpoint_url( 'order-pay' ) ) {
-				$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-				$order = is_a( $order, 'WC_Order' ) ? $order : null;
+				$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 			}
 
 			$currency = get_woocommerce_currency();
@@ -331,7 +330,7 @@ class UPE_Payment_Method {
 	 * @param WP_User $user User to get payment token from.
 	 * @param string  $payment_method_id Stripe payment method ID string.
 	 *
-	 * @return WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA WC object for payment token.
+	 * @return \WC_Payment_Token WC object for payment token.
 	 */
 	public function get_payment_token_for_user( $user, $payment_method_id ) {
 		return $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
@@ -489,17 +488,21 @@ class UPE_Payment_Method {
 	 * @return string|null
 	 */
 	private function get_currency( $order_id = null ) {
-		if ( is_wc_endpoint_url( 'order-pay' ) || null !== $order_id ) {
-			global $wp;
-			if ( null === $order_id ) {
-				$order_id = absint( $wp->query_vars['order-pay'] );
-			}
+		if ( null !== $order_id ) {
 			$order = wc_get_order( $order_id );
 			if ( false === $order ) {
 				return null;
 			}
 			return $order->get_currency();
 		}
+
+		if ( is_wc_endpoint_url( 'order-pay' ) ) {
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
+			if ( $order ) {
+				return $order->get_currency();
+			}
+		}
+
 		return get_woocommerce_currency();
 	}
 }

@@ -114,6 +114,51 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Checks whether the amount an invoice collected matches the order total.
+	 *
+	 * The order can change after Stripe creates the invoice. WooCommerce also keeps fractional line amounts
+	 * and rounds only the order total to the store's price decimals, while Stripe rounds each invoice line
+	 * to a minor unit. So allow one store price unit of difference per order line.
+	 *
+	 * @param WC_Order $order            The order.
+	 * @param int      $amount_paid      The invoice's amount_paid, in minor units.
+	 * @param string   $invoice_currency The invoice's currency.
+	 *
+	 * @return bool
+	 */
+	public static function does_invoice_payment_match_order_total( WC_Order $order, $amount_paid, $invoice_currency ): bool {
+		if ( ! is_numeric( $amount_paid ) ) {
+			return false;
+		}
+
+		$order_currency       = $order->get_currency();
+		$order_total_in_cents = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );
+		$price_unit           = 10 ** max( 0, WC_Payments_Utils::get_stripe_minor_unit_for_currency( $order_currency ) - self::get_price_decimals( $order_currency ) );
+		$rounding_allowance   = $price_unit * count( $order->get_items( [ 'line_item', 'fee', 'shipping', 'tax', 'coupon' ] ) );
+
+		return strtolower( $order_currency ) === strtolower( $invoice_currency )
+			&& abs( (int) $amount_paid - $order_total_in_cents ) <= $rounding_allowance;
+	}
+
+	/**
+	 * Gets the number of decimals the store prices a currency in.
+	 *
+	 * Multi-Currency prices other currencies with their locale's decimals, but webhooks run without its
+	 * frontend filters, so wc_get_price_decimals() only holds for the store currency.
+	 *
+	 * @param string $currency The currency code.
+	 *
+	 * @return int
+	 */
+	private static function get_price_decimals( string $currency ): int {
+		if ( strtoupper( $currency ) === strtoupper( get_woocommerce_currency() ) ) {
+			return wc_get_price_decimals();
+		}
+
+		return (int) WC_Payments::get_localization_service()->get_currency_format( strtoupper( $currency ) )['num_decimals'];
+	}
+
+	/**
 	 * Gets the WC order ID from the invoice ID.
 	 *
 	 * @param string $invoice_id The invoice ID.

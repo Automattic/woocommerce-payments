@@ -14,12 +14,73 @@ use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Core\Server\Request\Cancel_Intention;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Core\Server\Request\Get_Intention;
 
 /**
  * WC_Payments_Order_Service unit tests.
  */
 class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
+
+	/**
+	 * Customer ID stored on orders in the payment details tests.
+	 */
+	const PAYMENT_DETAILS_CUSTOMER_ID = 'cus_test_payment_details';
+
+	/**
+	 * Payment method ID stored on orders in the payment details tests.
+	 */
+	const PAYMENT_DETAILS_PAYMENT_METHOD_ID = 'pm_test_payment_details';
+
+	/**
+	 * Intent ID stored on orders in the payment details tests.
+	 */
+	const PAYMENT_DETAILS_INTENT_ID = 'pi_test_payment_details';
+
+	/**
+	 * Setup intent ID a zero-amount WooPayments attempt stores as the order's intent.
+	 */
+	const PAYMENT_DETAILS_SETUP_INTENT_ID = 'seti_test_payment_details';
+
+	/**
+	 * Intent ID of a WooPayments payment started after another gateway took the order over.
+	 */
+	const LATER_PAYMENT_INTENT_ID = 'pi_test_later_payment';
+
+	/**
+	 * Mode a WooPayments attempt records with the payment details.
+	 */
+	const PAYMENT_DETAILS_MODE = 'test';
+
+	/**
+	 * Gateway ID of WooCommerce Stripe, which stores `_stripe_customer_id` on its own orders.
+	 */
+	const OTHER_STRIPE_GATEWAY_ID = 'stripe';
+
+	/**
+	 * Customer ID another gateway stores under `_stripe_customer_id`.
+	 */
+	const OTHER_GATEWAY_CUSTOMER_ID = 'cus_test_other_gateway';
+
+	/**
+	 * The status a WooPayments attempt stored on the order before another gateway took it over.
+	 */
+	const EARLIER_ATTEMPT_INTENT_STATUS = 'requires_action';
+
+	/**
+	 * The status a WooPayments attempt stores when its 3DS step failed.
+	 */
+	const FAILED_ATTEMPT_INTENT_STATUS = 'requires_payment_method';
+
+	/**
+	 * Transaction ID another gateway sets on the order.
+	 */
+	const OTHER_GATEWAY_TRANSACTION_ID = 'txn_test_other_gateway';
+
+	/**
+	 * When an earlier takeover happened, as stored in the mark.
+	 */
+	const EARLIER_TAKEOVER_AT = '1700000000';
 
 	/**
 	 * System under test.
@@ -47,6 +108,35 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$gateways = WC()->payment_gateways->payment_gateways();
 		$this->order->set_payment_method( $gateways[ WC_Payment_Gateway_WCPay::GATEWAY_ID ] );
 		$this->order->save();
+	}
+
+	/**
+	 * Only orders are completed from an intent, never a subscription.
+	 */
+	public function test_update_order_status_from_intent_skips_subscriptions() {
+		// A succeeded intent that would otherwise mark the order paid, on an order reported as a subscription.
+		$intent = WC_Helper_Intention::create_intention();
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$order_id       = $this->order->get_id();
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $order_id ] );
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) use ( $order_id ) {
+				return $order instanceof WC_Order && $order->get_id() === $order_id;
+			}
+		);
+
+		// Act.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: nothing was completed. No transaction id, no intent status, status and notes unchanged.
+		$this->assertSame( '', $this->order->get_transaction_id() );
+		$this->assertSame( '', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertSame( Order_Status::ON_HOLD, wc_get_order( $order_id )->get_status() );
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $order_id ] ) );
+
+		WC_Subscriptions::set_wcs_is_subscription( null );
 	}
 
 	/**
@@ -205,6 +295,80 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_order_is_held_when_intent_amount_does_not_match_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2267,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		// The payment_intent.succeeded webhook replays the same intent after the checkout request.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( '22.67', $notes[0]->content );
+		$this->assertStringContainsString( '25.19', $notes[0]->content );
+		$this->assertCount( count( $notes ), wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+	}
+
+	public function test_order_is_held_when_intent_currency_does_not_match_order_currency() {
+		$this->order->set_currency( 'CAD' );
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'   => 2519,
+				'currency' => 'usd',
+				'status'   => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $25.19 USD', $note_text );
+		$this->assertStringContainsString( 'the order total is $25.19 CAD', $note_text );
+	}
+
+	public function test_partial_capture_completes_order_despite_amount_below_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2000,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'processing', $this->order->get_status() );
+	}
+
+	public function test_order_is_completed_when_intent_amount_matches_order_total() {
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => 2519,
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'processing', $this->order->get_status() );
+	}
+
 	/**
 	 * A successful payment processed while the order was in test mode should produce a
 	 * persistent order note that flags the test mode and clarifies no funds were collected.
@@ -325,6 +489,671 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_email_marker_callbacks_ignore_non_order_argument() {
 		$this->assertSame( 'subject', $this->order_service->maybe_add_test_mode_to_email_subject( 'subject', null ) );
 		$this->assertSame( 'heading', $this->order_service->maybe_add_test_mode_to_email_heading( 'heading', 'not-an-order' ) );
+	}
+
+	/**
+	 * Nothing of the earlier attempt stays that WooPayments reads as this order's payment: its customer and
+	 * payment method, the intent the 3DS callback, redirect return, duplicate payment check and captures start
+	 * from, and the mode the test-order tools read.
+	 */
+	public function test_order_paid_with_other_gateway_loses_the_earlier_attempt() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_mode' ) );
+	}
+
+	/**
+	 * A payment that went through is not an earlier attempt: a merchant can move a paid order back to pending
+	 * and have it paid again through the block order-pay page, which fires the same action.
+	 *
+	 * @dataProvider provider_intent_statuses_of_a_payment_that_went_through
+	 *
+	 * @param string $intent_status The status stored on the order.
+	 */
+	public function test_order_paid_with_other_gateway_keeps_a_payment_that_went_through( string $intent_status ) {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, $intent_status );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_test_payment_details', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( 'pm_test_payment_details', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( 'pi_test_payment_details', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( $intent_status, $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 'test', $order->get_meta( '_wcpay_mode' ) );
+		$this->assertSame( '', $order->get_meta( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY ) );
+	}
+
+	/**
+	 * Statuses of a payment that went through: charged, authorized, or settling.
+	 *
+	 * @return array
+	 */
+	public function provider_intent_statuses_of_a_payment_that_went_through(): array {
+		return [
+			'charged'    => [ 'succeeded' ],
+			'authorized' => [ 'requires_capture' ],
+			'settling'   => [ 'processing' ],
+		];
+	}
+
+	/**
+	 * The merchant can see which attempt the order lost, and why.
+	 */
+	public function test_order_paid_with_other_gateway_notes_the_removed_attempt() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*removed.*another payment method/', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * An attempt that failed before it had an intent, such as one blocked before the charge, still gets a note.
+	 */
+	public function test_order_paid_with_other_gateway_notes_the_removed_attempt_without_an_intent() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$order->delete_meta_data( '_intent_id' );
+		$order->save();
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$this->assertSame( 1, preg_match_all( '/^The payment details of an earlier WooPayments attempt were removed/m', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * A second takeover with no WooPayments attempt in between finds no mode and changes nothing, so a
+	 * customer another gateway stored meanwhile stays and the mark keeps the time of the real takeover.
+	 */
+	public function test_second_takeover_without_a_new_woopayments_attempt_changes_nothing() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$order = wc_get_order( $order->get_id() );
+		$order->update_meta_data( '_stripe_customer_id', self::OTHER_GATEWAY_CUSTOMER_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY, self::EARLIER_TAKEOVER_AT );
+		$order->save();
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_test_other_gateway', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( '1700000000', $order->get_meta( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY ) );
+	}
+
+	/**
+	 * Webhooks find the order through the intent's metadata, so the intent's creation time against the
+	 * takeover tells an earlier attempt from a payment started later, such as in person.
+	 *
+	 * @dataProvider provider_intent_creation_times
+	 *
+	 * @param int  $created_at When the intent was created.
+	 * @param bool $superseded Whether it belongs to an attempt from before the takeover.
+	 */
+	public function test_is_intent_from_superseded_attempt( int $created_at, bool $superseded ) {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY, self::EARLIER_TAKEOVER_AT );
+		$order->save();
+
+		$this->assertSame( $superseded, $this->order_service->is_intent_from_superseded_attempt( $order, self::LATER_PAYMENT_INTENT_ID, $created_at ) );
+	}
+
+	/**
+	 * Creation times around a takeover at 1700000000.
+	 *
+	 * @return array
+	 */
+	public function provider_intent_creation_times(): array {
+		return [
+			'before the takeover'   => [ 1699999940, true ],
+			'same second'           => [ 1700000000, false ],
+			'after the takeover'    => [ 1700000060, false ],
+			'unknown creation time' => [ 0, false ],
+		];
+	}
+
+	/**
+	 * An order no other gateway took over has no earlier attempt to tell apart.
+	 */
+	public function test_is_intent_from_superseded_attempt_is_false_without_a_takeover() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->assertFalse( $this->order_service->is_intent_from_superseded_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID, 1699999940 ) );
+	}
+
+	/**
+	 * The removed intent is known by name, so it is told apart whatever the two clocks say about its time.
+	 */
+	public function test_is_intent_from_superseded_attempt_knows_the_removed_intent_whatever_its_time() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertTrue( $this->order_service->is_intent_from_superseded_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID, time() + 60 ) );
+		$this->assertFalse( $this->order_service->is_intent_from_superseded_attempt( $order, self::LATER_PAYMENT_INTENT_ID, time() + 60 ) );
+	}
+
+	/**
+	 * Once a new WooPayments attempt starts on the order, its intent is trusted over the two clocks: a store
+	 * clock ahead of Stripe's would otherwise make a retry seconds after a failed takeover look superseded.
+	 * The removed intent is still known by name.
+	 */
+	public function test_is_intent_from_superseded_attempt_trusts_a_new_attempt_over_the_clocks() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$order = wc_get_order( $order->get_id() );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, self::PAYMENT_DETAILS_MODE );
+		$order->save();
+
+		$this->assertFalse( $this->order_service->is_intent_from_superseded_attempt( $order, self::LATER_PAYMENT_INTENT_ID, time() - 60 ) );
+		$this->assertTrue( $this->order_service->is_intent_from_superseded_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID, time() - 60 ) );
+	}
+
+	/**
+	 * The order names the intent of each attempt it lost, across takeovers.
+	 */
+	public function test_order_taken_over_twice_names_both_removed_intents() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$order = wc_get_order( $order->get_id() );
+		$order->update_meta_data( '_intent_id', self::LATER_PAYMENT_INTENT_ID );
+		$order->update_meta_data( '_wcpay_mode', self::PAYMENT_DETAILS_MODE );
+		$order->save();
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$this->assertSame( [ 'pi_test_payment_details', 'pi_test_later_payment' ], wc_get_order( $order->get_id() )->get_meta( WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY ) );
+	}
+
+	/**
+	 * Completing the order no longer captures the earlier attempt: WooPayments captures on completion from the
+	 * intent on the order, with no check on the order's gateway, and the attempt's intent is gone.
+	 */
+	public function test_completing_an_order_paid_with_other_gateway_does_not_capture_the_earlier_attempt() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->order_service->capture_authorization_on_order_status_change( $order->get_id() );
+
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_meta( '_intent_id' ) );
+	}
+
+	/**
+	 * Storing a customer on the order, as the in-person `create_customer` route and the customer-recreate
+	 * retries do, leaves the mark alone: webhooks still need it to tell an earlier attempt from a later payment.
+	 */
+	public function test_set_customer_id_for_order_keeps_the_takeover_mark() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$removed_at = wc_get_order( $order->get_id() )->get_meta( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY );
+
+		$this->order_service->set_customer_id_for_order( wc_get_order( $order->get_id() ), self::OTHER_GATEWAY_CUSTOMER_ID );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_test_other_gateway', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( $removed_at, $order->get_meta( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY ) );
+	}
+
+	/**
+	 * The mark that the details are gone records when another gateway took the order over.
+	 */
+	public function test_order_paid_with_other_gateway_records_when_the_details_were_removed() {
+		$order  = $this->create_order_with_payment_details( 'cod' );
+		$before = time();
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$removed_at = wc_get_order( $order->get_id() )->get_meta( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY );
+		$this->assertMatchesRegularExpression( '/^\d+$/', (string) $removed_at );
+		$this->assertGreaterThanOrEqual( $before, (int) $removed_at );
+		$this->assertLessThanOrEqual( time(), (int) $removed_at );
+	}
+
+	/**
+	 * An earlier attempt still waiting for 3DS is cancelled once the request ends, so it can no longer charge
+	 * the card, and the merchant can see that it was.
+	 */
+	public function test_order_paid_with_other_gateway_cancels_an_earlier_attempt_waiting_for_authentication() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*was cancelled/', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * The transaction id is the earlier attempt's intent, which the capture and cancel actions act on, so
+	 * the cancel on shutdown clears it to keep neither action pointed at the superseded attempt.
+	 */
+	public function test_order_paid_with_other_gateway_clears_the_transaction_id_of_the_cancelled_attempt() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$order->set_transaction_id( self::PAYMENT_DETAILS_INTENT_ID );
+		$order->save();
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_transaction_id() );
+	}
+
+	/**
+	 * An attempt that is no longer waiting for 3DS can't charge the card, so it costs no API call. The gateway
+	 * may still have left its intent as the transaction id, as after a failed 3DS step, which is cleared.
+	 *
+	 * @dataProvider provider_intent_statuses_of_an_attempt_not_waiting_for_authentication
+	 *
+	 * @param string $intent_status The status stored on the order.
+	 */
+	public function test_order_paid_with_other_gateway_clears_but_does_not_cancel_an_attempt_not_waiting_for_authentication( string $intent_status ) {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$order->set_transaction_id( self::PAYMENT_DETAILS_INTENT_ID );
+		$order->save();
+		$this->order_service->set_intention_status_for_order( $order, $intent_status );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_transaction_id() );
+	}
+
+	/**
+	 * Stored statuses of an attempt that no longer waits for 3DS, including none at all after a plain decline.
+	 *
+	 * @return array
+	 */
+	public function provider_intent_statuses_of_an_attempt_not_waiting_for_authentication(): array {
+		return [
+			'no status after a decline' => [ '' ],
+			'3DS step failed'           => [ 'requires_payment_method' ],
+			'waiting for a confirm'     => [ 'requires_confirmation' ],
+			'already cancelled'         => [ 'canceled' ],
+		];
+	}
+
+	/**
+	 * A transaction id that is not the removed intent, such as one another gateway set, stays.
+	 */
+	public function test_order_paid_with_other_gateway_keeps_a_transaction_id_another_gateway_set() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$order->set_transaction_id( self::OTHER_GATEWAY_TRANSACTION_ID );
+		$order->save();
+		$this->order_service->set_intention_status_for_order( $order, self::FAILED_ATTEMPT_INTENT_STATUS );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$this->assertSame( 'txn_test_other_gateway', wc_get_order( $order->get_id() )->get_transaction_id() );
+	}
+
+	/**
+	 * An error during the order save on shutdown is caught, where it would otherwise be fatal, and the attempt
+	 * is still cancelled. WooCommerce's order save catches exceptions itself, so the test throws an error.
+	 */
+	public function test_order_paid_with_other_gateway_still_cancels_when_clearing_the_transaction_id_fails() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$order->set_transaction_id( self::PAYMENT_DETAILS_INTENT_ID );
+		$order->save();
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		$this->expect_cancel_of_earlier_attempt();
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$fail_the_save = function () {
+			throw new Error( 'save failed' );
+		};
+		add_action( 'woocommerce_before_order_object_save', $fail_the_save );
+		try {
+			$this->order_service->finish_removing_earlier_attempts();
+		} finally {
+			remove_action( 'woocommerce_before_order_object_save', $fail_the_save );
+		}
+
+		$this->assertSame( 'pi_test_payment_details', wc_get_order( $order->get_id() )->get_transaction_id() );
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*was cancelled/', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * The cancel waits until the request ends, after the checkout saved the order. A Store API cart update that
+	 * lands while the checkout is still running can otherwise save the session's earlier gateway on the order.
+	 */
+	public function test_order_paid_with_other_gateway_cancels_only_once_the_request_ends() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$this->assertNotFalse( has_action( 'shutdown', [ $this->order_service, 'finish_removing_earlier_attempts' ] ) );
+		$this->assertDoesNotMatchRegularExpression( '/was cancelled/', $this->order_note_contents( $order ) );
+		remove_action( 'shutdown', [ $this->order_service, 'finish_removing_earlier_attempts' ] );
+	}
+
+	/**
+	 * Each waiting attempt is cancelled once, however often the cancel runs.
+	 */
+	public function test_finish_removing_earlier_attempts_sends_each_cancel_once() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$this->assertSame( 1, preg_match_all( '/was cancelled/', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * When the cancel fails, the details still go and the merchant gets a note naming the intent.
+	 */
+	public function test_order_paid_with_other_gateway_notes_a_failed_cancel_and_still_removes_the_details() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		$this->expect_cancel_of_earlier_attempt( new API_Exception( 'test exception', 'server_error', 500 ) );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_test_payment_details.*could not be cancell?ed/', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * The cancel runs on shutdown, where an uncaught error is fatal and leaves no note. An error from an
+	 * unexpected response is noted like an exception.
+	 */
+	public function test_order_paid_with_other_gateway_notes_a_cancel_that_fails_with_an_error() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		$this->expect_cancel_of_earlier_attempt( new TypeError( 'unexpected response' ) );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$this->assertMatchesRegularExpression( '/pi_test_payment_details.*could not be cancell?ed/', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * An error while noting the cancel, such as from another plugin's note callback, is caught on shutdown,
+	 * where it would otherwise be fatal. The cancel itself was still sent once.
+	 */
+	public function test_order_paid_with_other_gateway_survives_an_error_while_noting_the_cancel() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+		$this->expect_cancel_of_earlier_attempt();
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$fail_the_note = function () {
+			throw new Error( 'note callback failed' );
+		};
+		add_action( 'woocommerce_order_note_added', $fail_the_note );
+		try {
+			$this->order_service->finish_removing_earlier_attempts();
+		} finally {
+			remove_action( 'woocommerce_order_note_added', $fail_the_note );
+		}
+	}
+
+	/**
+	 * A plain decline leaves no intent waiting for 3DS and no transaction id, so nothing is queued for the end of
+	 * the request.
+	 */
+	public function test_order_paid_with_other_gateway_queues_nothing_after_a_plain_decline() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$this->assertFalse( has_action( 'shutdown', [ $this->order_service, 'finish_removing_earlier_attempts' ] ) );
+	}
+
+	/**
+	 * A zero-amount order stores a setup intent, which cannot charge: it is removed but not sent to the payment
+	 * intent cancel endpoint.
+	 */
+	public function test_order_paid_with_other_gateway_does_not_cancel_a_setup_intent() {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$order->update_meta_data( '_intent_id', self::PAYMENT_DETAILS_SETUP_INTENT_ID );
+		$order->save();
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_meta( '_intent_id' ) );
+	}
+
+	/**
+	 * Orders paid with a WooPayments gateway keep their customer and payment method.
+	 *
+	 * @dataProvider provider_woopayments_gateway_ids
+	 *
+	 * @param string $gateway_id The order's payment method.
+	 */
+	public function test_order_paid_with_woopayments_keeps_customer_and_payment_method( string $gateway_id ) {
+		$order = $this->create_order_with_payment_details( $gateway_id );
+
+		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cus_test_payment_details', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( 'pm_test_payment_details', $order->get_meta( '_payment_method_id' ) );
+	}
+
+	/**
+	 * WooPayments gateway IDs: the card gateway and a split payment method gateway.
+	 *
+	 * @return array
+	 */
+	public function provider_woopayments_gateway_ids(): array {
+		return [
+			'card gateway'         => [ 'woocommerce_payments' ],
+			'split payment method' => [ 'woocommerce_payments_klarna' ],
+		];
+	}
+
+	/**
+	 * Classic and Store API checkouts remove the details through their order processed actions.
+	 *
+	 * @dataProvider provider_checkout_order_processed_actions
+	 *
+	 * @param string $action The checkout action.
+	 */
+	public function test_checkout_order_processed_removes_details_for_other_gateway( string $action ) {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->init_hooks();
+
+		$this->fire_checkout_order_processed( $action, $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+	}
+
+	/**
+	 * Another gateway's own customer stays on its order: WooCommerce Stripe stores `_stripe_customer_id` too,
+	 * and reuses it when the order is paid again.
+	 *
+	 * @dataProvider provider_checkout_order_processed_actions
+	 *
+	 * @param string $action The checkout action.
+	 */
+	public function test_checkout_order_processed_keeps_customer_stored_by_another_gateway( string $action ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( self::OTHER_STRIPE_GATEWAY_ID );
+		$order->update_meta_data( '_stripe_customer_id', self::PAYMENT_DETAILS_CUSTOMER_ID );
+		$order->save();
+		$this->order_service->init_hooks();
+
+		$this->fire_checkout_order_processed( $action, $order );
+
+		$this->assertSame( 'cus_test_payment_details', wc_get_order( $order->get_id() )->get_meta( '_stripe_customer_id' ) );
+	}
+
+	/**
+	 * Once the WooPayments details are gone, a later retry keeps the customer another gateway stored meanwhile.
+	 *
+	 * @dataProvider provider_checkout_order_processed_actions
+	 *
+	 * @param string $action The checkout action.
+	 */
+	public function test_checkout_order_processed_keeps_customer_another_gateway_stored_after_the_cleanup( string $action ) {
+		$order = $this->create_order_with_payment_details( self::OTHER_STRIPE_GATEWAY_ID );
+		$this->order_service->init_hooks();
+		$this->fire_checkout_order_processed( $action, $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$order->update_meta_data( '_stripe_customer_id', self::OTHER_GATEWAY_CUSTOMER_ID );
+		$order->save();
+		$this->fire_checkout_order_processed( $action, $order );
+
+		$this->assertSame( 'cus_test_other_gateway', wc_get_order( $order->get_id() )->get_meta( '_stripe_customer_id' ) );
+	}
+
+	/**
+	 * A WooPayments attempt after the cleanup stores its details and mode again, and the next checkout with
+	 * another gateway removes them again and moves the mark to that takeover.
+	 *
+	 * @dataProvider provider_checkout_order_processed_actions
+	 *
+	 * @param string $action The checkout action.
+	 */
+	public function test_checkout_order_processed_removes_details_from_a_woopayments_attempt_after_the_cleanup( string $action ) {
+		$order = $this->create_order_with_payment_details( 'cod' );
+		$this->order_service->init_hooks();
+		$this->fire_checkout_order_processed( $action, $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$order->update_meta_data( '_stripe_customer_id', self::PAYMENT_DETAILS_CUSTOMER_ID );
+		$order->update_meta_data( '_wcpay_mode', self::PAYMENT_DETAILS_MODE );
+		$order->update_meta_data( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY, self::EARLIER_TAKEOVER_AT );
+		$order->save();
+		$before = time();
+		$this->fire_checkout_order_processed( $action, $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertGreaterThanOrEqual( $before, (int) $order->get_meta( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY ) );
+	}
+
+	/**
+	 * The details go before WooCommerce Subscriptions copies the order into new subscriptions and switches,
+	 * which it does on these actions at priorities 100 and 50.
+	 *
+	 * @dataProvider provider_checkout_order_processed_actions
+	 *
+	 * @param string $action The checkout action.
+	 */
+	public function test_init_hooks_removes_details_before_subscriptions_copies_the_order( string $action ) {
+		$this->order_service->init_hooks();
+
+		$priority = has_action( $action, [ $this->order_service, 'maybe_remove_payment_details_for_other_gateway' ] );
+
+		$this->assertNotFalse( $priority );
+		$this->assertLessThan( 50, $priority );
+	}
+
+	/**
+	 * Checkout actions that fire once an order is ready for payment.
+	 *
+	 * @return array
+	 */
+	public function provider_checkout_order_processed_actions(): array {
+		return [
+			'classic checkout'   => [ 'woocommerce_checkout_order_processed' ],
+			'Store API checkout' => [ 'woocommerce_store_api_checkout_order_processed' ],
+		];
+	}
+
+	/**
+	 * Fires a checkout order processed action the way WooCommerce does.
+	 *
+	 * @param string   $action The checkout action. Classic checkout passes the order ID first.
+	 * @param WC_Order $order  The order.
+	 */
+	private function fire_checkout_order_processed( string $action, WC_Order $order ): void {
+		if ( 'woocommerce_checkout_order_processed' === $action ) {
+			/** This action is documented in WooCommerce's WC_Checkout::process_checkout(). */
+			do_action( $action, $order->get_id(), [], $order );
+		} else {
+			/** This action is documented in WooCommerce's Store API Checkout route. */
+			do_action( $action, $order );
+		}
+	}
+
+	/**
+	 * Expects the earlier attempt's intent to be cancelled once, and the cancel to succeed or fail.
+	 *
+	 * @param Throwable|null $failure What the cancel request throws, or null when Stripe cancels the intent.
+	 */
+	private function expect_cancel_of_earlier_attempt( ?Throwable $failure = null ): void {
+		$format_response = $this->mock_wcpay_request( Cancel_Intention::class, 1, self::PAYMENT_DETAILS_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' );
+		if ( null !== $failure ) {
+			$format_response->willThrowException( $failure );
+			return;
+		}
+
+		$format_response->willReturn(
+			WC_Helper_Intention::create_intention(
+				[
+					'id'     => self::PAYMENT_DETAILS_INTENT_ID,
+					'status' => Intent_Status::CANCELED,
+				]
+			)
+		);
+	}
+
+	/**
+	 * Creates an order with a payment method and the payment details a WooPayments attempt stores,
+	 * including the mode it records with them.
+	 *
+	 * @param string $gateway_id The order's payment method.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_with_payment_details( string $gateway_id ): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( $gateway_id );
+		$order->update_meta_data( '_stripe_customer_id', self::PAYMENT_DETAILS_CUSTOMER_ID );
+		$order->update_meta_data( '_payment_method_id', self::PAYMENT_DETAILS_PAYMENT_METHOD_ID );
+		$order->update_meta_data( '_intent_id', self::PAYMENT_DETAILS_INTENT_ID );
+		$order->update_meta_data( '_wcpay_mode', self::PAYMENT_DETAILS_MODE );
+		$order->save();
+
+		return $order;
 	}
 
 	/**
@@ -857,6 +1686,68 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id(), $message );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
+	}
+
+	/**
+	 * Tests the content of the payment failure note generated for an order.
+	 */
+	public function test_get_payment_failure_note() {
+		// Arrange: Create the intent, get the charge, and set an additional failed message.
+		$intent  = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
+		$charge  = $intent->get_charge();
+		$message = 'This is the test failed message.';
+
+		// Act: Generate the payment failure note.
+		$note = $this->order_service->get_payment_failure_note( $this->order, $intent->get_id(), $charge->get_id(), $message );
+
+		// Assert: The note follows the same format as other payment failure notes.
+		$this->assertStringContainsString( 'A payment of', $note );
+		$this->assertStringContainsString( '50.00', $note );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $note );
+		$this->assertStringContainsString( $intent->get_id(), $note );
+		$this->assertStringContainsString( $message, $note );
+	}
+
+	/**
+	 * Provider decline details include escaped error data and an optional documentation link.
+	 */
+	public function test_get_provider_decline_message_with_doc_url() {
+		$error = [
+			'message'      => 'Customer <cancelled> checkout',
+			'decline_code' => 'klarna_payment_declined',
+			'doc_url'      => 'https://docs.example.com/klarna-decline',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Customer &lt;cancelled&gt; checkout</code>. Decline code: <code>klarna_payment_declined</code>. <a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>', $message );
+	}
+
+	/**
+	 * Decline messages without a documentation URL do not add a link.
+	 */
+	public function test_get_provider_decline_message_without_doc_url() {
+		$error = [
+			'message'      => 'Customer cancelled checkout',
+			'decline_code' => 'klarna_payment_declined',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Customer cancelled checkout</code>. Decline code: <code>klarna_payment_declined</code>.', $message );
+	}
+
+	/**
+	 * A provider error without a decline code retains the webhook's generic message format.
+	 */
+	public function test_get_provider_decline_message_without_decline_code() {
+		$error = [
+			'message' => 'Provider <error>',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Provider &lt;error&gt;</code>', $message );
 	}
 
 	/**
@@ -1839,6 +2730,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			],
 			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
 		);
+		$this->assertSame(
+			'1719800000',
+			(string) wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning_actionable', true )
+		);
 
 		// Assert: Check that the note was added with the reason and a link to the payment details.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -1873,6 +2768,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'created'        => 1719800000,
 			],
 			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
+		);
+		$this->assertSame(
+			'',
+			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning_actionable', true )
 		);
 
 		// Assert: Check that a resolved note was added on top of the actionable one.
@@ -1910,6 +2809,324 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', $this->order->get_meta( '_wcpay_early_fraud_warning', true ) );
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertEquals( $expected_notes, $updated_notes );
+	}
+
+	/**
+	 * Tests that only orders with an actionable early fraud warning are returned.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_filters_resolved_and_unaffected() {
+		// Arrange: One actionable, one resolved, and one unaffected order ($this->order).
+		$actionable_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$resolved_order = WC_Helper_Order::create_order();
+		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719800000 );
+
+		// Act: Fetch the orders with an actionable warning.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: Only the actionable order is returned, with the number merchants see.
+		$this->assertSame(
+			[
+				[
+					'order_id'     => $actionable_order->get_id(),
+					'order_number' => $actionable_order->get_order_number(),
+					'charge_id'    => 'ch_actionable',
+					'created'      => 1719800000,
+				],
+			],
+			$result
+		);
+	}
+
+	/**
+	 * Tests that the payload uses the display order number, not the post ID.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_includes_display_order_number() {
+		// Arrange: An actionable warning on an order whose number is customized.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $order, 'ch_numbered' );
+		$this->order_service->mark_payment_early_fraud_warning( $order, 'ch_numbered', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$order_number_filter = function ( $order_number, $filtered_order ) use ( $order ) {
+			return $filtered_order->get_id() === $order->get_id() ? 'INV-42' : $order_number;
+		};
+		add_filter( 'woocommerce_order_number', $order_number_filter, 10, 2 );
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		remove_filter( 'woocommerce_order_number', $order_number_filter );
+
+		// Assert: The customized number is what the Overview task will show.
+		$this->assertSame( 'INV-42', $result[0]['order_number'] );
+	}
+
+	/**
+	 * Tests that the warning query inspects at most $limit warnings, newest first.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_respects_limit() {
+		// Arrange: Two actionable orders; the older order carries the newer warning.
+		$older_order = WC_Helper_Order::create_order();
+		$older_order->set_date_created( '2026-07-01 00:00:00' );
+		$older_order->save();
+		$this->order_service->set_charge_id_for_order( $older_order, 'ch_older' );
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older', 'issfr_1', true, 'made_with_stolen_card', 1719900000 );
+
+		$newer_order = WC_Helper_Order::create_order();
+		$newer_order->set_date_created( '2026-07-15 00:00:00' );
+		$newer_order->save();
+		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer' );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer', 'issfr_2', true, 'made_with_stolen_card', 1719800000 );
+
+		// Act: Fetch with a limit of one.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: Only the newest warning is inspected, even though its order is older.
+		$this->assertSame(
+			[
+				[
+					'order_id'     => $older_order->get_id(),
+					'order_number' => $older_order->get_order_number(),
+					'charge_id'    => 'ch_older',
+					'created'      => 1719900000,
+				],
+			],
+			$result
+		);
+	}
+
+	/**
+	 * The query window is bounded, and the warning meta is never removed once written,
+	 * so resolved warnings would otherwise hold window slots forever and hide older
+	 * still-actionable ones. A limit of one makes that crowding-out exact.
+	 */
+	public function test_resolved_warnings_do_not_consume_the_query_window() {
+		// Arrange: An older actionable warning, and a newer resolved one.
+		$actionable_order = WC_Helper_Order::create_order();
+		$actionable_order->set_date_created( '2026-07-01 00:00:00' );
+		$actionable_order->save();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$resolved_order = WC_Helper_Order::create_order();
+		$resolved_order->set_date_created( '2026-07-15 00:00:00' );
+		$resolved_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Inspect a single order.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: The newer resolved order did not squeeze out the actionable one.
+		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	/**
+	 * Resolving a warning must free its slot in the bounded window, not just stop it
+	 * being reported. A warning that was actionable and later resolved is the common
+	 * case, so the index has to be removed as well as written.
+	 */
+	public function test_resolving_a_warning_frees_its_slot_in_the_query_window() {
+		// Arrange: An older actionable warning, and a newer one that is later resolved.
+		$actionable_order = WC_Helper_Order::create_order();
+		$actionable_order->set_date_created( '2026-07-01 00:00:00' );
+		$actionable_order->save();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$later_resolved_order = WC_Helper_Order::create_order();
+		$later_resolved_order->set_date_created( '2026-07-15 00:00:00' );
+		$later_resolved_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Resolve the newer warning, then inspect a single order.
+		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: The slot went back to the still-actionable order.
+		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	/**
+	 * Tests that warnings stored against the other mode's orders are ignored.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_test_mode_orders_when_live() {
+		// Arrange: A live order (no mode meta, as orders predating it are live) and a test-mode order.
+		$live_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $live_order, 'ch_live' );
+		$this->order_service->mark_payment_early_fraud_warning( $live_order, 'ch_live', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$test_order = WC_Helper_Order::create_order();
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$test_order->save();
+		$this->order_service->set_charge_id_for_order( $test_order, 'ch_test' );
+		$this->order_service->mark_payment_early_fraud_warning( $test_order, 'ch_test', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch the warnings while the gateway is live.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The test-mode order is left out.
+		$this->assertSame( [ 'ch_live' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that test mode surfaces the test order rather than the live one.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_live_orders_when_in_test_mode() {
+		// Arrange: A live order (no mode meta) and a test-mode order.
+		$live_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $live_order, 'ch_live' );
+		$this->order_service->mark_payment_early_fraud_warning( $live_order, 'ch_live', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$test_order = WC_Helper_Order::create_order();
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$test_order->save();
+		$this->order_service->set_charge_id_for_order( $test_order, 'ch_test' );
+		$this->order_service->mark_payment_early_fraud_warning( $test_order, 'ch_test', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch the warnings while the gateway is in test mode.
+		$result = $this->with_payments_mode(
+			true,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: Only the test-mode order surfaces.
+		$this->assertSame( [ 'ch_test' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that refunding the order resolves the warning without waiting for the webhook.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_fully_refunded_orders() {
+		// Arrange: An actionable warning on an order the merchant has since refunded in full.
+		$refunded_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $refunded_order, 'ch_refunded' );
+		$this->order_service->mark_payment_early_fraud_warning( $refunded_order, 'ch_refunded', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		wc_create_refund(
+			[
+				'amount'   => $refunded_order->get_total(),
+				'order_id' => $refunded_order->get_id(),
+			]
+		);
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The refund resolves the warning.
+		$this->assertSame( [], $result );
+	}
+
+	/**
+	 * Tests that a partial refund leaves the warning actionable.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_keeps_partially_refunded_orders() {
+		// Arrange: An actionable warning on an order refunded for less than its total.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $order, 'ch_partial' );
+		$this->order_service->mark_payment_early_fraud_warning( $order, 'ch_partial', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		wc_create_refund(
+			[
+				'amount'   => $order->get_total() / 2,
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: A partial refund does not clear the dispute risk.
+		$this->assertSame( [ 'ch_partial' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that results are ordered by when the warning arrived, not when the order was placed.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_sorts_by_warning_date_descending() {
+		// Arrange: The older order carries the newer warning, so the two orderings disagree.
+		$older_order = WC_Helper_Order::create_order();
+		$older_order->set_date_created( '2026-07-01 00:00:00' );
+		$older_order->save();
+		$this->order_service->set_charge_id_for_order( $older_order, 'ch_older_order' );
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older_order', 'issfr_1', true, 'made_with_stolen_card', 1719900000 );
+
+		$newer_order = WC_Helper_Order::create_order();
+		$newer_order->set_date_created( '2026-07-15 00:00:00' );
+		$newer_order->save();
+		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer_order' );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer_order', 'issfr_2', true, 'made_with_stolen_card', 1719800000 );
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The newest warning leads, even though its order is the older one.
+		$this->assertSame( [ 'ch_older_order', 'ch_newer_order' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Runs a callback with WooPayments forced into the given mode, restoring it afterwards.
+	 *
+	 * @param bool     $test_mode Whether to run the callback in test mode.
+	 * @param callable $callback  The callback to run.
+	 *
+	 * @return mixed The callback's return value.
+	 */
+	private function with_payments_mode( bool $test_mode, callable $callback ) {
+		$was_test_mode = WC_Payments::mode()->is_test();
+
+		$test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
+
+		try {
+			return $callback();
+		} finally {
+			$was_test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
+		}
 	}
 
 	/**
@@ -2102,10 +3319,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $this->order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
 	}
 
-	public function set_wcpay_refund_transaction_id_for_order() {
+	public function test_set_wcpay_refund_transaction_id_for_order() {
 		$wcpay_refund_transaction_id = 'txn_mock';
-		$this->order_service->set_wcpay_refund_transaction_id_for_order( $this->order, $wcpay_refund_transaction_id );
-		$this->assertSame( $this->order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ), $wcpay_refund_transaction_id );
+		$refund                      = wc_create_refund(
+			[
+				'amount'   => $this->order->get_total(),
+				'order_id' => $this->order->get_id(),
+			]
+		);
+		$this->order_service->set_wcpay_refund_transaction_id_for_order( $refund, $wcpay_refund_transaction_id );
+		$this->assertSame( 'txn_mock', wc_get_order( $refund->get_id() )->get_meta( '_wcpay_refund_transaction_id', true ) );
 	}
 
 	public function test_get_wcpay_refund_id() {
@@ -2184,6 +3407,108 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_early_fraud_warning_for_order_returns_null_when_not_set() {
 		$this->assertNull( $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() ) );
+	}
+
+	/**
+	 * Refunding a flagged order in full must drop the cached warning list, so the
+	 * refunded-order guard in get_actionable_early_fraud_warning_orders() actually
+	 * runs instead of being skipped by a warm cache.
+	 */
+	public function test_full_refund_of_flagged_order_clears_early_fraud_warning_caches() {
+		// Arrange: A flagged order, and a warm cache holding it.
+		$this->order_service->init_hooks();
+		$this->order_service->set_charge_id_for_order( $this->order, 'ch_flagged' );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_flagged', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->warm_early_fraud_warning_caches();
+
+		// Act: Refund the order in full.
+		wc_create_refund(
+			[
+				'order_id' => $this->order->get_id(),
+				'amount'   => $this->order->get_total(),
+			]
+		);
+
+		// Assert: Both cached lists are gone.
+		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertFalse( get_option( 'wcpay_test_early_fraud_warning_orders_cache' ) );
+	}
+
+	/**
+	 * A store can take many refunds that have nothing to do with a fraud warning.
+	 * Those must not drop the cache, or every refund forces the bounded meta query
+	 * to run again on the next Overview render.
+	 */
+	public function test_refund_of_unflagged_order_leaves_early_fraud_warning_caches() {
+		// Arrange: A warm cache, and an order carrying no early fraud warning.
+		$this->order_service->init_hooks();
+		$this->warm_early_fraud_warning_caches();
+		$unflagged_order = WC_Helper_Order::create_order();
+
+		// Act: Refund the unflagged order in full.
+		wc_create_refund(
+			[
+				'order_id' => $unflagged_order->get_id(),
+				'amount'   => $unflagged_order->get_total(),
+			]
+		);
+
+		// Assert: The cached lists survive.
+		$this->assertNotFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertNotFalse( get_option( 'wcpay_test_early_fraud_warning_orders_cache' ) );
+	}
+
+	/**
+	 * The callback deliberately does not decide what counts as resolved: it drops the
+	 * cache and lets get_actionable_early_fraud_warning_orders() apply the rule. Moving
+	 * a "fully refunded" check into the callback would fail this test.
+	 */
+	public function test_partial_refund_of_flagged_order_clears_cache_but_keeps_it_actionable() {
+		// Arrange: A flagged order and a warm cache.
+		$this->order_service->init_hooks();
+		$this->order_service->set_charge_id_for_order( $this->order, 'ch_flagged' );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_flagged', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->warm_early_fraud_warning_caches();
+
+		// Act: Refund a fraction of the order.
+		wc_create_refund(
+			[
+				'order_id' => $this->order->get_id(),
+				'amount'   => 1,
+			]
+		);
+
+		// Assert: The cache was dropped, and the rebuilt list still carries the order.
+		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$actionable = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+		$this->assertSame( [ $this->order->get_id() ], array_column( $actionable, 'order_id' ) );
+	}
+
+	/**
+	 * Seeds both early fraud warning cache keys with a non-empty list.
+	 */
+	private function warm_early_fraud_warning_caches() {
+		foreach ( [ 'wcpay_early_fraud_warning_orders_cache', 'wcpay_test_early_fraud_warning_orders_cache' ] as $key ) {
+			update_option(
+				$key,
+				[
+					'data'    => [
+						[
+							'order_id'  => $this->order->get_id(),
+							'charge_id' => 'ch_flagged',
+							'created'   => 1719800000,
+						],
+					],
+					'fetched' => time(),
+					'errored' => false,
+				]
+			);
+		}
 	}
 
 	public function test_set_payment_transaction_id_for_order() {
@@ -2279,7 +3604,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order
 			->expects( $this->never() )
 			->method( 'update_meta_data' );
-		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
+		$charge = new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' );
+		$charge->set_captured( true );
+		$this->order_service->attach_transaction_fee_to_order( $mock_order, $charge );
 	}
 
 	public function test_attach_transaction_fee_to_order_uncaptured_charge() {
@@ -2972,34 +4299,34 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_maybe_record_first_live_sale_short_circuits_when_option_already_set(): void {
 		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
-		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
+		$writes  = 0;
+		$counter = function ( $value ) use ( &$writes ) {
+			++$writes;
+			return $value;
+		};
+		add_filter( 'pre_update_option_' . WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, $counter );
 
 		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
 		$this->order->save();
 
 		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
 
-		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
+		remove_filter( 'pre_update_option_' . WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, $counter );
+		$this->assertSame( 0, $writes );
 
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_short_circuits_when_order_id_invalid(): void {
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
 		$this->order_service->maybe_record_first_live_sale( 99999999 );
 
 		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
-		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
-
-		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_skips_test_mode_order(): void {
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
 		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
 		$this->order->save();
@@ -3007,9 +4334,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
 
 		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
-		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
-
-		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_records_for_production_order(): void {
@@ -3120,6 +4444,20 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'Succeeded intent' => [ Intent_Status::SUCCEEDED ],
 			'Canceled intent'  => [ Intent_Status::CANCELED ],
 		];
+	}
+
+	/**
+	 * A status change for an order that no longer exists is skipped: the order is loaded with
+	 * wc_get_order(), which returns false for a missing id where `new WC_Order` throws, and no
+	 * server call is made.
+	 */
+	public function test_capture_authorization_on_order_status_change_skips_a_missing_order() {
+		$missing_order_id = PHP_INT_MAX;
+		$this->assertFalse( wc_get_order( $missing_order_id ), 'Precondition: the order id must not exist.' );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		// Throws on a missing order if it is loaded with `new WC_Order`.
+		$this->order_service->capture_authorization_on_order_status_change( $missing_order_id );
 	}
 
 	/**

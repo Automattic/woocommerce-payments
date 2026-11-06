@@ -15,7 +15,6 @@ use WCPay\Exceptions\Amount_Too_Large_Exception;
 use WCPay\Exceptions\Blocked_By_Fraud_Rules_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Constants\Currency_Code;
@@ -114,6 +113,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		'merchant_refund_reason',
 		// Address autocomplete JWT is a credential; keep it out of logs.
 		'token',
+		// WooPay order status webhook signing secret and Terminal connection token.
+		'webhook_secret',
+		'secret',
+		// The customer description repeats the billing name and username, so redact it like `name`.
+		'description',
+		'order_key',
+		// Return URLs include the order key.
+		'return_url',
 	];
 
 	const EVENT_AUTHORIZED            = 'authorized';
@@ -2363,7 +2370,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			'customer_name'          => trim( $order->get_formatted_billing_full_name() ),
 			'customer_email'         => $order->get_billing_email(),
 			'fraud_meta_box_type'    => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
-			'ip_address'             => $order->get_customer_ip_address(),
+			'ip_address'             => (string) rest_is_ip_address( $order->get_customer_ip_address() ),
 			'suggested_product_type' => $this->determine_suggested_product_type( $order ),
 		];
 
@@ -2673,7 +2680,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		} else {
 			$url .= '/' . self::ENDPOINT_REST_BASE;
 		}
-		$url .= '/' . $api;
+		// The HTTP client runs site-specific URLs through sprintf() to insert the blog ID,
+		// so a literal % in the path (e.g. from an ID) must be escaped.
+		$url .= '/' . ( $is_site_specific ? str_replace( '%', '%%', $api ) : $api );
 
 		$headers                 = [];
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
@@ -3116,22 +3125,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
 		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
 		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
-	}
-
-	/**
-	 * Returns a list of fingerprinting metadata to attach to order.
-	 *
-	 * @param string $fingerprint User fingerprint.
-	 *
-	 * @return array List of fingerprinting metadata.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	private function get_fingerprint_metadata( $fingerprint = '' ): array {
-		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer( $fingerprint );
-		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
-
-		return $customer_fingerprint_metadata;
 	}
 
 	/**

@@ -50,6 +50,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+		add_filter( 'rest_post_dispatch', [ $this, 'add_tokenized_cart_nonce_headers' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
 
@@ -202,6 +203,32 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
+	 * Sends the express checkout nonces with every response, the way the Store API sends its own `Nonce`.
+	 * The page's nonces can stop working mid-flow: the Store API logs the shopper in when it creates their account,
+	 * and full-page caches can serve the page after its nonces expired.
+	 *
+	 * @param \WP_REST_Response $response The response.
+	 * @param \WP_REST_Server   $server Server instance.
+	 * @param \WP_REST_Request  $request Request used to generate the response.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function add_tokenized_cart_nonce_headers( $response, $server, $request ) {
+		if ( 0 !== strpos( $request->get_route(), '/wc/store/' ) ) {
+			return $response;
+		}
+
+		if ( ! $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' ) ) {
+			return $response;
+		}
+
+		$response->header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) );
+		$response->header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( WC_Payments_Payment_Request_Session::TOKENIZED_CART_SESSION_NONCE_ACTION ) );
+
+		return $response;
+	}
+
+	/**
 	 * Allows certain "redacted" postcodes for some countries to bypass WC core validation.
 	 *
 	 * @param bool   $valid Whether the postcode is valid.
@@ -215,10 +242,10 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return $valid;
 		}
 
-		// We padded the string with `0` in the `get_normalized_postal_code` method.
+		// We padded the string in the `get_normalized_postal_code` method, ending in `0` for CA and `0AA` for GB.
 		// It's a flimsy check, but better than nothing.
 		// Plus, this check is only made for the scenarios outlined in the `tokenized_cart_store_api_address_normalization` method.
-		if ( substr( $postcode, - 1 ) === '0' ) {
+		if ( substr( $postcode, - 1 ) === '0' || substr( $postcode, - 3 ) === '0AA' ) {
 			return true;
 		}
 
@@ -373,8 +400,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$sanitized_state_string = $this->express_checkout_button_helper->sanitize_string( $state );
 			// Checks if input state matches with Express Checkout state code (0), name (1) or localName (2).
 			if (
-				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[0] ) ) ||
-				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[1] ) ) ||
+				( $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[0] ) ) ||
+				( $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[1] ) ) ||
 				( ! empty( $pr_state[2] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[2] ) )
 			) {
 				return $wc_state_abbr;
@@ -455,15 +482,19 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			// Google Pay/Apple Pay might redact GB postcode units to just the "outward code".
 			// but WC Core expects a full postcode unit to return shipping rates.
 			// since we can't interfere with the rate calculation,
-			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
+			// we are padding the (redacted) outward code with a placeholder inward code to have a full length postcode unit,
 			// to be used for shipping rates calculations.
-			// Replaces a redacted `N1C` string with something like `N1C000`.
-			return $cleaned_postcode . '000';
+			// `0AA` keeps the postcode valid for carriers that check it, and its leading `0` keeps matching zones like `N1C 0*`.
+			// Replaces a redacted `N1C` string with something like `N1C0AA`.
+			return $cleaned_postcode . '0AA';
 		}
 
 		if ( Country_Code::CANADA === $country ) {
-			// Replaces a redacted string with something like H3B000.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
+			// Fills the redacted characters in the A1A 1A1 format, so carriers that check the postcode accept it,
+			// with a leading `0` to keep matching zones like `H3B 0*`.
+			// Replaces a redacted `H3B` string with something like `H3B0A0`.
+			$cleaned_postcode = preg_replace( '/\s+/', '', $postcode );
+			return $cleaned_postcode . substr( 'A0A0A0', strlen( $cleaned_postcode ) );
 		}
 
 		return $postcode;

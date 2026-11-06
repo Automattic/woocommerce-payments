@@ -6,18 +6,12 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { find } from 'lodash';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	CardFooter,
-	Flex,
-	FlexItem,
-} from '@wordpress/components';
+import { CardFooter, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card, CardBody, CardHeader } from 'wcpay/components/card';
 import { useTimeline } from 'wcpay/data/timeline';
 import { TimelineItem } from 'wcpay/data/timeline/types';
 import Loadable, { LoadableBlock } from 'components/loadable';
@@ -75,7 +69,7 @@ const PaymentTransactionBreakdown: React.FC<
 	const paymentExchangeRate =
 		captureEvent.transaction_details.store_amount > 0
 			? captureEvent.transaction_details.customer_amount /
-			  captureEvent.transaction_details.store_amount
+				captureEvent.transaction_details.store_amount
 			: 0;
 
 	const conversionRate = ( () => {

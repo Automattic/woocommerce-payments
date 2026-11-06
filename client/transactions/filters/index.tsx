@@ -37,7 +37,7 @@ export const TransactionsFilters = ( {
 					: transactionSources.map( ( source ) => ( {
 							label: getTransactionPaymentMethodTitle( source ),
 							value: source,
-					  } ) )
+						} ) )
 			),
 		[ customerCurrencies, transactionSources ]
 	);
