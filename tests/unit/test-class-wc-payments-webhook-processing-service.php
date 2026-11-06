@@ -729,9 +729,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 * A new WooPayments attempt after a failed takeover is recorded even when the store's clock puts the
 	 * takeover after the intent's creation: the attempt's mode marks it as new. For a method that pays later,
 	 * this webhook is what completes the order.
+	 *
+	 * The new attempt makes WooPayments the order's gateway again. Left on `cod`, Cash on delivery's
+	 * `woocommerce_payment_complete_order_status` filter would complete the order wherever that gateway is loaded.
 	 */
 	public function test_payment_intent_succeeded_records_a_new_attempt_the_clocks_put_before_the_takeover() {
 		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
 		$order->save();
 		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
