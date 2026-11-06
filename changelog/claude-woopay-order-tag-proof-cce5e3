@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Only mark orders as paid with WooPay when WooPay sent the checkout request, and stop adding a payment method from crashing when that flag is sent.

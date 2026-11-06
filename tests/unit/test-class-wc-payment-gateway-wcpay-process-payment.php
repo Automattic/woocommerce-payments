@@ -2167,6 +2167,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function test_process_payment_from_woopay_adds_meta_to_oder() {
 		// Arrange: Set request value to mimic a payment through WooPay.
 		$_POST['is_woopay'] = true;
+		$this->simulate_request_signed_by_woopay();
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -2241,6 +2242,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Arrange: Set request value to mimic a payment through WooPay.
 		$_POST['is_woopay'] = true;
+		$this->simulate_request_signed_by_woopay();
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -2288,6 +2290,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function test_process_payment_for_subscription_from_woopay_save_token_if_does_not_exist() {
 		// Arrange: Set request value to mimic a payment through WooPay.
 		$_POST['is_woopay'] = true;
+		$this->simulate_request_signed_by_woopay();
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();

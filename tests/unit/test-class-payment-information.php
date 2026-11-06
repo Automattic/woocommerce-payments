@@ -9,6 +9,8 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
+use WCPay\WooPay\WooPay_Session;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * Payment_Information unit tests.
@@ -20,6 +22,8 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	const CONFIRMATION_TOKEN             = 'ctoken_mock';
 	const CARD_TOKEN_REQUEST_KEY         = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
 	const TOKEN                          = 'pm_mock_token';
+	const CART_TOKEN                     = 'the.cart.token';
+	const BLOG_TOKEN                     = 'test.blog.token';
 
 	/**
 	 * WC token to be used in tests.
@@ -27,11 +31,35 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	 */
 	private $card_token;
 
+	/**
+	 * Snapshot of $_SERVER, restored on tear down.
+	 * @var array
+	 */
+	private $original_server;
+
+	/**
+	 * Blog token before the test, restored on tear down.
+	 * @var mixed
+	 */
+	private $original_blog_token;
+
 	public function set_up() {
 		parent::set_up();
 
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'customer' ] ) );
 		$this->card_token = WC_Helper_Token::create_token( self::TOKEN );
+
+		$this->original_server     = $_SERVER;
+		$this->original_blog_token = Jetpack_Options::get_option( 'blog_token' );
+	}
+
+	public function tear_down() {
+		$_SERVER = $this->original_server;
+		Jetpack_Options::update_option( 'blog_token', $this->original_blog_token );
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		WC_Payments::set_database_cache( new WCPay\Database_Cache() );
+
+		parent::tear_down();
 	}
 
 	public function test_requires_payment_method_or_token() {
@@ -377,5 +405,92 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_get_fingerprint_from_request_returns_empty_string_if_empty() {
 		$result = Payment_Information::get_fingerprint_from_request( [] );
 		$this->assertEquals( '', $result );
+	}
+
+	public function test_from_payment_request_does_not_tag_order_as_woopay_without_proof() {
+		$order = WC_Helper_Order::create_order();
+
+		Payment_Information::from_payment_request(
+			[
+				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
+				'is_woopay'                      => '1',
+			],
+			$order
+		);
+
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_meta( 'is_woopay' ) );
+	}
+
+	public function test_from_payment_request_tags_order_as_woopay_when_vouched_by_woopay() {
+		$order = WC_Helper_Order::create_order();
+		$this->set_woopay_vouch_header();
+
+		Payment_Information::from_payment_request(
+			[
+				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
+				'is_woopay'                      => '1',
+			],
+			$order
+		);
+
+		$this->assertTrue( (bool) wc_get_order( $order->get_id() )->get_meta( 'is_woopay' ) );
+	}
+
+	public function test_from_payment_request_tags_order_as_woopay_when_signed_with_blog_token() {
+		$order = WC_Helper_Order::create_order();
+		$cache = $this->createMock( WCPay\Database_Cache::class );
+		$cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => true ] );
+		WC_Payments::set_database_cache( $cache );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		Payment_Information::from_payment_request(
+			[
+				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
+				'is_woopay'                      => '1',
+			],
+			$order
+		);
+
+		$this->assertTrue( (bool) wc_get_order( $order->get_id() )->get_meta( 'is_woopay' ) );
+	}
+
+	public function test_from_payment_request_with_woopay_flag_and_no_order() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
+				'is_woopay'                      => '1',
+			]
+		);
+
+		$this->assertSame( 'pm_mock', $payment_information->get_payment_method() );
+	}
+
+	/**
+	 * Puts a WooPay vouch on the current request, sealed for the cart it carries.
+	 */
+	private function set_woopay_vouch_header(): void {
+		Jetpack_Options::update_option( 'blog_token', self::BLOG_TOKEN );
+		$_SERVER['HTTP_CART_TOKEN'] = self::CART_TOKEN;
+
+		$key        = WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE );
+		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$plaintext  = wp_json_encode(
+			[
+				'timestamp'  => time(),
+				'cart_token' => hash( 'sha256', self::CART_TOKEN ),
+			]
+		);
+		$ciphertext = openssl_encrypt( $plaintext, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+		$envelope   = array_map(
+			'base64_encode',
+			[
+				'data' => $ciphertext,
+				'iv'   => $iv,
+				'hash' => hash_hmac( 'sha256', $iv . $ciphertext, $key ),
+			]
+		);
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = base64_encode( wp_json_encode( $envelope ) );
 	}
 }

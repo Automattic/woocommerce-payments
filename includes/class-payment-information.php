@@ -16,6 +16,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * Mostly a wrapper containing information on a single payment.
@@ -281,7 +282,12 @@ class Payment_Information {
 		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
 		$fingerprint      = self::get_fingerprint_from_request( $request );
 
-		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
+		// Anyone can post `is_woopay`, so the flag only counts on a request WooPay proved it sent.
+		if (
+			null !== $order
+			&& ! empty( $request['is_woopay'] )
+			&& ( WooPay_Session::is_request_vouched_by_woopay() || WooPay_Session::is_authenticated_by_blog_token_signature() )
+		) {
 			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
