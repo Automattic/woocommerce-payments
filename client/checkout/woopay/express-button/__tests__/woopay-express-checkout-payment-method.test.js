@@ -28,6 +28,7 @@ jest.mock( '../woopay-express-checkout-button', () => ( {
 	WoopayExpressCheckoutButton: ( props ) => (
 		<div
 			data-testid="woopay-button"
+			data-is-preview={ props.isPreview ? 'true' : undefined }
 			data-preferred-card={
 				props.preferredCard
 					? JSON.stringify( props.preferredCard )
@@ -71,5 +72,16 @@ describe( 'WooPayExpressCheckoutButtonContainer', () => {
 				JSON.stringify( card )
 			);
 		} );
+	} );
+} );
+
+describe( 'WooPay express checkout editor preview', () => {
+	test( 'renders the button in preview mode', async () => {
+		render( wooPayExpressCheckoutPaymentMethod().edit );
+
+		expect( await screen.findByTestId( 'woopay-button' ) ).toHaveAttribute(
+			'data-is-preview',
+			'true'
+		);
 	} );
 } );
