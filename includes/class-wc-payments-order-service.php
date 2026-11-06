@@ -50,6 +50,13 @@ class WC_Payments_Order_Service {
 	const PAID_INTENT_ID_SESSION_KEY = 'wcpay_paid_intent_id';
 
 	/**
+	 * Key used to store the ID of the WooCommerce session the paid intent ID above was stored in.
+	 *
+	 * @const string
+	 */
+	const PAID_INTENT_ID_SESSION_OWNER_KEY = 'wcpay_paid_intent_id_session';
+
+	/**
 	 * Meta key used to store payment method Id.
 	 *
 	 * @const string
@@ -421,6 +428,12 @@ class WC_Payments_Order_Service {
 	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
 	 */
 	public function update_order_status_from_intent( $order, $intent ) {
+		// Only orders are completed from an intent, never a subscription. The webhook, the duplicate payment
+		// check and the redirect handler all pass through here.
+		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) {
+			return;
+		}
+
 		$intent_data = $this->get_intent_data( $intent );
 
 		if ( ! isset( $intent_data['intent_id'] ) || ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {
@@ -434,6 +447,8 @@ class WC_Payments_Order_Service {
 			case Intent_Status::SUCCEEDED:
 				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
 					$this->mark_payment_capture_completed( $order, $intent );
+				} elseif ( $intent instanceof WC_Payments_API_Payment_Intention && ! $this->intent_amount_matches_order( $intent, $order ) ) {
+					$this->mark_payment_held_for_amount_mismatch( $order, $intent, $intent_data );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
@@ -496,7 +511,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $message );
 		if ( $this->order_note_exists( $order, $note )
 			|| $order->has_status( [ Order_Status::FAILED ] ) ) {
 			$this->complete_order_processing( $order );
@@ -506,6 +521,53 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, Order_Status::FAILED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Get content for the payment failure order note.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param string   $message   Optional message to add to the note.
+	 *
+	 * @return string Note content.
+	 */
+	public function get_payment_failure_note( $order, $intent_id, $charge_id, $message = '' ) {
+		return $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+	}
+
+	/**
+	 * Gets the payment provider's decline details for a failure note.
+	 *
+	 * @param array $error The payment provider's error.
+	 *
+	 * @return string The formatted decline message.
+	 */
+	public function get_provider_decline_message( array $error ): string {
+		$decline_code = $error['decline_code'] ?? '';
+
+		if ( ! empty( $decline_code ) ) {
+			$message = sprintf(
+				/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
+				__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
+				esc_html( $error['message'] ?? '' ),
+				esc_html( $decline_code )
+			);
+		} else {
+			// translators: %s Stripe error message.
+			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $error['message'] ?? '' ) );
+		}
+
+		if ( ! empty( $error['doc_url'] ) ) {
+			$message .= ' ' . sprintf(
+				/* translators: %1$s: a URL with more information about the declined payment. */
+				__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
+				esc_url( $error['doc_url'] )
+			);
+		}
+
+		return $message;
 	}
 
 	/**
@@ -1718,6 +1780,73 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
+		$order->add_order_note( $note );
+		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Checks whether a payment intent is for the order's current total and currency.
+	 *
+	 * The order total can change after the intent is created, for example when a merchant edits a pending order.
+	 *
+	 * @param WC_Payments_API_Payment_Intention $intent The intent to compare.
+	 * @param WC_Order                          $order  The order to compare against.
+	 *
+	 * @return bool
+	 */
+	private function intent_amount_matches_order( WC_Payments_API_Payment_Intention $intent, WC_Order $order ): bool {
+		return strtolower( $intent->get_currency() ) === strtolower( $order->get_currency() )
+			&& (int) $intent->get_amount() === WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+	}
+
+	/**
+	 * Puts an order on hold when its payment succeeded for an amount or currency that differs from the order total.
+	 *
+	 * @param WC_Order                          $order       Order object.
+	 * @param WC_Payments_API_Payment_Intention $intent      The succeeded intent.
+	 * @param array                             $intent_data The data of the intent associated with this order.
+	 *
+	 * @return void
+	 */
+	private function mark_payment_held_for_amount_mismatch( $order, WC_Payments_API_Payment_Intention $intent, $intent_data ) {
+		$charged_currency = strtoupper( $intent->get_currency() );
+		$order_currency   = strtoupper( $order->get_currency() );
+		// Always show the codes: USD and CAD both render as "$", and single-currency stores hide codes by default.
+		$charged_amount  = wc_price( WC_Payments_Utils::interpret_stripe_amount( (int) $intent->get_amount(), $charged_currency ), [ 'currency' => $charged_currency ] ) . ' ' . $charged_currency;
+		$order_amount    = wc_price( $order->get_total(), [ 'currency' => $order_currency ] ) . ' ' . $order_currency;
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_data['intent_id'], $intent_data['charge_id'] );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: the order total, %5: transaction details URL */
+				__( 'A payment of %1$s was charged using %2$s (<a>%3$s</a>), but the order total is %4$s. The order was put <strong>on hold</strong>; review it before fulfilling.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%5$s" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$charged_amount,
+			'WooPayments',
+			WC_Payments_Utils::get_transaction_url_id( $intent_data['intent_id'], $intent_data['charge_id'] ),
+			$order_amount,
+			$transaction_url
+		);
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		Logger::error(
+			sprintf(
+				'Order %1$d put on hold: intent %2$s succeeded for %3$d %4$s, but the order total is %5$s %6$s.',
+				$order->get_id(),
+				$intent_data['intent_id'],
+				$intent->get_amount(),
+				$intent->get_currency(),
+				$order->get_total(),
+				$order->get_currency()
+			)
+		);
+
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
 	}

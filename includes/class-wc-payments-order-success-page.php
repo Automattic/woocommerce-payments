@@ -249,14 +249,15 @@ class WC_Payments_Order_Success_Page {
 			return 'Payment Request';
 		}
 
-		$icon_url      = $payment_method->get_icon();
-		$dark_icon_url = $payment_method->get_dark_icon();
-		$dark_attr     = $dark_icon_url !== $icon_url ? ' data-dark-src="' . esc_url_raw( $dark_icon_url ) . '"' : '';
+		$account_country = $this->get_account_country();
+		$icon_url        = $payment_method->get_icon( $account_country );
+		$dark_icon_url   = $payment_method->get_dark_icon( $account_country );
+		$dark_attr       = $dark_icon_url !== $icon_url ? ' data-dark-src="' . esc_url_raw( $dark_icon_url ) . '"' : '';
 
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $icon_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<img alt="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" src="<?php echo esc_url_raw( $icon_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
@@ -279,15 +280,16 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function show_card_payment_method_name( $order, $payment_method ) {
 		$card_brand = $order->get_meta( '_card_brand' );
+		$title      = $payment_method->get_title( $this->get_account_country() );
 
 		if ( ! $card_brand ) {
-			return $payment_method->get_title();
+			return $title;
 		}
 
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( plugins_url( "assets/images/cards/{$card_brand}.svg", WCPAY_PLUGIN_FILE ) ); ?>">
+			<img alt="<?php echo esc_attr( $title ); ?>" src="<?php echo esc_url_raw( plugins_url( "assets/images/cards/{$card_brand}.svg", WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
@@ -367,7 +369,7 @@ class WC_Payments_Order_Success_Page {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-lpm-logo wc-payment-lpm-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" title="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<img alt="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" title="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 		</div>
 		<?php
 		return ob_get_clean();
@@ -551,8 +553,8 @@ class WC_Payments_Order_Success_Page {
 	 * the express wallet at payment time, which stamps it on the order and trips core's guest email
 	 * verification even though the shopper just paid. We waive it only for the session that actually
 	 * completed the payment: at payment time we stored the paid intent id in the WC session, and here
-	 * we waive verification only when it matches the order's intent. A leaked order key in another
-	 * browser carries no such session, so it still has to verify.
+	 * we waive verification only when it matches the order's intent and was stored in this same session.
+	 * A leaked order key in another browser carries no such session, so it still has to verify.
 	 * See https://github.com/woocommerce/woocommerce/issues/48540
 	 *
 	 * @param bool|mixed     $required Whether email verification is required.
@@ -571,6 +573,11 @@ class WC_Payments_Order_Success_Page {
 
 		$session = WC()->session;
 		if ( null === $session ) {
+			return $required;
+		}
+
+		// The paid intent is only used in the session that stored it.
+		if ( $session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY ) !== (string) $session->get_customer_id() ) {
 			return $required;
 		}
 
@@ -772,5 +779,15 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return sprintf( '<div class="woocommerce-info">%s</div>', $additional_text );
+	}
+
+	/**
+	 * Returns the merchant's account country, which drives country-specific payment method branding
+	 * (e.g. "Onelink" for GB accounts). All WooPayments gateways share the same account.
+	 *
+	 * @return string
+	 */
+	private function get_account_country(): string {
+		return WC_Payments::get_gateway()->get_account_country();
 	}
 }

@@ -143,6 +143,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 			return;
 		}
 
+		$amount_paid      = $this->get_event_property( $event_object, 'amount_paid' );
+		$invoice_currency = $this->get_event_property( $event_object, 'currency' );
+
 		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
 
 		if ( ! $order ) {
@@ -156,7 +159,18 @@ class WC_Payments_Subscriptions_Event_Handler {
 			}
 		}
 
-		if ( $order->needs_payment() ) {
+		// Hold the order but still record the payment below, so the merchant can refund it.
+		if ( $order->needs_payment() && ! WC_Payments_Invoice_Service::does_invoice_payment_match_order_total( $order, $amount_paid, $invoice_currency ) ) {
+			$note = sprintf(
+				/* translators: %1$s: the amount the invoice collected, %2$s: the order total, %3$s: the WooPayments invoice ID */
+				__( 'The renewal invoice %3$s collected %1$s, but the order total is %2$s. The order was put <strong>on hold</strong>; review it before fulfilling.', 'woocommerce-payments' ),
+				WC_Payments_Utils::format_explicit_currency( WC_Payments_Utils::interpret_stripe_amount( (int) $amount_paid, $invoice_currency ), $invoice_currency ),
+				WC_Payments_Utils::format_explicit_currency( (float) $order->get_total(), $order->get_currency() ),
+				$wcpay_invoice_id
+			);
+			$order->update_status( 'on-hold' );
+			$order->add_order_note( $note );
+		} elseif ( $order->needs_payment() ) {
 			/*
 			 * Temporarily place the subscription on-hold to imitate the normal subscription renewal flow.
 			 * This ensures the downstream effects take place, e.g. a payment status order note is added and the

@@ -61,6 +61,15 @@ class SessionService {
 	}
 
 	/**
+	 * Returns the ID of the current WC session.
+	 *
+	 * @return string The session ID, or an empty string if there is no session.
+	 */
+	public function get_session_id(): string {
+		return $this->has_wc_session() ? (string) $this->get_wc_session()->get_customer_id() : '';
+	}
+
+	/**
 	 * Checks whether the WC_Session has been initialized.
 	 *
 	 * @return bool Whether the WC_Session has been initialized.

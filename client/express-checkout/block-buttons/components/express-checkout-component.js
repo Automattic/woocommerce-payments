@@ -12,10 +12,7 @@ import {
 	shippingRateChangeHandler,
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
-import {
-	PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-	WC_STORE_CART,
-} from 'wcpay/checkout/constants';
+import { WC_STORE_CART } from 'wcpay/checkout/constants';
 import {
 	getPaymentMethodsOverride,
 	adjustButtonHeights,
@@ -66,24 +63,6 @@ const ExpressCheckoutComponent = ( {
 			setExpressPaymentError
 		);
 
-	const onElementsReady = ( event ) => {
-		const paymentMethodContainer = document.getElementById(
-			`express-payment-method-${ PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT }_${ expressPaymentMethod }`
-		);
-
-		const availablePaymentMethods = event.availablePaymentMethods || {};
-
-		if (
-			paymentMethodContainer &&
-			! availablePaymentMethods[ expressPaymentMethod ]
-		) {
-			paymentMethodContainer.remove();
-		}
-
-		// Any actions that WooPayments needs to perform.
-		onReady( event );
-	};
-
 	// The Cart & Checkout blocks provide unified styles across all buttons,
 	// which should override the extension specific settings. Blocks passes a
 	// new `buttonAttributes` object on every render, so key on its height.
@@ -113,7 +92,7 @@ const ExpressCheckoutComponent = ( {
 			options={ checkoutElementOptions }
 			onClick={ onButtonClick }
 			onConfirm={ onConfirm }
-			onReady={ onElementsReady }
+			onReady={ onReady }
 			onCancel={ onCancel }
 			onShippingAddressChange={ onShippingAddressChange }
 			onShippingRateChange={ onShippingRateChange }

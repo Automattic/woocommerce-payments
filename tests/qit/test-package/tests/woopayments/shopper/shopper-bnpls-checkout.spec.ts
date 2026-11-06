@@ -14,7 +14,7 @@ import * as devtools from '../../../utils/devtools';
 import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
 
 const cardTestingProtectionStates = [ false, true ];
-const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
+const bnplProviders = [ 'Affirm', 'Afterpay' ];
 
 // Use different products per provider to avoid the order duplication protection.
 const products = [ 'belt', 'sunglasses' ];

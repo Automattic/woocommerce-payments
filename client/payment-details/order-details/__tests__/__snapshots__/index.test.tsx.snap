@@ -196,7 +196,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
     style="max-width: 1032px;"
   >
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -204,7 +204,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-card__body components-card-body emotion-4 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -287,7 +287,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
           role="separator"
         />
         <div
-          class="components-card__body components-card-body emotion-4 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -524,7 +524,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
       />
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -532,14 +532,14 @@ exports[`Order details page should match the snapshot - Charge without payment i
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-22 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header emotion-22 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Timeline
         </div>
         <div
-          class="components-card__body components-card-body emotion-24 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-24 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -624,7 +624,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
       />
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -632,14 +632,14 @@ exports[`Order details page should match the snapshot - Charge without payment i
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-22 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header emotion-22 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Payment method
         </div>
         <div
-          class="components-card__body components-card-body emotion-24 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-24 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >

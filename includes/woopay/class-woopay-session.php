@@ -36,6 +36,14 @@ class WooPay_Session {
 	const WOOPAY_SESSION_KEY = 'woopay-user-data';
 
 	/**
+	 * Nonce action for saving the blocks checkout "save my information" choice in the session.
+	 *
+	 * The `woocommerce` prefix is required: WooCommerce binds nonces whose action starts with it
+	 * to the shopper's own session.
+	 */
+	const SAVE_USER_NONCE_ACTION = 'woocommerce_payments_woopay_save_user';
+
+	/**
 	 * How old a WooPay attestation envelope may be, in seconds.
 	 *
 	 * The envelope carries no nonce of its own, so freshness bounds how long a replay of
@@ -103,6 +111,7 @@ class WooPay_Session {
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_trial_subscriptions_handler' ], 20, 3 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ __CLASS__, 'catch_woopay_checkout_errors' ], 1, 1 );
+		add_action( 'woocommerce_guest_session_to_user_id', [ __CLASS__, 'keep_woopay_user_data_on_login' ], 10, 2 );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
@@ -533,8 +542,14 @@ class WooPay_Session {
 			return sanitize_email( wp_unslash( $_POST['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		}
 
-		if ( ! empty( $_GET['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return sanitize_email( wp_unslash( $_GET['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		// Only the REST route passes a request.
+		if ( null !== $request ) {
+			$request_email = $request->get_param( 'email' );
+
+			if ( ! empty( $request_email ) ) {
+				// Already unslashed by the REST server.
+				return sanitize_email( $request_email );
+			}
 		}
 
 		if ( ! empty( $_POST['encrypted_data'] ) && is_array( $_POST['encrypted_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
@@ -813,11 +828,113 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Whether a WooPay session AJAX request comes from outside the store's own pages.
+	 *
+	 * The checkout scripts only POST to these actions, so anything else is refused. A POST passes
+	 * if the browser marks it same-origin, has no `Origin` (browsers always send one on POST), or
+	 * its `Origin` matches the store's scheme, host and port.
+	 *
+	 * @return bool True when the request must be refused.
+	 */
+	private static function is_disallowed_session_request(): bool {
+		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : '';
+
+		if ( 'POST' !== $method ) {
+			return true;
+		}
+
+		$fetch_site = isset( $_SERVER['HTTP_SEC_FETCH_SITE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_SEC_FETCH_SITE'] ) ) : '';
+
+		if ( 'same-origin' === $fetch_site ) {
+			return false;
+		}
+
+		$origin_header = isset( $_SERVER['HTTP_ORIGIN'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ORIGIN'] ) ) : '';
+
+		if ( '' === $origin_header ) {
+			return false;
+		}
+
+		$origin = self::normalize_origin( $origin_header );
+
+		if ( '' === $origin ) {
+			return true;
+		}
+
+		/**
+		 * Filters the origins allowed to call the WooPay session AJAX actions.
+		 *
+		 * For checkouts also served from another domain, like a translation proxy that drops
+		 * `Sec-Fetch-Site`. List full origins: scheme, host and any non-default port.
+		 *
+		 * @since 11.3.0
+		 *
+		 * @param string[] $allowed_origins The origins of `home_url()` and `admin_url()`.
+		 */
+		$allowed_origins = apply_filters( 'wcpay_woopay_session_allowed_origins', [ home_url(), admin_url() ] );
+
+		foreach ( (array) $allowed_origins as $allowed_origin ) {
+			if ( self::normalize_origin( $allowed_origin ) === $origin ) {
+				return false;
+			}
+		}
+
+		Logger::log( 'WooPay session request rejected: origin ' . $origin . ' is not allowed. See the wcpay_woopay_session_allowed_origins filter.' );
+
+		return true;
+	}
+
+	/**
+	 * Reduces a URL to a lowercase `scheme://host:port`, filling in the default port.
+	 *
+	 * @param mixed $url The URL or origin. Mixed, since filter callbacks can return anything.
+	 *
+	 * @return string The origin, or '' when there is no http(s) origin.
+	 */
+	private static function normalize_origin( $url ): string {
+		if ( ! is_string( $url ) ) {
+			return '';
+		}
+
+		$default_ports = [
+			'http'  => 80,
+			'https' => 443,
+		];
+
+		$parts  = wp_parse_url( $url );
+		$scheme = isset( $parts['scheme'] ) ? strtolower( $parts['scheme'] ) : '';
+
+		if ( ! isset( $default_ports[ $scheme ] ) || empty( $parts['host'] ) ) {
+			return '';
+		}
+
+		$port = isset( $parts['port'] ) ? (int) $parts['port'] : $default_ports[ $scheme ];
+
+		return $scheme . '://' . strtolower( $parts['host'] ) . ':' . $port;
+	}
+
+	/**
+	 * Sends a 403 when is_disallowed_session_request() refuses the request.
+	 *
+	 * @return void
+	 */
+	private static function reject_disallowed_session_request() {
+		if ( self::is_disallowed_session_request() ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+	}
+
+	/**
 	 * Used to initialize woopay session.
 	 *
 	 * @return void
 	 */
 	public static function ajax_init_woopay() {
+		self::reject_disallowed_session_request();
+
 		$is_nonce_valid = check_ajax_referer( 'wcpay_init_woopay_nonce', false, false );
 
 		if ( ! $is_nonce_valid ) {
@@ -866,6 +983,8 @@ class WooPay_Session {
 	 * @return void
 	 */
 	public static function ajax_get_woopay_session() {
+		self::reject_disallowed_session_request();
+
 		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
 
 		if ( ! $is_nonce_valid ) {
@@ -892,7 +1011,9 @@ class WooPay_Session {
 	 * @return void
 	 */
 	public static function ajax_set_woopay_phone_number() {
-		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+		self::reject_disallowed_session_request();
+
+		$is_nonce_valid = check_ajax_referer( self::SAVE_USER_NONCE_ACTION, false, false );
 
 		if ( ! $is_nonce_valid ) {
 			wp_send_json_error(
@@ -901,8 +1022,13 @@ class WooPay_Session {
 			);
 		}
 
-		if ( ! ( isset( WC()->session ) && WC()->session->has_session() ) ) {
-			WC()->session->set_customer_session_cookie( true );
+		// A shopper on the checkout page already has a session; only record the choice in an
+		// existing one, never start a session here.
+		if ( ! isset( WC()->session ) || ! WC()->session->has_session() ) {
+			wp_send_json_error(
+				__( 'Could not find the shopper session.', 'woocommerce-payments' ),
+				403
+			);
 		}
 
 		if ( ! empty( $_POST['empty'] ) && filter_var( wp_unslash( $_POST['empty'] ), FILTER_VALIDATE_BOOLEAN ) ) {
@@ -914,6 +1040,7 @@ class WooPay_Session {
 		}
 
 		$data = [
+			'session_customer_id'     => (string) WC()->session->get_customer_id(),
 			'save_user_in_woopay'     => filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ),
 			'woopay_source_url'       =>
 			wc_clean( wp_unslash( $_POST['woopay_source_url'] ) ),
@@ -927,6 +1054,25 @@ class WooPay_Session {
 		WC()->session->set( self::WOOPAY_SESSION_KEY, $data );
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * Keeps the blocks checkout "save my information" choice with the shopper who made it as a guest,
+	 * when WooCommerce moves their session to their account, e.g. when creating it during checkout.
+	 *
+	 * @param string $guest_session_id The former session ID.
+	 * @param string $user_session_id  The ID of the session the guest session was moved to.
+	 *
+	 * @return void
+	 */
+	public static function keep_woopay_user_data_on_login( $guest_session_id, $user_session_id ) {
+		$data = WC()->session->get( self::WOOPAY_SESSION_KEY );
+
+		if ( isset( $data['session_customer_id'] ) && (string) $guest_session_id === $data['session_customer_id'] ) {
+			$data['session_customer_id'] = (string) $user_session_id;
+
+			WC()->session->set( self::WOOPAY_SESSION_KEY, $data );
+		}
 	}
 
 	/**
@@ -1645,10 +1791,9 @@ class WooPay_Session {
 
 		// If we can find the index, it means the merchant checkout page is using blocks checkout.
 		if ( false !== $checkout_block_index ) {
-			$below_place_order_button_text = $custom_below_place_order_button_text;
-			$company                       = 'optional';
-			$address_2                     = 'optional';
-			$phone                         = 'optional';
+			$company   = 'optional';
+			$address_2 = 'optional';
+			$phone     = 'optional';
 
 			if ( ! empty( $checkout_page_blocks[ $checkout_block_index ]['attrs'] ) ) {
 				$checkout_block_attrs = $checkout_page_blocks[ $checkout_block_index ]['attrs'];

@@ -15,8 +15,6 @@ import {
 	DropdownMenu,
 	MenuGroup,
 	MenuItem,
-	Card,
-	CardBody,
 	Flex,
 	ExternalLink,
 } from '@wordpress/components';
@@ -24,6 +22,7 @@ import {
 /**
  * Internal dependencies.
  */
+import { Card, CardBody } from 'wcpay/components/card';
 import {
 	canUseFeeBreakdownData,
 	getChargeAmounts,

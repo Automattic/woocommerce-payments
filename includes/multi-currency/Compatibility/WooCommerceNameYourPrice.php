@@ -24,6 +24,21 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	public function init() {
 		// Add needed actions and filters if Name Your Price is active.
 		if ( class_exists( 'WC_Name_Your_Price' ) ) {
+			/*
+			 * Multi-currency support was added to WooCommerce Name Your Price in version 4.0.0.
+			 *
+			 * This prevents the loading of the compatibility class for Name Your Price in
+			 * versions that provide their own multi-currency support.
+			 *
+			 * @see https://github.com/Automattic/woocommerce-payments/issues/12228
+			 */
+			if ( function_exists( 'WC_Name_Your_Price' ) ) {
+				$nyp = WC_Name_Your_Price();
+				if ( isset( $nyp->version ) && version_compare( $nyp->version, '4.0.0', '>=' ) ) {
+					return;
+				}
+			}
+
 			// Convert meta prices.
 			add_filter( 'wc_nyp_raw_minimum_price', [ $this, 'get_nyp_prices' ] );
 			add_filter( 'wc_nyp_raw_maximum_price', [ $this, 'get_nyp_prices' ] );

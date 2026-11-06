@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Skip the Name Your Price multi-currency compatibility shim on Name Your Price 4.0.0+.

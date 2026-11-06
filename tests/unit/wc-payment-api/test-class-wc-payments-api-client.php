@@ -14,7 +14,6 @@ use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -75,8 +74,9 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	public function test_get_transaction_success() {
 		$transaction_id = 'txn_231mdaism';
 
-		$this->set_http_mock_response(
-			200,
+		$this->expect_http_request(
+			'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/transactions/txn_231mdaism?test_mode=0',
+			'GET',
 			[
 				'id'        => $transaction_id,
 				'type'      => 'charge',
@@ -647,8 +647,9 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	public function test_get_invoice_success() {
 		$invoice_id = 'in_test_invoice';
 
-		$this->set_http_mock_response(
-			200,
+		$this->expect_http_request(
+			'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/invoices/in_test_invoice?test_mode=0',
+			'GET',
 			[
 				'id'     => $invoice_id,
 				'object' => 'invoice',
@@ -774,6 +775,74 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that sensitive keys are redacted from the logged request and response bodies.
+	 *
+	 * @dataProvider redacting_body_keys_data
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_redacting_request_and_response_bodies( array $payload ) {
+		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
+			->setMethods( [ 'log' ] )
+			->getMock();
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode() );
+		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
+
+		WC_Payments::mode()->dev();
+
+		$logged_entries = [];
+		$mock_logger
+			->expects( $this->exactly( 2 ) )
+			->method( 'log' )
+			->willReturnCallback(
+				function ( $level, $message, $context ) use ( &$logged_entries ) {
+					$logged_entries[] = $message . ' ' . wp_json_encode( $context );
+				}
+			);
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode( $payload ),
+					]
+				)
+			);
+
+		$reflection     = new ReflectionClass( $this->payments_api_client );
+		$request_method = $reflection->getMethod( 'request' );
+		$request_method->setAccessible( true );
+		$request_method->invokeArgs( $this->payments_api_client, [ $payload, 'abc', 'POST' ] );
+		$request_method->setAccessible( false );
+
+		foreach ( $logged_entries as $entry ) {
+			$this->assertStringContainsString( '(redacted)', $entry );
+			$this->assertStringNotContainsString( 'some-secret', $entry );
+		}
+
+		// clean up.
+		WC_Payments::mode()->live();
+		wcpay_get_test_container()->reset_all_replacements();
+	}
+
+	/**
+	 * Data provider for test_redacting_request_and_response_bodies
+	 */
+	public function redacting_body_keys_data() {
+		return [
+			'WooPay webhook secret'     => [ [ 'webhook_secret' => 'some-secret' ] ],
+			'Terminal connection token' => [ [ 'secret' => 'some-secret' ] ],
+			'customer description'      => [ [ 'description' => 'Name: some-secret, Guest' ] ],
+			'order key in metadata'     => [ [ 'metadata' => [ 'order_key' => 'some-secret' ] ] ],
+		];
+	}
+
+	/**
 	 * Test that data in GET request query parameters is redacted in the log context URL.
 	 *
 	 * Regression test for WOOPMNT-5954: the raw URL (containing e.g. email, name) was
@@ -845,8 +914,9 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws Exception
 	 */
 	public function test_get_disputes_summary_success() {
-		$this->set_http_mock_response(
-			200,
+		$this->expect_http_request(
+			'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/disputes/summary?test_mode=0',
+			'GET',
 			[
 				'data' => [
 					'count' => 12,
@@ -859,8 +929,9 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_woopay_eligibility_success() {
-		$this->set_http_mock_response(
-			200,
+		$this->expect_http_request(
+			'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/platform_checkout?test_mode=0',
+			'GET',
 			[
 				'platform_checkout_eligible' => true,
 			]
@@ -876,8 +947,9 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws Exception
 	 */
 	public function test_get_documents_summary_success() {
-		$this->set_http_mock_response(
-			200,
+		$this->expect_http_request(
+			'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/documents/summary?test_mode=0',
+			'GET',
 			[
 				'data' => [
 					'count' => 12,
@@ -1225,6 +1297,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		try {
 			// This is a dummy call to trigger the response so that our test can validate the exception.
 			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Merchant_Exception was not thrown.' );
 		} catch ( API_Merchant_Exception $e ) {
 			$this->assertSame( 'card_declined', $e->get_error_code() );
 			$this->assertSame( 'Bank declined', $e->get_merchant_message() );
@@ -1361,6 +1434,40 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'filename' => null,
 					]
 				)
+			);
+	}
+
+	/**
+	 * Expects one request to the given URL and method and returns a 200 response with the given body.
+	 *
+	 * @param string $url    The expected URL.
+	 * @param string $method The expected HTTP method.
+	 * @param array  $body   The response body.
+	 */
+	private function expect_http_request( string $url, string $method, array $body ) {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $request ) use ( $url, $method ) {
+						$this->assertSame( $url, $request['url'] );
+						$this->assertSame( $method, $request['method'] );
+						return true;
+					}
+				)
+			)
+			->willReturn(
+				[
+					'headers'  => [],
+					'body'     => wp_json_encode( $body ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+					'cookies'  => [],
+					'filename' => null,
+				]
 			);
 	}
 
@@ -1813,7 +1920,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			'exchange_rate'   => 1,
 		];
 
-		$this->set_http_mock_response( 200, $expected_response );
+		$this->expect_http_request( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/disputes/dp_123456789/summary?test_mode=0', 'GET', $expected_response );
 
 		// Act: Call the method.
 		$result = $this->payments_api_client->get_dispute_summary( $dispute_id );

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix service, admin, WooPay and other unit tests that could not fail, and remove duplicate and unhelpful tests.

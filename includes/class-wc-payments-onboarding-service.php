@@ -30,6 +30,15 @@ class WC_Payments_Onboarding_Service {
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
+	/**
+	 * The WooCommerce core options that store whether the store had WooPayments in use,
+	 * for incentive eligibility.
+	 *
+	 * @see \Automattic\WooCommerce\Internal\Admin\Suggestions\Incentives\WooPayments
+	 */
+	private const STORE_HAD_WOOPAYMENTS_OPTION         = 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments';
+	private const STORE_HAD_WOOPAYMENTS_VERSION_OPTION = 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version';
+
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
 	// This should be very sticky as opposed to the `from` value which is meant to represent the immediately previous step.
@@ -310,7 +319,9 @@ class WC_Payments_Onboarding_Service {
 	 *                                  indicating whether the capability should be requested when the account is created
 	 *                                  and enabled in the settings.
 	 * @param string|null $explicit_mode Optional. The user's explicit mode selection ('live' or 'test').
-	 *                                   When provided, overrides the auto-detected mode (unless dev mode is active).
+	 *                                   Used only before an account is connected, where it overrides the
+	 *                                   environment auto-detection (except in dev mode). Ignored in dev mode or
+	 *                                   once an account is connected, where the store keeps its onboarded mode.
 	 *
 	 * @return array Session data.
 	 *
@@ -330,9 +341,12 @@ class WC_Payments_Onboarding_Service {
 
 		$this->set_onboarding_init_in_progress();
 
-		// Determine setup mode: dev mode always forces test; explicit user selection overrides auto-detection.
+		// Determine the setup mode. Dev mode forces test. A connected store keeps the mode it was onboarded in;
+		// the requested mode and environment auto-detection apply only before an account is connected.
 		if ( WC_Payments::mode()->is_dev() ) {
 			$setup_mode = 'test';
+		} elseif ( WC_Payments::get_account_service()->is_stripe_connected() ) {
+			$setup_mode = self::is_test_mode_enabled() ? 'test' : 'live';
 		} elseif ( null !== $explicit_mode && in_array( strtolower( $explicit_mode ), [ 'live', 'test' ], true ) ) {
 			$setup_mode = $explicit_mode;
 		} else {
@@ -712,6 +726,11 @@ class WC_Payments_Onboarding_Service {
 			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
 		}
 
+		// A connected store must reset onboarding before starting a test-drive account.
+		if ( WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new Exception( __( 'An account is already set up. Please reset the onboarding first.', 'woocommerce-payments' ) );
+		}
+
 		// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
@@ -933,13 +952,10 @@ class WC_Payments_Onboarding_Service {
 		update_option( self::TEST_MODE_OPTION, 'no' );
 		self::clear_account_options();
 
-		// Clear the stored flag for whether the store had WooPayments in use,
+		// Clear WooCommerce core's stored flag for whether the store had WooPayments in use,
 		// so incentive eligibility is re-determined for the fresh onboarding.
-		// Deleting is safe even though WooCommerce core shares these options: if an
-		// older core copy re-freezes a stale positive from test-mode usage, the logic
-		// version marker gets it re-determined on the next evaluation. See WOOPMNT-6320.
-		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_OPTION_NAME );
-		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME );
+		delete_option( self::STORE_HAD_WOOPAYMENTS_OPTION );
+		delete_option( self::STORE_HAD_WOOPAYMENTS_VERSION_OPTION );
 
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
@@ -1379,7 +1395,8 @@ class WC_Payments_Onboarding_Service {
 			)
 		) ) {
 			// Discriminate between the settings page and the NOX in-context onboarding.
-			if ( ! empty( $referer_params['path'] ) &&
+			// is_string() guards against an array `path` (a `path[]=` referer) that would make strpos() throw.
+			if ( ! empty( $referer_params['path'] ) && is_string( $referer_params['path'] ) &&
 				0 === strpos( $referer_params['path'], '/woopayments/onboarding' ) ) {
 				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
 			}

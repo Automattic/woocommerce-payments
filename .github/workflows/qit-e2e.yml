@@ -22,7 +22,7 @@ jobs:
         uses: ./.github/actions/build
 
       - name: Upload plugin artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: woocommerce-payments-${{ github.run_id }}
           path: woocommerce-payments.zip
@@ -56,7 +56,7 @@ jobs:
           [[ -n "$BETA_VERSION" ]] && echo "Beta version: $BETA_VERSION" >&2 || echo "No beta version available" >&2
           [[ -n "$RC_VERSION" ]] && echo "RC version: $RC_VERSION" >&2 || echo "No RC version available" >&2
 
-          # Build scheduled matrix: L-1 + latest stable + nightly WC, PHP 8.3, all projects
+          # Build push matrix: L-1 + latest stable + nightly WC, PHP 8.3, all projects
           # All combinations use WP latest by default
           MATRIX_ENTRIES=()
           for wc_version in "$L1_VERSION" "$LATEST_WC_VERSION" "nightly"; do
@@ -93,6 +93,7 @@ jobs:
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   qit-e2e:
+    # qit-slack-summary parses this name to find the job's results artifact.
     name: "${{ matrix.project }} | WP ${{ matrix.wordpress }} | WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
     needs: [build, generate-matrix]
     strategy:
@@ -132,3 +133,4 @@ jobs:
         with:
           slack-token: ${{ secrets.E2E_SLACK_TOKEN }}
           channel-id: ${{ secrets.E2E_SLACK_CHANNEL_ID }}
+          skip-repeats: 'true'

@@ -2,12 +2,12 @@
  * External dependencies
  */
 import React, { ComponentProps } from 'react';
-import { CardBody } from '@wordpress/components';
 import clsx from 'clsx';
 
 /**
  * Internal dependencies
  */
+import { CardBody } from 'wcpay/components/card';
 import './styles.scss';
 
 interface WcpayCardBodyProps {

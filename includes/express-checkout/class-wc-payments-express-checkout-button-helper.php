@@ -37,14 +37,16 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	private $account;
 
 	/**
-	 * Whether this class's `should_show_express_checkout_button()` last rejected only because the cart was empty.
+	 * Whether this class's `should_show_express_checkout_button()` last rejected only for a reason
+	 * the live cart can still change: the cart is empty, or Amazon Pay is switched on but not
+	 * available yet (for example in the cart's current currency).
 	 *
 	 * Lets `should_load_express_checkout_scripts()` relax that rejection alone, so a `false` from an
 	 * override (see `WC_Payments::set_express_checkout_helper()`) still prevents loading.
 	 *
 	 * @var bool
 	 */
-	private $rejected_for_empty_cart = false;
+	private $rejected_for_cart_state = false;
 
 	/**
 	 * Whether the [product_page] shortcode context has been worked out for this request.
@@ -464,17 +466,16 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if Amazon Pay can be used as an express checkout button.
+	 * Checks if the merchant switched Amazon Pay on as an express checkout button.
 	 *
-	 * This validates:
-	 * - Express checkout is not displayed in the payment methods list
-	 * - Amazon Pay feature flag is enabled
-	 * - Gateway exists and is available for express checkout
-	 * - Tax settings are compatible (Amazon Pay doesn't support taxes based on billing address)
+	 * Unlike `can_use_amazon_pay()`, this skips the gateway's runtime availability checks:
+	 * currency, Stripe capability status and account state. Block pages need the button
+	 * registered even when the page loads in a currency Amazon Pay doesn't support, because
+	 * the shopper can switch to one it does without a reload.
 	 *
 	 * @return boolean
 	 */
-	public function can_use_amazon_pay() {
+	public function is_amazon_pay_enabled_by_merchant() {
 		// When express checkout methods are displayed in the payment methods list,
 		// Amazon Pay should not appear as a separate express button.
 		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
@@ -486,11 +487,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
-		if ( ! $amazon_pay_gateway ) {
-			return false;
-		}
-
-		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
+		if ( ! $amazon_pay_gateway || ! $amazon_pay_gateway->is_enabled() ) {
 			return false;
 		}
 
@@ -500,6 +497,22 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks if Amazon Pay can be used as an express checkout button for the current request,
+	 * including its currency.
+	 *
+	 * @return boolean
+	 */
+	public function can_use_amazon_pay() {
+		if ( ! $this->is_amazon_pay_enabled_by_merchant() ) {
+			return false;
+		}
+
+		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
+
+		return $amazon_pay_gateway && $amazon_pay_gateway->is_available_for_express_checkout();
 	}
 
 	/**
@@ -693,26 +706,27 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * Block cart and checkout pages add the first product through the Store API without a reload,
 	 * and the block payment methods re-run `canMakePayment()` against the live cart. So on those
-	 * pages, a rejection caused only by the cart being empty still loads them; the buttons stay
-	 * hidden until the cart has something to pay for.
+	 * pages, a rejection caused only by the cart being empty, or by Amazon Pay being switched on but
+	 * not available yet, still loads them; the buttons stay hidden until the cart has something
+	 * they can pay for.
 	 *
 	 * @return bool
 	 */
 	public function should_load_express_checkout_scripts() {
-		$this->rejected_for_empty_cart = false;
+		$this->rejected_for_cart_state = false;
 
 		if ( $this->should_show_express_checkout_button() ) {
 			return true;
 		}
 
-		return $this->rejected_for_empty_cart
+		return $this->rejected_for_cart_state
 			&& ( has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ) );
 	}
 
 	/**
 	 * Checks whether Express Checkout Element Button should be available on this page.
 	 *
-	 * @phpstan-impure It records an empty-cart rejection for `should_load_express_checkout_scripts()`.
+	 * @phpstan-impure It records a cart-state rejection for `should_load_express_checkout_scripts()`.
 	 *
 	 * @return bool
 	 */
@@ -740,9 +754,16 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// No express checkout methods are actually enabled for the current page context
-		// (checks both location settings and feature flags/availability).
-		if ( empty( $this->get_enabled_express_checkout_methods_for_context() ) ) {
+		// Amazon Pay is the only method whose availability depends on the currency, so it's the
+		// only one the page can gain later, when the shopper's address switches the currency.
+		$has_available_method = ! empty( $this->get_enabled_express_checkout_methods_for_context() );
+		if (
+			! $has_available_method
+			&& ! (
+				$this->is_amazon_pay_enabled_by_merchant()
+				&& $this->is_express_checkout_method_enabled_at( $this->get_button_context(), 'amazon_pay' )
+			)
+		) {
 			return false;
 		}
 
@@ -766,7 +787,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
-			return $this->is_pay_for_order_supported();
+			return $has_available_method && $this->is_pay_for_order_supported();
 		}
 
 		// Non-shipping product and tax is calculated based on shopper billing address. Excludes Pay for Order page.
@@ -786,7 +807,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			&& 'yes' !== get_option( 'woocommerce_prices_include_tax' )
 		) {
 			// An empty cart doesn't need shipping either.
-			$this->rejected_for_empty_cart = ! $this->is_product() && WC()->cart->is_empty();
+			$this->rejected_for_cart_state = ! $this->is_product() && WC()->cart->is_empty();
 			return false;
 		}
 
@@ -797,7 +818,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			|| ( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 		) {
 			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
-			$this->rejected_for_empty_cart = ! $this->is_product() && WC()->cart->is_empty();
+			$this->rejected_for_cart_state = ! $this->is_product() && WC()->cart->is_empty();
+			return false;
+		}
+
+		if ( ! $has_available_method ) {
+			$this->rejected_for_cart_state = ! $this->is_product();
 			return false;
 		}
 

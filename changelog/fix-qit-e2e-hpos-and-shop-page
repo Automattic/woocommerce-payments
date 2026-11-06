@@ -1,0 +1,3 @@
+Significance: patch
+Type: dev
+Comment: Stop QIT E2E tests failing when a shop starts without HPOS or with a 4x4 product grid.

@@ -31,7 +31,7 @@
 		.wcpay-spotlight__card {
 			margin: 0;
 
-			&.components-card {
+			&.wcpay-card {
 				border-radius: 0;
 			}
 		}
@@ -52,7 +52,7 @@
 	overflow: hidden;
 
 	// Override WordPress Card component border-radius
-	&.components-card {
+	&.wcpay-card {
 		border-radius: $radius-medium;
 		box-shadow: $elevation-medium;
 	}
@@ -77,7 +77,7 @@
 .wcpay-spotlight__header {
 	padding: $gap-small $gap-small 0;
 
-	&.components-card__header {
+	&.wcpay-card__header {
 		border-radius: $radius-medium $radius-medium 0 0;
 	}
 
@@ -215,7 +215,7 @@
 // Override WC settings page styles that affect cards
 body.woocommerce_page_wc-settings
 	.wcpay-spotlight
-	.wcpay-spotlight__card.components-surface.components-card {
+	.wcpay-spotlight__card.components-surface.wcpay-card {
 	border-radius: $radius-medium;
 	box-shadow: $elevation-medium;
 }

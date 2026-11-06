@@ -45,6 +45,7 @@ declare global {
 		testMode: boolean;
 		testModeOnboarding: boolean;
 		devMode: boolean;
+		devModeReason?: string;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
@@ -109,9 +110,6 @@ declare global {
 		restUrl: string;
 		siteLogoUrl: string;
 		shouldUseExplicitPrice: boolean;
-		fraudProtection: {
-			isWelcomeTourDismissed?: boolean;
-		};
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		onboardingFieldsData?: {
@@ -123,13 +121,6 @@ declare global {
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
-		connectIncentive?: {
-			id: string;
-			description: string;
-			tc_url: string;
-			task_header_content?: string;
-			task_badge?: string;
-		};
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
@@ -292,6 +283,7 @@ declare global {
 		wcpayVersionNumber: string;
 		woopaySignatureNonce: string;
 		woopaySessionNonce: string;
+		woopaySaveUserNonce: string;
 		woopayMerchantId: string;
 		icon: string;
 		woopayMinimumSessionData: Record< string, unknown >;

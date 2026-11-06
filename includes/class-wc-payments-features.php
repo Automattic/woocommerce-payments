@@ -288,9 +288,11 @@ class WC_Payments_Features {
 	/**
 	 * Checks whether the Fraud and Risk Tools welcome tour was dismissed.
 	 *
+	 * @deprecated 11.3.0 The fraud protection welcome tour has been removed.
 	 * @return bool
 	 */
 	public static function is_fraud_protection_welcome_tour_dismissed(): bool {
+		wc_deprecated_function( __METHOD__, '11.3.0' );
 		return '1' === get_option( 'wcpay_fraud_protection_welcome_tour_dismissed', '0' );
 	}
 

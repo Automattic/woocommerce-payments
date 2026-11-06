@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix orders being marked as failed when a Klarna or other BNPL payment is declined: the order now stays pending so the customer can retry with a different payment method, and a detailed order note records the payment provider's error. Abandoned BNPL payments, such as an expired payment session, are now also recorded in an order note.

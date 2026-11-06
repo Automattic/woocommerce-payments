@@ -60,8 +60,18 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	 */
 	private $frontend_currencies;
 
+	/**
+	 * The global query vars before each test, restored in tear_down().
+	 *
+	 * @var array
+	 */
+	private $original_query_vars;
+
 	public function set_up() {
 		parent::set_up();
+
+		global $wp;
+		$this->original_query_vars = $wp->query_vars;
 
 		$this->localization_service = new WC_Payments_Localization_Service();
 		$this->mock_compatibility   = $this->createMock( Compatibility::class );
@@ -79,6 +89,9 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 
 	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_currency_settings' );
+
+		global $wp;
+		$wp->query_vars = $this->original_query_vars;
 
 		parent::tear_down();
 	}
@@ -215,6 +228,105 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		// We expect 3 decimal points here because BHD uses 3 decimal points, see
 		// i18n/locale-info.php (or plugins/woocommerce/i18n/locale-info.php in WC Core).
 		$this->assertEquals( 3, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * On single-order pages the order can be loaded, and its total rounded, before its details
+	 * render, and block-based pages render without the shortcode classes. See WOOPMNT-3978.
+	 */
+	public function test_single_order_pages_use_order_currency_while_loading_the_order_and_rendering_blocks() {
+		global $wp;
+		$wp->query_vars['order-received'] = $this->mock_order->get_id();
+
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with(
+				$this->callback(
+					function ( $calls ) {
+						return in_array( 'WC_Order_Factory::get_order', $calls, true )
+							&& in_array( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock->render', $calls, true )
+							&& in_array( 'WC_Shortcode_Checkout::order_received', $calls, true );
+					}
+				)
+			)
+			->willReturn( true );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->mock_order->set_currency( 'USD' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
+
+		// USD has 2 decimals; the selected ISK has none.
+		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * The WooCommerce methods above are matched by name in the backtrace, so a WooCommerce change to
+	 * them would silently stop the match. This fails instead.
+	 */
+	public function test_matched_woocommerce_methods_keep_their_backtrace_names() {
+		// Static, so PHP reports it as WC_Order_Factory::get_order in the backtrace however it's called.
+		$this->assertTrue( ( new ReflectionMethod( 'WC_Order_Factory', 'get_order' ) )->isStatic() );
+
+		// The CI matrix still runs WooCommerce 7.6, which predates the order confirmation blocks.
+		if ( version_compare( WC_VERSION, '9.0.0', '<' ) ) {
+			$this->markTestSkipped( 'The order confirmation blocks are not in this WooCommerce version.' );
+		}
+
+		$this->assertTrue( method_exists( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock', 'render' ) );
+	}
+
+	/**
+	 * Prices on a single-order page that are not the order's, like the mini-cart, keep the
+	 * selected currency. See WOOPMNT-3978.
+	 */
+	public function test_other_prices_on_single_order_pages_keep_the_selected_currency() {
+		global $wp;
+		$wp->query_vars['view-order'] = $this->mock_order->get_id();
+
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->willReturn( false );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->mock_order->set_currency( 'USD' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
+
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * The orders list has no single order, so loading an order there must not switch to an order
+	 * currency.
+	 */
+	public function test_orders_list_page_does_not_use_order_currency_while_loading_orders() {
+		global $wp;
+		$wp->query_vars['orders'] = 1;
+
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with(
+				$this->callback(
+					function ( $calls ) {
+						return ! in_array( 'WC_Order_Factory::get_order', $calls, true );
+					}
+				)
+			)
+			->willReturn( false );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
 	}
 
 	public function test_get_price_decimals_returns_original_when_the_currency_is_same() {

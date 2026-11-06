@@ -7,9 +7,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import CardBody from '../card-body';
 import {
-	Card,
 	CheckboxControl,
 	BaseControl,
 	RadioControl,

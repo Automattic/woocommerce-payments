@@ -66,7 +66,7 @@ describe( 'composeCapturedBodyFromBreakdown — discount row split', () => {
 					display_amount: 0,
 				},
 				{
-					key: 'discount.wcpay-promo-2023',
+					key: 'discount.wcpay-promo-2023', // gitleaks:allow
 					kind: 'adjustment',
 					label: null,
 					// Promo discount — preserved negative deltas off the

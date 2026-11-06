@@ -25,9 +25,17 @@ jest.mock( '@wordpress/data', () => ( {
 		} ) ),
 } ) );
 
-jest.mock( '../express-checkout-component', () => () => (
-	<div data-testid="express-checkout-component" />
-) );
+let mockComponentMounts;
+
+jest.mock( '../express-checkout-component', () => {
+	const { useEffect } = jest.requireActual( 'react' );
+	return () => {
+		useEffect( () => {
+			mockComponentMounts++;
+		}, [] );
+		return <div data-testid="express-checkout-component" />;
+	};
+} );
 
 const getBaseProps = () => ( {
 	api: {
@@ -48,6 +56,7 @@ const getBaseProps = () => ( {
 describe( 'ExpressCheckoutContainer', () => {
 	beforeEach( () => {
 		mockElementsProps = undefined;
+		mockComponentMounts = 0;
 		mockCartData = {
 			items: [],
 			extensions: {},
@@ -116,7 +125,24 @@ describe( 'ExpressCheckoutContainer', () => {
 		expect( mockElementsProps.options ).toBe( firstOptions );
 	} );
 
-	it( 'regenerates the options when the currency changes', () => {
+	it( 'keeps the same Elements group when only the amount changes', () => {
+		const props = getBaseProps();
+		const { rerender } = render(
+			<ExpressCheckoutContainer { ...props } />
+		);
+
+		rerender(
+			<ExpressCheckoutContainer
+				{ ...props }
+				billing={ { ...props.billing, cartTotal: { value: 4599 } } }
+			/>
+		);
+
+		expect( mockComponentMounts ).toBe( 1 );
+		expect( mockElementsProps.options.amount ).toBe( 4599 );
+	} );
+
+	it( 'starts a new Elements group when the currency changes', () => {
 		const props = getBaseProps();
 		const { rerender } = render(
 			<ExpressCheckoutContainer { ...props } />
@@ -127,12 +153,13 @@ describe( 'ExpressCheckoutContainer', () => {
 			<ExpressCheckoutContainer
 				{ ...props }
 				billing={ {
-					cartTotal: { value: 2399 },
+					...props.billing,
 					currency: { code: 'EUR', minorUnit: 2 },
 				} }
 			/>
 		);
 
+		expect( mockComponentMounts ).toBe( 2 );
 		expect( mockElementsProps.options ).not.toBe( firstOptions );
 		expect( mockElementsProps.options.currency ).toBe( 'eur' );
 	} );

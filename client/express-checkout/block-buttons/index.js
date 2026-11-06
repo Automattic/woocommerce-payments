@@ -90,7 +90,12 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'applePay', cart, api );
+		return checkPaymentMethodIsAvailable(
+			'applePay',
+			cart,
+			api,
+			enabledMethods
+		);
 	},
 } );
 
@@ -124,7 +129,12 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
+		return checkPaymentMethodIsAvailable(
+			'googlePay',
+			cart,
+			api,
+			enabledMethods
+		);
 	},
 } );
 
@@ -155,6 +165,11 @@ export const expressCheckoutElementAmazonPay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'amazonPay', cart, api );
+		return checkPaymentMethodIsAvailable(
+			'amazonPay',
+			cart,
+			api,
+			enabledMethods
+		);
 	},
 } );
