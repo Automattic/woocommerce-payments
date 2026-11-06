@@ -1,7 +1,7 @@
 /**
  * External Dependencies
  */
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { check, chevronDown, chevronUp, Icon } from '@wordpress/icons';
 import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
@@ -141,15 +141,29 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		setSearchText( target.value );
 	};
 
+	// Hoisted so the ref reads happen inside DOM event handlers (post-commit),
+	// not in the render body where react-hooks/refs flags them.
+	const handleMenuFocus = useCallback( () => {
+		searchRef.current?.focus();
+	}, [] );
+
+	const handleMenuBlur = useCallback( ( event: any ) => {
+		if ( event.relatedTarget === searchRef.current ) {
+			event.nativeEvent.preventDownshiftDefault = true;
+		}
+	}, [] );
+
+	// `getMenuProps` is a downshift accessor that just merges the handlers
+	// into the spread menu props — it does not read `searchRef` itself; the
+	// ref is only read inside the hoisted DOM-event handlers (post-commit).
+	// The rule flags the shape of the call rather than an actual render-time
+	// ref read, so a focused carve-out is warranted here.
+	// eslint-disable-next-line react-hooks/refs
 	const menuProps = getMenuProps( {
 		className: 'wcpay-component-grouped-select-control__list',
 		'aria-hidden': ! isOpen,
-		onFocus: () => searchRef.current?.focus(),
-		onBlur: ( event: any ) => {
-			if ( event.relatedTarget === searchRef.current ) {
-				event.nativeEvent.preventDownshiftDefault = true;
-			}
-		},
+		onFocus: handleMenuFocus,
+		onBlur: handleMenuBlur,
 		onKeyDown: ( event: any ) => {
 			if ( event.code === 'Space' ) {
 				event.nativeEvent.preventDownshiftDefault = true;
