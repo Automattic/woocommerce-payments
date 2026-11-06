@@ -91,8 +91,13 @@ module.exports = {
 						loader: 'sass-loader',
 						options: {
 							sassOptions: {
-								includePaths: [
-									'client/stylesheets/abstracts',
+								loadPaths: [ 'client/stylesheets/abstracts' ],
+								// Dart Sass 3.0 deprecations, also raised by @wordpress/base-styles and the
+								// `additionalData` imports below. Remove once the styles move to `@use`.
+								silenceDeprecations: [
+									'import',
+									'global-builtin',
+									'color-functions',
 								],
 							},
 							additionalData:
