@@ -3721,6 +3721,20 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A status change for an order that no longer exists is skipped: the order is loaded with
+	 * wc_get_order(), which returns false for a missing id where `new WC_Order` throws, and no
+	 * server call is made.
+	 */
+	public function test_capture_authorization_on_order_status_change_skips_a_missing_order() {
+		$missing_order_id = PHP_INT_MAX;
+		$this->assertFalse( wc_get_order( $missing_order_id ), 'Precondition: the order id must not exist.' );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		// Throws on a missing order if it is loaded with `new WC_Order`.
+		$this->order_service->capture_authorization_on_order_status_change( $missing_order_id );
+	}
+
+	/**
 	 * Any cached intention status that isn't one of the proven-terminal statuses must fall back to
 	 * the regular flow and fetch the live intent - including `requires_capture` itself (the actual
 	 * capturable case) and a never-cached/empty status, since neither can be assumed non-capturable.
