@@ -342,24 +342,25 @@ export const fillCardDetailsWCB = async (
 	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
 };
 
+// Stripe.js can also mount a hidden universal-link-modal frame under `body > div`,
+// so match the 3DS challenge frame by its source to keep the locator unambiguous.
+const threeDSModalFrameSelector =
+	'body > div > iframe[name^="__privateStripeFrame"][src*="three-ds-2-challenge"]';
+
 export const confirmCardAuthentication = async (
 	page: Page,
 	authorize = true
 ) => {
 	// Wait for the Stripe 3DS modal iframe to appear at the top of the DOM.
 	// If it never appears within the timeout, skip gracefully.
-	const privateFrame = page.locator(
-		'body > div > iframe[name^="__privateStripeFrame"]'
-	);
+	const privateFrame = page.locator( threeDSModalFrameSelector );
 	const appeared = await privateFrame
 		.waitFor( { state: 'visible', timeout: 20000 } )
 		.then( () => true )
 		.catch( () => false );
 	if ( ! appeared ) return;
 
-	const stripeFrame = page.frameLocator(
-		'body>div>iframe[name^="__privateStripeFrame"]'
-	);
+	const stripeFrame = page.frameLocator( threeDSModalFrameSelector );
 	if ( ! stripeFrame ) return;
 
 	const challengeFrame = stripeFrame.frameLocator(
@@ -703,9 +704,7 @@ export const addSavedCard = async (
 	//  - Error notice (declined card, too soon after previous, generic failure)
 	//  - Card validation error inside the Stripe iframe (form never submits)
 	//  - Redirect back to Payment methods page
-	const threeDSFrame = page.locator(
-		'body > div > iframe[name^="__privateStripeFrame"]'
-	);
+	const threeDSFrame = page.locator( threeDSModalFrameSelector );
 	const successNotice = page.getByText(
 		'Payment method successfully added.'
 	);

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix the E2E 3DS helper matching more than one Stripe modal frame.
