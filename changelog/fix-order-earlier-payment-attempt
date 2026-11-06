@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove WooPayments payment details from orders paid with another payment method.

@@ -455,7 +455,20 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
-		if ( ! $order || ! $order->has_status( Order_Status::PENDING ) ) {
+		if ( ! $order ) {
+			return;
+		}
+
+		if ( $this->skip_superseded_attempt(
+			$order,
+			$event_object,
+			/* translators: %1: the ID of a WooPayments payment. */
+			__( 'A WooPayments payment <code>%1$s</code> was authorized after this order was paid with another payment method, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
+		) ) {
+			return;
+		}
+
+		if ( ! $order->has_status( Order_Status::PENDING ) ) {
 			return;
 		}
 
@@ -588,6 +601,16 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$payment_method_id = $this->get_webhook_payment_method_id( $charges_data[0]['payment_method'] ?? $event_object['payment_method'] ?? null );
 		if ( ! $order ) {
+			return;
+		}
+
+		if ( $this->skip_superseded_attempt(
+			$order,
+			$event_object,
+			/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
+			__( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was paid with another payment method, so the order was not updated. Check whether the payment needs a refund.', 'woocommerce-payments' ),
+			$charge_id
+		) ) {
 			return;
 		}
 
@@ -1048,6 +1071,27 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function has_webhook_property( $items, $key ) {
 		return isset( $items[ $key ] );
+	}
+
+	/**
+	 * Leaves the order alone when the event's intent belongs to a WooPayments attempt from before another
+	 * gateway took the order over, and notes why. Payments started later, such as in person, go through.
+	 *
+	 * @param WC_Order $order        The order the event resolved to.
+	 * @param array    $event_object The intent in the event.
+	 * @param string   $message      The translated note, with the intent ID in `<code>%1$s</code>`.
+	 * @param string   ...$note_args More IDs the note names, from `%2$s` on.
+	 *
+	 * @return bool Whether the event was skipped.
+	 */
+	private function skip_superseded_attempt( WC_Order $order, array $event_object, string $message, string ...$note_args ): bool {
+		$intent_id = (string) ( $event_object['id'] ?? '' );
+		if ( ! $this->order_service->is_intent_from_superseded_attempt( $order, $intent_id, (int) ( $event_object['created'] ?? 0 ) ) ) {
+			return false;
+		}
+
+		$order->add_order_note( sprintf( WC_Payments_Utils::esc_interpolated_html( $message, [ 'code' => '<code>' ] ), $intent_id, ...$note_args ) );
+		return true;
 	}
 
 	/**
