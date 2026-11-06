@@ -183,16 +183,15 @@ export const DataViewsDateRangePresetPortal = ( {
 	onDateChange: ( next: DateFilterValue, referenceDate: Date ) => void;
 } ): null => {
 	const portalNodeRef = useRef< HTMLDivElement | null >( null );
-	const stableDateFilterNowRef = useRef< Date | null >( null );
-	if ( ! stableDateFilterNowRef.current ) {
-		stableDateFilterNowRef.current = dateFilterNow ?? new Date();
-	}
+	const [ stableDateFilterNow ] = useState(
+		() => dateFilterNow ?? new Date()
+	);
 	const [ clickedDateFilterNow, setClickedDateFilterNow ] =
 		useState< Date | null >( null );
 	const selectedPreset =
 		( clickedDateFilterNow &&
 			getSelectedDateRangePreset( dateValue, clickedDateFilterNow ) ) ||
-		getSelectedDateRangePreset( dateValue, stableDateFilterNowRef.current );
+		getSelectedDateRangePreset( dateValue, stableDateFilterNow );
 	const applyDatePreset = useCallback(
 		( preset: ReportDateRangePreset ) => {
 			const currentDateFilterNow = new Date();
@@ -208,10 +207,17 @@ export const DataViewsDateRangePresetPortal = ( {
 		},
 		[ onDateChange ]
 	);
+	// Always-fresh value refs read from the stable `syncPortalNode` callback and
+	// the MutationObserver bindings below. Writes are deferred to a post-commit
+	// effect so the ref read sites always see a committed value; the one-render
+	// staleness is invisible because `syncPortalNode` only fires from DOM
+	// observers and the preset-change effect, both of which run after commit.
 	const applyDatePresetRef = useRef( applyDatePreset );
-	applyDatePresetRef.current = applyDatePreset;
 	const selectedPresetRef = useRef( selectedPreset );
-	selectedPresetRef.current = selectedPreset;
+	useEffect( () => {
+		applyDatePresetRef.current = applyDatePreset;
+		selectedPresetRef.current = selectedPreset;
+	} );
 
 	const syncPortalNode = useCallback(
 		( { force = false }: SyncPortalNodeOptions = {} ) => {
