@@ -319,12 +319,6 @@ parameters:
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
-			rawMessage: If condition is always true.
-			identifier: if.alwaysTrue
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
 			rawMessage: Instanceof between WC_Cart and WC_Cart will always evaluate to true.
 			identifier: instanceof.alwaysTrue
 			count: 1
@@ -693,7 +687,7 @@ parameters:
 		-
 			rawMessage: 'Strict comparison using !== between null and WC_Order will always evaluate to true.'
 			identifier: notIdentical.alwaysTrue
-			count: 2
+			count: 1
 			path: includes/class-wc-payments-order-service.php
 
 		-
@@ -1521,7 +1515,7 @@ parameters:
 		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
-			count: 1
+			count: 4
 			path: includes/multi-currency/Compatibility/WooCommerceSubscriptions.php
 
 		-
@@ -1641,7 +1635,7 @@ parameters:
 		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
-			count: 2
+			count: 5
 			path: includes/multi-currency/MultiCurrency.php
 
 		-

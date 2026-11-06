@@ -26,6 +26,31 @@ require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
 class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
+	 * When another gateway took an order over from a WooPayments attempt.
+	 */
+	const PAYMENT_DETAILS_REMOVED_AT = 1700000000;
+
+	/**
+	 * The intent of a payment for that order.
+	 */
+	const LATE_INTENT_ID = 'pi_late_payment';
+
+	/**
+	 * The charge of that payment.
+	 */
+	const LATE_CHARGE_ID = 'ch_late_payment';
+
+	/**
+	 * The payment method of that payment.
+	 */
+	const LATE_PAYMENT_METHOD_ID = 'pm_late_payment';
+
+	/**
+	 * The intent of an authorization the `amount_capturable_updated` tests send.
+	 */
+	const AUTHORIZATION_INTENT_ID = 'pi_mock';
+
+	/**
 	 * System under test.
 	 *
 	 * @var WC_Payments_Webhook_Processing_Service
@@ -666,6 +691,139 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * A payment from a WooPayments attempt made before another gateway took the order over leaves the order
+	 * alone, and the merchant gets a note naming it so they can refund it.
+	 */
+	public function test_payment_intent_succeeded_ignores_an_attempt_from_before_another_gateway_took_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( 'cod', $order->get_payment_method() );
+		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*refund/', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A payment started after another gateway took the order over, such as an in-person payment, is recorded.
+	 */
+	public function test_payment_intent_succeeded_records_a_payment_started_after_another_gateway_took_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT + 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pm_late_payment', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_intent_id' ) );
+	}
+
+	/**
+	 * A new WooPayments attempt after a failed takeover is recorded even when the store's clock puts the
+	 * takeover after the intent's creation: the attempt's mode marks it as new. For a method that pays later,
+	 * this webhook is what completes the order.
+	 *
+	 * The new attempt makes WooPayments the order's gateway again. Left on `cod`, Cash on delivery's
+	 * `woocommerce_payment_complete_order_status` filter would complete the order wherever that gateway is loaded.
+	 */
+	public function test_payment_intent_succeeded_records_a_new_attempt_the_clocks_put_before_the_takeover() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'processing', $order->get_status() );
+	}
+
+	/**
+	 * The intent the cleanup removed is known by name, so its payment is ignored even when the store's clock
+	 * puts the takeover before the intent's creation.
+	 */
+	public function test_payment_intent_succeeded_ignores_the_removed_intent_whatever_its_time() {
+		$order = $this->create_order_taken_over_by_another_gateway();
+		$order->update_meta_data( WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY, [ self::LATE_INTENT_ID ] );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT + 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*refund/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * Creates an order paid with cash on delivery after a WooPayments attempt, as the cleanup leaves it.
+	 *
+	 * @param string $status The order's status.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_taken_over_by_another_gateway( string $status = Order_Status::PROCESSING ): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'cod' );
+		$order->set_status( $status );
+		$order->update_meta_data( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY, (string) self::PAYMENT_DETAILS_REMOVED_AT );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Builds a payment_intent.succeeded event for the order, for an intent created at the given time.
+	 *
+	 * @param WC_Order $order      The order the intent was created for.
+	 * @param int      $created_at When the intent was created.
+	 */
+	private function set_up_late_payment_intent_succeeded( WC_Order $order, int $created_at ): void {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => self::LATE_INTENT_ID,
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'created'  => $created_at,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => self::LATE_CHARGE_ID,
+						'payment_method'         => self::LATE_PAYMENT_METHOD_ID,
+						'payment_method_details' => [ 'type' => 'card' ],
+					],
+				],
+			],
+			'currency' => 'usd',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [ 'order_id' => $order->get_id() ],
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->willReturn( $order );
+
+		$this->mock_api_client
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => self::LATE_INTENT_ID,
+						'metadata' => [ 'order_id' => $order->get_id() ],
+					]
+				)
+			);
 	}
 
 	/**
@@ -3975,18 +4133,70 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * An authorization from a WooPayments attempt made before another gateway took the order over leaves a
+	 * pending order alone instead of putting it on hold and writing the attempt's details back, and the
+	 * merchant gets a note naming it. A pending order is where the handler acted before this fix.
+	 */
+	public function test_amount_capturable_updated_ignores_an_attempt_from_before_another_gateway_took_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( 'cod', $order->get_payment_method() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment method/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An authorization whose intent the cleanup removed is ignored on a pending order whatever its creation
+	 * time, because the order names the intent.
+	 */
+	public function test_amount_capturable_updated_ignores_the_removed_intent_whatever_its_time() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$order->update_meta_data( WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY, [ self::AUTHORIZATION_INTENT_ID ] );
+		$order->save();
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD, self::PAYMENT_DETAILS_REMOVED_AT + 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment method/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An authorization started after another gateway took the order over is recorded as usual.
+	 */
+	public function test_amount_capturable_updated_puts_on_hold_a_payment_started_after_another_gateway_took_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD, self::PAYMENT_DETAILS_REMOVED_AT + 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 'on-hold', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	/**
 	 * Sets up a `payment_intent.amount_capturable_updated` event for an authorized order.
 	 *
 	 * @param WC_Order $order               The order the intent belongs to.
 	 * @param string   $payment_method_type The charge's payment method type.
+	 * @param int      $created_at          When the intent was created; 0 when unknown.
 	 */
-	private function set_up_amount_capturable_updated_event( $order, $payment_method_type = Payment_Method::CARD ) {
+	private function set_up_amount_capturable_updated_event( $order, $payment_method_type = Payment_Method::CARD, int $created_at = 0 ) {
 		$this->event_body['type']           = 'payment_intent.amount_capturable_updated';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'id'       => 'pi_mock',
+			'id'       => self::AUTHORIZATION_INTENT_ID,
 			'status'   => Intent_Status::REQUIRES_CAPTURE,
-			'metadata' => [],
+			'created'  => $created_at,
+			'metadata' => [ 'order_id' => $order->get_id() ],
 			'charges'  => [ 'data' => [ [ 'payment_method_details' => [ 'type' => $payment_method_type ] ] ] ],
 		];
 

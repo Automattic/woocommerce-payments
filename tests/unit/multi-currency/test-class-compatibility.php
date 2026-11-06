@@ -82,6 +82,30 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->compatibility->should_convert_coupon_amount( null ) );
 	}
 
+	public function test_should_convert_coupon_min_max_amount_return_true_on_null_coupon() {
+		$this->assertTrue( $this->compatibility->should_convert_coupon_min_max_amount( null ) );
+	}
+
+	public function test_should_convert_coupon_min_max_amount_passes_coupon_to_filter() {
+		$coupon          = new WC_Coupon();
+		$filtered_coupon = null;
+		$skip_conversion = function ( $_unused_should_convert, $coupon_arg ) use ( &$filtered_coupon ) {
+			$filtered_coupon = $coupon_arg;
+			return false;
+		};
+
+		// Without a callback, the amounts are converted.
+		$this->assertTrue( $this->compatibility->should_convert_coupon_min_max_amount( $coupon ) );
+
+		// A callback receives the coupon and can skip the conversion.
+		add_filter( 'wcpay_multi_currency_should_convert_coupon_min_max_amount', $skip_conversion, 10, 2 );
+		$should_convert = $this->compatibility->should_convert_coupon_min_max_amount( $coupon );
+		remove_filter( 'wcpay_multi_currency_should_convert_coupon_min_max_amount', $skip_conversion, 10 );
+
+		$this->assertFalse( $should_convert );
+		$this->assertSame( $coupon, $filtered_coupon );
+	}
+
 	public function test_should_convert_product_price_return_true_on_null_product() {
 		$this->assertTrue( $this->compatibility->should_convert_product_price( null ) );
 	}

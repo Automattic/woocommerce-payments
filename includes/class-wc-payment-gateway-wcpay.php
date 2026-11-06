@@ -1959,6 +1959,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new \Exception( $error->get_error_message() );
 		}
 
+		// Before the setters below, so their save persists it: the takeover cleanup reads the mode as the sign
+		// of a new WooPayments attempt.
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
+
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		// Note: For confirmation tokens (ctoken_*), we don't store them here as they are not valid
 		// payment method IDs. The real payment method ID will be stored after intent creation.
@@ -1967,7 +1971,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
 		}
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
-		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
 		/**
 		 * Filters whether the order payment can be confirmed without a payment intent.
@@ -2153,7 +2156,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								add_query_arg(
 									[
 										'wc_payment_method' => self::GATEWAY_ID,
-										'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+										'_wpnonce' => wp_create_nonce( $this->get_process_redirect_nonce_action( $order->get_id() ) ),
 									],
 									$this->get_return_url( $order )
 								)
@@ -2558,8 +2561,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
+		$order_id = absint( get_query_var( 'order-received' ) );
+
 		// Verify softly so a stale/refreshed return URL no-ops instead of fatalling.
-		$is_nonce_valid = wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wcpay_process_redirect_order_nonce' );
+		$is_nonce_valid = wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), $this->get_process_redirect_nonce_action( $order_id ) );
 		if ( ! $is_nonce_valid ) {
 			return;
 		}
@@ -2572,7 +2577,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$order_id               = absint( get_query_var( 'order-received' ) );
 		$order_key_from_request = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
 		$save_payment_method    = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false;
 
@@ -3574,7 +3578,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
 	 */
 	protected function get_capture_type() {
-		return 'yes' === $this->get_option( 'manual_capture' ) ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
+		return $this->is_manual_capture_enabled() ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
+	}
+
+	/**
+	 * Checks whether payments are authorized at checkout and captured later.
+	 *
+	 * The setting applies to the whole store, but only the card gateway saves it. Every other
+	 * payment method's gateway has its own settings row, so they all read it from the card gateway.
+	 *
+	 * @return bool
+	 */
+	private function is_manual_capture_enabled(): bool {
+		return 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' );
 	}
 
 	/**
@@ -4507,6 +4523,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Builds the nonce action for the UPE redirect return.
+	 *
+	 * @param int $order_id The order ID.
+	 * @return string The nonce action.
+	 */
+	private function get_process_redirect_nonce_action( int $order_id ): string {
+		return 'wcpay_process_redirect_order_nonce_' . $order_id;
+	}
+
+	/**
 	 * Rejects an intent created for a different order.
 	 *
 	 * An order can end up storing another order's intent (e.g. copied by Subscriptions),
@@ -4845,6 +4871,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
+			// The form posts the setup intent ID, so only accept an intent created for this user's customer.
+			if ( $customer_id !== $setup_intent->get_customer_id() ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ),
+					'invalid_setup_intent_customer'
+				);
+			}
+
 			$payment_method = $setup_intent->get_payment_method_id();
 			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
 
@@ -4970,15 +5004,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			if ( WC()->session ) {
-				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
-					throw new Fraud_Prevention_Enabled_Exception(
-						__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
-						'fraud_prevention_enabled'
-					);
-				}
+			if ( ! $this->is_enabled() ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later.", 'woocommerce-payments' ),
+					'gateway_disabled'
+				);
+			}
+
+			if ( ! $this->is_saved_cards_enabled() ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later.", 'woocommerce-payments' ),
+					'saved_cards_disabled'
+				);
+			}
+
+			// The fraud prevention token lives in the session, which isn't loaded for every admin-ajax request.
+			WC()->initialize_session();
+
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
+				throw new Fraud_Prevention_Enabled_Exception(
+					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'fraud_prevention_enabled'
+				);
 			}
 
 			if ( WC_Rate_Limiter::retried_too_soon( 'add_payment_method_' . get_current_user_id() ) ) {
@@ -5154,12 +5203,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_upe_enabled_payment_method_ids_based_on_manual_capture() {
-		$automatic_capture = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
-		if ( $automatic_capture ) {
+		if ( ! $this->is_manual_capture_enabled() ) {
 			return $this->get_upe_enabled_payment_method_ids();
 		}
 
-		return array_intersect( $this->get_upe_enabled_payment_method_ids(), [ Payment_Method::CARD, Payment_Method::LINK ] );
+		return array_filter(
+			$this->get_upe_enabled_payment_method_ids(),
+			function ( $payment_method_id ) {
+				// Link follows the card's capture behavior.
+				if ( Payment_Method::LINK === $payment_method_id ) {
+					return true;
+				}
+
+				$payment_method = $this->payment_methods[ $payment_method_id ] ?? null;
+				return null !== $payment_method && $payment_method->allows_manual_capture();
+			}
+		);
 	}
 
 	/**

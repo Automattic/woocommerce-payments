@@ -49,6 +49,13 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	private static $pixel_base_url = 'https://pixel.wp.com/g.gif';
 
+	/**
+	 * Maximum number of events recorded from a single batched `platform_tracks` request.
+	 * Keep in sync with `maxBatchedShopperEvents` in `client/tracks/index.ts`.
+	 *
+	 * @var int
+	 */
+	const MAX_BATCHED_EVENTS = 20;
 
 	/**
 	 * Constructor.
@@ -102,6 +109,30 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			);
 		}
 
+		// Batched events, sent as a JSON-encoded array of `{ name, properties }` objects.
+		if ( isset( $_REQUEST['tracksEvents'] ) ) {
+			// Cleaned before decoding, the same way as the single-event `tracksEventProp` below.
+			$events = json_decode( wc_clean( wp_unslash( $_REQUEST['tracksEvents'] ) ), true );
+			if ( ! is_array( $events ) ) {
+				wp_send_json_error(
+					__( 'No valid event name or type.', 'woocommerce-payments' ),
+					400
+				);
+			}
+
+			foreach ( array_slice( $events, 0, self::MAX_BATCHED_EVENTS ) as $event ) {
+				if ( ! is_array( $event ) || empty( $event['name'] ) || ! is_string( $event['name'] ) ) {
+					continue;
+				}
+
+				$properties = isset( $event['properties'] ) && is_array( $event['properties'] ) ? $event['properties'] : [];
+				$this->maybe_record_event( sanitize_text_field( $event['name'] ), $properties );
+			}
+
+			wp_send_json_success();
+		}
+
+		// Single event. Still sent by pages cached before batching was added.
 		if ( ! isset( $_REQUEST['tracksEventName'] ) ) {
 			wp_send_json_error(
 				__( 'No valid event name or type.', 'woocommerce-payments' ),

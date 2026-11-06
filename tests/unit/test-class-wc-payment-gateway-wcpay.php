@@ -50,6 +50,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	const PENDING_REQUIREMENTS = true;
 
 	/**
+	 * The intent of a WooPayments attempt on an order another gateway took over.
+	 */
+	const EARLIER_ATTEMPT_INTENT_ID = 'pi_earlier_attempt';
+
+	/**
+	 * When another gateway took the order over.
+	 */
+	const PAYMENT_DETAILS_REMOVED_AT = 1700000000;
+
+	/**
 	 * System under test.
 	 *
 	 * The card gateway is predominantly used for testing compared to other gateways,
@@ -333,7 +343,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
-		$this->card_gateway->update_option( 'saved_cards', 'yes' );
+		// Saving through the gateway would also save every setting this test changed, after the rollback.
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'saved_cards' => 'yes' ] );
 
 		// Some tests simulate payment method parameters.
 		$payment_method_keys = [
@@ -438,7 +449,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// below would be processed if this were a GET. The request-method gate is the only
 		// thing that may stop it.
 		$_GET['wc_payment_method']            = 'woocommerce_payments';
-		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce_' . $order->get_id() );
 		$_GET['payment_intent']               = 'pi_mock';
 		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
 		$_GET['key']                          = $order->get_order_key();
@@ -514,7 +525,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// An otherwise processable return, so the unattached intent is the only thing that may stop it.
 		$_SERVER['REQUEST_METHOD']          = 'GET';
 		$_GET['wc_payment_method']          = 'woocommerce_payments';
-		$_GET['_wpnonce']                   = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['_wpnonce']                   = wp_create_nonce( 'wcpay_process_redirect_order_nonce_' . $order->get_id() );
 		$_GET['setup_intent']               = 'seti_mock';
 		$_GET['setup_intent_client_secret'] = 'seti_mock_secret';
 		$_GET['key']                        = $order->get_order_key();
@@ -532,6 +543,41 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$_GET['_wpnonce'],
 			$_GET['setup_intent'],
 			$_GET['setup_intent_client_secret'],
+			$_GET['key']
+		);
+	}
+
+	public function test_maybe_process_upe_redirect_ignores_previous_nonce_format() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// An otherwise processable return, so the nonce is the only thing that may stop it.
+		$_SERVER['REQUEST_METHOD']            = 'GET';
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
+
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
 			$_GET['key']
 		);
 	}
@@ -3437,6 +3483,98 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
+	public function test_create_setup_intent_ajax_does_not_create_setup_intent_when_gateway_is_disabled() {
+		$this->card_gateway->update_option( 'enabled', 'no' );
+
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		[ $response ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( "We're not able to add this payment method. Please try again later.", $response['data']['error']['message'] );
+	}
+
+	public function test_create_setup_intent_ajax_does_not_create_setup_intent_when_saved_cards_are_disabled() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+		$this->card_gateway->update_option( 'saved_cards', 'no' );
+
+		$this->mock_customer_service->expects( $this->never() )->method( 'create_customer_for_user' );
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		[ $response ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( "We're not able to add this payment method. Please try again later.", $response['data']['error']['message'] );
+	}
+
+	public function test_create_setup_intent_ajax_rejects_invalid_fraud_token_when_session_is_not_loaded() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+		$fraud_prevention_service_mock
+			->method( 'is_enabled' )
+			->willReturn( true );
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'wrong_token' )
+			->willReturn( false );
+
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+
+		$_POST = [
+			'wcpay-payment-method'         => 'pm_mock',
+			'wcpay-fraud-prevention-token' => 'wrong_token',
+		];
+
+		[ $response, $session_was_loaded ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertTrue( $session_was_loaded );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( "We're not able to add this payment method. Please refresh the page and try again.", $response['data']['error']['message'] );
+	}
+
+	public function test_create_setup_intent_ajax_creates_setup_intent_with_valid_fraud_token_when_session_is_not_loaded() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+		$fraud_prevention_service_mock
+			->method( 'is_enabled' )
+			->willReturn( true );
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'valid_token' )
+			->willReturn( true );
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[ 'id' => 'seti_mock_123' ]
+				)
+			);
+
+		$_POST = [
+			'wcpay-payment-method'         => 'pm_mock',
+			'wcpay-fraud-prevention-token' => 'valid_token',
+		];
+
+		[ $response ] = $this->call_create_setup_intent_ajax_without_session();
+
+		$this->assertTrue( $response['success'] );
+		$this->assertSame( 'seti_mock_123', $response['data']['id'] );
+	}
+
 	public function test_manage_customer_details_for_order_skips_customer_update_when_changing_subscription_payment_method() {
 		$order = WC_Helper_Order::create_order();
 
@@ -3504,8 +3642,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_setup_intention(
 					[
-						'status'         => Intent_Status::SUCCEEDED,
-						'payment_method' => 'pm_mock',
+						'status'            => Intent_Status::SUCCEEDED,
+						'customer_id'       => 'cus_12345',
+						'payment_method_id' => 'pm_mock',
 					]
 				)
 			);
@@ -3518,6 +3657,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$result = $this->card_gateway->add_payment_method();
 
 		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	public function test_add_payment_method_rejects_intent_for_another_customer() {
+		$_POST = [ 'wcpay-setup-intent' => 'seti_other' ];
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, 'seti_other' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'                => 'seti_other',
+						'status'            => Intent_Status::SUCCEEDED,
+						'customer_id'       => 'cus_other',
+						'payment_method_id' => 'pm_other',
+					]
+				)
+			);
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$result = $this->card_gateway->add_payment_method();
+
+		$this->assertEquals( 'error', $result['result'] );
+		$this->assertSame( "We're not able to add this payment method. Please try again later", wc_get_notices( 'error' )[0]['notice'] );
+		wc_clear_notices();
 	}
 
 	public function test_add_payment_method_no_customer() {
@@ -4082,6 +4254,45 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
 
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	/**
+	 * The mode is stored by the same save as the payment method: the cleanup for orders another gateway
+	 * takes over reads the mode to tell a new WooPayments attempt from the one it already removed, so the
+	 * payment method and the customer must never be stored without it.
+	 */
+	public function test_process_payment_for_order_stores_the_mode_with_the_payment_method() {
+		WC_Payments::mode()->test();
+		$_POST['payment_method'] = '';
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->add_payment_token( $token );
+		$order->save();
+		$pi = new Payment_Information( 'pm_test', $order, null, $token, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		// The setter fires this action right after its save, so a fresh load shows what that save persisted.
+		$mode_when_payment_method_saved = null;
+		$read_persisted_mode            = function () use ( $order, &$mode_when_payment_method_saved ) {
+			if ( null === $mode_when_payment_method_saved ) {
+				$mode_when_payment_method_saved = wc_get_order( $order->get_id() )->get_meta( '_wcpay_mode' );
+			}
+		};
+		add_action( 'wcpay_order_payment_method_id_updated', $read_persisted_mode );
+		try {
+			$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+		} finally {
+			remove_action( 'wcpay_order_payment_method_id_updated', $read_persisted_mode );
+		}
+
+		$this->assertSame( 'test', $mode_when_payment_method_saved );
 	}
 
 	public function test_no_billing_details_update_for_legacy_card_object() {
@@ -4751,6 +4962,28 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $afterpay->is_available() );
 	}
 
+	/**
+	 * @dataProvider manual_capture_gateway_provider
+	 */
+	public function test_manual_capture_keeps_only_payment_methods_that_can_capture_later( $payment_method_id ) {
+		$this->card_gateway->update_option( 'manual_capture', 'yes' );
+		$gateway = $this->get_gateway( $payment_method_id );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::KLARNA, Payment_Method::AMAZON_PAY ] );
+
+		$this->assertSame(
+			[ 'card', 'link', 'amazon_pay' ],
+			array_values( $gateway->get_upe_enabled_payment_method_ids_based_on_manual_capture() )
+		);
+	}
+
+	public function manual_capture_gateway_provider() {
+		return [
+			'card'       => [ Payment_Method::CARD ],
+			'amazon_pay' => [ Payment_Method::AMAZON_PAY ],
+			'klarna'     => [ Payment_Method::KLARNA ],
+		];
+	}
+
 	public function test_gateway_disabled_when_card_gateway_is_disabled() {
 		$this->card_gateway->update_option( 'enabled', 'no' );
 		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
@@ -5239,6 +5472,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( $error_notices );
 		$this->assertEquals( 'The selected payment method requires a total amount of at least $60.00.', $error_notices['error'][0]['notice'] );
 		$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
+	}
+
+	public function test_process_payment_through_another_payment_method_gateway_uses_manual_capture() {
+		$this->card_gateway->update_option( 'manual_capture', 'yes' );
+		$amazon_pay_gateway = $this->get_gateway( Payment_Method::AMAZON_PAY );
+		$this->set_payment_gateway_map( [ Payment_Method::AMAZON_PAY => $amazon_pay_gateway ] );
+		$order = WC_Helper_Order::create_order();
+
+		$_POST = [
+			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => 'woocommerce_payments_amazon_pay',
+		];
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		// process_payment() catches every exception, a failed mock expectation included, so the
+		// argument is recorded and checked after the call instead.
+		$capture_methods = [];
+		$request         = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->method( 'set_capture_method' )
+			->willReturnCallback(
+				function ( $manual_capture ) use ( &$capture_methods ) {
+					$capture_methods[] = $manual_capture;
+				}
+			);
+		$request->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
+
+		$amazon_pay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( [ true ], $capture_methods );
 	}
 
 	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
@@ -6530,6 +6796,35 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return $fraud_prevention_service_mock;
 	}
 
+	/**
+	 * Calls `create_setup_intent_ajax()` with no session loaded.
+	 *
+	 * @return array The decoded JSON response, and whether the handler loaded a session.
+	 */
+	private function call_create_setup_intent_ajax_without_session(): array {
+		$_REQUEST['_ajax_nonce'] = wp_create_nonce( 'wcpay_create_setup_intent_nonce' );
+
+		$session      = WC()->session;
+		WC()->session = null;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->create_setup_intent_ajax();
+			$response           = json_decode( ob_get_clean(), true );
+			$session_was_loaded = null !== WC()->session;
+		} finally {
+			WC()->session = $session;
+			unset( $_REQUEST['_ajax_nonce'] );
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		return [ $response, $session_was_loaded ];
+	}
+
 	private function create_charge_object() {
 		$created = new DateTime();
 		$created->setTimestamp( $this->mock_charge_created );
@@ -7791,6 +8086,33 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Completing a WooPayments attempt on an order another gateway took over leaves the order alone. The
+	 * cleanup removed the attempt's intent, so the callback has no intent to fetch and writes nothing; the
+	 * existing note names the intent the browser sent.
+	 */
+	public function test_update_order_status_ignores_an_earlier_attempt_on_an_order_paid_another_way() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'cod' );
+		$order->set_status( Order_Status::PROCESSING );
+		$order->update_meta_data( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY, self::PAYMENT_DETAILS_REMOVED_AT );
+		$order->save();
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$response = $this->call_update_order_status( $order, self::EARLIER_ATTEMPT_INTENT_ID );
+
+		$this->assertArrayHasKey( 'error', $response );
+		$this->assertArrayNotHasKey( 'return_url', $response );
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cod', $order->get_payment_method() );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '1700000000', (string) $order->get_meta( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY ) );
+		$this->assertMatchesRegularExpression( '/pi_earlier_attempt.*does not match any payments for this order/', $this->get_order_notes_text( $order->get_id() ) );
+	}
+
+	/**
 	 * @dataProvider provider_intent_metadata_not_matching_order
 	 *
 	 * @param callable $build_metadata Builds the intent metadata for the order being paid.
@@ -7908,8 +8230,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param WC_Order $order     The order to update.
 	 * @param string   $intent_id The intent ID the shopper authenticated.
+	 *
+	 * @return array The JSON response sent to the checkout.
 	 */
-	private function call_update_order_status( WC_Order $order, string $intent_id ) {
+	private function call_update_order_status( WC_Order $order, string $intent_id ): array {
 		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
 		$_POST                = [
 			'action'    => 'update_order_status',
@@ -7922,14 +8246,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		add_filter( 'wp_doing_ajax', '__return_true' );
 		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
 
+		ob_start();
 		try {
-			ob_start();
 			$this->card_gateway->update_order_status();
 		} finally {
-			ob_end_clean();
+			$response = (string) ob_get_clean();
 			remove_filter( 'wp_doing_ajax', '__return_true' );
 			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
 		}
+
+		return (array) json_decode( $response, true );
 	}
 
 	public function return_ajax_wp_die_handler() {
