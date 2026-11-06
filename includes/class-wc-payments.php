@@ -737,6 +737,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
 		require_once __DIR__ . '/migrations/class-retire-post-kyc-activation-emails.php';
+		require_once __DIR__ . '/migrations/class-invalidate-cached-shipping-rates.php';
 		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
@@ -762,6 +763,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Retire_Post_Kyc_Activation_Emails(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Invalidate_Cached_Shipping_Rates(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';

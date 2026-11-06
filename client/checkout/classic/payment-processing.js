@@ -32,6 +32,7 @@ import {
 	appendPaymentMethodErrorDataToForm,
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
+	isUsingSavedPaymentMethod,
 } from './upe-utils';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
@@ -449,6 +450,15 @@ export async function updateLinkEmail( email ) {
 		defaultValues: getUpeSettings( 'card' ).defaultValues,
 	} );
 }
+
+export const processPaymentIfNotUsingSavedMethod = ( api, $form ) => {
+	const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+	if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
+		return processPayment( api, $form, paymentMethodType );
+	}
+
+	appendFraudPreventionTokenInputToForm( $form );
+};
 
 /**
  * Handles the checkout process for the provided jQuery form and Stripe payment method type. The function blocks the
