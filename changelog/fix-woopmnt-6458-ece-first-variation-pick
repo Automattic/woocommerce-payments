@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixed Apple Pay and Google Pay on classic variable product pages sometimes showing an outdated price after a variation is selected.

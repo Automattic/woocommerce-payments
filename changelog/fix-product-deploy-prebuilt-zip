@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Deploy the release zip that QIT tested to WordPress.org instead of building it again.
