@@ -149,19 +149,25 @@ const shouldPrefetchEncryptedSessionData = async () => {
 };
 
 /**
- * The callback function to be called when an item is added to the cart.
- * Note: the 'experimental__woocommerce_blocks-cart-add-item' hook is triggered
- * after an item is added to the cart. So, no special handling is needed here.
- *
- * @return {Promise<void>} A promise that resolves when the callback is complete.
+ * Re-binds the checkout buttons and prefetches the WooPay session again once the cart settles.
+ * WooCommerce re-renders some buttons on cart changes (e.g. the blocks cart going from empty
+ * to filled), and several events often report the same change, so this waits for them to stop.
  */
-const addItemCallback = async () => {
-	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
-		return;
-	}
+const refreshAfterCartChange = debounce( () => {
+	handleWooPayDirectCheckout( [
+		...WooPayDirectCheckout.getCheckoutButtonElements(),
+		WooPayDirectCheckout.getMiniCartProceedToCheckoutButton(),
+		WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton(),
+	] );
+}, 400 );
 
-	WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
+/**
+ * The prefetched session carries a copy of the cart, which WooPay shows first.
+ * Drop it right away, so a click before the refresh fetches a fresh one.
+ */
+const handleCartChange = () => {
+	WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+	refreshAfterCartChange();
 };
 
 /**
@@ -173,8 +179,8 @@ const addItemCallback = async () => {
  * @type {DebouncedFunc<(function({product: *}): Promise<void>)|*>} The debounced callback function.
  */
 const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
+	WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 		return;
 	}
 
@@ -198,10 +204,7 @@ const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
 	const isItemQtyUpdatedBeforeOutOfAttempts = attempts > 0;
 	if ( isItemQtyUpdatedBeforeOutOfAttempts ) {
 		// Only prefetch the WooPay session data if the item's quantity is updated.
-		WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-	} else {
-		// Force the WooPay session data to be fetched upon button click.
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+		handleCartChange();
 	}
 }, 400 );
 
@@ -212,8 +215,8 @@ const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
  * @return {Promise<void>} A promise that resolves when the callback is complete.
  */
 const removeItemCallback = async ( { product } ) => {
+	WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 		return;
 	}
 
@@ -237,10 +240,7 @@ const removeItemCallback = async ( { product } ) => {
 	const isItemRemovedBeforeOutOfAttempts = attempts > 0;
 	if ( isItemRemovedBeforeOutOfAttempts ) {
 		// Only prefetch the WooPay session data if the item is removed.
-		WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-	} else {
-		// Force the WooPay session data to be fetched upon button click.
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+		handleCartChange();
 	}
 };
 
@@ -261,7 +261,7 @@ window.addEventListener( 'load', async () => {
 	addAction(
 		'experimental__woocommerce_blocks-cart-add-item',
 		'wcpay_woopay_direct_checkout',
-		addItemCallback
+		handleCartChange
 	);
 
 	addAction(
@@ -274,6 +274,21 @@ window.addEventListener( 'load', async () => {
 		'experimental__woocommerce_blocks-cart-remove-item',
 		'wcpay_woopay_direct_checkout',
 		removeItemCallback
+	);
+
+	// The hooks above only fire from the React cart and product button. These events also cover
+	// the Interactivity API cart (WC 9.8+), classic add-to-cart buttons and the classic mini-cart.
+	document.body.addEventListener(
+		'wc-blocks_added_to_cart',
+		handleCartChange
+	);
+	window.addEventListener(
+		'wc-blocks_store_sync_required',
+		handleCartChange
+	);
+	jQuery( document.body ).on(
+		'added_to_cart removed_from_cart',
+		handleCartChange
 	);
 
 	// Collect iAPI mini-cart buttons (if present) and merge with checkout buttons

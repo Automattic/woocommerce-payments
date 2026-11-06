@@ -60,6 +60,29 @@ describe( 'WooPayDirectCheckout', () => {
 			} );
 		} );
 
+		it( 'should handle a click once when the same element is passed again', async () => {
+			WooPayDirectCheckout.getWooPayCheckoutUrl.mockResolvedValue(
+				'https://woopay.test/woopay?platform_checkout_key=1234567890'
+			);
+
+			WooPayDirectCheckout.addRedirectToWooPayEventListener(
+				elements,
+				true
+			);
+			WooPayDirectCheckout.addRedirectToWooPayEventListener(
+				elements,
+				true
+			);
+
+			elements[ 0 ].click();
+
+			await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+			expect(
+				WooPayDirectCheckout.getWooPayCheckoutUrl
+			).toHaveBeenCalledTimes( 1 );
+		} );
+
 		it( 'should add loading spinner when shortcode cart button is clicked', () => {
 			WooPayDirectCheckout.addRedirectToWooPayEventListener(
 				elements,
