@@ -56,6 +56,57 @@ describe( 'WCPayAPI', () => {
 		} );
 	} );
 
+	describe( '__getStripe betas', () => {
+		const PUBLISHABLE_KEY = 'pk_test_123';
+
+		beforeEach( () => {
+			window.Stripe = jest.fn();
+		} );
+
+		afterEach( () => {
+			window.Stripe = undefined;
+		} );
+
+		test( 'adds the Link autofill beta on v3', () => {
+			const api = new WCPayAPI(
+				{
+					publishableKey: PUBLISHABLE_KEY,
+					isStripeLinkEnabled: true,
+					isStripeJsDahlia: false,
+				},
+				request
+			);
+
+			api.__getStripe();
+
+			expect( window.Stripe ).toHaveBeenCalledWith( 'pk_test_123', {
+				locale: undefined,
+				betas: [
+					'card_country_event_beta_1',
+					'link_autofill_modal_beta_1',
+				],
+			} );
+		} );
+
+		test( 'leaves out the Link autofill beta on Dahlia', () => {
+			const api = new WCPayAPI(
+				{
+					publishableKey: PUBLISHABLE_KEY,
+					isStripeLinkEnabled: true,
+					isStripeJsDahlia: true,
+				},
+				request
+			);
+
+			api.__getStripe();
+
+			expect( window.Stripe ).toHaveBeenCalledWith( 'pk_test_123', {
+				locale: undefined,
+				betas: [ 'card_country_event_beta_1' ],
+			} );
+		} );
+	} );
+
 	describe( 'confirmIntent', () => {
 		const payForOrderUrls = [
 			'/checkout/order-pay/456/#wcpay-confirm-pi:123:secret:nonce',

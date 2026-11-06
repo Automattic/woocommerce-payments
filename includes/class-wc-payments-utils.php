@@ -1429,6 +1429,34 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the Stripe.js URL to load, which depends on the Dahlia feature flag.
+	 *
+	 * @return string
+	 */
+	public static function get_stripe_js_url(): string {
+		return WC_Payments_Features::is_stripe_js_dahlia_enabled()
+			? 'https://js.stripe.com/dahlia/stripe.js'
+			: 'https://js.stripe.com/v3/';
+	}
+
+	/**
+	 * Registers Stripe.js under the `stripe` handle.
+	 *
+	 * The WooCommerce Stripe Gateway registers Stripe.js under the same handle, so a store running both
+	 * plugins only loads it once, from whichever plugin registers first. With the Dahlia flag on, the URL
+	 * and the (empty) version match what that plugin registers, so either way the page gets the same tag.
+	 */
+	public static function register_stripe_js() {
+		wp_register_script(
+			'stripe',
+			self::get_stripe_js_url(),
+			[],
+			WC_Payments_Features::is_stripe_js_dahlia_enabled() ? null : '3.0',
+			true
+		);
+	}
+
+	/**
 	 * Returns the order the current pay-for-order request is allowed to read, if any.
 	 *
 	 * The `pay_for_order` capability cannot gate an order on its own: WooCommerce grants it to

@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js/pure';
 
 /**
  * Internal dependencies
@@ -22,6 +22,7 @@ import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getExpressCheckoutConfig } from 'utils/express-checkout';
+import { ensureStripeJsScript } from 'wcpay/utils/stripe-js';
 import ExpressCheckoutSettingsNotices from './express-checkout-settings-notices';
 import {
 	usePaymentRequestButtonType,
@@ -124,6 +125,9 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 
 	const stripePromise = useMemo( () => {
 		const stripeSettings = getExpressCheckoutConfig( 'stripe' );
+		// Add the flag's Stripe.js tag first, so `loadStripe()` reuses it
+		// instead of adding the release `@stripe/stripe-js` is pinned to.
+		ensureStripeJsScript();
 		return loadStripe( stripeSettings.publishableKey, {
 			stripeAccount: stripeSettings.accountId,
 			locale: stripeSettings.locale,

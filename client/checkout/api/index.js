@@ -83,6 +83,7 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isStripeLinkEnabled,
+			isStripeJsDahlia,
 		} = this.options;
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
@@ -97,7 +98,9 @@ export default class WCPayAPI {
 
 		if ( ! this.stripe ) {
 			let betas = [ 'card_country_event_beta_1' ];
-			if ( isStripeLinkEnabled ) {
+			// Nothing calls `linkAutofillModal()`, so the beta does nothing. On Dahlia,
+			// Stripe.js would send it as an extra version header we haven't tested.
+			if ( isStripeLinkEnabled && ! isStripeJsDahlia ) {
 				// https://stripe.com/docs/payments/link/autofill-modal
 				betas = betas.concat( [ 'link_autofill_modal_beta_1' ] );
 			}

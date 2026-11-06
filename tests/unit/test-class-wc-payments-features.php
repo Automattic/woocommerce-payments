@@ -27,6 +27,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
+		'_wcpay_feature_stripe_js_dahlia'        => 'stripeJsDahlia',
 	];
 
 	public function set_up() {
@@ -130,6 +131,15 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_dispute_outcome_view_can_be_disabled() {
 		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
 		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	}
+
+	public function test_is_stripe_js_dahlia_disabled_by_default() {
+		$this->assertFalse( WC_Payments_Features::is_stripe_js_dahlia_enabled() );
+	}
+
+	public function test_is_stripe_js_dahlia_can_be_enabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_JS_DAHLIA_FLAG_NAME, '1' );
+		$this->assertTrue( WC_Payments_Features::is_stripe_js_dahlia_enabled() );
 	}
 
 	public function test_is_woopay_eligible_returns_true() {

@@ -25,6 +25,7 @@ import {
 	unblockUI,
 } from './payment-processing';
 import enqueueFraudScripts from 'fraud-scripts';
+import { isStripeJsDahlia } from 'wcpay/utils/stripe-js';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
 import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
@@ -63,6 +64,7 @@ jQuery( function ( $ ) {
 			isStripeLinkEnabled: isLinkEnabled(
 				getUPEConfig( 'paymentMethodsConfig' )
 			),
+			isStripeJsDahlia: isStripeJsDahlia(),
 		},
 		apiRequest
 	);

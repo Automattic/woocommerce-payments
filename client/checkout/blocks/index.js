@@ -20,6 +20,7 @@ import { SavedTokenHandler } from './saved-token-handler';
 import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
+import { isStripeJsDahlia } from 'wcpay/utils/stripe-js';
 import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
@@ -45,6 +46,7 @@ const api = new WCPayAPI(
 		forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 		locale: getUPEConfig( 'locale' ),
 		isStripeLinkEnabled,
+		isStripeJsDahlia: isStripeJsDahlia(),
 	},
 	request
 );
