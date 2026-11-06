@@ -1959,6 +1959,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new \Exception( $error->get_error_message() );
 		}
 
+		// Before the setters below, so their save persists it: the takeover cleanup reads the mode as the sign
+		// of a new WooPayments attempt.
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
+
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		// Note: For confirmation tokens (ctoken_*), we don't store them here as they are not valid
 		// payment method IDs. The real payment method ID will be stored after intent creation.
@@ -1967,7 +1971,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
 		}
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
-		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
 		/**
 		 * Filters whether the order payment can be confirmed without a payment intent.
