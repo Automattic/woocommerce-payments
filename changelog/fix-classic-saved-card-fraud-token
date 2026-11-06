@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed saved card payments on classic checkout and order-pay when card testing protection is enabled
