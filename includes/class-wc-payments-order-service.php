@@ -2095,9 +2095,10 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function capture_authorization_on_order_status_change( int $order_id ) {
-		$order = new WC_Order( $order_id );
+		// wc_get_order() returns false for a missing order, where `new WC_Order` throws.
+		$order = wc_get_order( $order_id );
 
-		if ( null !== $order ) {
+		if ( $order instanceof WC_Order ) {
 			$intent_id = $this->get_intent_id_for_order( $order );
 			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
