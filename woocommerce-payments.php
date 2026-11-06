@@ -11,7 +11,7 @@
  * WC tested up to: 11.2.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
- * Version: 11.2.0
+ * Version: 11.2.1
  * Requires Plugins: woocommerce
  * License: GPLv3 or later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -301,9 +301,37 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 
 		require_once $wcs_core_path . 'includes/class-wc-subscriptions-core-plugin.php';
 		new WC_Subscriptions_Core_Plugin();
+
+		add_filter( 'wc_subscriptions_object_data', 'wcpay_prepare_subscriptions_copied_data', PHP_INT_MAX );
 	}
 }
 add_action( 'plugins_loaded', 'wcpay_init_subscriptions_core', 0 );
+
+if ( ! function_exists( 'wcpay_prepare_subscriptions_copied_data' ) ) {
+	/**
+	 * Keeps string values copied by the subscriptions-core data copier as they are on HPOS stores.
+	 *
+	 * The copier decodes every value after this filter, but HPOS values come from the order CRUD and are already
+	 * decoded. Encoding strings once more means the copier's decode returns them unchanged.
+	 *
+	 * @param mixed $data The data the copier is about to set on the destination object.
+	 *
+	 * @return mixed
+	 */
+	function wcpay_prepare_subscriptions_copied_data( $data ) {
+		if ( ! is_array( $data ) || ! wcs_is_custom_order_tables_usage_enabled() ) {
+			return $data;
+		}
+
+		foreach ( $data as $key => $value ) {
+			if ( is_string( $value ) ) {
+				$data[ $key ] = maybe_serialize( $value );
+			}
+		}
+
+		return $data;
+	}
+}
 
 /**
  * Check if WCPay is installed alongside an old version of Jetpack (8.1 or earlier). Due to the autoloader code in those old

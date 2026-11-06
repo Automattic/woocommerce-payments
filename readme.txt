@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.3
-Stable tag: 11.2.0
+Stable tag: 11.2.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -94,6 +94,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 11.2.1 - 2026-11-03 =
+* Update - Security update.
 
 = 11.2.0 - 2026-10-08 =
 * Add - Add support for Onelink in Great Britain
