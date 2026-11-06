@@ -49,10 +49,11 @@ global.$ = jest.fn( () => ( {
 	},
 	trigger: ( event ) => {
 		if ( event === 'updated_cart_totals' && updatedCartTotalsCallback ) {
-			updatedCartTotalsCallback();
+			return updatedCartTotalsCallback();
 		}
 	},
 } ) );
+global.jQuery = ( callback ) => callback( global.$ );
 
 require( '../index.js' );
 
@@ -110,61 +111,51 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 } );
 
 describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', () => {
+	const CLASSIC_PROCEED_BUTTON = document.createElement( 'a' );
+
 	beforeEach( () => {
 		jest.clearAllMocks();
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
+		WooPayDirectCheckout.getClassicProceedToCheckoutButton.mockReturnValue(
+			CLASSIC_PROCEED_BUTTON
+		);
 	} );
 
-	it( 'calls `addRedirectToWooPayEventListener` method if third-party cookies are enabled and user is logged-in', async () => {
+	it( 're-attaches the logged-in redirect to the classic button if third-party cookies are enabled and user is logged-in', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
-
 		fireEvent.load( window );
-
 		await new Promise( ( resolve ) => setImmediate( resolve ) );
+		jest.clearAllMocks();
 
 		await $( document.body ).trigger( 'updated_cart_totals' );
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
-		expect( WooPayDirectCheckout.init ).toHaveBeenCalled();
-		expect(
-			WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled
-		).toHaveBeenCalled();
-		expect( WooPayDirectCheckout.isUserLoggedIn ).toHaveBeenCalled();
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).toHaveBeenCalled();
 		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( expect.any( Array ), true );
+		).toHaveBeenCalledWith( [ CLASSIC_PROCEED_BUTTON ], true );
 	} );
 
-	it( 'calls `addRedirectToWooPayEventListener` method with "checkout_redirect" if third-party cookies are disabled', async () => {
+	it( 're-attaches the "checkout_redirect" redirect to the classic button if third-party cookies are disabled', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
-		WooPayDirectCheckout.getClassicProceedToCheckoutButton.mockReturnValue(
-			[]
-		);
-
 		fireEvent.load( window );
-
 		await new Promise( ( resolve ) => setImmediate( resolve ) );
+		jest.clearAllMocks();
 
 		await $( document.body ).trigger( 'updated_cart_totals' );
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
-		expect( WooPayDirectCheckout.init ).toHaveBeenCalled();
-		expect(
-			WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled
-		).toHaveBeenCalled();
 		expect( WooPayDirectCheckout.isUserLoggedIn ).not.toHaveBeenCalled();
 		expect(
-			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
-		).not.toHaveBeenCalled();
-		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( expect.any( Array ), false );
+		).toHaveBeenCalledWith( [ CLASSIC_PROCEED_BUTTON ], false );
 	} );
 } );
 

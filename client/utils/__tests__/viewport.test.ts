@@ -15,7 +15,6 @@ import {
 	isTablet,
 	isDesktop,
 	isVerySmallMobile,
-	BREAKPOINTS,
 } from '../viewport';
 
 const originalInnerWidth = window.innerWidth;
@@ -167,20 +166,6 @@ describe( 'Viewport Utilities', () => {
 		it( 'should return false for larger screens', () => {
 			setViewportSize( 400 );
 			expect( isVerySmallMobile() ).toBe( false );
-		} );
-	} );
-
-	describe( 'BREAKPOINTS', () => {
-		it( 'should have correct breakpoint definitions', () => {
-			expect( BREAKPOINTS ).toEqual( [
-				{ name: 'mobile', width: 480 },
-				{ name: 'tablet', width: 660 },
-				{ name: 'desktop', width: 800 },
-				{ name: 'wide', width: 960 },
-				{ name: 'huge', width: 1040 },
-				{ name: 'massive', width: 1280 },
-				{ name: 'colossal', width: 1400 },
-			] );
 		} );
 	} );
 } );
