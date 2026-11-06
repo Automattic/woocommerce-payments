@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cd636f3958a701d4e148bb2f17ead3b1",
+    "content-hash": "10916d8266df106eb7e65a7f188fa167",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -4240,21 +4240,22 @@
         },
         {
             "name": "sirbrillig/phpcs-variable-analysis",
-            "version": "v2.13.0",
+            "version": "v3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sirbrillig/phpcs-variable-analysis.git",
-                "reference": "a15e970b8a0bf64cfa5e86d941f5e6b08855f369"
+                "reference": "282f8a46b8fb86731de8c1570fc91367f2884a8f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sirbrillig/phpcs-variable-analysis/zipball/a15e970b8a0bf64cfa5e86d941f5e6b08855f369",
-                "reference": "a15e970b8a0bf64cfa5e86d941f5e6b08855f369",
+                "url": "https://api.github.com/repos/sirbrillig/phpcs-variable-analysis/zipball/282f8a46b8fb86731de8c1570fc91367f2884a8f",
+                "reference": "282f8a46b8fb86731de8c1570fc91367f2884a8f",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0",
-                "squizlabs/php_codesniffer": "^3.5.7 || ^4.0.0"
+                "phpcsstandards/phpcsutils": "^1.0",
+                "squizlabs/php_codesniffer": "^3.13.5 || ^4.0.0"
             },
             "require-dev": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^0.7 || ^1.0",
@@ -4292,7 +4293,7 @@
                 "source": "https://github.com/sirbrillig/phpcs-variable-analysis",
                 "wiki": "https://github.com/sirbrillig/phpcs-variable-analysis/wiki"
             },
-            "time": "2025-09-30T22:22:48+00:00"
+            "time": "2026-07-27T18:26:36+00:00"
         },
         {
             "name": "slevomat/coding-standard",
