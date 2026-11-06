@@ -2370,7 +2370,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			'customer_name'          => trim( $order->get_formatted_billing_full_name() ),
 			'customer_email'         => $order->get_billing_email(),
 			'fraud_meta_box_type'    => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
-			'ip_address'             => $order->get_customer_ip_address(),
+			'ip_address'             => (string) rest_is_ip_address( $order->get_customer_ip_address() ),
 			'suggested_product_type' => $this->determine_suggested_product_type( $order ),
 		];
 
