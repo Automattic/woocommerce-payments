@@ -126,6 +126,8 @@ describe( 'saved card submissions', () => {
 
 	afterEach( () => {
 		appendFraudPreventionTokenInputToForm.mockReset();
+		getSelectedUPEGatewayPaymentMethod.mockReset();
+		isUsingSavedPaymentMethod.mockReset();
 		delete window.wcpayFraudPreventionToken;
 		document.body.innerHTML = '';
 		jest.clearAllMocks();
@@ -138,7 +140,9 @@ describe( 'saved card submissions', () => {
 				document.body
 			);
 
-			processPaymentIfNotUsingSavedMethod( apiMock, $form );
+			expect(
+				processPaymentIfNotUsingSavedMethod( apiMock, $form )
+			).toBeUndefined();
 			expect(
 				$form.find( 'input[name="wcpay-fraud-prevention-token"]' )
 			).toHaveLength( 1 );

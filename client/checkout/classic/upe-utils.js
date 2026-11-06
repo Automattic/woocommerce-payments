@@ -218,7 +218,8 @@ export const appendPaymentMethodErrorDataToForm = (
  */
 export const appendFraudPreventionTokenInputToForm = ( $form ) => {
 	const fraudPreventionToken = window.wcpayFraudPreventionToken ?? '';
-	$form.find( '#wcpay-fraud-prevention-token' ).remove();
+	// cleaning up all the ones in the DOM, just in case
+	$form.find( 'input[name="wcpay-fraud-prevention-token"]' ).remove();
 	$form.append(
 		`<input type="hidden" id="wcpay-fraud-prevention-token" name="wcpay-fraud-prevention-token" value="${ fraudPreventionToken }" />`
 	);
