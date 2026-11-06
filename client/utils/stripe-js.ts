@@ -24,9 +24,6 @@ export const getStripeJsUrl = (): string => {
 	return defaultStripeJsUrl;
 };
 
-export const isStripeJsDahlia = (): boolean =>
-	getStripeJsUrl().includes( '/dahlia/' );
-
 export const hasStripeJsScript = (): boolean =>
 	Array.from(
 		document.querySelectorAll< HTMLScriptElement >(

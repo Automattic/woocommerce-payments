@@ -61,6 +61,7 @@ describe( 'WCPayAPI', () => {
 
 		beforeEach( () => {
 			window.Stripe = jest.fn();
+			window.Stripe.version = 3;
 		} );
 
 		afterEach( () => {
@@ -72,7 +73,6 @@ describe( 'WCPayAPI', () => {
 				{
 					publishableKey: PUBLISHABLE_KEY,
 					isStripeLinkEnabled: true,
-					isStripeJsDahlia: false,
 				},
 				request
 			);
@@ -90,11 +90,11 @@ describe( 'WCPayAPI', () => {
 		} );
 
 		test( 'leaves out the Link autofill beta on Dahlia', () => {
+			window.Stripe.version = 'dahlia';
 			const api = new WCPayAPI(
 				{
 					publishableKey: PUBLISHABLE_KEY,
 					isStripeLinkEnabled: true,
-					isStripeJsDahlia: true,
 				},
 				request
 			);
