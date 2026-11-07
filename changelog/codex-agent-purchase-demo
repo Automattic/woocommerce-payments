@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add a disabled-by-default agent purchase experiment in WooPayments with local demo tooling.
