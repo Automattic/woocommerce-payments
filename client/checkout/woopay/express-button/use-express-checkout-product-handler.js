@@ -13,6 +13,7 @@ import {
 	getIAPIVariationId,
 } from 'wcpay/utils/wc-product-page-selectors';
 import { isEmail } from 'wcpay/utils/email-validation';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 
 /**
  * Get the product form element.
@@ -29,7 +30,7 @@ export const getProductFormElement = () => {
 	);
 };
 
-const useExpressCheckoutProductHandler = ( api ) => {
+const useExpressCheckoutProductHandler = ( api, context ) => {
 	const getAttributes = () => {
 		const select = document
 			.querySelector( '.variations_form' )
@@ -60,9 +61,10 @@ const useExpressCheckoutProductHandler = ( api ) => {
 				data.hasOwnProperty( requiredField ) &&
 				! data[ requiredField ]
 			) {
-				alert(
+				showErrorMessage(
+					context,
 					__(
-						'Please fill out all required fields',
+						'Please fill out all required fields.',
 						'woocommerce-payments'
 					)
 				);
@@ -76,9 +78,10 @@ const useExpressCheckoutProductHandler = ( api ) => {
 					.split( ',' )
 					.every( ( email ) => isEmail( email.trim() ) )
 			) {
-				alert(
+				showErrorMessage(
+					context,
 					__(
-						'Please type only valid emails',
+						'Please enter valid email addresses.',
 						'woocommerce-payments'
 					)
 				);
@@ -88,9 +91,10 @@ const useExpressCheckoutProductHandler = ( api ) => {
 
 		if ( data.hasOwnProperty( 'wc_gc_giftcard_to' ) ) {
 			if ( ! isEmail( data.wc_gc_giftcard_to ) ) {
-				alert(
+				showErrorMessage(
+					context,
 					__(
-						'Please type only valid emails',
+						'Please enter a valid email address.',
 						'woocommerce-payments'
 					)
 				);
