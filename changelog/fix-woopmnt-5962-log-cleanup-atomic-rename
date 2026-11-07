@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use atomic temp-file-then-rename for migration log file merging to prevent dropped entries during cleanup.
