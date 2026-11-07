@@ -2136,11 +2136,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ 'cancelled', 'refunded' ] ],
 				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
@@ -2158,6 +2159,87 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'update_status' )
 			->with( Order_Status::FAILED );
+
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for an order that was cancelled in the meantime,
+	 * for example a webhook delivered late, leaves the order status alone and only adds a note.
+	 */
+	public function test_payment_intent_fails_on_cancelled_order_keeps_order_status() {
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_123123123123123', // Payment method ID.
+						'payment_method_details' => [
+							'type' => Payment_Method::CARD,
+						],
+					],
+				],
+			],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'message'        => 'error message',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => Payment_Method::CARD,
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( 'pm_123123123123123' );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		// The order is cancelled: only the cancelled/refunded check matches.
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturnCallback(
+				function ( $status ) {
+					return [ 'cancelled', 'refunded' ] === $status;
+				}
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'arrived after this order was cancelled or refunded, so the order status was not changed' ),
+					$this->stringContains( 'With the following message: <code>error message</code>' )
+				)
+			);
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -2208,11 +2290,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ 'cancelled', 'refunded' ] ],
 				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
@@ -2296,11 +2379,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ 'cancelled', 'refunded' ] ],
 				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );

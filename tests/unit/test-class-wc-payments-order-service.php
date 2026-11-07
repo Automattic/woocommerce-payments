@@ -1772,6 +1772,73 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A payment failure that arrives after the order was cancelled or refunded, for example a webhook
+	 * delivered late, leaves the order status alone so WooCommerce sends no failed-order email.
+	 *
+	 * @dataProvider provider_order_no_longer_awaiting_payment
+	 */
+	public function test_mark_payment_failed_leaves_order_no_longer_awaiting_payment_unchanged( string $order_status, string $expected_status ) {
+		// Arrange: Put the order in a status where its payment is no longer awaited.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$charge = $intent->get_charge();
+		$this->order->set_status( $order_status );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::SUCCEEDED );
+		$notes_before          = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$failed_actions_before = did_action( 'woocommerce_order_status_failed' );
+
+		// Act: Deliver the payment failure.
+		$this->order_service->mark_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id(), 'Your card was declined.' );
+
+		// Assert: The status did not change and no failed-order transition fired.
+		$this->assertSame( $expected_status, wc_get_order( $this->order->get_id() )->get_status() );
+		$this->assertSame( $failed_actions_before, did_action( 'woocommerce_order_status_failed' ) );
+
+		// Assert: One note says why the status was left alone, with a link to the payment and the failure reason.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ) + 1, $notes );
+		$this->assertStringContainsString( 'arrived after this order was cancelled or refunded, so the order status was not changed', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( 'Your card was declined.', $notes[0]->content );
+
+		// Assert: The intent status already stored on the order is kept, not replaced by the late event's.
+		$this->assertSame( 'succeeded', $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: The order is not left locked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+
+		// Assert: The same failure delivered again adds no second note.
+		$this->order_service->mark_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id(), 'Your card was declined.' );
+		$this->assertCount( count( $notes_before ) + 1, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+	}
+
+	public function provider_order_no_longer_awaiting_payment(): array {
+		return [
+			'cancelled' => [ Order_Status::CANCELLED, 'cancelled' ],
+			'refunded'  => [ Order_Status::REFUNDED, 'refunded' ],
+		];
+	}
+
+	/**
+	 * A payment failure still fails an on-hold order: that is how a bounced bank transfer is recorded.
+	 */
+	public function test_mark_payment_failed_still_fails_on_hold_order() {
+		// Arrange: Put the order on hold, as a pending bank transfer would be.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$charge = $intent->get_charge();
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+
+		// Act: Deliver the payment failure.
+		$this->order_service->mark_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), $charge->get_id(), 'The bank transfer was returned.' );
+
+		// Assert: The order is failed, with the usual failure note.
+		$this->assertSame( 'failed', wc_get_order( $this->order->get_id() )->get_status() );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $notes[0]->content );
+	}
+
+	/**
 	 * Tests if the payment capture was noted failed.
 	 *
 	 * @dataProvider mark_payment_capture_failed_provider
@@ -3210,6 +3277,41 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: WC core won't fire hooks (status didn't change), so our code manually triggers the notification.
 		$this->assertGreaterThan( $action_count_before, did_action( 'woocommerce_order_status_failed_notification' ), 'Notification should fire manually when order was already failed.' );
+	}
+
+	/**
+	 * A card reader payment failure that arrives after the order was cancelled leaves the order alone
+	 * and sends no failed-order notification.
+	 */
+	public function test_mark_terminal_payment_failed_leaves_cancelled_order_unchanged() {
+		// Arrange: Cancel the order.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::CANCELLED );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::CANCELED );
+		$notes_before                = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$failed_actions_before       = did_action( 'woocommerce_order_status_failed' );
+		$failed_notifications_before = did_action( 'woocommerce_order_status_failed_notification' );
+
+		// Act: Deliver the card reader payment failure.
+		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test123', 'Card declined' );
+
+		// Assert: The status did not change and no failed-order transition or notification fired.
+		$this->assertSame( 'cancelled', wc_get_order( $this->order->get_id() )->get_status() );
+		$this->assertSame( $failed_actions_before, did_action( 'woocommerce_order_status_failed' ) );
+		$this->assertSame( $failed_notifications_before, did_action( 'woocommerce_order_status_failed_notification' ) );
+
+		// Assert: One note says why the status was left alone, with the failure reason.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ) + 1, $notes );
+		$this->assertStringContainsString( 'arrived after this order was cancelled or refunded, so the order status was not changed', $notes[0]->content );
+		$this->assertStringContainsString( 'Card declined', $notes[0]->content );
+
+		// Assert: The intent status already stored on the order is kept.
+		$this->assertSame( 'canceled', $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: The order is not left locked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
 	}
 
 	/**
