@@ -1983,8 +1983,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::FAILED ] ],
-				[ [ 'cancelled', 'refunded' ] ]
+				[ [ 'cancelled', 'refunded' ] ],
+				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
 
@@ -2137,8 +2137,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::FAILED ] ],
-				[ [ 'cancelled', 'refunded' ] ]
+				[ [ 'cancelled', 'refunded' ] ],
+				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
 
@@ -2226,8 +2226,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->withConsecutive(
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::FAILED ] ],
-				[ [ 'cancelled', 'refunded' ] ]
+				[ [ 'cancelled', 'refunded' ] ],
+				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
 
