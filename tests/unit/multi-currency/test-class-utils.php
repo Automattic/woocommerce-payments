@@ -17,12 +17,29 @@ class WCPay_Multi_Currency_Utils_Tests extends WCPAY_UnitTestCase {
 	private $utils;
 
 	/**
+	 * $_SERVER values the is_admin_api_request() tests overwrite.
+	 *
+	 * @var array
+	 */
+	private $original_server;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->utils = new WCPay\MultiCurrency\Utils();
+		$this->utils           = new WCPay\MultiCurrency\Utils();
+		$this->original_server = $_SERVER;
+	}
+
+	/**
+	 * Restores $_SERVER so a leftover wp-admin referer does not make later suites look like admin requests.
+	 */
+	public function tear_down() {
+		$_SERVER = $this->original_server;
+
+		parent::tear_down();
 	}
 
 	public function test_is_call_in_backtrace_return_false() {
@@ -65,5 +82,22 @@ class WCPay_Multi_Currency_Utils_Tests extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->utils->is_admin_api_request() );
 
 		unset( $_REQUEST['rest_route'] );
+	}
+
+	public function test_matched_store_api_route_takes_precedence_over_the_url() {
+		$_SERVER['HTTP_REFERER'] = 'http://example.org/wp-admin/';
+		$_SERVER['REQUEST_URI']  = trailingslashit( rest_get_url_prefix() ) . 'batch/v1';
+
+		$this->assertFalse( $this->utils->is_store_api_request() );
+		$this->assertTrue( $this->utils->is_admin_api_request() );
+
+		$this->utils->set_matched_store_api_route( true );
+
+		try {
+			$this->assertTrue( $this->utils->is_store_api_request() );
+			$this->assertFalse( $this->utils->is_admin_api_request() );
+		} finally {
+			$this->utils->set_matched_store_api_route( false );
+		}
 	}
 }

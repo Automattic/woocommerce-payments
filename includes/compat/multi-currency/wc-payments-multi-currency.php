@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Load customer multi-currency if feature is enabled or if it is the setup page.
+ * Whether this is the Multi-Currency setup flow.
  */
 function wcpay_multi_currency_onboarding_check() {
 	$is_setup_page = false;
@@ -21,7 +21,7 @@ function wcpay_multi_currency_onboarding_check() {
 		}
 	}
 
-	return $is_setup_page;
+	return $is_setup_page && current_user_can( 'manage_woocommerce' );
 }
 
 /**

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Send shopper Tracks events in a single request per page to reduce server load.
