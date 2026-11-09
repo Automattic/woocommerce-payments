@@ -977,6 +977,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Records that the order was completed through WooPay, only when WooPay proved it composed this
+	 * attempt. Any other payment attempt clears the meta, so it reflects the attempt that actually
+	 * paid the order rather than an earlier or unrelated one.
+	 *
+	 * @param WC_Order $order                         The order being paid.
+	 * @param bool     $is_request_composed_by_woopay Whether the request carries WooPay's proof.
+	 */
+	private function update_woopay_order_flag( WC_Order $order, bool $is_request_composed_by_woopay ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST['is_woopay'] ) && $is_request_composed_by_woopay ) {
+			$order->add_meta_data( 'is_woopay', '1', true );
+			$order->save_meta_data();
+		} elseif ( $order->meta_exists( 'is_woopay' ) ) {
+			$order->delete_meta_data( 'is_woopay' );
+			$order->save_meta_data();
+		}
+	}
+
+	/**
 	 * Checks if the request is to the Store API checkout.
 	 *
 	 * @return bool True if the request is to the Store API checkout, false otherwise.
@@ -1547,6 +1566,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_order_paid;
 			}
 
+			$this->update_woopay_order_flag( $order, $is_request_composed_by_woopay );
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
