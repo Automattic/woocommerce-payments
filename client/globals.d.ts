@@ -42,6 +42,7 @@ declare global {
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
+		stripeJsUrl?: string;
 		testMode: boolean;
 		testModeOnboarding: boolean;
 		devMode: boolean;
@@ -266,6 +267,7 @@ declare global {
 		initWooPayNonce: string;
 		genericErrorMessage: string;
 		fraudServices: unknown[];
+		stripeJsUrl: string;
 		features: string[];
 		forceNetworkSavedCards: boolean;
 		locale: string;
