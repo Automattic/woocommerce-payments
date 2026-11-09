@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+fix: keep QIT E2E tests running on Ubuntu 26.04 runners.
