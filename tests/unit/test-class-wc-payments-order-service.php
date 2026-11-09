@@ -14,6 +14,7 @@ use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Core\Server\Request\Cancel_Intention;
+use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Core\Server\Request\Get_Intention;
 
@@ -81,6 +82,21 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * When an earlier takeover happened, as stored in the mark.
 	 */
 	const EARLIER_TAKEOVER_AT = '1700000000';
+
+	/**
+	 * Gateway ID of WooCommerce's direct bank transfer.
+	 */
+	const BANK_TRANSFER_GATEWAY_ID = 'bacs';
+
+	/**
+	 * Intent ID of a WooPayments authorization that hasn't been captured yet.
+	 */
+	const OPEN_AUTHORIZATION_INTENT_ID = 'pi_test_open_authorization';
+
+	/**
+	 * Charge ID of a WooPayments authorization that hasn't been captured yet.
+	 */
+	const OPEN_AUTHORIZATION_CHARGE_ID = 'ch_test_open_authorization';
 
 	/**
 	 * System under test.
@@ -4536,6 +4552,43 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
 
 		$this->assertSame( $notes_before, $this->order_note_contents() );
+	}
+
+	/**
+	 * Capturing an open authorization on an order moved to another payment method would charge the shopper twice,
+	 * so completing it only tells the merchant. Completing it again adds no second note.
+	 */
+	public function test_capture_authorization_on_order_status_change_does_not_capture_for_other_payment_method() {
+		$this->order->set_payment_method( self::BANK_TRANSFER_GATEWAY_ID );
+		$this->order->save();
+		$this->order_service->set_intent_id_for_order( $this->order, self::OPEN_AUTHORIZATION_INTENT_ID );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$open_authorization = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::OPEN_AUTHORIZATION_INTENT_ID,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+				'charge' => [
+					'id'       => self::OPEN_AUTHORIZATION_CHARGE_ID,
+					'captured' => false,
+				],
+			]
+		);
+		// Each mock serves one request, and the order is completed twice.
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_test_open_authorization' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $open_authorization );
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_test_open_authorization' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $open_authorization );
+		$this->mock_wcpay_request( Capture_Intention::class, 0 );
+
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		$this->assertSame( 1, substr_count( $this->order_note_contents(), 'A WooPayments authorization (<code>ch_test_open_authorization</code>) is still open' ) );
+		$this->assertSame( 'requires_capture', $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
 	}
 
 	/**

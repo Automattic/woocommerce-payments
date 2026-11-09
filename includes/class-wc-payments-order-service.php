@@ -2333,15 +2333,20 @@ class WC_Payments_Order_Service {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
-					$intent = $request->send();
-					$charge = $intent->get_charge();
+					$intent                = $request->send();
+					$charge                = $intent->get_charge();
+					$is_woopayments_order  = 0 === strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID );
+					$is_open_authorization = null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status();
 
 					// WooCommerce has already completed the order by now, so the merchant can only be told.
 					// An order moved to another payment method may well be paid, so it gets no note.
 					if (
 						Intent_Status::REQUIRES_CAPTURE === $cached_intent_status
 						&& Intent_Status::CANCELED === $intent->get_status()
-						&& 0 === strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID )
+						&& $is_woopayments_order
 					) {
 						$order->add_order_note(
 							WC_Payments_Utils::esc_interpolated_html(
@@ -2351,15 +2356,21 @@ class WC_Payments_Order_Service {
 						);
 					}
 
-					/**
-					 * Successful but not captured Charge is an authorization
-					 * that needs to be captured.
-					 */
-					if ( null !== $charge
-						&& false === $charge->is_captured()
-						&& Intent_Status::SUCCEEDED === $charge->get_status()
-						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
-					) {
+					// Capturing here would charge the shopper on top of whatever the order's payment method took.
+					// Canceling can't be undone and the switch may be a mistake, so the merchant decides.
+					if ( $is_open_authorization && ! $is_woopayments_order ) {
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the ID of a WooPayments charge. */
+								__( 'A WooPayments authorization (<code>%1$s</code>) is still open, but this order now uses another payment method, so it was not captured. Capture or cancel it under Payments > Transactions > Uncaptured, or let it expire.', 'woocommerce-payments' ),
+								[ 'code' => '<code>' ]
+							),
+							$charge->get_id()
+						);
+						if ( ! $this->order_note_exists( $order, $note ) ) {
+							$order->add_order_note( $note );
+						}
+					} elseif ( $is_open_authorization ) {
 							$request = Capture_Intention::create( $intent_id );
 							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
 							$request->set_hook_args( $order );
