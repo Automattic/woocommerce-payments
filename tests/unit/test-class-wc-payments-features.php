@@ -132,6 +132,15 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
+	public function test_is_stripe_js_dahlia_disabled_by_default() {
+		$this->assertFalse( WC_Payments_Features::is_stripe_js_dahlia_enabled() );
+	}
+
+	public function test_is_stripe_js_dahlia_can_be_enabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_JS_DAHLIA_FLAG_NAME, '1' );
+		$this->assertTrue( WC_Payments_Features::is_stripe_js_dahlia_enabled() );
+	}
+
 	public function test_is_woopay_eligible_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->assertTrue( WC_Payments_Features::is_woopay_eligible() );
