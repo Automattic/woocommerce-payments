@@ -895,7 +895,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->set_enabled_payment_methods( [ Payment_Method::CARD ] );
 		$card_token = $this->generate_card_token( 'pm_card' );
 		$link_token = $this->generate_link_token( 'pm_link' );
-		$tokens     = $this->key_by_id( $card_token, $link_token );
+		WC_Data_Store::load( 'payment-token' )->set_default_status( $link_token->get_id(), true );
+		$tokens = $this->key_by_id( $card_token, WC_Payment_Tokens::get( $link_token->get_id() ) );
+
+		$this->assertTrue( WC_Payment_Tokens::get( $link_token->get_id() )->is_default() );
 
 		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
 		$this->mock_customer_service
@@ -907,7 +910,60 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID );
 
 		$this->assertSame( [ 'pm_card' ], $this->get_stripe_ids( $result ) );
+
+		$kept_link_token = WC_Payment_Tokens::get( $link_token->get_id() );
+		$this->assertNotNull( $kept_link_token );
+		$this->assertFalse( $kept_link_token->is_default() );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_hides_unsynced_types_when_over_the_token_limit() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD ] );
+		update_option( 'posts_per_page', 2 );
+		$card_token = $this->generate_card_token( 'pm_card' );
+		$link_token = $this->generate_link_token( 'pm_link' );
+		$tokens     = $this->key_by_id( $card_token, $link_token );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_payment_methods_for_customer' );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( [ 'pm_card' ], $this->get_stripe_ids( $result ) );
 		$this->assertNotNull( WC_Payment_Tokens::get( $link_token->get_id() ) );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_deletes_unsynced_types_when_deleting_the_user() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD ] );
+		$card_token = $this->generate_card_token( 'pm_card' );
+		$link_token = $this->generate_link_token( 'pm_link' );
+		$tokens     = $this->key_by_id( $card_token, $link_token );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'get_payment_methods_for_customer' )
+			->willReturn( [ $this->generate_card_pm_response( 'pm_card' ) ] );
+
+		$result = $this->call_filter_while_deleting_user( $tokens, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( [ 'pm_card' ], $this->get_stripe_ids( $result ) );
+		$this->assertNull( WC_Payment_Tokens::get( $link_token->get_id() ) );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_returns_unsynced_types_when_deleting_the_user_and_the_fetch_fails() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD ] );
+		$card_token = $this->generate_card_token( 'pm_card' );
+		$link_token = $this->generate_link_token( 'pm_link' );
+		$tokens     = $this->key_by_id( $card_token, $link_token );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'get_payment_methods_for_customer' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'Stripe is down.', 'api_error', 500 ) );
+
+		$result = $this->call_filter_while_deleting_user( $tokens, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( [ 'pm_card', 'pm_link' ], $this->get_stripe_ids( $result ) );
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_deletes_tokens_of_enabled_type_with_empty_answer() {
@@ -966,7 +1022,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->set_enabled_payment_methods( [ Payment_Method::CARD, Payment_Method::SEPA ] );
 		$stale_card_token = $this->generate_card_token( 'pm_card_gone' );
 		$sepa_token       = $this->generate_sepa_token( 'pm_sepa', 0, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
-		$tokens           = $this->key_by_id( $stale_card_token, $sepa_token );
+		$link_token       = $this->generate_link_token( 'pm_link' );
+		$tokens           = $this->key_by_id( $stale_card_token, $sepa_token, $link_token );
 
 		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
 		$this->mock_customer_service
@@ -982,6 +1039,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'pm_card_gone', 'pm_sepa' ], $this->get_stripe_ids( $result ) );
 		$this->assertNotNull( WC_Payment_Tokens::get( $stale_card_token->get_id() ) );
 		$this->assertNotNull( WC_Payment_Tokens::get( $sepa_token->get_id() ) );
+		$this->assertNotNull( WC_Payment_Tokens::get( $link_token->get_id() ) );
 	}
 
 	/**
@@ -1102,6 +1160,20 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 				$tokens
 			)
 		);
+	}
+
+	/**
+	 * Runs the filter as if WooCommerce called it from its `delete_user` cleanup, without deleting a user.
+	 */
+	private function call_filter_while_deleting_user( array $tokens, string $gateway_id ): array {
+		global $wp_current_filter;
+
+		$wp_current_filter[] = 'delete_user'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Makes doing_action( 'delete_user' ) true without running its callbacks.
+		try {
+			return $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
+		} finally {
+			array_pop( $wp_current_filter );
+		}
 	}
 
 	private function set_enabled_payment_methods( array $payment_method_ids ): void {

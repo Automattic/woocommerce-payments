@@ -853,6 +853,12 @@ parameters:
 			path: includes/class-wc-payments-tasks.php
 
 		-
+			rawMessage: 'Call to an undefined method WC_Data_Store::set_default_status().'
+			identifier: method.notFound
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
 			rawMessage: 'Call to an undefined method WC_Payment_Token::get_email().'
 			identifier: method.notFound
 			count: 1
