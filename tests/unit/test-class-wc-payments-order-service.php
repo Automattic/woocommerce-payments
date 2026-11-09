@@ -16,6 +16,8 @@ use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Internal\Service\Level3Service;
 
 /**
  * WC_Payments_Order_Service unit tests.
@@ -83,6 +85,21 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	const EARLIER_TAKEOVER_AT = '1700000000';
 
 	/**
+	 * Amount, in cents, of an authorization taken before the merchant edited the order.
+	 */
+	const AUTHORIZED_AMOUNT = 1200;
+
+	/**
+	 * Order total after the merchant removed an item from an authorized order.
+	 */
+	const REDUCED_ORDER_TOTAL = 10.00;
+
+	/**
+	 * Level 3 data built from the order when it is captured.
+	 */
+	const ORDER_LEVEL3_DATA = [ 'line_items' => [ [ 'product_description' => 'Edited order line' ] ] ];
+
+	/**
 	 * System under test.
 	 *
 	 * @var WC_Payments_Order_Service
@@ -108,6 +125,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$gateways = WC()->payment_gateways->payment_gateways();
 		$this->order->set_payment_method( $gateways[ WC_Payment_Gateway_WCPay::GATEWAY_ID ] );
 		$this->order->save();
+	}
+
+	public function tear_down() {
+		wcpay_get_test_container()->reset_all_replacements();
+		parent::tear_down();
 	}
 
 	/**
@@ -4653,6 +4675,96 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			$status,
 			$dispute_id
 		);
+	}
+
+	/**
+	 * Marking an edited, authorized order completed captures the new total with Level 3 data built from the order,
+	 * as the Capture charge action does. Without it, the server compares the capture with the Level 3 data stored
+	 * at authorization and refuses it.
+	 */
+	public function test_capture_authorization_on_order_status_change_sends_level3_data_from_the_order() {
+		$this->complete_order_with_open_authorization( self::REDUCED_ORDER_TOTAL );
+		$this->replace_level3_service_with( self::ORDER_LEVEL3_DATA );
+		$this->mock_get_intention_with_open_authorization();
+		$capture_request = $this->mock_wcpay_request( Capture_Intention::class, 1, 'pi_mock' );
+		$capture_request->expects( $this->once() )
+			->method( 'set_amount_to_capture' )
+			->with( 1000 );
+		$capture_request->expects( $this->once() )
+			->method( 'set_level3' )
+			->with( [ 'line_items' => [ [ 'product_description' => 'Edited order line' ] ] ] );
+		$capture_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'amount' => self::AUTHORIZED_AMOUNT ] ) );
+
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		$order = wc_get_order( $this->order->get_id() );
+		$this->assertSame( 'completed', $order->get_status() );
+		$this->assertSame( 'succeeded', $this->order_service->get_intention_status_for_order( $order ) );
+		$this->assertStringContainsString( 'successfully captured', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Amazon Pay captures carry no Level 3 data, as in the Capture charge action.
+	 */
+	public function test_capture_authorization_on_order_status_change_skips_level3_data_for_amazon_pay() {
+		$this->order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$this->complete_order_with_open_authorization( self::REDUCED_ORDER_TOTAL );
+		$this->replace_level3_service_with( self::ORDER_LEVEL3_DATA );
+		$this->mock_get_intention_with_open_authorization();
+		$capture_request = $this->mock_wcpay_request( Capture_Intention::class, 1, 'pi_mock' );
+		$capture_request->expects( $this->never() )->method( 'set_level3' );
+		$capture_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'amount' => self::AUTHORIZED_AMOUNT ] ) );
+
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		$this->assertSame( 'succeeded', $this->order_service->get_intention_status_for_order( wc_get_order( $this->order->get_id() ) ) );
+	}
+
+	/**
+	 * Saves the test order as completed with a total, then records an open authorization on it. The status is saved
+	 * first, so the capture hook that the status change fires finds no intent yet.
+	 *
+	 * @param float $total The order total after the merchant's edit.
+	 */
+	private function complete_order_with_open_authorization( float $total ): void {
+		$this->order->set_total( $total );
+		$this->order->set_status( Order_Status::COMPLETED );
+		$this->order->save();
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+	}
+
+	/**
+	 * Returns the open authorization when the status change fetches the intent.
+	 */
+	private function mock_get_intention_with_open_authorization(): void {
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'amount' => self::AUTHORIZED_AMOUNT,
+						'status' => Intent_Status::REQUIRES_CAPTURE,
+						'charge' => [ 'captured' => false ],
+					]
+				)
+			);
+	}
+
+	/**
+	 * Makes the Level 3 service return the given data for any order.
+	 *
+	 * @param array $level3_data The Level 3 data to return.
+	 */
+	private function replace_level3_service_with( array $level3_data ): void {
+		$level3_service = $this->createMock( Level3Service::class );
+		$level3_service->method( 'get_data_from_order' )->willReturn( $level3_data );
+		wcpay_get_test_container()->replace( Level3Service::class, $level3_service );
 	}
 
 	/**
