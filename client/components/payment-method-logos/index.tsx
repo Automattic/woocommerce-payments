@@ -76,7 +76,6 @@ const PaymentMethods = [
 	{
 		name: 'klarna',
 		component: Klarna,
-		background: '#FFA8CD',
 	},
 	{
 		name: 'cartebancaire',
@@ -214,7 +213,6 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 							key={ pm.name }
 							alt={ pm.name }
 							src={ pm.component }
-							style={ { backgroundColor: pm.background } }
 							width={ 38 }
 							height={ 24 }
 						/>
@@ -255,9 +253,6 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 											key={ pm.name }
 											alt={ pm.name }
 											src={ pm.component }
-											style={ {
-												backgroundColor: pm.background,
-											} }
 											width={ 38 }
 											height={ 24 }
 										/>
