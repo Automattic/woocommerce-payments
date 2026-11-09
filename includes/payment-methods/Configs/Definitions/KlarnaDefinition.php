@@ -96,7 +96,7 @@ class KlarnaDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $_unused_account_country = null ): string {
-		return __( 'Allow customers to pay over time or pay now with Klarna.', 'woocommerce-payments' );
+		return __( 'Offer flexible ways to pay with Klarna: in full, later, or over time.', 'woocommerce-payments' );
 	}
 
 	/**
