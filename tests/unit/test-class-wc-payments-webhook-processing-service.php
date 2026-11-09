@@ -4072,6 +4072,39 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A failed order keeps that status when the shopper retries it on the classic checkout or the order-pay page,
+	 * so an authorization after 3DS the browser never reported puts it on hold too.
+	 */
+	public function test_amount_capturable_updated_puts_failed_order_on_hold() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::FAILED );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A cancelled order is not reopened by an authorization.
+	 */
+	public function test_amount_capturable_updated_leaves_cancelled_order_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::CANCELLED );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+	}
+
+	/**
 	 * Tests that an order the browser already put On hold is left as it is.
 	 */
 	public function test_amount_capturable_updated_leaves_on_hold_order_unchanged() {

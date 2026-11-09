@@ -424,6 +424,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * Puts a pending order on hold once its payment is authorized. After 3DS, the browser
 	 * may never report the result, and Hold stock would then cancel the order and void the authorization.
+	 * A failed order is retried without leaving that status on the classic checkout and the order-pay page,
+	 * so it is put on hold too, as the succeeded webhook completes it with automatic capture.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
@@ -468,7 +470,7 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
-		if ( ! $order->has_status( Order_Status::PENDING ) ) {
+		if ( ! $order->has_status( [ Order_Status::PENDING, Order_Status::FAILED ] ) ) {
 			return;
 		}
 
