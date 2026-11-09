@@ -497,7 +497,6 @@ class WC_Payments_Features {
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 				'reportsArea'                              => self::is_reports_area_enabled(),
-				'stripeJsDahlia'                           => self::is_stripe_js_dahlia_enabled(),
 			]
 		);
 	}

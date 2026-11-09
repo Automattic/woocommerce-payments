@@ -39,7 +39,6 @@ declare global {
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
 			amazonPay: boolean;
 			reportsArea: boolean;
-			stripeJsDahlia?: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
