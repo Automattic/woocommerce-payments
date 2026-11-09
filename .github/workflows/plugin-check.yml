@@ -33,7 +33,8 @@ jobs:
       - name: "Unzip the plugin"
         run: unzip -q "${{ steps.build_plugin.outputs.release-filename }}" -d "$RUNNER_TEMP/plugin-check"
 
-      # Pinned so a new release can't turn this check red on unrelated PRs.
+      # Plugin Check runs at its latest release, so new rules can fail this check on unrelated PRs.
+      # To pin it, install the release zip by URL: `wp-env run` drops a --version flag.
       - name: "Start WordPress"
         working-directory: ${{ runner.temp }}/plugin-check
         run: |
@@ -41,7 +42,7 @@ jobs:
           npm install -g --no-fund @wordpress/env@11.16.0
           for attempt in 1 2 3; do wp-env start && break; [ "$attempt" = 3 ] && exit 1; sleep 10; done
           wp-env run cli wp plugin install woocommerce --activate
-          wp-env run cli wp plugin install plugin-check --version=2.1.0 --activate
+          wp-env run cli wp plugin install plugin-check --activate
           wp-env run cli wp plugin activate woocommerce-payments
 
       - name: "Run Plugin Check"
