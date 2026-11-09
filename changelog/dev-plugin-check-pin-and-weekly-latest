@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Pin Plugin Check to 2.2.0 in CI and run the latest release weekly, posting to Slack when it fails.

@@ -3,6 +3,10 @@ name: Plugin Check
 on:
   pull_request:
   merge_group:
+  # Weekly run against the latest Plugin Check, so we hear about new rules before bumping the pin.
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,16 +37,18 @@ jobs:
       - name: "Unzip the plugin"
         run: unzip -q "${{ steps.build_plugin.outputs.release-filename }}" -d "$RUNNER_TEMP/plugin-check"
 
-      # Plugin Check runs at its latest release, so new rules can fail this check on unrelated PRs.
-      # To pin it, install the release zip by URL: `wp-env run` drops a --version flag.
+      # PRs and the merge queue use a pinned Plugin Check, so a new release can't fail them.
+      # Pin by release zip URL: `wp-env run` drops a --version flag.
       - name: "Start WordPress"
         working-directory: ${{ runner.temp }}/plugin-check
+        env:
+          PLUGIN_CHECK: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group') && 'https://downloads.wordpress.org/plugin/plugin-check.2.2.0.zip' || 'plugin-check' }}
         run: |
           echo '{ "core": null, "mappings": { "wp-content/plugins/woocommerce-payments": "./woocommerce-payments" } }' > .wp-env.json
           npm install -g --no-fund @wordpress/env@11.16.0
           for attempt in 1 2 3; do wp-env start && break; [ "$attempt" = 3 ] && exit 1; sleep 10; done
           wp-env run cli wp plugin install woocommerce --activate
-          wp-env run cli wp plugin install plugin-check --activate
+          wp-env run cli wp plugin install "$PLUGIN_CHECK" --activate
           wp-env run cli wp plugin activate woocommerce-payments
 
       - name: "Run Plugin Check"
@@ -97,3 +103,38 @@ jobs:
           [ -z "$results" ] && exit 0
           jq -r '.[] | "::\(if .type == "ERROR" then "error" else "warning" end) file=\(.file),line=\(.line)::\(.code): \(.message)"' <<< "$results"
           [ "$(jq length <<< "$results")" = 0 ]
+
+      # Only the upstream repo carries the webhook secret; skip on forks.
+      - name: "Slack notification"
+        if: ${{ failure() && github.event_name == 'schedule' && github.repository == 'Automattic/woocommerce-payments' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          webhook: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":warning: Latest Plugin Check fails on develop",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The weekly run with the latest Plugin Check release failed. PRs still use the pinned version, so nothing is blocked yet. Fix the findings, then bump the pin in `.github/workflows/plugin-check.yml`."
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View the run>"
+                  }
+                }
+              ]
+            }
