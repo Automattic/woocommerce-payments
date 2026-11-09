@@ -462,8 +462,11 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( $this->skip_superseded_attempt(
 			$order,
 			$event_object,
-			/* translators: %1: the ID of a WooPayments payment. */
-			__( 'A WooPayments payment <code>%1$s</code> was authorized after this order was paid with another payment method, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
+			! $order->is_paid()
+				/* translators: %1: the ID of a WooPayments payment. */
+				? __( 'A WooPayments payment <code>%1$s</code> was authorized after this order was switched to another payment method, which has not paid it yet, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
+				/* translators: %1: the ID of a WooPayments payment. */
+				: __( 'A WooPayments payment <code>%1$s</code> was authorized after this order was paid with another payment method, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
 		) ) {
 			return;
 		}
@@ -604,13 +607,41 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
-		if ( $this->skip_superseded_attempt(
-			$order,
-			$event_object,
-			/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
-			__( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was paid with another payment method, so the order was not updated. Check whether the payment needs a refund.', 'woocommerce-payments' ),
-			$charge_id
-		) ) {
+		// The takeover cancels a superseded attempt that waits for 3DS, but the cancel can fail, for example when the
+		// shopper finishes 3DS first. If the other gateway has not paid the order, this money is all it has, so the
+		// order is held for the merchant to keep or refund the payment rather than left unpaid with a note.
+		$superseded_intent_id = (string) ( $event_object['id'] ?? '' );
+		if ( $this->order_service->is_intent_from_superseded_attempt( $order, $superseded_intent_id, (int) ( $event_object['created'] ?? 0 ) ) ) {
+			$is_unpaid = ! $order->is_paid();
+			// Only an order still waiting for its payment is held. One the merchant cancelled or refunded, or that was
+			// trashed, keeps its status: reopening it would reduce stock and email the shopper again.
+			$holds = $is_unpaid && $order->has_status( [ Order_Status::PENDING, Order_Status::FAILED, Order_Status::ON_HOLD ] );
+			if ( $holds ) {
+				/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
+				$message = __( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was switched to another payment method, which has not paid it. The order is <strong>on hold</strong>; keep or refund this payment before fulfilling.', 'woocommerce-payments' );
+			} elseif ( $is_unpaid ) {
+				/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
+				$message = __( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was switched to another payment method, which has not paid it. The order was left as it is; keep or refund this payment.', 'woocommerce-payments' );
+			} else {
+				/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
+				$message = __( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was paid with another payment method, so the order was not updated. Check whether the payment needs a refund.', 'woocommerce-payments' );
+			}
+			$order->add_order_note(
+				sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						$message,
+						[
+							'code'   => '<code>',
+							'strong' => '<strong>',
+						]
+					),
+					$superseded_intent_id,
+					$charge_id
+				)
+			);
+			if ( $holds ) {
+				$order->update_status( Order_Status::ON_HOLD );
+			}
 			return;
 		}
 
@@ -1090,7 +1121,19 @@ class WC_Payments_Webhook_Processing_Service {
 			return false;
 		}
 
-		$order->add_order_note( sprintf( WC_Payments_Utils::esc_interpolated_html( $message, [ 'code' => '<code>' ] ), $intent_id, ...$note_args ) );
+		$order->add_order_note(
+			sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					$message,
+					[
+						'code'   => '<code>',
+						'strong' => '<strong>',
+					]
+				),
+				$intent_id,
+				...$note_args
+			)
+		);
 		return true;
 	}
 
