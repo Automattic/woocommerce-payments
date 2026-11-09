@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Put an unpaid order on hold when a WooPayments payment from before the order was switched to another payment method succeeds anyway.
+Keep an unpaid order from being cancelled as unpaid when a WooPayments payment from before it was switched to another payment method succeeds anyway.
