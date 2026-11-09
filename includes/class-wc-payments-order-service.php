@@ -18,6 +18,7 @@ use WCPay\Logger;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Internal\Service\Level3Service;
 use WCPay\Constants\Order_Mode;
 
 defined( 'ABSPATH' ) || exit;
@@ -2346,6 +2347,11 @@ class WC_Payments_Order_Service {
 					) {
 							$request = Capture_Intention::create( $intent_id );
 							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+							// Without Level 3 data the server compares the capture with the data stored at
+							// authorization, which fails once the total was edited. Same Level 3 rule as capture_charge().
+						if ( 'woocommerce_payments_amazon_pay' !== $order->get_payment_method() ) {
+							$request->set_level3( wcpay_get_container()->get( Level3Service::class )->get_data_from_order( $order->get_id() ) );
+						}
 							$request->set_hook_args( $order );
 							$intent = $request->send();
 
