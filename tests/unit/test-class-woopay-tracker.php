@@ -226,6 +226,106 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->call_ajax_tracks( $tracker );
 	}
 
+	public function test_ajax_tracks_does_not_record_alias_user_events_from_the_browser(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->once() )
+			->method( 'maybe_record_event' )
+			->with( 'cart_page_view', [] );
+		$_REQUEST['tracksEvents'] = wp_slash(
+			wp_json_encode(
+				[
+					[
+						'name'       => '_aliasUser',
+						'properties' => [ 'anonId' => 'someone-else' ],
+					],
+					[ 'name' => 'cart_page_view' ],
+				]
+			)
+		);
+
+		$this->call_ajax_tracks( $tracker );
+	}
+
+	public function test_ajax_tracks_does_not_record_a_single_alias_user_event_from_the_browser(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->never() )->method( 'maybe_record_event' );
+		$_REQUEST['tracksEventName'] = '_aliasUser';
+
+		$this->call_ajax_tracks( $tracker );
+	}
+
+	public function test_ajax_tracks_drops_the_admin_event_flag_sent_by_the_browser(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->exactly( 2 ) )
+			->method( 'maybe_record_event' )
+			->withConsecutive(
+				[
+					'product_page_view',
+					[
+						'record_event_data' => [ 'track_on_all_stores' => true ],
+						'source'            => 'product',
+					],
+				],
+				[ 'cart_page_view', [] ]
+			);
+		$_REQUEST['tracksEvents'] = wp_slash(
+			wp_json_encode(
+				[
+					[
+						'name'       => 'product_page_view',
+						'properties' => [
+							'record_event_data' => [
+								'is_admin_event'      => true,
+								'track_on_all_stores' => true,
+							],
+							'source'            => 'product',
+						],
+					],
+					[
+						'name'       => 'cart_page_view',
+						'properties' => [ 'record_event_data' => 'not an array' ],
+					],
+				]
+			)
+		);
+
+		$this->call_ajax_tracks( $tracker );
+	}
+
+	public function test_ajax_tracks_drops_the_admin_event_flag_of_a_single_event(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->once() )
+			->method( 'maybe_record_event' )
+			->with( 'cart_page_view', [ 'record_event_data' => [] ] );
+		$_REQUEST['tracksEventName'] = 'cart_page_view';
+		$_REQUEST['tracksEventProp'] = wp_slash( wp_json_encode( [ 'record_event_data' => [ 'is_admin_event' => true ] ] ) );
+
+		$this->call_ajax_tracks( $tracker );
+	}
+
+	public function test_ajax_tracks_stops_the_batch_once_a_pixel_request_fails(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->once() )
+			->method( 'maybe_record_event' )
+			->willReturn( new WP_Error( 'http_request_failed', 'cURL error 28: Operation timed out' ) );
+		$_REQUEST['tracksEvents'] = wp_slash( wp_json_encode( array_fill( 0, 3, [ 'name' => 'cart_page_view' ] ) ) );
+
+		$response = $this->call_ajax_tracks( $tracker );
+
+		$this->assertSame( [ 'success' => true ], $response );
+	}
+
+	public function test_ajax_tracks_keeps_recording_the_batch_when_an_event_is_not_sent(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		// Tracking turned off for an event, or an event Tracks refuses, says nothing about the pixel.
+		$tracker->expects( $this->exactly( 3 ) )
+			->method( 'maybe_record_event' )
+			->willReturnOnConsecutiveCalls( false, new WP_Error( 'invalid_event', 'A valid event must be specified via `_en`' ), true );
+		$_REQUEST['tracksEvents'] = wp_slash( wp_json_encode( array_fill( 0, 3, [ 'name' => 'cart_page_view' ] ) ) );
+
+		$this->call_ajax_tracks( $tracker );
+	}
+
 	/**
 	 * @return WooPay_Tracker&\PHPUnit\Framework\MockObject\MockObject
 	 */
