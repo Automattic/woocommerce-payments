@@ -305,6 +305,76 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $return_url, $result['redirect'] );
 	}
 
+	/**
+	 * A re-submitted order gets the intent's details, including the charge ID that webhooks look orders up by.
+	 */
+	public function test_check_payment_intent_attached_to_order_succeeded_attaches_intent_with_charge() {
+		$order  = $this->create_order_with_attached_intent();
+		$intent = $this->mock_attached_intent( $order, true );
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with( $order, $intent );
+
+		$this->service->check_payment_intent_attached_to_order_succeeded( $order );
+	}
+
+	/**
+	 * An intent without a charge would clear the order's charge ID, so its details aren't attached.
+	 */
+	public function test_check_payment_intent_attached_to_order_succeeded_does_not_attach_intent_without_charge() {
+		$order = $this->create_order_with_attached_intent();
+		$this->mock_attached_intent( $order, false );
+		$this->mock_order_service
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' );
+
+		$this->service->check_payment_intent_attached_to_order_succeeded( $order );
+	}
+
+	/**
+	 * Creates an order with an attached intent.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_with_attached_intent(): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_attached_intent_id' );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Mocks fetching the order's authorized intent.
+	 *
+	 * @param WC_Order $order      The order the intent belongs to.
+	 * @param bool     $has_charge Whether the intent has a charge.
+	 *
+	 * @return WC_Payments_API_Payment_Intention
+	 */
+	private function mock_attached_intent( WC_Order $order, bool $has_charge ): WC_Payments_API_Payment_Intention {
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => 'pi_attached_intent_id',
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'amount'   => WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ),
+				'metadata' => [ 'order_id' => $order->get_id() ],
+			],
+			$has_charge
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_attached_intent_id' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		return $intent;
+	}
+
 	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
 		$ret = [];
 		foreach ( Intent_Status::AUTHORIZED_STATUSES as $status ) {

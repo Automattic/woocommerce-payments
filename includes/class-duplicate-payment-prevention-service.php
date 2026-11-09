@@ -146,6 +146,12 @@ class Duplicate_Payment_Prevention_Service {
 			);
 		}
 
+		// Without the charge ID, webhooks that look orders up by charge, such as an expired authorization,
+		// a refund or a dispute, can't find this order. Skip intents without a charge, which would clear a stored ID.
+		if ( null !== $intent->get_charge() ) {
+			$this->order_service->attach_intent_info_to_order( $order, $intent );
+		}
+
 		// Amounts match, proceed with normal status update.
 		$this->order_service->update_order_status_from_intent( $order, $intent );
 

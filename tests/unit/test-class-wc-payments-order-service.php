@@ -4501,6 +4501,42 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Completing an order whose authorization expired or was canceled captures nothing,
+	 * so the merchant gets a note saying the order isn't paid.
+	 */
+	public function test_capture_authorization_on_order_status_change_notes_canceled_authorization() {
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] ) );
+
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		$this->assertStringContainsString( '<strong>No payment was captured.</strong>', $this->order_note_contents() );
+		$this->assertSame( 'canceled', $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+	}
+
+	/**
+	 * A canceled intent the order never had an authorization for, such as an abandoned payment
+	 * on an order the merchant completes by hand, gets no note.
+	 */
+	public function test_capture_authorization_on_order_status_change_does_not_note_canceled_intent_without_authorization() {
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_PAYMENT_METHOD );
+		$notes_before = $this->order_note_contents();
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] ) );
+
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		$this->assertSame( $notes_before, $this->order_note_contents() );
+	}
+
+	/**
 	 * A cached intention status of `succeeded` or `canceled` is a terminal Stripe state that can never
 	 * transition back to `requires_capture`, so there is provably no open authorization to cancel.
 	 * `cancel_authorizations_on_order_status_change` should short-circuit on that cached meta rather

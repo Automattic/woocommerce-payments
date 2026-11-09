@@ -36,7 +36,7 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	/**
 	 * The latest charge object
 	 *
-	 * @var WC_Payments_API_Charge
+	 * @var WC_Payments_API_Charge|null
 	 */
 	private $charge;
 
@@ -133,7 +133,7 @@ class WC_Payments_API_Payment_Intention extends WC_Payments_API_Abstract_Intenti
 	/**
 	 * Returns the charge associated with this intention
 	 *
-	 * @return WC_Payments_API_Charge
+	 * @return WC_Payments_API_Charge|null
 	 */
 	public function get_charge() {
 		return $this->charge;

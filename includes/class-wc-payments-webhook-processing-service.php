@@ -381,6 +381,12 @@ class WC_Payments_Webhook_Processing_Service {
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 		if ( ! $order ) {
+			$order = $this->get_order_for_expired_authorization_without_charge_id( (string) ( $event_object['payment_intent'] ?? '' ) );
+			if ( $order ) {
+				$this->order_service->set_charge_id_for_order( $order, $charge_id );
+			}
+		}
+		if ( ! $order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
 				/* translators: %1: charge ID */
@@ -406,6 +412,36 @@ class WC_Payments_Webhook_Processing_Service {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+	}
+
+	/**
+	 * Finds the order of an expired authorization when the order never got its charge ID.
+	 *
+	 * @param string $intent_id The ID of the payment intent the expired charge belongs to.
+	 *
+	 * @return WC_Order|null The order, or null when no order should be failed for this authorization.
+	 */
+	private function get_order_for_expired_authorization_without_charge_id( string $intent_id ): ?WC_Order {
+		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
+		if ( ! $order instanceof WC_Order ) {
+			return null;
+		}
+
+		// The charge lookup already failed, so a stored charge ID belongs to another payment.
+		if ( '' !== $this->order_service->get_charge_id_for_order( $order ) ) {
+			return null;
+		}
+
+		if ( 0 !== strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
+			return null;
+		}
+
+		// Only an order still waiting for this payment should fail when the authorization expires.
+		if ( ! $order->has_status( [ Order_Status::ON_HOLD, Order_Status::PENDING ] ) ) {
+			return null;
+		}
+
+		return $order;
 	}
 
 	/**
