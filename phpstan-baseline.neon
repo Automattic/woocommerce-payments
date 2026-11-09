@@ -393,7 +393,7 @@ parameters:
 		-
 			rawMessage: Ternary operator condition is always true.
 			identifier: ternary.alwaysTrue
-			count: 1
+			count: 3
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
@@ -700,6 +700,12 @@ parameters:
 			rawMessage: 'Strict comparison using === between null and string will always evaluate to false.'
 			identifier: identical.alwaysFalse
 			count: 2
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 1
 			path: includes/class-wc-payments-order-service.php
 
 		-

@@ -399,16 +399,17 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		if ( 0 !== strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
-			$order->add_order_note(
-				sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the ID of a WooPayments charge. */
-						__( 'A WooPayments authorization (<code>%1$s</code>) expired. This order is paid with another payment method, so its status was not changed.', 'woocommerce-payments' ),
-						[ 'code' => '<code>' ]
-					),
-					$charge_id
-				)
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the ID of a WooPayments charge. */
+					__( 'A WooPayments authorization (<code>%1$s</code>) expired. This order now uses another payment method, so its status was not changed.', 'woocommerce-payments' ),
+					[ 'code' => '<code>' ]
+				),
+				$charge_id
 			);
+			if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
+				$order->add_order_note( $note );
+			}
 			return;
 		}
 

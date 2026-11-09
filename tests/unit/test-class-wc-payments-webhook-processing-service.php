@@ -4279,7 +4279,20 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'on-hold', $order->get_status() );
 		$this->assertSame( $stored_charge_id, $order->get_meta( '_charge_id' ) );
-		$this->assertStringContainsString( 'This order is paid with another payment method, so its status was not changed.', $this->get_order_notes_text( $order ) );
+		$this->assertStringContainsString( 'This order now uses another payment method, so its status was not changed.', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A repeated expiry event for an order paid another way doesn't repeat the note.
+	 */
+	public function test_charge_expired_notes_order_paid_with_another_gateway_once() {
+		$order = $this->create_order_for_charge_expired( Order_Status::ON_HOLD, 'bacs', self::EXPIRED_CHARGE_ID );
+		$this->set_up_charge_expired_event( $order, true );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 1, substr_count( $this->get_order_notes_text( $order ), 'This order now uses another payment method' ) );
 	}
 
 	public function provider_charge_expired_stored_charge_ids(): array {
