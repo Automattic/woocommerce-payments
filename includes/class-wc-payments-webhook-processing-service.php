@@ -372,6 +372,10 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_expired_authorization( $event_body ) {
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
@@ -382,9 +386,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 		if ( ! $order ) {
 			$order = $this->get_order_for_expired_authorization_without_charge_id( (string) ( $event_object['payment_intent'] ?? '' ) );
-			if ( $order ) {
-				$this->order_service->set_charge_id_for_order( $order, $charge_id );
-			}
 		}
 		if ( ! $order ) {
 			throw new Invalid_Payment_Method_Exception(
@@ -395,6 +396,24 @@ class WC_Payments_Webhook_Processing_Service {
 				),
 				'order_not_found'
 			);
+		}
+
+		if ( 0 !== strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
+			$order->add_order_note(
+				sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the ID of a WooPayments charge. */
+						__( 'A WooPayments authorization (<code>%1$s</code>) expired. This order is paid with another payment method, so its status was not changed.', 'woocommerce-payments' ),
+						[ 'code' => '<code>' ]
+					),
+					$charge_id
+				)
+			);
+			return;
+		}
+
+		if ( '' === $this->order_service->get_charge_id_for_order( $order ) ) {
+			$this->order_service->set_charge_id_for_order( $order, $charge_id );
 		}
 
 		// Get the intent_id and then its status.
@@ -408,10 +427,6 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
 		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
-
-		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -429,10 +444,6 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// The charge lookup already failed, so a stored charge ID belongs to another payment.
 		if ( '' !== $this->order_service->get_charge_id_for_order( $order ) ) {
-			return null;
-		}
-
-		if ( 0 !== strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
 			return null;
 		}
 

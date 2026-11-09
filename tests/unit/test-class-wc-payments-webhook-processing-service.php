@@ -4257,9 +4257,35 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	public function provider_charge_expired_orders_not_waiting_for_payment(): array {
 		return [
-			'Paid with another gateway' => [ Order_Status::ON_HOLD, 'bacs', '' ],
-			'Cancelled'                 => [ Order_Status::CANCELLED, WC_Payment_Gateway_WCPay::GATEWAY_ID, '' ],
-			'Has another charge'        => [ Order_Status::ON_HOLD, WC_Payment_Gateway_WCPay::GATEWAY_ID, 'ch_other' ],
+			'Cancelled'          => [ Order_Status::CANCELLED, WC_Payment_Gateway_WCPay::GATEWAY_ID, '' ],
+			'Has another charge' => [ Order_Status::ON_HOLD, WC_Payment_Gateway_WCPay::GATEWAY_ID, 'ch_other' ],
+		];
+	}
+
+	/**
+	 * An expired authorization leaves an order the shopper paid another way as it is, and notes it.
+	 *
+	 * @dataProvider provider_charge_expired_stored_charge_ids
+	 *
+	 * @param string $stored_charge_id The charge ID stored on the order.
+	 */
+	public function test_charge_expired_notes_order_paid_with_another_gateway( string $stored_charge_id ) {
+		$order = $this->create_order_for_charge_expired( Order_Status::ON_HOLD, 'bacs', $stored_charge_id );
+		$this->set_up_charge_expired_event( $order, '' !== $stored_charge_id );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( $stored_charge_id, $order->get_meta( '_charge_id' ) );
+		$this->assertStringContainsString( 'This order is paid with another payment method, so its status was not changed.', $this->get_order_notes_text( $order ) );
+	}
+
+	public function provider_charge_expired_stored_charge_ids(): array {
+		return [
+			'Found by charge ID' => [ self::EXPIRED_CHARGE_ID ],
+			'Found by intent ID' => [ '' ],
 		];
 	}
 
@@ -4285,11 +4311,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Sets up a `charge.expired` event for a charge no order has stored.
+	 * Sets up a `charge.expired` event for an order.
 	 *
-	 * @param WC_Order $order The order the lookup by intent finds.
+	 * @param WC_Order $order           The order the lookups find.
+	 * @param bool     $found_by_charge Whether the lookup by charge finds the order, or only the one by intent.
 	 */
-	private function set_up_charge_expired_event( WC_Order $order ) {
+	private function set_up_charge_expired_event( WC_Order $order, bool $found_by_charge = false ) {
 		$this->event_body['type']           = 'charge.expired';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -4300,7 +4327,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_db_wrapper
 			->method( 'order_from_charge_id' )
 			->with( 'ch_expired' )
-			->willReturn( false );
+			->willReturn( $found_by_charge ? $order : false );
 
 		$this->mock_db_wrapper
 			->method( 'order_from_intent_id' )
