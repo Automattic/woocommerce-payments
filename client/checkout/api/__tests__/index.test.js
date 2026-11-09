@@ -89,24 +89,27 @@ describe( 'WCPayAPI', () => {
 			} );
 		} );
 
-		test( 'leaves out the Link autofill beta on Dahlia', () => {
-			window.Stripe.version = 'dahlia';
-			const api = new WCPayAPI(
-				{
-					publishableKey: PUBLISHABLE_KEY,
-					isStripeLinkEnabled: true,
-				},
-				request
-			);
+		test.each( [ 'dahlia', 'clover' ] )(
+			'leaves out the Link autofill beta on %s',
+			( release ) => {
+				window.Stripe.version = release;
+				const api = new WCPayAPI(
+					{
+						publishableKey: PUBLISHABLE_KEY,
+						isStripeLinkEnabled: true,
+					},
+					request
+				);
 
-			api.__getStripe();
+				api.__getStripe();
 
-			expect( window.Stripe ).toHaveBeenCalledWith( 'pk_test_123', {
-				locale: undefined,
-				developerTools: { assistant: { enabled: false } },
-				betas: [ 'card_country_event_beta_1' ],
-			} );
-		} );
+				expect( window.Stripe ).toHaveBeenCalledWith( 'pk_test_123', {
+					locale: undefined,
+					developerTools: { assistant: { enabled: false } },
+					betas: [ 'card_country_event_beta_1' ],
+				} );
+			}
+		);
 	} );
 
 	describe( 'confirmIntent', () => {
