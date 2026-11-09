@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
@@ -9,6 +9,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
  */
 import InlineNotice from 'wcpay/components/inline-notice';
 import { TipIcon } from 'wcpay/icons';
+import RuleCardInfoNoticesContext from './rule-card-notice-context';
 
 const supportedTypes = [ 'error', 'warning', 'info' ] as const;
 
@@ -21,8 +22,20 @@ interface FraudProtectionRuleCardNoticeProps {
 const FraudProtectionRuleCardNotice: React.FC<
 	React.PropsWithChildren< FraudProtectionRuleCardNoticeProps >
 > = ( { type, children } ) => {
+	const showWarningsAsInfo = useContext( RuleCardInfoNoticesContext );
 	if ( ! supportedTypes.includes( type ) ) {
 		return null;
+	}
+
+	if ( showWarningsAsInfo && type === 'warning' ) {
+		return (
+			<InlineNotice
+				status="info"
+				icon
+				children={ children }
+				isDismissible={ false }
+			/>
+		);
 	}
 
 	// If the type is info, we want to use the info icon, otherwise, the default icon for these notices is the (!) icon.

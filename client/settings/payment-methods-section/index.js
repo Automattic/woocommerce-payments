@@ -38,7 +38,7 @@ const PaymentMethodsDescription = () => (
 	</>
 );
 
-const PaymentMethodsSection = () => {
+export const PaymentMethodsControl = () => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 	const [ isManualCaptureEnabled ] = useManualCapture();
 	const [ isNoticeDismissed, setIsNoticeDismissed ] = useState( false );
@@ -64,50 +64,49 @@ const PaymentMethodsSection = () => {
 		}, [] );
 
 	return (
-		<SettingsSection
-			description={ PaymentMethodsDescription }
-			id="payment-methods"
-		>
-			<LoadableSettingsSection numLines={ 60 }>
-				<ErrorBoundary>
-					<Card className="payment-methods">
-						<CardBody size={ null }>
-							<div className="payment-methods__header">
-								<h3 className="payment-methods__heading">
-									{ __(
-										'Payment methods',
-										'woocommerce-payments'
-									) }
-								</h3>
-							</div>
-							{ isManualCaptureEnabled && ! isNoticeDismissed && (
-								<BannerNotice
-									status="warning"
-									isDismissible={ true }
-									icon={ true }
-									className="manual-capture-notice"
-									onRemove={ () =>
-										setIsNoticeDismissed( true )
-									}
-								>
-									{ __(
-										'Manual capture is enabled, so any payment methods that ' +
-											"don't support it have been automatically disabled.",
-										'woocommerce-payments'
-									) }
-								</BannerNotice>
+		<LoadableSettingsSection numLines={ 60 }>
+			<ErrorBoundary>
+				<div className="payment-methods">
+					{ isManualCaptureEnabled && ! isNoticeDismissed && (
+						<BannerNotice
+							status="warning"
+							isDismissible={ true }
+							icon={ true }
+							className="manual-capture-notice"
+							onRemove={ () => setIsNoticeDismissed( true ) }
+						>
+							{ __(
+								'Manual capture is enabled, so any payment methods that ' +
+									"don't support it have been automatically disabled.",
+								'woocommerce-payments'
 							) }
-							<PaymentMethodsList
-								methodIds={
-									availableNonBuyNowPayLaterMethodIds
-								}
-							/>
-						</CardBody>
-					</Card>
-				</ErrorBoundary>
-			</LoadableSettingsSection>
-		</SettingsSection>
+						</BannerNotice>
+					) }
+					<PaymentMethodsList
+						methodIds={ availableNonBuyNowPayLaterMethodIds }
+					/>
+				</div>
+			</ErrorBoundary>
+		</LoadableSettingsSection>
 	);
 };
+
+const PaymentMethodsSection = () => (
+	<SettingsSection
+		description={ PaymentMethodsDescription }
+		id="payment-methods"
+	>
+		<Card className="payment-methods">
+			<CardBody size={ null }>
+				<div className="payment-methods__header">
+					<h3 className="payment-methods__heading">
+						{ __( 'Payment methods', 'woocommerce-payments' ) }
+					</h3>
+				</div>
+				<PaymentMethodsControl />
+			</CardBody>
+		</Card>
+	</SettingsSection>
+);
 
 export default PaymentMethodsSection;

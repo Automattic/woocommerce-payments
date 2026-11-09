@@ -4,6 +4,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
+import RuleCardInfoNoticesContext from '../rule-card-notice-context';
 /**
  * Internal dependencies
  */
@@ -47,6 +48,19 @@ describe( 'Fraud protection rule card notice tests', () => {
 			queryByText( testValue, {
 				ignore: '.a11y-speak-region',
 			} )
+		).not.toBeInTheDocument();
+	} );
+	test( 'renders a warning as info on the payment settings screen', () => {
+		const { container } = render(
+			<RuleCardInfoNoticesContext.Provider value={ true }>
+				<FraudProtectionRuleCardNotice type="warning">
+					This is the test content
+				</FraudProtectionRuleCardNotice>
+			</RuleCardInfoNoticesContext.Provider>
+		);
+		expect( container.querySelector( '.is-info' ) ).toBeInTheDocument();
+		expect(
+			container.querySelector( '.is-warning' )
 		).not.toBeInTheDocument();
 	} );
 } );

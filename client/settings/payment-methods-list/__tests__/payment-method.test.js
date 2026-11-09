@@ -13,6 +13,7 @@ import user from '@testing-library/user-event';
 import PaymentMethod from '../payment-method';
 import DuplicatedPaymentMethodsContext from '../../settings-manager/duplicated-payment-methods-context';
 import WCPaySettingsContext from '../../wcpay-settings-context';
+import { PaymentMethodItemToggleContext } from 'wcpay/components/payment-method-item';
 import { usePmPromotions } from 'wcpay/data/pm-promotions';
 import {
 	useEnabledPaymentMethodIds,
@@ -136,6 +137,24 @@ describe( 'PaymentMethod', () => {
 		);
 
 		expect( screen.getAllByText( '(Required)' ) ).toHaveLength( 2 );
+	} );
+
+	it( 'leaves out the required label and card brand logos on the settings screen', () => {
+		const { container } = render(
+			<PaymentMethodItemToggleContext.Provider value={ true }>
+				<PaymentMethod
+					id="card"
+					label="Card"
+					description="Bar"
+					locked={ false }
+				/>
+			</PaymentMethodItemToggleContext.Provider>
+		);
+
+		expect( screen.queryByText( '(Required)' ) ).not.toBeInTheDocument();
+		expect(
+			container.querySelector( '.payment-method__supported-cards' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'does not call onCheckClick or onUnCheckClick when clicking a locked checkbox', async () => {
