@@ -2,7 +2,11 @@
  * External dependencies
  */
 import React from 'react';
-import { Card, CardHeader } from '@wordpress/components';
+
+/**
+ * Internal dependencies
+ */
+import { Card, CardHeader } from 'wcpay/components/card';
 
 interface OverviewCardProps {
 	title: React.ReactNode;

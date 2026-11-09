@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop express checkout buttons on product pages from giving shoppers a session cookie, which kept them off cached pages.

@@ -8,7 +8,6 @@
 namespace WCPay\Tests\Internal\Abilities\Domain;
 
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence;
 
 /**
@@ -16,18 +15,9 @@ use WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence;
  */
 class SubmitDisputeEvidenceTest extends WCPAY_UnitTestCase {
 
-	public function test_name(): void {
-		$this->assertSame( 'woocommerce-payments/submit-dispute-evidence', SubmitDisputeEvidence::get_name() );
-	}
-
-	public function test_registration_args_has_destructive_write_annotations(): void {
+	public function test_registration_args_does_not_submit_by_default(): void {
 		$args = SubmitDisputeEvidence::get_registration_args();
 
-		$this->assertFalse( $args['meta']['annotations']['readonly'] );
-		$this->assertTrue( $args['meta']['annotations']['destructive'] );
-		$this->assertFalse( $args['meta']['annotations']['idempotent'] );
-		$this->assertFalse( $args['meta']['mcp']['public'] );
-		$this->assertContains( 'dispute_id', $args['input_schema']['required'] );
 		$this->assertFalse( $args['input_schema']['properties']['submit']['default'] );
 	}
 

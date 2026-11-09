@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Prepare React mounts and ref callbacks for React 19.

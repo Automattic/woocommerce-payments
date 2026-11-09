@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
+use WC_Order;
 use WC_Subscription;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\FrontendCurrencies;
@@ -18,9 +19,27 @@ use WCPay\MultiCurrency\MultiCurrency;
 class WooCommerceSubscriptions extends BaseCompatibility {
 
 	/**
-	 * Our allowed subscription types.
+	 * Subscription cart item types whose currency comes from the subscription in the cart item's `subscription_id`.
 	 */
 	const SUBSCRIPTION_TYPES = [ 'renewal', 'resubscribe', 'switch' ];
+
+	/**
+	 * Cart item types that pay an existing order again. Their cart items hold an `order_id` instead of a
+	 * `subscription_id`, so they are kept out of SUBSCRIPTION_TYPES.
+	 */
+	private const ORDER_PAYMENT_TYPES = [ 'initial_payment' ];
+
+	/**
+	 * Session key identifying the coupon copies in `wcs_renewal_coupons` that this class stored unconverted.
+	 *
+	 * Holds STORING_SESSION_COUPONS while a cart is being set up, then a hash of the copies stored.
+	 */
+	private const UNCONVERTED_SESSION_COUPONS_KEY = 'wcpay_multi_currency_unconverted_session_coupons';
+
+	/**
+	 * Value of UNCONVERTED_SESSION_COUPONS_KEY while a cart is being set up and its coupon copies are stored.
+	 */
+	private const STORING_SESSION_COUPONS = 'storing';
 
 	/**
 	 * Subscription switch cart item.
@@ -51,6 +70,13 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	private $running_override_selected_currency_filters = false;
 
 	/**
+	 * Currencies of signup orders paid through the cart, keyed by order ID.
+	 *
+	 * @var array
+	 */
+	private $initial_payment_order_currencies = [];
+
+	/**
 	 * Init the class.
 	 *
 	 * @return  void
@@ -68,6 +94,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				add_filter( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_amount', [ $this, 'should_convert_coupon_amount' ], 50, 2 );
+				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_min_max_amount', [ $this, 'should_convert_coupon_min_max_amount' ], 50, 2 );
+				add_action( 'woocommerce_setup_cart_for_subscription_renewal', [ $this, 'start_storing_unconverted_session_coupons' ], 0 );
+				add_action( 'woocommerce_setup_cart_for_subscription_initial_payment', [ $this, 'start_storing_unconverted_session_coupons' ], 0 );
+				add_action( 'woocommerce_setup_cart_for_subscription_renewal', [ $this, 'finish_storing_unconverted_session_coupons' ], PHP_INT_MAX );
+				add_action( 'woocommerce_setup_cart_for_subscription_initial_payment', [ $this, 'finish_storing_unconverted_session_coupons' ], PHP_INT_MAX );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', [ $this, 'should_disable_currency_switching' ], 50 );
 				add_filter( 'woocommerce_subscription_price_string_details', [ $this, 'maybe_set_current_my_account_subscription' ], 50, 2 );
 				add_filter( 'woocommerce_get_formatted_subscription_total', [ $this, 'maybe_clear_current_my_account_subscription' ], 50, 2 );
@@ -186,15 +217,18 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		foreach ( self::SUBSCRIPTION_TYPES as $type ) {
 			$cart_item = $this->get_subscription_type_from_cart( $type );
 			if ( $cart_item ) {
-				$this->running_override_selected_currency_filters = true;
-
 				// If we have a cart item, then we can get the order or subscription to pull the currency from.
 				$subscription_type = 'subscription_' . $type;
-				$subscription      = $this->get_subscription( $cart_item[ $subscription_type ]['subscription_id'] );
+				$subscription      = $this->get_subscription_without_override( $cart_item[ $subscription_type ]['subscription_id'] );
 
-				$this->running_override_selected_currency_filters = false;
 				return $subscription ? $subscription->get_currency() : $selected_currency;
 			}
+		}
+
+		// A failed or pending signup order is paid again through a cart rebuilt from it, in the order's currency.
+		$initial_payment_currency = $this->get_initial_payment_order_currency();
+		if ( $initial_payment_currency ) {
+			return $initial_payment_currency;
 		}
 
 		// This instance is for when the customer lands on the product page to choose a new subscription tier.
@@ -205,12 +239,12 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool   $should_convert Whether to convert the product's price or not. Default is true.
-	 * @param object $_unused_product        Product object to test.
+	 * @param bool        $should_convert Whether to convert the product's price or not. Default is true.
+	 * @param object|null $product        Product object to test. Without one, a renewal or resubscribe anywhere in the cart counts.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $should_convert, $_unused_product ): bool {
+	public function should_convert_product_price( bool $should_convert, $product ): bool {
 		// If it's already false, return it.
 		if ( ! $should_convert ) {
 			return $should_convert;
@@ -223,8 +257,8 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			'wc_get_price_including_tax',
 		];
 
-		// Check for renewal.
-		if ( $this->get_subscription_type_from_cart( 'renewal' ) ) {
+		// Check for renewal. Only the renewal's own product has its price set from the order; any other product in the cart still needs to be converted.
+		if ( $this->get_subscription_type_from_cart( 'renewal', $product ) ) {
 			// When WCPay Subs programmatically sets up the cart, we need to return the
 			// converted price so the user lands at the checkout with the correct price.
 			if ( $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Renewal->setup_cart' ] ) ) {
@@ -236,8 +270,8 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			}
 		}
 
-		// Check for resubscribe.
-		if ( $this->get_subscription_type_from_cart( 'resubscribe' )
+		// Check for resubscribe. As with renewals, only the resubscribe item's own product keeps its unconverted price.
+		if ( $this->get_subscription_type_from_cart( 'resubscribe', $product )
 			&& $this->utils->is_call_in_backtrace( $calls ) ) {
 			return false;
 		}
@@ -270,24 +304,60 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return false;
 		}
 
-		// If there's not a renewal in the cart, we can convert.
-		$subscription_renewal = $this->get_subscription_type_from_cart( 'renewal' );
-		if ( ! $subscription_renewal ) {
-			return true;
-		}
-
-		/**
-		 * We need to allow the early renewal to convert the cost, as it pulls the original value of the coupon.
-		 * Subsequent queries for the amount use the first converted amount.
-		 * This also works for normal manual renewals.
-		 */
-		if ( ! $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Early_Renewal->setup_cart' ] )
-			&& $this->utils->is_call_in_backtrace( [ 'WC_Discounts->apply_coupon' ] )
-			&& $this->is_coupon_type( $coupon, 'subscription_recurring' ) ) {
+		// The amount of a pseudo coupon is a discount taken from the order or subscription, so it is already in the order's currency.
+		if ( $this->is_coupon_type( $coupon, 'subscription_pseudo' ) ) {
 			return false;
 		}
 
-		return $should_convert;
+		return ! $this->is_coupon_being_stored_in_session() && ! $this->is_coupon_from_converted_session_copy( $coupon );
+	}
+
+	/**
+	 * Checks to see if the coupon's minimum and maximum amounts should be converted.
+	 *
+	 * @param mixed  $should_convert Whether to convert the coupon's minimum and maximum amounts or not. Default is true.
+	 * @param object $coupon         Coupon object to test.
+	 *
+	 * @return bool True if they should be converted.
+	 */
+	public function should_convert_coupon_min_max_amount( $should_convert, $coupon = null ): bool {
+		// If it's already false, return it.
+		if ( ! $should_convert ) {
+			return false;
+		}
+
+		return ! $this->is_coupon_being_stored_in_session() && ! $this->is_coupon_from_converted_session_copy( $coupon );
+	}
+
+	/**
+	 * Marks the coupon copies Subscriptions is about to store in the session, while the cart is set up, as unconverted.
+	 *
+	 * Copies stored by earlier versions hold amounts that were converted when they were stored, so they must not be converted again.
+	 *
+	 * @return void
+	 */
+	public function start_storing_unconverted_session_coupons() {
+		if ( ! isset( WC()->session ) ) {
+			return;
+		}
+
+		WC()->session->set( self::UNCONVERTED_SESSION_COUPONS_KEY, self::STORING_SESSION_COUPONS );
+	}
+
+	/**
+	 * Records which coupon copies were stored unconverted once the cart is set up.
+	 *
+	 * A hash of the copies, rather than a flag, so that copies rewritten later by a version without this
+	 * code (e.g. after a rollback) aren't taken for unconverted ones.
+	 *
+	 * @return void
+	 */
+	public function finish_storing_unconverted_session_coupons() {
+		if ( ! isset( WC()->session ) ) {
+			return;
+		}
+
+		WC()->session->set( self::UNCONVERTED_SESSION_COUPONS_KEY, $this->get_session_coupons_hash( WC()->session->get( 'wcs_renewal_coupons' ) ) );
 	}
 
 	/**
@@ -306,6 +376,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		if ( $this->get_subscription_type_from_cart( 'renewal' )
 			|| $this->get_subscription_type_from_cart( 'resubscribe' )
 			|| $this->get_subscription_type_from_cart( 'switch' )
+			|| $this->get_subscription_type_from_cart( 'initial_payment' )
 			|| $this->get_subscription_from_superglobal_switch_id() ) {
 			return true;
 		}
@@ -406,13 +477,17 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * This checks both the cart itself and the session. This is due to there are times when an item may be present in
 	 * one place and not the other. We need to make sure that if an item is in either we are not creating double conversions.
 	 *
-	 * @param string $type The type of subscription to look for in the cart.
+	 * If a product is passed, only the cart item holding that product object is a match. The objects are compared rather
+	 * than the IDs, as the same product can also be in the cart as a regular item.
+	 *
+	 * @param string      $type    The type of subscription to look for in the cart.
+	 * @param object|null $product Optional. The product object the cart item needs to hold.
 	 *
 	 * @return mixed False if none found, or the subscription cart item as an array.
 	 */
-	private function get_subscription_type_from_cart( $type ) {
+	private function get_subscription_type_from_cart( $type, $product = null ) {
 		// Make sure we're looking for allowed types.
-		if ( ! in_array( $type, self::SUBSCRIPTION_TYPES, true ) ) {
+		if ( ! in_array( $type, array_merge( self::SUBSCRIPTION_TYPES, self::ORDER_PAYMENT_TYPES ), true ) ) {
 			return false;
 		}
 
@@ -422,10 +497,15 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		// Go through each cart item and if it matches the type, return that item.
 		if ( isset( WC()->cart ) && is_array( WC()->cart->cart_contents ) && ! empty( WC()->cart->cart_contents ) ) {
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( isset( $cart_item[ $subscription_type ] ) ) {
+				if ( isset( $cart_item[ $subscription_type ] ) && ( ! $product || ( $cart_item['data'] ?? null ) === $product ) ) {
 					return $cart_item;
 				}
 			}
+		}
+
+		// The session cart items do not hold product objects, so there is nothing to match the product against.
+		if ( $product ) {
+			return false;
 		}
 
 		// Go through each session cart item and if it matches the type, return that item.
@@ -441,6 +521,33 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	}
 
 	/**
+	 * Gets the currency of the signup order being paid through the cart, if there is one.
+	 *
+	 * The currency is kept per order, because this runs on every price read.
+	 *
+	 * @return string|false Three letter currency code, or false if the cart is not paying for a signup order.
+	 */
+	private function get_initial_payment_order_currency() {
+		$cart_item = $this->get_subscription_type_from_cart( 'initial_payment' );
+		$order_id  = absint( $cart_item['subscription_initial_payment']['order_id'] ?? 0 );
+		if ( ! $order_id ) {
+			return false;
+		}
+
+		if ( ! array_key_exists( $order_id, $this->initial_payment_order_currencies ) ) {
+			$order = $this->load_without_override(
+				function () use ( $order_id ) {
+					return wc_get_order( $order_id );
+				}
+			);
+
+			$this->initial_payment_order_currencies[ $order_id ] = $order instanceof WC_Order ? $order->get_currency() : false;
+		}
+
+		return $this->initial_payment_order_currencies[ $order_id ];
+	}
+
+	/**
 	 * Getter for subscription objects.
 	 *
 	 * @param  mixed $the_subscription Post object or post ID of the order.
@@ -451,6 +558,41 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return false;
 		}
 		return wcs_get_subscription( $the_subscription );
+	}
+
+	/**
+	 * Gets a subscription while the currency override is turned off, as loading it reads the selected currency.
+	 *
+	 * @param  mixed $the_subscription Post object or post ID of the order.
+	 * @return WC_Subscription|bool The subscription object, or false if it cannot be found.
+	 */
+	private function get_subscription_without_override( $the_subscription ) {
+		return $this->load_without_override(
+			function () use ( $the_subscription ) {
+				return $this->get_subscription( $the_subscription );
+			}
+		);
+	}
+
+	/**
+	 * Loads an order or subscription while the currency override is turned off, as loading it reads the selected currency.
+	 *
+	 * Those nested reads resolve without the override, so whatever FrontendCurrencies cached during the load
+	 * is discarded. Otherwise decimals and formats would follow that currency instead of the loaded object's.
+	 *
+	 * @param callable $load Loads and returns the object.
+	 *
+	 * @return mixed Whatever $load returns.
+	 */
+	private function load_without_override( callable $load ) {
+		$this->running_override_selected_currency_filters = true;
+		try {
+			return $load();
+		} finally {
+			// A caller may catch a failed load and carry on, e.g. the Store API for each request in a batch.
+			$this->running_override_selected_currency_filters = false;
+			$this->frontend_currencies->selected_currency_changed();
+		}
 	}
 
 	/**
@@ -475,9 +617,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		$switch_id = (int) sanitize_key( $_GET['switch-subscription'] );
 
 		// Get the sub, preventing an infinite loop with running_override_selected_currency_filters.
-		$this->running_override_selected_currency_filters = true;
-		$switch_subscription                              = $this->get_subscription( $switch_id );
-		$this->running_override_selected_currency_filters = false;
+		$switch_subscription = $this->get_subscription_without_override( $switch_id );
 
 		// Confirm the sub user matches current user, and return the sub.
 		if ( $switch_subscription && $switch_subscription->get_customer_id() === get_current_user_id() ) {
@@ -487,6 +627,75 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks to see if Subscriptions is copying a coupon into the session.
+	 *
+	 * When a cart is set up from an order or subscription (renewal, early renewal, initial payment), the coupons are
+	 * copied into the session, and every later query for those coupons is built from that copy, whatever their type.
+	 * The copy needs to keep the original amounts, so that they are converted only once, when they are used.
+	 *
+	 * @return bool True if the coupon is being copied.
+	 */
+	private function is_coupon_being_stored_in_session(): bool {
+		// Coupons are only copied while one of these carts is set up (early renewal fires the renewal action),
+		// so the backtrace is not inspected on every other coupon read.
+		if ( ! doing_action( 'woocommerce_setup_cart_for_subscription_renewal' )
+			&& ! doing_action( 'woocommerce_setup_cart_for_subscription_initial_payment' ) ) {
+			return false;
+		}
+
+		// PHP names an inherited method after the class that declares it, so this also matches the initial payment and
+		// early renewal carts, which inherit store_coupon() from WCS_Cart_Renewal.
+		return $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Renewal->store_coupon' ] );
+	}
+
+	/**
+	 * Checks to see if the coupon is built from a session copy stored before the copies were marked as unconverted.
+	 *
+	 * Earlier versions converted the amounts when the copy was stored, so converting them again would apply the
+	 * exchange rate twice. Such copies last until the cart is set up again, emptied, or the session expires.
+	 *
+	 * @param mixed $coupon Coupon to test.
+	 *
+	 * @return bool True if the coupon's amounts are already converted.
+	 */
+	private function is_coupon_from_converted_session_copy( $coupon ): bool {
+		if ( ! $coupon instanceof \WC_Coupon || ! isset( WC()->session ) ) {
+			return false;
+		}
+
+		$session_coupons = WC()->session->get( 'wcs_renewal_coupons' );
+		if ( ! is_array( $session_coupons ) ) {
+			return false;
+		}
+
+		$is_copied = false;
+		foreach ( $session_coupons as $coupons ) {
+			if ( is_array( $coupons ) && array_key_exists( $coupon->get_code(), $coupons ) ) {
+				$is_copied = true;
+				break;
+			}
+		}
+		if ( ! $is_copied ) {
+			return false;
+		}
+
+		$marker = WC()->session->get( self::UNCONVERTED_SESSION_COUPONS_KEY );
+
+		return self::STORING_SESSION_COUPONS !== $marker && $this->get_session_coupons_hash( $session_coupons ) !== $marker;
+	}
+
+	/**
+	 * Hashes the coupon copies stored in the session.
+	 *
+	 * @param mixed $session_coupons The value of `wcs_renewal_coupons`.
+	 *
+	 * @return string
+	 */
+	private function get_session_coupons_hash( $session_coupons ): string {
+		return md5( (string) wp_json_encode( $session_coupons ) );
 	}
 
 	/**
@@ -505,8 +714,8 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				$types = [ 'recurring_percent', 'sign_up_fee_percent', 'renewal_percent' ];
 				break;
 
-			case 'subscription_recurring':
-				$types = [ 'recurring_fee', 'recurring_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ];
+			case 'subscription_pseudo':
+				$types = [ 'renewal_cart', 'initial_cart' ];
 				break;
 		}
 

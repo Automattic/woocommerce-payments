@@ -22,11 +22,22 @@
 			padding-bottom: 0;
 		}
 	}
+
+	// Stack the blocks and pad the row instead of each block, matching the
+	// bottom row, so stacked blocks are not separated by double padding.
+	@media ( max-width: 782px ) {
+		flex-direction: column;
+		padding-top: 24px;
+		padding-bottom: 24px;
+	}
 }
 
 .wcpay-loan-summary-block {
 	padding: 24px 16px;
 	margin-right: 0;
+	min-width: 0;
+	overflow: hidden;
+	overflow-wrap: anywhere;
 
 	& + & {
 		border-left: 1px solid $gray-200;
@@ -47,6 +58,15 @@
 		.is-big {
 			font-size: 20px;
 			line-height: 27px;
+		}
+	}
+
+	@media ( max-width: 782px ) {
+		padding-top: 0;
+		padding-bottom: 0;
+
+		& + & {
+			border-left: none;
 		}
 	}
 }

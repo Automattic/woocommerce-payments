@@ -104,6 +104,29 @@ describe( 'Deposits selectors', () => {
 		);
 	} );
 
+	test( 'Returns the same deposits list until the deposits change', () => {
+		const first = getDeposits( filledSuccessState, mockQuery );
+
+		expect( getDeposits( filledSuccessState, mockQuery ) ).toBe( first );
+		expect( getDeposits( emptyState, mockQuery ) ).toBe(
+			getDeposits( emptyState, mockQuery )
+		);
+
+		const updatedState = {
+			deposits: {
+				...filledSuccessState.deposits,
+				byId: {
+					...filledSuccessState.deposits.byId,
+					po_mock1: { id: 'po_mock1', amount: 2500 },
+				},
+			},
+		};
+		const updated = getDeposits( updatedState, mockQuery );
+
+		expect( updated ).not.toBe( first );
+		expect( updated[ 0 ].amount ).toBe( 2500 );
+	} );
+
 	test( 'Returns empty deposits query error when error is empty', () => {
 		expect( getDepositQueryError( emptyState, mockQuery ) ).toStrictEqual(
 			{}
@@ -148,6 +171,17 @@ describe( 'Deposits overviews selectors', () => {
 			account: null,
 			currencies: [],
 		} );
+	} );
+
+	test( 'Returns the same overviews for the same data', () => {
+		const state = { deposits: { overviews: { data: overviewsFixture } } };
+
+		expect( getAllDepositsOverviews( state ) ).toBe(
+			getAllDepositsOverviews( state )
+		);
+		expect( getAllDepositsOverviews( filledErrorState ) ).toBe(
+			getAllDepositsOverviews( filledErrorState )
+		);
 	} );
 
 	test( 'Properly groups by currency', () => {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Declare react-day-picker as a dependency of @wordpress/dataviews so builds don't rely on pnpm hoisting.

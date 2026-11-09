@@ -18,6 +18,7 @@ import { useFiles } from 'wcpay/data/files';
 import Loadable from 'wcpay/components/loadable';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { FileDownload } from 'wcpay/data/files/types';
+import { encodePathSegment } from 'utils/path-segment';
 
 const TextEvidence: React.FC< {
 	evidence: string;
@@ -60,7 +61,9 @@ const FileEvidence: React.FC< {
 		try {
 			setIsDownloading( true );
 			const downloadRequest = await apiFetch< FileDownload >( {
-				path: `${ NAMESPACE }/file/${ encodeURI( file.id ) }/content`,
+				path: `${ NAMESPACE }/file/${ encodePathSegment(
+					file.id
+				) }/content`,
 				method: 'GET',
 			} );
 

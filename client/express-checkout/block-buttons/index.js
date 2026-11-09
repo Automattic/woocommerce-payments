@@ -15,20 +15,23 @@ import { getExpressCheckoutData, filterCartMethodsByLocation } from '../utils';
 import '../compatibility/wc-order-attribution';
 import '../compatibility/wc-subscriptions';
 
-const LazyApplePayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/apple-pay-preview'
-	)
+const LazyApplePayPreview = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "express-checkout-previews" */ './components/apple-pay-preview'
+		)
 );
-const LazyGooglePayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/google-pay-preview'
-	)
+const LazyGooglePayPreview = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "express-checkout-previews" */ './components/google-pay-preview'
+		)
 );
-const LazyAmazonPayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/amazon-pay-preview'
-	)
+const LazyAmazonPayPreview = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "express-checkout-previews" */ './components/amazon-pay-preview'
+		)
 );
 
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
@@ -87,7 +90,12 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'applePay', cart, api );
+		return checkPaymentMethodIsAvailable(
+			'applePay',
+			cart,
+			api,
+			enabledMethods
+		);
 	},
 } );
 
@@ -121,7 +129,12 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
+		return checkPaymentMethodIsAvailable(
+			'googlePay',
+			cart,
+			api,
+			enabledMethods
+		);
 	},
 } );
 
@@ -152,6 +165,11 @@ export const expressCheckoutElementAmazonPay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'amazonPay', cart, api );
+		return checkPaymentMethodIsAvailable(
+			'amazonPay',
+			cart,
+			api,
+			enabledMethods
+		);
 	},
 } );

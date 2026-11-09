@@ -957,9 +957,8 @@ export const removeCoupon = async ( page: Page ) => {
 
 	if ( await couponRemovalLink.isVisible() ) {
 		await couponRemovalLink.click();
-		await expect(
-			page.getByText( 'Coupon has been removed.' )
-		).toBeVisible();
+		// Core's removal notice copy differs across WC versions.
+		await expect( couponRemovalLink ).toHaveCount( 0 );
 	}
 };
 

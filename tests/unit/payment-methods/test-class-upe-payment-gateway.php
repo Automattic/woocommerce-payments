@@ -185,6 +185,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		$this->reset_payment_method_registry();
+
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
@@ -369,13 +371,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		WC_Payments::set_database_cache( $this->_cache );
 		wcpay_get_test_container()->reset_all_replacements();
-
-		// resetting to prevent test pollution.
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
 	}
 
 	public function test_process_payment_returns_correct_redirect_when_using_saved_payment() {
@@ -421,10 +416,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( $this->return_url, $result['redirect'] );
-	}
-
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->mock_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -744,8 +735,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $affirm_method->is_reusable() );
 
 		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
-		$this->assertSame( 'Cash App Afterpay', $afterpay_method->get_title( 'US' ) );
-		$this->assertSame( 'Cash App Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US' ) );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
+		$this->assertSame( 'Allow customers to pay over time with Afterpay.', $afterpay_method->get_description( 'US' ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
 		$this->assertSame( 'Clearpay', $afterpay_method->get_title( 'GB' ) );
@@ -853,6 +845,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id       = $order->get_id();
 		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$_GET['key'] = $order->get_order_key();
+		wp_set_current_user( $order->get_user_id() );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );

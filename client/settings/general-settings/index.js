@@ -3,12 +3,13 @@
  */
 import React, { useState, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl } from '@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import {
 	useDevMode,
 	useTestMode,
@@ -19,6 +20,7 @@ import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live
 import TestModeConfirmationModal from './test-mode-confirm-modal';
 import EnableWooPaymentsCheckbox from './enable-woopayments-checkbox';
 import { recordEvent } from 'wcpay/tracks';
+import DevModeMessage from 'wcpay/components/dev-mode-message';
 
 const GeneralSettings = () => {
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
@@ -81,71 +83,44 @@ const GeneralSettings = () => {
 										? __(
 												'Enable test mode (enabled by development mode)',
 												'woocommerce-payments'
-										  )
+											)
 										: __(
 												'Enable test mode',
 												'woocommerce-payments'
-										  )
+											)
 								}
 								help={
-									isDevModeEnabled
-										? interpolateComponents( {
-												/* eslint-disable max-len */
-												mixedString: __(
-													'Test mode is active because your store is running in a development or staging environment. ' +
-														'To disable it, switch to a production {{wpEnvLink}}WordPress environment{{/wpEnvLink}} or remove the WCPAY_DEV_MODE constant. ' +
-														'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
-													'woocommerce-payments'
+									isDevModeEnabled ? (
+										<DevModeMessage />
+									) : (
+										interpolateComponents( {
+											mixedString: __(
+												'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate ' +
+													'various transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+												'woocommerce-payments'
+											),
+											components: {
+												testCardHelpLink: (
+													// eslint-disable-next-line jsx-a11y/anchor-has-content
+													<a
+														target="_blank"
+														rel="noreferrer"
+														/* eslint-disable-next-line max-len */
+														href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards"
+													/>
 												),
-												/* eslint-enable max-len */
-												components: {
-													wpEnvLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															target="_blank"
-															rel="noreferrer"
-															/* eslint-disable-next-line max-len */
-															href="https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/"
-														/>
-													),
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															target="_blank"
-															rel="noreferrer"
-															/* eslint-disable-next-line max-len */
-															href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
-														/>
-													),
-												},
-										  } )
-										: interpolateComponents( {
-												mixedString: __(
-													'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate ' +
-														'various transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-													'woocommerce-payments'
+												learnMoreLink: (
+													// eslint-disable-next-line jsx-a11y/anchor-has-content
+													<a
+														target="_blank"
+														rel="noreferrer"
+														/* eslint-disable-next-line max-len */
+														href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
+													/>
 												),
-												components: {
-													testCardHelpLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															target="_blank"
-															rel="noreferrer"
-															/* eslint-disable-next-line max-len */
-															href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards"
-														/>
-													),
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															target="_blank"
-															rel="noreferrer"
-															/* eslint-disable-next-line max-len */
-															href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
-														/>
-													),
-												},
-										  } )
+											},
+										} )
+									)
 								}
 								__nextHasNoMarginBottom
 							/>

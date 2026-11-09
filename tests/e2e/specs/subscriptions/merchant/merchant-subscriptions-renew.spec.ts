@@ -53,7 +53,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await shopperPage
 					.getByRole( 'link', { name: 'View subscription number' } )
 					.textContent()
-			 )
+			)
 				.trim()
 				.replace( '#', '' );
 		} );

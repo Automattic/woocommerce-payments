@@ -20,6 +20,7 @@ import {
 	getFingerprint,
 } from 'wcpay/checkout/utils/fingerprint';
 import {
+	getLinkEmail,
 	getPaymentMethodTypes,
 	getTerms,
 	isLinkEnabled,
@@ -31,6 +32,7 @@ import {
 	appendPaymentMethodErrorDataToForm,
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
+	isUsingSavedPaymentMethod,
 } from './upe-utils';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
@@ -282,8 +284,9 @@ async function createStripePaymentElement(
 	const stripe = await api.getStripeForUPE( paymentMethodType );
 
 	const elements = stripe.elements( options );
+	const upeSettings = getUpeSettings( paymentMethodType );
 	const createdStripePaymentElement = elements.create( 'payment', {
-		...getUpeSettings( paymentMethodType ),
+		...upeSettings,
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
@@ -298,6 +301,8 @@ async function createStripePaymentElement(
 	gatewayUPEComponents[ paymentMethodType ].elements = elements;
 	gatewayUPEComponents[ paymentMethodType ].upeElement =
 		createdStripePaymentElement;
+	gatewayUPEComponents[ paymentMethodType ].linkEmail =
+		upeSettings.defaultValues?.billingDetails?.email;
 	return createdStripePaymentElement;
 }
 
@@ -424,6 +429,38 @@ export async function renderTerms( event ) {
 }
 
 /**
+ * Passes the checkout email to the card Payment Element so Link can recognize returning customers.
+ *
+ * @param {string} email The email entered at checkout.
+ */
+export async function updateLinkEmail( email ) {
+	const cardComponents = gatewayUPEComponents.card;
+	const linkEmail = getLinkEmail( email );
+	if (
+		! cardComponents?.upeElement ||
+		! linkEmail ||
+		linkEmail === cardComponents.linkEmail ||
+		! isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+	) {
+		return;
+	}
+
+	cardComponents.linkEmail = linkEmail;
+	await cardComponents.upeElement.update( {
+		defaultValues: getUpeSettings( 'card' ).defaultValues,
+	} );
+}
+
+export const processPaymentIfNotUsingSavedMethod = ( api, $form ) => {
+	const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+	if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
+		return processPayment( api, $form, paymentMethodType );
+	}
+
+	appendFraudPreventionTokenInputToForm( $form );
+};
+
+/**
  * Handles the checkout process for the provided jQuery form and Stripe payment method type. The function blocks the
  * form UI to prevent duplicate submission and validates the Stripe elements. It then creates a Stripe payment method
  * object and appends the necessary data to the form for checkout completion. Finally, it submits the form and prevents
@@ -529,6 +566,7 @@ export function __resetHasCheckoutCompleted() {
 export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
 	if ( gatewayUPEComponents[ paymentMethodType ]?.upeElement ) {
 		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
+		delete gatewayUPEComponents[ paymentMethodType ].linkEmail;
 	}
 }
 

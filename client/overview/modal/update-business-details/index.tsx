@@ -62,7 +62,7 @@ const UpdateBusinessDetailsModal = ( {
 													customFormat: 'ga M j, Y',
 												}
 											)
-									  )
+										)
 									: strings.restrictedDescription }
 							</p>
 

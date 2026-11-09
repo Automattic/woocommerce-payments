@@ -514,6 +514,87 @@ describe( 'Classic checkout UPE utils', () => {
 			expect( upeSettings.defaultValues ).toBeUndefined();
 		} );
 
+		describe( 'Link email', () => {
+			let emailForm;
+
+			const mockLinkEnabled = ( isEnabled ) => {
+				getUPEConfig.mockImplementation( ( argument ) => {
+					if ( argument === 'paymentMethodsConfig' ) {
+						return isEnabled
+							? { card: { isReusable: true }, link: {} }
+							: { card: { isReusable: true } };
+					}
+				} );
+			};
+
+			beforeEach( () => {
+				document
+					.querySelectorAll( 'form' )
+					.forEach( ( form ) => form.remove() );
+				emailForm = buildForm( [
+					{ id: 'billing_email', value: 'shopper@example.com' },
+				] );
+			} );
+
+			afterEach( () => {
+				emailForm.remove();
+			} );
+
+			it( 'should use the checkout email when Link is enabled', () => {
+				mockLinkEnabled( true );
+
+				const upeSettings = getUpeSettings( 'card' );
+
+				expect( upeSettings.defaultValues ).toEqual( {
+					billingDetails: { email: 'shopper@example.com' },
+				} );
+			} );
+
+			it( 'should keep wcpayCustomerData defaults and prefer the checkout email', () => {
+				mockLinkEnabled( true );
+				window.wcpayCustomerData = {
+					name: 'Test Person',
+					email: 'old@example.com',
+					billing_country: 'US',
+				};
+
+				const upeSettings = getUpeSettings( 'card' );
+
+				expect( upeSettings.defaultValues ).toEqual( {
+					billingDetails: {
+						name: 'Test Person',
+						email: 'shopper@example.com',
+						address: { country: 'US' },
+					},
+				} );
+			} );
+
+			it( 'should not use the checkout email when Link is disabled', () => {
+				mockLinkEnabled( false );
+
+				const upeSettings = getUpeSettings( 'card' );
+
+				expect( upeSettings.defaultValues ).toBeUndefined();
+			} );
+
+			it( 'should not use the checkout email for non-card payment methods', () => {
+				mockLinkEnabled( true );
+
+				const upeSettings = getUpeSettings( 'bancontact' );
+
+				expect( upeSettings.defaultValues ).toBeUndefined();
+			} );
+
+			it( 'should not use an invalid checkout email', () => {
+				mockLinkEnabled( true );
+				document.getElementById( 'billing_email' ).value = 'shopper@';
+
+				const upeSettings = getUpeSettings( 'card' );
+
+				expect( upeSettings.defaultValues ).toBeUndefined();
+			} );
+		} );
+
 		function createCheckboxElementWhich( isChecked ) {
 			// Create the checkbox element
 			const checkboxElement = document.createElement( 'input' );

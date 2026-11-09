@@ -36,28 +36,20 @@ const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 			) }
 			help={ interpolateComponents( {
 				mixedString: sprintf(
-					context.isMigrationOptionShown &&
-						context.migratedCount === 0
-						? __(
-								'Alternatively, you can enable this setting and future %s subscription purchases will also utilize' +
-									' Stripe Billing for payment processing. Note: This feature supports card payments only and' +
-									' may lack support for key subscription features.' +
-									' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-								'woocommerce-payments'
-						  )
-						: __(
-								'By enabling this setting, future %s subscription purchases will utilize Stripe Billing for payment' +
-									' processing. Note: This feature supports card payments only and may lack support for key' +
-									' subscription features. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-								'woocommerce-payments'
-						  ),
+					__(
+						'Future %s subscriptions will use Stripe Billing, which charges a 1%% fee on the full total of' +
+							' any order containing a subscription. It supports card payments only and does not support' +
+							' all WooCommerce Subscriptions features. {{learnMoreLink}}Learn more about' +
+							' fees{{/learnMoreLink}}',
+						'woocommerce-payments'
+					),
 					'WooPayments'
 				),
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
 						// @ts-expect-error: children is provided when interpolating the component
-						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/" />
+						<ExternalLink href="https://woocommerce.com/document/woopayments/fees/#united-states" />
 					),
 				},
 			} ) }

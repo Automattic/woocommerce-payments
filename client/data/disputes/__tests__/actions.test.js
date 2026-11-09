@@ -78,4 +78,40 @@ describe( 'acceptDispute action', () => {
 			)
 		);
 	} );
+
+	const traversalId = '../x?y';
+	const invalidId = '..';
+
+	test( 'encodes the dispute ID in the close path', () => {
+		const generator = acceptDispute( { ...mockDispute, id: traversalId } );
+
+		generator.next();
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: '/wc/v3/payments/disputes/..%2Fx%3Fy/close',
+				method: 'post',
+			} )
+		);
+	} );
+
+	test( 'does not close a dispute with an invalid ID', () => {
+		const generator = acceptDispute( { ...mockDispute, id: invalidId } );
+
+		generator.next();
+		expect( generator.next().value ).toEqual(
+			controls.dispatch(
+				'core/notices',
+				'createErrorNotice',
+				expect.any( String )
+			)
+		);
+		expect( generator.next().value ).toEqual(
+			controls.dispatch(
+				'wc/payments/disputes',
+				'finishResolution',
+				'getDispute',
+				[ '..' ]
+			)
+		);
+	} );
 } );

@@ -169,6 +169,29 @@ class Compatibility extends BaseCompatibility {
 	}
 
 	/**
+	 * Checks to see if the coupon's minimum and maximum amounts should be converted.
+	 *
+	 * @param object $coupon Coupon object to test.
+	 *
+	 * @return bool True if they should be converted.
+	 */
+	public function should_convert_coupon_min_max_amount( $coupon = null ): bool {
+		if ( ! $coupon ) {
+			return true;
+		}
+
+		/**
+		 * Filters whether a coupon's minimum and maximum amounts should be converted to the selected currency.
+		 *
+		 * @since 11.3.0
+		 *
+		 * @param bool   $convert Whether the minimum and maximum amounts should be converted. Default true.
+		 * @param object $coupon  The coupon object being tested.
+		 */
+		return (bool) apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_min_max_amount', true, $coupon );
+	}
+
+	/**
 	 * Checks to see if the product's price should be converted.
 	 *
 	 * @param object $product Product object to test.
@@ -208,6 +231,8 @@ class Compatibility extends BaseCompatibility {
 		 *
 		 * Some shipping methods (such as live-rate plugins) return costs that are already
 		 * converted to the customer's currency. Converting again would double-convert the cost.
+		 * Returning false also skips converting a flat-rate cost formula's cart cost back to the
+		 * store currency before the formula is evaluated.
 		 *
 		 * @since 10.10.0
 		 *

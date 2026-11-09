@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix the _load_textdomain_just_in_time notice on fresh installs by deferring gateway settings-field translations

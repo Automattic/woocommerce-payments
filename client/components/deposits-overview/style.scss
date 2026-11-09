@@ -16,7 +16,7 @@
 		margin: 16px 0;
 	}
 
-	.components-card__body.wcpay-deposits-overview__schedule__container {
+	.wcpay-card__body.wcpay-deposits-overview__schedule__container {
 		padding-top: 24px;
 		padding-bottom: 0;
 
@@ -28,8 +28,8 @@
 	// Override extraneous CardBody vertical padding -
 	// we use multiple stacked CardBody components
 	// so table CardDivider is full width.
-	.components-card__body.wcpay-deposits-overview__table__container,
-	.components-card__body.wcpay-deposits-overview__notices__container {
+	.wcpay-card__body.wcpay-deposits-overview__table__container,
+	.wcpay-card__body.wcpay-deposits-overview__notices__container {
 		padding-top: 0;
 
 		// If the CardFooter is rendered, remove the bottom padding

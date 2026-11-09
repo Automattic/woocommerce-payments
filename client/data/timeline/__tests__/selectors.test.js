@@ -38,6 +38,16 @@ describe( 'Timeline selectors', () => {
 		);
 	} );
 
+	test( 'Returns the same empty values on repeated calls', () => {
+		expect( getTimeline( {}, mockIntentionId1 ) ).toBe(
+			getTimeline( {}, mockIntentionId1 )
+		);
+
+		expect( getTimelineError( {}, mockIntentionId1 ) ).toBe(
+			getTimelineError( {}, mockIntentionId1 )
+		);
+	} );
+
 	test( 'Returns timeline list from state for a given ID', () => {
 		expect( getTimeline( mockSuccessState, mockIntentionId1 ) ).toBe(
 			mockTimeline1

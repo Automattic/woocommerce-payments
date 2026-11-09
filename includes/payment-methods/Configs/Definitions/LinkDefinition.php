@@ -66,7 +66,7 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 			return __( 'Onelink', 'woocommerce-payments' );
 		}
 
-		return __( 'Link', 'woocommerce-payments' );
+		return __( 'Stripe Link', 'woocommerce-payments' );
 	}
 
 	/**

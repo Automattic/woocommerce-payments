@@ -14,6 +14,12 @@ wp config set WP_ENVIRONMENT_TYPE development --quiet 2>/dev/null || true
 # Enable WooPayments dev mode via constant (required for payment processing in test environment).
 wp config set WCPAY_DEV_MODE true --raw --type=constant --quiet 2>/dev/null || true
 
+# WooCommerce only turns HPOS on for a new shop when all its install-time checks pass, so some QIT
+# environments start with orders stored as posts. The subscriptions tests open HPOS-only admin pages.
+echo "Enabling HPOS..."
+wp wc hpos enable --ignore-plugin-compatibility || echo "Warning: unable to enable HPOS."
+wp wc hpos status || true
+
 # Install WordPress importer and import sample products.
 echo "Installing WordPress importer for sample data..."
 if ! wp plugin is-installed wordpress-importer >/dev/null 2>&1; then
@@ -164,6 +170,12 @@ if ! wp theme is-installed storefront > /dev/null 2>&1; then
 fi
 wp theme activate storefront
 
+# WooCommerce only applies Storefront's 3x4 product grid on `after_switch_theme`, which never fires
+# when Storefront is already active, leaving the 4x4 default. Product page numbers in the config
+# assume 12 products per page.
+wp option update woocommerce_catalog_columns 3
+wp option update woocommerce_catalog_rows 4
+
 # Enable WooPayments settings.
 echo "Enabling WooPayments settings..."
 wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
@@ -192,7 +204,6 @@ wp eval-file ./bootstrap/qit-jetpack-status.php
 wp option set wcpay_dev_mode 1 --quiet 2>/dev/null || true
 wp option set wcpaydev_proxy 0 --quiet 2>/dev/null || true
 wp option set wcpay_should_redirect_to_onboarding 0 --quiet 2>/dev/null || true
-wp option set wcpay_fraud_protection_welcome_tour_dismissed 1 --quiet 2>/dev/null || true
 
 # Disable rate limiters for E2E testing (matches legacy E2E setup).
 echo "Disabling rate limiters for E2E testing..."

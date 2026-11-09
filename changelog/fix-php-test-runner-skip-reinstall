@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Reuse the local PHP unit test environment between runs, print its WordPress, WooCommerce and Gutenberg versions, and detect setup problems before running tests.

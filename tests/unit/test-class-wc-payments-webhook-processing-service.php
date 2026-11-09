@@ -11,7 +11,6 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
-use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -25,6 +24,31 @@ require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
  * WC_Payments_Webhook_Processing_Service unit tests.
  */
 class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
+
+	/**
+	 * When another gateway took an order over from a WooPayments attempt.
+	 */
+	const PAYMENT_DETAILS_REMOVED_AT = 1700000000;
+
+	/**
+	 * The intent of a payment for that order.
+	 */
+	const LATE_INTENT_ID = 'pi_late_payment';
+
+	/**
+	 * The charge of that payment.
+	 */
+	const LATE_CHARGE_ID = 'ch_late_payment';
+
+	/**
+	 * The payment method of that payment.
+	 */
+	const LATE_PAYMENT_METHOD_ID = 'pm_late_payment';
+
+	/**
+	 * The intent of an authorization the `amount_capturable_updated` tests send.
+	 */
+	const AUTHORIZATION_INTENT_ID = 'pi_mock';
 
 	/**
 	 * System under test.
@@ -670,6 +694,139 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A payment from a WooPayments attempt made before another gateway took the order over leaves the order
+	 * alone, and the merchant gets a note naming it so they can refund it.
+	 */
+	public function test_payment_intent_succeeded_ignores_an_attempt_from_before_another_gateway_took_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( 'cod', $order->get_payment_method() );
+		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*refund/', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A payment started after another gateway took the order over, such as an in-person payment, is recorded.
+	 */
+	public function test_payment_intent_succeeded_records_a_payment_started_after_another_gateway_took_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT + 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pm_late_payment', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_intent_id' ) );
+	}
+
+	/**
+	 * A new WooPayments attempt after a failed takeover is recorded even when the store's clock puts the
+	 * takeover after the intent's creation: the attempt's mode marks it as new. For a method that pays later,
+	 * this webhook is what completes the order.
+	 *
+	 * The new attempt makes WooPayments the order's gateway again. Left on `cod`, Cash on delivery's
+	 * `woocommerce_payment_complete_order_status` filter would complete the order wherever that gateway is loaded.
+	 */
+	public function test_payment_intent_succeeded_records_a_new_attempt_the_clocks_put_before_the_takeover() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'processing', $order->get_status() );
+	}
+
+	/**
+	 * The intent the cleanup removed is known by name, so its payment is ignored even when the store's clock
+	 * puts the takeover before the intent's creation.
+	 */
+	public function test_payment_intent_succeeded_ignores_the_removed_intent_whatever_its_time() {
+		$order = $this->create_order_taken_over_by_another_gateway();
+		$order->update_meta_data( WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY, [ self::LATE_INTENT_ID ] );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT + 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*refund/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * Creates an order paid with cash on delivery after a WooPayments attempt, as the cleanup leaves it.
+	 *
+	 * @param string $status The order's status.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_taken_over_by_another_gateway( string $status = Order_Status::PROCESSING ): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'cod' );
+		$order->set_status( $status );
+		$order->update_meta_data( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY, (string) self::PAYMENT_DETAILS_REMOVED_AT );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Builds a payment_intent.succeeded event for the order, for an intent created at the given time.
+	 *
+	 * @param WC_Order $order      The order the intent was created for.
+	 * @param int      $created_at When the intent was created.
+	 */
+	private function set_up_late_payment_intent_succeeded( WC_Order $order, int $created_at ): void {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => self::LATE_INTENT_ID,
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'created'  => $created_at,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => self::LATE_CHARGE_ID,
+						'payment_method'         => self::LATE_PAYMENT_METHOD_ID,
+						'payment_method_details' => [ 'type' => 'card' ],
+					],
+				],
+			],
+			'currency' => 'usd',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [ 'order_id' => $order->get_id() ],
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->willReturn( $order );
+
+		$this->mock_api_client
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => self::LATE_INTENT_ID,
+						'metadata' => [ 'order_id' => $order->get_id() ],
+					]
+				)
+			);
+	}
+
+	/**
 	 * Tests that a payment_intent.succeeded event will complete the order.
 	 */
 	public function test_payment_intent_successful_and_completes_order() {
@@ -702,6 +859,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -726,6 +885,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -803,6 +966,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -821,6 +986,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1045,6 +1215,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1063,6 +1235,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1141,6 +1318,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1159,6 +1338,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1233,6 +1417,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1258,6 +1444,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->method( 'get_total' )
 			->willReturn( 15.00 );
+
+		$this->mock_order
+			->method( 'get_currency' )
+			->willReturn( Currency_Code::EURO );
+
 		$this->mock_order
 			->method( 'has_status' )
 			->willReturn( false );
@@ -1360,6 +1551,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1386,6 +1579,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -1461,6 +1658,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1485,6 +1684,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -1621,6 +1824,51 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a payment_intent.succeeded event for a Stripe Billing invoice records the charge
+	 * but leaves the order status to the invoice handlers.
+	 */
+	public function test_payment_intent_successful_for_invoice_does_not_complete_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_invoice123',
+			'object'   => 'payment_intent',
+			'amount'   => 1000,
+			'charges'  => [
+				'data' => [
+					[
+						'id'             => 'ch_invoice123',
+						'payment_method' => 'pm_foo',
+					],
+				],
+			],
+			'currency' => 'usd',
+			'status'   => Intent_Status::SUCCEEDED,
+			'invoice'  => 'in_renewal123',
+			'metadata' => [],
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_invoice123' )
+			->willReturn( $order );
+
+		$this->mock_api_client
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] ) );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$stored_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $stored_order->get_status() );
+		$this->assertSame( 'ch_invoice123', $stored_order->get_meta( '_charge_id' ) );
+	}
+
+	/**
 	 * Tests that a payment_intent.succeeded event will complete the order and
 	 * send the card reader receipt to the customer.
 	 */
@@ -1662,7 +1910,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
-						'status' => $intent_status,
+						'amount'   => 1500,
+						'currency' => 'eur',
+						'status'   => $intent_status,
 					]
 				)
 			);
@@ -1681,6 +1931,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->once() )
@@ -1765,6 +2019,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				WC_Helper_Intention::create_intention(
 					[
+						'amount'                 => 1500,
+						'currency'               => 'eur',
 						'status'                 => $intent_status,
 						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 					]
@@ -1786,6 +2042,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_order
 				->method( 'get_total' )
 				->willReturn( 15.00 );
+
+			$this->mock_order
+				->method( 'get_currency' )
+				->willReturn( Currency_Code::EURO );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -1983,6 +2243,503 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a decline that is not retryable
+	 * keeps the generic failure message.
+	 */
+	public function test_payment_intent_fails_with_non_retryable_decline_uses_generic_message() {
+		$error_code    = 'payment_intent_payment_attempt_failed';
+		$decline_code  = 'generic_decline';
+		$error_message = 'error message';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_123123123123123', // Payment method ID.
+						'payment_method_details' => [
+							'type' => 'us_bank_account',
+						],
+					],
+				],
+			],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => $error_code,
+				'decline_code'   => $decline_code,
+				'message'        => $error_message,
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'us_bank_account',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( 'pm_123123123123123' );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		$this->mock_order
+			->expects( $this->exactly( 3 ) )
+			->method( 'has_status' )
+			->withConsecutive(
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::FAILED ] ]
+			)
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'With the following message: <code>error message</code>' ),
+					$this->logicalNot( $this->stringContains( 'Decline code:' ) )
+				)
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( Order_Status::FAILED );
+
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds an order
+	 * note with the provider's error details, without changing the order status, so the customer
+	 * can retry with a different payment method.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_adds_order_note_without_failing_order() {
+		$error_code        = 'payment_intent_payment_attempt_failed';
+		$decline_code      = 'klarna_payment_declined';
+		$error_message     = 'The customer declined the payment.';
+		$doc_url           = 'https://docs.example.com/klarna-decline';
+		$payment_method_id = 'pm_123123123123123';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => $error_code,
+				'decline_code'   => $decline_code,
+				'message'        => $error_message,
+				'doc_url'        => $doc_url,
+				'payment_method' => [
+					'id'   => $payment_method_id,
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ Order_Status::PROCESSING, Order_Status::COMPLETED ] )
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'A payment of' ),
+					$this->stringContains( '<strong>failed</strong> using WooPayments' ),
+					$this->stringContains( 'pi_123123123123123' ),
+					$this->stringContains( 'With the following message: <code>The customer declined the payment.</code>' ),
+					$this->stringContains( 'Decline code: <code>klarna_payment_declined</code>' ),
+					$this->stringContains( '<a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>' )
+				)
+			);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method without a decline
+	 * code or doc URL, e.g. when the provider's payment session expires, adds an order note with
+	 * the provider's message only, without changing the order status.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_without_decline_code_and_doc_url() {
+		$error_message     = 'The payment session has expired.';
+		$payment_method_id = 'pm_123123123123123';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'message'        => $error_message,
+				'payment_method' => [
+					'id'   => $payment_method_id,
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ Order_Status::PROCESSING, Order_Status::COMPLETED ] )
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'A payment of' ),
+					$this->stringContains( '<strong>failed</strong> using WooPayments' ),
+					$this->stringContains( 'With the following message: <code>The payment session has expired.</code>' ),
+					$this->logicalNot( $this->stringContains( 'Decline code:' ) ),
+					$this->logicalNot( $this->stringContains( 'More information' ) )
+				)
+			);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a payment method that is neither BNPL
+	 * nor actionable adds no order note and does not fail the order.
+	 */
+	public function test_payment_intent_fails_with_non_bnpl_non_actionable_method_is_ignored() {
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'message'        => 'The payment session has expired.',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'sepa_debit',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'get_meta' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_intent_id' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds no order
+	 * note when the intent's payment method is not the order's current payment method.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_and_mismatched_payment_method_adds_no_note() {
+		$payment_method_id       = 'pm_999999999999999';
+		$order_payment_method_id = 'pm_123123123123123';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'payment_method' => [
+					'id'   => $payment_method_id,
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( $order_payment_method_id );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'has_status' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds no order
+	 * note when the order has already been paid.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_on_paid_order_adds_no_note() {
+		$payment_method_id = 'pm_123123123123123';
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'payment_method' => [
+					'id'   => $payment_method_id,
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ Order_Status::PROCESSING, Order_Status::COMPLETED ] )
+			->willReturn( true );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds an order
+	 * note even when the order has already failed, e.g. when an abandoned payment retry does
+	 * not reset the failed status, without changing the order status.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_on_failed_order_adds_note() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_payment_method_id', 'pm_123123123123123' );
+		$order->update_status( Order_Status::FAILED );
+		$order->save();
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'doc_url'        => 'https://docs.example.com/klarna-decline',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 1, preg_grep( '/<strong>failed<\/strong> using WooPayments/', $contents ) );
+		$this->assertCount( 1, preg_grep( '/Decline code: <code>klarna_payment_declined<\/code>/', $contents ) );
+
+		// Only a note is added; the order stays failed.
+		$this->assertSame( Order_Status::FAILED, wc_get_order( $order->get_id() )->get_status() );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that a re-delivered payment_intent.payment_failed event for a BNPL payment method
+	 * does not duplicate the order note, and leaves the order pending.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_does_not_duplicate_the_note() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_payment_method_id', 'pm_123123123123123' );
+		$order->save();
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'doc_url'        => 'https://docs.example.com/klarna-decline',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 1, preg_grep( '/<strong>failed<\/strong> using WooPayments/', $contents ) );
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 
 	/**
@@ -2913,6 +3670,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'failed',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_db_wrapper
@@ -2922,6 +3680,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service
 			->expects( $this->never() )
 			->method( 'add_note_and_metadata_for_created_refund' );
+
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	public function test_process_refund_throws_when_order_not_found(): void {
@@ -3204,77 +3964,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider refund_failure_reason_data_provider
-	 */
-	public function test_process_webhook_refund_updated_handles_different_failure_reasons( string $failure_reason ): void {
-		$this->event_body['type']           = 'charge.refund.updated';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'status'         => 'failed',
-			'charge'         => 'test_charge_id',
-			'id'             => 'test_refund_id',
-			'amount'         => 1999,
-			'currency'       => 'usd',
-			'failure_reason' => $failure_reason,
-		];
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_charge_id' )
-			->with( 'test_charge_id' )
-			->willReturn( $this->mock_order );
-
-		$this->order_service
-			->expects( $this->once() )
-			->method( 'handle_failed_refund' )
-			->with(
-				$this->mock_order,
-				'test_refund_id',
-				1999,
-				'usd',
-				null,
-				false,
-				$failure_reason
-			);
-
-		$this->webhook_processing_service->process( $this->event_body );
-	}
-
-	/**
-	 * Data provider for refund failure reason tests.
-	 *
-	 * @return array
-	 */
-	public function refund_failure_reason_data_provider(): array {
-		return [
-			'insufficient_funds'  => [
-				Refund_Failure_Reason::INSUFFICIENT_FUNDS,
-				'Insufficient funds to process the refund',
-			],
-			'declined'            => [
-				Refund_Failure_Reason::DECLINED,
-				'The refund was declined',
-			],
-			'expired_card'        => [
-				Refund_Failure_Reason::EXPIRED_OR_CANCELED_CARD,
-				'The card used for the original payment has expired or been canceled',
-			],
-			'lost_or_stolen_card' => [
-				Refund_Failure_Reason::LOST_OR_STOLEN_CARD,
-				'The card used for the original payment was reported as lost or stolen',
-			],
-			'merchant_request'    => [
-				Refund_Failure_Reason::MERCHANT_REQUEST,
-				'The refund was canceled at your request',
-			],
-			'unknown'             => [
-				Refund_Failure_Reason::UNKNOWN,
-				'An unknown error occurred while processing the refund',
-			],
-		];
-	}
-
-	/**
 	 * Tests that an account.updated webhook refreshes account data and clears cached payment methods.
 	 */
 	public function test_account_updated_webhook() {
@@ -3363,5 +4052,178 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		// but the important behavior (method calls) is tested above.
 		$this->assertFalse( get_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY ) );
 		$this->assertFalse( get_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY ) );
+	}
+
+	/**
+	 * Tests that an authorization moves a pending order to On hold and links its charge,
+	 * for when the shopper leaves before the browser updates the order after 3DS.
+	 */
+	public function test_amount_capturable_updated_puts_pending_order_on_hold() {
+		$order = WC_Helper_Order::create_order();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * Tests that an order the browser already put On hold is left as it is.
+	 */
+	public function test_amount_capturable_updated_leaves_on_hold_order_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::ON_HOLD );
+		$notes_before = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+		$this->assertCount( $notes_before, wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+	}
+
+	/**
+	 * Tests that in-person payments, which are always captured manually, keep their order status.
+	 *
+	 * @dataProvider provider_in_person_payment_method_types
+	 *
+	 * @param string $payment_method_type The in-person payment method type.
+	 */
+	public function test_amount_capturable_updated_ignores_in_person_payments( $payment_method_type ) {
+		$order = WC_Helper_Order::create_order();
+		$this->set_up_amount_capturable_updated_event( $order, $payment_method_type );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	public function provider_in_person_payment_method_types() {
+		return [
+			'Card present'    => [ Payment_Method::CARD_PRESENT ],
+			'Interac present' => [ Payment_Method::INTERAC_PRESENT ],
+		];
+	}
+
+	/**
+	 * Tests that an authorization without a matching order still succeeds and clears the cache.
+	 */
+	public function test_amount_capturable_updated_without_order_clears_cache() {
+		$this->event_body['type']           = 'payment_intent.amount_capturable_updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_mock',
+			'status'   => Intent_Status::REQUIRES_CAPTURE,
+			'metadata' => [],
+			'charges'  => [ 'data' => [ [ 'payment_method_details' => [ 'type' => Payment_Method::CARD ] ] ] ],
+		];
+
+		$this->mock_db_wrapper->method( 'order_from_intent_id' )->willReturn( false );
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * An authorization from a WooPayments attempt made before another gateway took the order over leaves a
+	 * pending order alone instead of putting it on hold and writing the attempt's details back, and the
+	 * merchant gets a note naming it. A pending order is where the handler acted before this fix.
+	 */
+	public function test_amount_capturable_updated_ignores_an_attempt_from_before_another_gateway_took_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( 'cod', $order->get_payment_method() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment method/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An authorization whose intent the cleanup removed is ignored on a pending order whatever its creation
+	 * time, because the order names the intent.
+	 */
+	public function test_amount_capturable_updated_ignores_the_removed_intent_whatever_its_time() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$order->update_meta_data( WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY, [ self::AUTHORIZATION_INTENT_ID ] );
+		$order->save();
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD, self::PAYMENT_DETAILS_REMOVED_AT + 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment method/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An authorization started after another gateway took the order over is recorded as usual.
+	 */
+	public function test_amount_capturable_updated_puts_on_hold_a_payment_started_after_another_gateway_took_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD, self::PAYMENT_DETAILS_REMOVED_AT + 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 'on-hold', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	/**
+	 * Sets up a `payment_intent.amount_capturable_updated` event for an authorized order.
+	 *
+	 * @param WC_Order $order               The order the intent belongs to.
+	 * @param string   $payment_method_type The charge's payment method type.
+	 * @param int      $created_at          When the intent was created; 0 when unknown.
+	 */
+	private function set_up_amount_capturable_updated_event( $order, $payment_method_type = Payment_Method::CARD, int $created_at = 0 ) {
+		$this->event_body['type']           = 'payment_intent.amount_capturable_updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => self::AUTHORIZATION_INTENT_ID,
+			'status'   => Intent_Status::REQUIRES_CAPTURE,
+			'created'  => $created_at,
+			'metadata' => [ 'order_id' => $order->get_id() ],
+			'charges'  => [ 'data' => [ [ 'payment_method_details' => [ 'type' => $payment_method_type ] ] ] ],
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->willReturn( $order );
+
+		$this->mock_api_client
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status' => Intent_Status::REQUIRES_CAPTURE,
+						'charge' => [ 'captured' => false ],
+					]
+				)
+			);
+	}
+
+	/**
+	 * Gets the text of all the order's notes.
+	 *
+	 * @param WC_Order $order The order.
+	 *
+	 * @return string
+	 */
+	private function get_order_notes_text( $order ) {
+		return implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
 	}
 }

@@ -29,6 +29,8 @@ class Allowed_Payment_Request_Button_Types_Update_Test extends WCPAY_UnitTestCas
 	private $migration;
 
 	public function set_up() {
+		parent::set_up();
+
 		$this->gateway_mock = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->getMock();

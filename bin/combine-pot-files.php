@@ -10,15 +10,15 @@
 /**
  * Get the two file names from the command line.
  */
-if ( $argc < 2 ) {
+if ( $argc < 3 ) {
 	echo "Usage: php -f {$argv[0]} source-file.pot destination-file.pot\n";
-	exit;
+	die( 1 );
 }
 
 for ( $index = 1; $index <= 2; $index++ ) {
 	if ( ! is_file( $argv[ $index ] ) ) {
-		echo "File not found: {$argv[ $index ]}\n";
-		exit;
+		echo "[ERROR] File not found: {$argv[ $index ]}\n";
+		die( 1 );
 	}
 }
 

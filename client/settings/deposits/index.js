@@ -9,7 +9,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { Card, SelectControl, ExternalLink } from '@wordpress/components';
+import { Card } from 'wcpay/components/card';
+import { SelectControl, ExternalLink } from '@wordpress/components';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';

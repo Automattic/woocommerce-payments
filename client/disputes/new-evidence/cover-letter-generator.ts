@@ -739,7 +739,7 @@ ${ sprintf(
 	dispute.amount
 		? `${ ( dispute.amount / 100 ).toFixed(
 				2
-		  ) } ${ dispute.currency?.toUpperCase() }`
+			) } ${ dispute.currency?.toUpperCase() }`
 		: __( '[Refund Amount]', 'woocommerce-payments' )
 ) }
 
@@ -965,7 +965,7 @@ ${ sprintf(
 	dispute.amount
 		? `${ ( dispute.amount / 100 ).toFixed(
 				2
-		  ) } ${ dispute.currency?.toUpperCase() }`
+			) } ${ dispute.currency?.toUpperCase() }`
 		: __( '[Refund Amount]', 'woocommerce-payments' )
 ) }
 
@@ -1074,7 +1074,7 @@ export const generateCoverLetter = (
 			? formatDateTimeFromTimestamp( dispute.created, {
 					separator: ', ',
 					includeTime: true,
-			  } )
+				} )
 			: __( '<Transaction Date>', 'woocommerce-payments' ),
 		customerName:
 			dispute?.charge?.billing_details?.name ||
@@ -1087,12 +1087,12 @@ export const generateCoverLetter = (
 						?.map( ( item: any ) => item.product_description )
 						.filter( Boolean )
 						.join( ', ' ) ||
-				  __( '<Product>', 'woocommerce-payments' ),
+					__( '<Product>', 'woocommerce-payments' ),
 		orderDate: dispute?.charge?.created
 			? formatDateTimeFromTimestamp( dispute.charge.created, {
 					separator: ', ',
 					includeTime: true,
-			  } )
+				} )
 			: __( '<Order Date>', 'woocommerce-payments' ),
 		deliveryDate: formatDeliveryDate(
 			dispute?.evidence?.shipping_date &&

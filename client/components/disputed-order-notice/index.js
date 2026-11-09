@@ -205,12 +205,12 @@ const UrgentDisputeNoticeBody = ( {
 				// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
 				"Please resolve the inquiry on this order of %1$s labeled '%2$s' by %3$s.",
 				'woocommerce-payments'
-		  )
+			)
 		: __(
 				// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason, %3$s is the due date.
 				"Please resolve the dispute on this order of %1$s labeled '%2$s' by %3$s.",
 				'woocommerce-payments'
-		  );
+			);
 
 	const message = sprintf(
 		formatString,
@@ -251,12 +251,12 @@ const RegularDisputeNoticeBody = ( {
 				// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason.
 				"Please resolve the inquiry on this order of %1$s with reason '%2$s'.",
 				'woocommerce-payments'
-		  )
+			)
 		: __(
 				// Translators: %1$s is the formatted dispute amount, %2$s is the dispute reason.
 				"This order has a payment dispute for %1$s for the reason '%2$s'. ",
 				'woocommerce-payments'
-		  );
+			);
 
 	const boldMessage = sprintf(
 		formatString,
@@ -377,7 +377,7 @@ const MultipleDisputesNeedsResponseNotice = ( {
 				),
 				disputeCount,
 				formattedAmount
-		  )
+			)
 		: sprintf(
 				// Translators: %1$d is the number of disputes on the order, %2$s is the combined disputed amount.
 				__(
@@ -386,7 +386,7 @@ const MultipleDisputesNeedsResponseNotice = ( {
 				),
 				disputeCount,
 				formattedAmount
-		  );
+			);
 
 	let suffix = sprintf(
 		// Translators: %1$s is the earliest dispute due date.
@@ -406,7 +406,7 @@ const MultipleDisputesNeedsResponseNotice = ( {
 							'woocommerce-payments'
 						),
 						countdownDays
-				  );
+					);
 		suffix = `${ suffix } ${ daysLeft }`;
 	}
 

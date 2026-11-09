@@ -21,7 +21,7 @@ export default {
 					'woocommerce-payments'
 				),
 				'WooPayments'
-		  )
+			)
 		: sprintf(
 				/* translators: 1: WooPayments. */
 				__(
@@ -29,7 +29,7 @@ export default {
 					'woocommerce-payments'
 				),
 				'WooPayments'
-		  ),
+			),
 	beforeContinue: __( 'Before you continue', 'woocommerce-payments' ),
 	step1: sprintf(
 		/* translators: %s: WooPayments. */

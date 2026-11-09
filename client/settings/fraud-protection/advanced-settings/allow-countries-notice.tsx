@@ -19,21 +19,21 @@ const getNoticeText = ( filterType: string, blocking: boolean ) => {
 			? __(
 					'Orders from the following countries will be blocked by the filter: ',
 					'woocommerce-payments'
-			  )
+				)
 			: __(
 					'Orders from the following countries will be screened by the filter: ',
 					'woocommerce-payments'
-			  );
+				);
 	} else if ( filterType === 'specific' ) {
 		return blocking
 			? __(
 					'Orders from outside of the following countries will be blocked by the filter: ',
 					'woocommerce-payments'
-			  )
+				)
 			: __(
 					'Orders from outside of the following countries will be screened by the filter: ',
 					'woocommerce-payments'
-			  );
+				);
 	}
 	return null;
 };

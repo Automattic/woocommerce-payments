@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Fix flaky Klarna and Alipay E2E checkouts, and use the toolbar inserter in the QIT currency switcher test.

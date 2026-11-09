@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Document when a feature-only symbol may be removed without a deprecation shim.

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: Make Level 3 data add up to the order total, or skip it, so Apple Pay, Google Pay and Amazon Pay payments no longer fail on rounding.

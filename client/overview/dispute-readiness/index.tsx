@@ -7,9 +7,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
-	Card,
-	CardBody,
-	CardHeader,
 	DropdownMenu,
 	ExternalLink,
 	MenuGroup,
@@ -24,6 +21,7 @@ import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 /**
  * Internal dependencies
  */
+import { Card, CardBody, CardHeader } from 'wcpay/components/card';
 import {
 	useDisputeReadiness,
 	useDisputeReadinessActions,

@@ -2,6 +2,8 @@
 
 The Reports API allows you to obtain detailed records of transactions and authorizations.
 
+Transaction report amounts (`amount`, `fees`, and `net_amount`) are returned in minor units of `deposit_currency`. `transaction_currency` is the currency paid by the customer and can differ from `deposit_currency`. Authorization report amounts (`amount`, `amount_captured`, `fees`, and `net_amount`) use the response's `currency` and are also in minor units. See [Monetary amounts](#monetary-amounts) for examples.
+
 ## List transactions
 
 _@since 6.5.0_

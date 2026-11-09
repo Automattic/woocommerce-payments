@@ -26,7 +26,7 @@ describeif( shouldRunSubscriptionsTests )(
 			merchantPage = ( await getMerchant( browser ) ).merchantPage;
 			shopperPage = (
 				await getShopper( browser, true, project.use.baseURL )
-			 ).shopperPage;
+			).shopperPage;
 		} );
 
 		test(

@@ -53,7 +53,7 @@ const buildDispute = (
 		reason: 'product_not_received',
 		status: 'lost',
 		...overrides,
-	} as ChargeDispute );
+	} ) as ChargeDispute;
 
 // "Won + PNR + physical with PARTIAL evidence" — triggers positives from
 // Clusters 1/2/3 plus tips from any cluster whose `requireMissing` field

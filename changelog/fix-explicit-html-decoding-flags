@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Decode currency and onboarding URL entities consistently across supported PHP versions.

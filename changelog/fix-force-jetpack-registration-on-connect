@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Always attempt WordPress.com registration when a merchant clicks Connect, even after a recent failed attempt.

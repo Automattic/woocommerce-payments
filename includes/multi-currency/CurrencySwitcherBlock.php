@@ -136,6 +136,7 @@ class CurrencySwitcherBlock {
 		$styles        = $this->get_widget_styles( $block_attributes );
 		$div_styles    = $this->implode_styles_array( $styles['div'] );
 		$select_styles = $this->implode_styles_array( $styles['select'] );
+		$option_styles = trim( $this->implode_styles_array( $styles['option'] ) );
 
 		$widget_content  = '<form>';
 		$widget_content .= $this->get_get_params();
@@ -143,7 +144,7 @@ class CurrencySwitcherBlock {
 		$widget_content .= '<select name="currency" class="js-woopayments-currency-switcher" aria-label="' . esc_attr__( 'Select your currency', 'woocommerce-payments' ) . '" onchange="this.form.submit()" style="' . esc_attr( $select_styles ) . '">';
 
 		foreach ( $enabled_currencies as $currency ) {
-			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag );
+			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag, $option_styles );
 		}
 
 		$widget_content .= '</select></div></form>';
@@ -156,13 +157,14 @@ class CurrencySwitcherBlock {
 	/**
 	 * Create an <option> element with provided currency. With symbol and flag if requested.
 	 *
-	 * @param Currency $currency    Currency to use for <option> element.
-	 * @param boolean  $with_symbol Whether to show the currency symbol.
-	 * @param boolean  $with_flag   Whether to show the currency flag.
+	 * @param Currency $currency      Currency to use for <option> element.
+	 * @param boolean  $with_symbol   Whether to show the currency symbol.
+	 * @param boolean  $with_flag     Whether to show the currency flag.
+	 * @param string   $option_styles Inline CSS for the <option> element, or an empty string for none.
 	 *
 	 * @return string Display HTML of currency <option>, as a string.
 	 */
-	private function render_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ): string {
+	private function render_currency_option( Currency $currency, bool $with_symbol, bool $with_flag, string $option_styles = '' ): string {
 		$code        = $currency->get_code();
 		$same_symbol = \WC_Payments_Utils::decode_html_entities( $currency->get_symbol() ) === $code;
 		$text        = $code;
@@ -175,7 +177,9 @@ class CurrencySwitcherBlock {
 			$text = $currency->get_flag() . ' ' . $text;
 		}
 
-		return '<option value="' . esc_attr( $code ) . '" ' . $selected . '>' . esc_html( $text ) . '</option>';
+		$style = '' !== $option_styles ? ' style="' . esc_attr( $option_styles ) . '"' : '';
+
+		return '<option value="' . esc_attr( $code ) . '"' . $style . ' ' . $selected . '>' . esc_html( $text ) . '</option>';
 	}
 
 	/**
@@ -202,19 +206,34 @@ class CurrencySwitcherBlock {
 	 * @return array
 	 */
 	private function get_widget_styles( array $block_attributes ): array {
+		$background_color = $block_attributes['backgroundColor'] ?? '#000000';
+		$select_styles    = [
+			'padding'          => '2px',
+			'border'           => ! empty( $block_attributes['border'] ) ? '1px solid' : '0px solid',
+			'border-radius'    => isset( $block_attributes['borderRadius'] ) ? $block_attributes['borderRadius'] . 'px' : '3px',
+			'border-color'     => $block_attributes['borderColor'] ?? '#000000',
+			'font-size'        => isset( $block_attributes['fontSize'] ) ? $block_attributes['fontSize'] . 'px' : '11px',
+			'color'            => $block_attributes['fontColor'] ?? '#000000',
+			'background-color' => $background_color,
+		];
+		$option_styles    = [];
+
+		// With no select background, Windows and Linux draw the open option list on the browser's
+		// own canvas, which can leave light text unreadable. Fall back to the system colour pair there.
+		if ( in_array( strtolower( trim( (string) $background_color ) ), [ '', 'transparent' ], true ) ) {
+			$select_styles['color-scheme'] = 'light dark';
+			$option_styles                 = [
+				'background-color' => 'Canvas',
+				'color'            => 'CanvasText',
+			];
+		}
+
 		return [
 			'div'    => [
 				'line-height' => $block_attributes['fontLineHeight'] ?? 1.2,
 			],
-			'select' => [
-				'padding'          => '2px',
-				'border'           => ! empty( $block_attributes['border'] ) ? '1px solid' : '0px solid',
-				'border-radius'    => isset( $block_attributes['borderRadius'] ) ? $block_attributes['borderRadius'] . 'px' : '3px',
-				'border-color'     => $block_attributes['borderColor'] ?? '#000000',
-				'font-size'        => isset( $block_attributes['fontSize'] ) ? $block_attributes['fontSize'] . 'px' : '11px',
-				'color'            => $block_attributes['fontColor'] ?? '#000000',
-				'background-color' => $block_attributes['backgroundColor'] ?? '#000000',
-			],
+			'select' => $select_styles,
+			'option' => $option_styles,
 		];
 	}
 

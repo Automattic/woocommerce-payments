@@ -17,6 +17,17 @@ defined( 'ABSPATH' ) || exit;
  */
 class FrontendCurrencies {
 	/**
+	 * How many innermost backtrace frames to scan when detecting an order being read from the data store.
+	 *
+	 * The WC_Abstract_Order::__construct() frame that drives the read sits a fixed, shallow distance below
+	 * the wc_get_price_decimals filter (the intervening data-store read frames are internal and do not vary
+	 * with the surrounding request), so a small cap detects it while keeping the per-call cost bounded.
+	 *
+	 * @var int
+	 */
+	private const ORDER_READ_BACKTRACE_DEPTH = 40;
+
+	/**
 	 * Multi-Currency instance.
 	 *
 	 * @var MultiCurrency
@@ -94,6 +105,45 @@ class FrontendCurrencies {
 	private $store_currency;
 
 	/**
+	 * Id of the user the selected currency was cached for.
+	 *
+	 * @var int|null
+	 */
+	private $cached_user_id;
+
+	/**
+	 * Session the selected currency was cached for.
+	 *
+	 * @var \WC_Session|null
+	 */
+	private $cached_session;
+
+	/**
+	 * Stack of order currencies for orders currently recalculating their totals (innermost last).
+	 *
+	 * A stack, not a single value, so a nested recalculation of another order does not drop the outer
+	 * order's currency when the inner one finishes.
+	 *
+	 * @var array
+	 */
+	private $calculated_order_currencies = [];
+
+	/**
+	 * Whether init_order_currency() is reading the order it was given, so a call nested in that read
+	 * returns early instead of reading again.
+	 *
+	 * @var bool
+	 */
+	private $initializing_order_currency = false;
+
+	/**
+	 * Whether an order may currently be loading from the data store.
+	 *
+	 * @var bool
+	 */
+	private $maybe_loading_order = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency                      $multi_currency       The MultiCurrency instance.
@@ -125,6 +175,13 @@ class FrontendCurrencies {
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
 			add_filter( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
 			add_filter( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
+
+			// A cart that changes under the same user and session can change the currency selection (e.g. subscription renewals).
+			add_action( 'woocommerce_cart_loaded_from_session', [ $this, 'selected_currency_changed' ], 0 );
+			add_action( 'woocommerce_cart_updated', [ $this, 'selected_currency_changed' ], 0 );
+			add_filter( 'woocommerce_order_class', [ $this, 'flag_order_loading' ], 900 );
+			add_action( 'woocommerce_order_before_calculate_totals', [ $this, 'init_calculated_order_currency' ], 10, 2 );
+			add_action( 'woocommerce_order_after_calculate_totals', [ $this, 'clear_calculated_order_currency' ], 900 );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -212,6 +269,8 @@ class FrontendCurrencies {
 			return $this->get_store_currency()->get_code();
 		}
 
+		$this->maybe_discard_cache_of_replaced_user_or_session();
+
 		if ( empty( $this->woocommerce_currency ) ) {
 			$explicit_currency                     = $this->multi_currency->get_explicit_selected_currency();
 			$this->has_explicit_currency_selection = null !== $explicit_currency;
@@ -237,6 +296,22 @@ class FrontendCurrencies {
 	 * @return int The number of decimals.
 	 */
 	public function get_price_decimals( $decimals ): int {
+		if ( $this->is_loading_order() ) {
+			// While an order loads, only raise the decimals: the stored total is already rounded to the
+			// order's own currency.
+			$this->init_order_currency_from_query_vars();
+			if ( null !== $this->order_currency ) {
+				$decimals = max( $decimals, absint( $this->localization_service->get_currency_format( $this->order_currency )['num_decimals'] ) );
+			}
+
+			// A route without the id (e.g. the Store API) cannot name the order mid-read, so also take the
+			// most decimals of any enabled currency.
+			foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
+				$decimals = max( $decimals, absint( $this->localization_service->get_currency_format( $currency->get_code() )['num_decimals'] ) );
+			}
+			return $decimals;
+		}
+
 		$currency_code = $this->get_currency_code();
 		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
 			return absint( $this->localization_service->get_currency_format( $currency_code )['num_decimals'] );
@@ -350,21 +425,26 @@ class FrontendCurrencies {
 	 * @return int|mixed The order id or what was passed as $arg.
 	 */
 	public function init_order_currency( $arg ) {
-		if ( null !== $this->order_currency ) {
+		if ( null !== $this->order_currency || $this->initializing_order_currency ) {
 			return $arg;
 		}
 
-		// We remove these filters here because 'wc_get_order'
-		// can trigger them, leading to an infinitely recursive call.
+		// 'wc_get_order' can trigger the formatting filters, and through them this method, so they are
+		// removed for the read and the flag stops a nested call. The decimals filter stays: the read sets
+		// the order's totals and WC_Order_Factory caches the order, so reading it at the store's decimals
+		// would hand a rounded copy to every later wc_get_order() call in the request.
 		remove_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 		remove_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
 		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
-		remove_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
-		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
-		add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
-		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
-		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
-		add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
+		$this->initializing_order_currency = true;
+		try {
+			$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+		} finally {
+			$this->initializing_order_currency = false;
+			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
+			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
+		}
 
 		if ( $order ) {
 			$this->order_currency = $order->get_currency();
@@ -381,14 +461,27 @@ class FrontendCurrencies {
 	 * @return void
 	 */
 	public function init_order_currency_from_query_vars() {
-		global $wp;
-		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
-			$this->init_order_currency( $wp->query_vars['order-pay'] );
-		} elseif ( ! empty( $wp->query_vars['order-received'] ) ) {
-			$this->init_order_currency( $wp->query_vars['order-received'] );
-		} elseif ( ! empty( $wp->query_vars['view-order'] ) ) {
-			$this->init_order_currency( $wp->query_vars['view-order'] );
+		$order_id = $this->get_order_id_from_query_vars();
+		if ( null !== $order_id ) {
+			$this->init_order_currency( $order_id );
 		}
+	}
+
+	/**
+	 * Returns the order id of a single-order page (order pay, order received or view order), if this is one.
+	 *
+	 * @return int|null The order id from the query vars, or null.
+	 */
+	private function get_order_id_from_query_vars() {
+		global $wp;
+		foreach ( [ 'order-pay', 'order-received', 'view-order' ] as $var ) {
+			if ( ! empty( $wp->query_vars[ $var ] ) ) {
+				$order_id = absint( $wp->query_vars[ $var ] );
+				return 0 < $order_id ? $order_id : null;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -455,11 +548,75 @@ class FrontendCurrencies {
 	}
 
 	/**
+	 * Flags that an order may be loading from the data store.
+	 *
+	 * Runs on `woocommerce_order_class`, which `WC_Order_Factory` fires right before it reads an order.
+	 * The flag is confirmed and cleared in is_loading_order().
+	 *
+	 * @param string $classname The order class name.
+	 *
+	 * @return string The unchanged order class name.
+	 */
+	public function flag_order_loading( $classname ) {
+		$this->maybe_loading_order = true;
+		return $classname;
+	}
+
+	/**
+	 * Records the currency of the order whose totals are being recalculated.
+	 *
+	 * Runs on `woocommerce_order_before_calculate_totals` so amounts recalculated for an existing order
+	 * follow the order's own currency rather than the shopper's selected currency.
+	 *
+	 * A calculate_totals() that throws before its after hook never pops its entry, so stale entries are
+	 * reconciled here before recording this order: this calculate_totals() frame is already on the
+	 * backtrace, so the valid existing depth is the live frame count minus one. That drops a stale entry
+	 * left at the bottom of the stack by an unrelated failed calculation, which the read-time check in
+	 * get_currency_code() would otherwise keep (it slices from the front), and makes this order the top
+	 * entry.
+	 *
+	 * @param mixed $_unused_and_taxes Whether taxes are being calculated. Unused.
+	 * @param mixed $order             The order recalculating its totals.
+	 *
+	 * @return void
+	 */
+	public function init_calculated_order_currency( $_unused_and_taxes, $order ) {
+		$valid_existing = max( 0, $this->utils->get_backtrace_call_count( 'WC_Abstract_Order->calculate_totals' ) - 1 );
+		if ( count( $this->calculated_order_currencies ) > $valid_existing ) {
+			$this->calculated_order_currencies = array_slice( $this->calculated_order_currencies, 0, $valid_existing );
+		}
+
+		$this->calculated_order_currencies[] = ( $order instanceof WC_Order && $order->get_currency() ) ? $order->get_currency() : null;
+	}
+
+	/**
+	 * Clears the recorded recalculating-order currency.
+	 *
+	 * @return void
+	 */
+	public function clear_calculated_order_currency() {
+		array_pop( $this->calculated_order_currencies );
+	}
+
+	/**
 	 * Gets the currency code for us to use.
 	 *
 	 * @return string|null Three letter currency code.
 	 */
 	private function get_currency_code() {
+		if ( ! empty( $this->calculated_order_currencies ) ) {
+			// Reconcile the stack against the live calculate_totals() frames and use the innermost order's
+			// currency; see init_calculated_order_currency() for why entries can go stale.
+			$active_calculations = $this->utils->get_backtrace_call_count( 'WC_Abstract_Order->calculate_totals' );
+			if ( count( $this->calculated_order_currencies ) > $active_calculations ) {
+				$this->calculated_order_currencies = array_slice( $this->calculated_order_currencies, 0, $active_calculations );
+			}
+			$order_currency = end( $this->calculated_order_currencies );
+			if ( false !== $order_currency && null !== $order_currency ) {
+				return $order_currency;
+			}
+		}
+
 		if ( $this->should_use_order_currency() ) {
 			$this->init_order_currency_from_query_vars();
 
@@ -477,10 +634,32 @@ class FrontendCurrencies {
 	 * @return string
 	 */
 	private function get_selected_currency_code(): string {
+		$this->maybe_discard_cache_of_replaced_user_or_session();
+
 		if ( empty( $this->selected_currency_code ) ) {
 			$this->selected_currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		}
 		return $this->selected_currency_code;
+	}
+
+	/**
+	 * Discards the cache if the user or the session the selected currency is stored for was replaced
+	 * during the request, e.g. by `wp_set_current_user()` or by a Store API request with a Cart-Token.
+	 *
+	 * Prices are always converted with the selection of the current user or session, so the cached
+	 * codes have to follow it. Otherwise amounts end up labelled with a currency they are not in.
+	 *
+	 * @return void
+	 */
+	private function maybe_discard_cache_of_replaced_user_or_session() {
+		$user_id = get_current_user_id();
+		$session = WC()->session;
+
+		if ( $user_id !== $this->cached_user_id || $session !== $this->cached_session ) {
+			$this->selected_currency_changed();
+			$this->cached_user_id = $user_id;
+			$this->cached_session = $session;
+		}
 	}
 
 	/**
@@ -492,17 +671,46 @@ class FrontendCurrencies {
 		$pages = [ 'my-account', 'checkout' ];
 		$vars  = [ 'order-received', 'order-pay', 'orders', 'view-order' ];
 
-		if ( $this->utils->is_page_with_vars( $pages, $vars ) ) {
-			return $this->utils->is_call_in_backtrace(
-				[
-					'WC_Shortcode_My_Account::view_order',
-					'WC_Shortcode_Checkout::order_received',
-					'WC_Shortcode_Checkout::order_pay',
-					'WC_Order->get_formatted_order_total',
-				]
-			);
+		if ( ! $this->utils->is_page_with_vars( $pages, $vars ) ) {
+			return false;
 		}
 
-		return false;
+		$calls = [
+			'WC_Shortcode_My_Account::view_order',
+			'WC_Shortcode_Checkout::order_received',
+			'WC_Shortcode_Checkout::order_pay',
+			'WC_Order->get_formatted_order_total',
+		];
+
+		// Block-based confirmation pages render the order total without the shortcode classes above;
+		// loads are handled separately (is_loading_order()). Other prices here keep the selected currency.
+		if ( null !== $this->get_order_id_from_query_vars() ) {
+			$calls[] = 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock->render';
+		}
+
+		return $this->utils->is_call_in_backtrace( $calls );
+	}
+
+	/**
+	 * Returns whether an order is currently being read from the data store.
+	 *
+	 * A flag is set by flag_order_loading() right before the read. No hook marks the end of the read,
+	 * so the backtrace is consulted here and the flag cleared once the factory is no longer loading.
+	 *
+	 * @return bool
+	 */
+	private function is_loading_order(): bool {
+		if ( $this->maybe_loading_order ) {
+			$this->maybe_loading_order = $this->utils->is_call_in_backtrace( [ 'WC_Order_Factory::get_order', 'WC_Order_Factory::get_orders' ] );
+			if ( $this->maybe_loading_order ) {
+				return true;
+			}
+		}
+
+		// An order held in a persistent object cache is re-read when it is unserialized: WC_Data::__wakeup()
+		// calls WC_Abstract_Order::__construct(), which skips WC_Order_Factory and so flag_order_loading().
+		// Without this, the order would load at the selected currency's decimals. Match the order
+		// constructor, not WC_Data::__wakeup(), which products and other data objects share.
+		return $this->utils->is_call_in_backtrace_within( [ 'WC_Abstract_Order->__construct' ], self::ORDER_READ_BACKTRACE_DEPTH );
 	}
 }

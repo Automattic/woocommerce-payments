@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Upgrade wp-prettier to 3.9.6 and eslint-plugin-prettier to 5.5.6, and reformat the codebase.

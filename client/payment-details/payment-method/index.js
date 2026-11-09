@@ -3,12 +3,12 @@
 /**
  * External dependencies
  */
-import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
+import { Card, CardBody, CardHeader } from 'wcpay/components/card';
 import Loadable from 'components/loadable';
 import BancontactDetails from './bancontact';
 import BecsDetails from './becs';

@@ -13,12 +13,13 @@ import { PaymentIntent } from '../../types/payment-intents';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
+import { encodePathSegment } from 'utils/path-segment';
 import { updatePaymentIntent, updateErrorForPaymentIntent } from './actions';
 
 export function* getPaymentIntent( id: string ): Generator< unknown > {
 	try {
 		const result = yield apiFetch( {
-			path: `${ NAMESPACE }/payment_intents/${ id }`,
+			path: `${ NAMESPACE }/payment_intents/${ encodePathSegment( id ) }`,
 		} );
 		yield updatePaymentIntent( id, result as PaymentIntent );
 	} catch ( e ) {

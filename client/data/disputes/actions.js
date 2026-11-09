@@ -11,6 +11,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
+import { encodePathSegment } from 'utils/path-segment';
 import { DISPUTES_STORE_NAME as STORE_NAME } from '../store-names';
 import TYPES from './action-types';
 // getPaymentIntent lives in the payment-intents store; importing its name
@@ -59,7 +60,7 @@ export function* acceptDispute( dispute ) {
 		] );
 
 		const updatedDispute = yield apiFetch( {
-			path: `${ NAMESPACE }/disputes/${ id }/close`,
+			path: `${ NAMESPACE }/disputes/${ encodePathSegment( id ) }/close`,
 			method: 'post',
 		} );
 
@@ -85,7 +86,7 @@ export function* acceptDispute( dispute ) {
 						'woocommerce-payments'
 					),
 					updatedDispute.order.number
-			  )
+				)
 			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
 		yield controls.dispatch(
 			'core/notices',

@@ -175,7 +175,7 @@ const getRecommendedDocumentFields = (
 							),
 							order: 40,
 						},
-				  ]
+					]
 				: [
 						// For refund_has_been_issued: Current selection (Order receipt, Customer communication, Customer signature, Store refund policy, Item condition, Other documents)
 						{
@@ -214,7 +214,7 @@ const getRecommendedDocumentFields = (
 							),
 							order: 50,
 						},
-				  ],
+					],
 		// Fallback for duplicate disputes when feature flag is OFF
 		duplicate:
 			duplicateStatus === 'is_duplicate'
@@ -255,7 +255,7 @@ const getRecommendedDocumentFields = (
 							),
 							order: 50,
 						},
-				  ]
+					]
 				: [
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
@@ -269,7 +269,7 @@ const getRecommendedDocumentFields = (
 							),
 							order: 30,
 						},
-				  ],
+					],
 		// Fallback for subscription_canceled when feature flag is OFF
 		subscription_canceled: [
 			{

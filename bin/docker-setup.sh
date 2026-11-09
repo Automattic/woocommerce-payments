@@ -69,6 +69,9 @@ cli wp config set SCRIPT_DEBUG true --raw
 echo "Enabling WordPress development environment (enforces Stripe testing mode)"
 cli wp config set WP_ENVIRONMENT_TYPE development
 
+echo "Disabling WordPress automatic updates"
+cli wp config set AUTOMATIC_UPDATER_DISABLED true --raw
+
 # If the plugin is already active then return early
 cli wp plugin is-active woocommerce-payments > /dev/null
 if [[ $? -eq 0 ]]; then

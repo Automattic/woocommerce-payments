@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getTerms } from '../upe';
+import { getLinkEmail, getTerms } from '../upe';
 
 describe( 'Shared UPE checkout utils', () => {
 	describe( 'getTerms', () => {
@@ -43,6 +43,25 @@ describe( 'Shared UPE checkout utils', () => {
 			expect( getTerms( paymentMethods, 'never' ) ).toEqual(
 				terms.never
 			);
+		} );
+	} );
+
+	describe( 'getLinkEmail', () => {
+		it( 'should return the trimmed email when it looks valid', () => {
+			expect( getLinkEmail( ' shopper@example.com ' ) ).toBe(
+				'shopper@example.com'
+			);
+		} );
+
+		it.each( [ '', 'shopper', 'shopper@example', 'a b@example.com' ] )(
+			'should return undefined for "%s"',
+			( email ) => {
+				expect( getLinkEmail( email ) ).toBeUndefined();
+			}
+		);
+
+		it( 'should return undefined when the email is missing', () => {
+			expect( getLinkEmail( undefined ) ).toBeUndefined();
 		} );
 	} );
 } );

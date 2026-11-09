@@ -95,9 +95,8 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 
 export const DepositsList = (): JSX.Element => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
-	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
-		getQuery()
-	);
+	const { depositsSummary, isLoading: isSummaryLoading } =
+		useDepositsSummary( getQuery() );
 
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );

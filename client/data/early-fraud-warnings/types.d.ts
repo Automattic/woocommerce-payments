@@ -36,8 +36,7 @@ export interface ErrorActiveEarlyFraudWarningsAction {
 }
 
 export type EarlyFraudWarningsAction =
-	| UpdateActiveEarlyFraudWarningsAction
-	| ErrorActiveEarlyFraudWarningsAction;
+	UpdateActiveEarlyFraudWarningsAction | ErrorActiveEarlyFraudWarningsAction;
 
 export interface ActiveEarlyFraudWarningsResponse {
 	activeEarlyFraudWarnings: ActiveEarlyFraudWarning[];

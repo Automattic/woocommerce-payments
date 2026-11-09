@@ -35,6 +35,13 @@ class Duplicate_Payment_Prevention_Service {
 	const SESSION_KEY_PROCESSING_ORDER = 'wcpay_processing_order';
 
 	/**
+	 * Key name for saving the ID of the WC Session the processing order_id above was stored in.
+	 *
+	 * @type string
+	 */
+	const SESSION_KEY_PROCESSING_ORDER_OWNER = 'wcpay_processing_order_session';
+
+	/**
 	 * Flag to indicate that a previous order with the same cart content has already paid.
 	 *
 	 * @type string
@@ -293,6 +300,7 @@ class Duplicate_Payment_Prevention_Service {
 	public function maybe_update_session_processing_order( int $order_id ) {
 		if ( WC()->session ) {
 			WC()->session->set( self::SESSION_KEY_PROCESSING_ORDER, $order_id );
+			WC()->session->set( self::SESSION_KEY_PROCESSING_ORDER_OWNER, (string) WC()->session->get_customer_id() );
 		}
 	}
 
@@ -322,7 +330,13 @@ class Duplicate_Payment_Prevention_Service {
 		}
 
 		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
-		return null === $val ? null : absint( $val );
+
+		// The order is only used in the session that stored it.
+		if ( null === $val || $session->get( self::SESSION_KEY_PROCESSING_ORDER_OWNER ) !== (string) $session->get_customer_id() ) {
+			return null;
+		}
+
+		return absint( $val );
 	}
 
 	/**

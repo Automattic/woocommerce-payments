@@ -22,6 +22,7 @@ interface UserPreferences {
 	wc_payments_payouts_hidden_columns: string[] | '';
 	wc_payments_disputes_hidden_columns: string[] | '';
 	wc_payments_documents_hidden_columns: string[] | '';
+	wc_payments_capital_loans_hidden_columns: string[] | '';
 }
 
 /**
@@ -31,7 +32,7 @@ interface UserPreferences {
  * It uses the `@woocommerce/data` `useUserPreferences` hook to get the user's preferences and store them in the `wp_usermeta` table.
  */
 export const usePersistedColumnVisibility = <
-	ColumnType extends TableCardColumn
+	ColumnType extends TableCardColumn,
 >(
 	/**
 	 * The key used to store the user's preference for hidden columns in the `wp_usermeta` table.

@@ -45,6 +45,7 @@ declare global {
 		testMode: boolean;
 		testModeOnboarding: boolean;
 		devMode: boolean;
+		devModeReason?: string;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
@@ -109,9 +110,6 @@ declare global {
 		restUrl: string;
 		siteLogoUrl: string;
 		shouldUseExplicitPrice: boolean;
-		fraudProtection: {
-			isWelcomeTourDismissed?: boolean;
-		};
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		onboardingFieldsData?: {
@@ -123,13 +121,6 @@ declare global {
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
-		connectIncentive?: {
-			id: string;
-			description: string;
-			tc_url: string;
-			task_header_content?: string;
-			task_badge?: string;
-		};
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
@@ -243,18 +234,6 @@ declare global {
 		exitSurveyLastShown: string | null;
 	};
 
-	const wcpayTestToLiveNoticeSettings: {
-		ctaUrl: string;
-		dismissUrl: string;
-		snoozeUrl: string;
-	};
-
-	const wcpayPostKycActivationNoticeSettings: {
-		stage: 7 | 14 | 30;
-		ctaUrl: string;
-		dismissUrl: string;
-	};
-
 	const wcpayOneAndDoneNoticeSettings: {
 		ctaUrl: string;
 		dismissUrl: string;
@@ -269,7 +248,7 @@ declare global {
 	const wcSettingsModule: {
 		getSetting: <
 			K extends keyof WcSettings,
-			T extends WcSettings[ K ] | undefined
+			T extends WcSettings[ K ] | undefined,
 		>(
 			setting: K,
 			fallback?: T
@@ -304,6 +283,7 @@ declare global {
 		wcpayVersionNumber: string;
 		woopaySignatureNonce: string;
 		woopaySessionNonce: string;
+		woopaySaveUserNonce: string;
 		woopayMerchantId: string;
 		icon: string;
 		woopayMinimumSessionData: Record< string, unknown >;
@@ -334,8 +314,6 @@ declare global {
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
-		wcpayTestToLiveNoticeSettings?: typeof wcpayTestToLiveNoticeSettings;
-		wcpayPostKycActivationNoticeSettings?: typeof wcpayPostKycActivationNoticeSettings;
 		wcpayOneAndDoneNoticeSettings?: typeof wcpayOneAndDoneNoticeSettings;
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		wcpay_upe_config?: typeof wcpay_upe_config;
