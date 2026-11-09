@@ -868,6 +868,122 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
 	}
 
+	public function test_woocommerce_get_customer_payment_tokens_keeps_tokens_of_turned_off_methods() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD ] );
+		$card_token       = $this->generate_card_token( 'pm_card' );
+		$stale_card_token = $this->generate_card_token( 'pm_card_gone' );
+		$sepa_token       = $this->generate_sepa_token( 'pm_sepa', 0, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
+		$amazon_pay_token = $this->generate_amazon_pay_token( 'pm_amazon_pay' );
+		$tokens           = $this->key_by_id( $card_token, $stale_card_token, $sepa_token, $amazon_pay_token );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345', 'card' )
+			->willReturn( [ $this->generate_card_pm_response( 'pm_card' ) ] );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, '' );
+
+		$this->assertSame( [ 'pm_card' ], $this->get_stripe_ids( $result ) );
+		$this->assertNull( WC_Payment_Tokens::get( $stale_card_token->get_id() ) );
+		$this->assertNotNull( WC_Payment_Tokens::get( $sepa_token->get_id() ) );
+		$this->assertNotNull( WC_Payment_Tokens::get( $amazon_pay_token->get_id() ) );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_keeps_link_tokens_when_link_is_turned_off() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD ] );
+		$card_token = $this->generate_card_token( 'pm_card' );
+		$link_token = $this->generate_link_token( 'pm_link' );
+		$tokens     = $this->key_by_id( $card_token, $link_token );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345', 'card' )
+			->willReturn( [ $this->generate_card_pm_response( 'pm_card' ) ] );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( [ 'pm_card' ], $this->get_stripe_ids( $result ) );
+		$this->assertNotNull( WC_Payment_Tokens::get( $link_token->get_id() ) );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_deletes_tokens_of_enabled_type_with_empty_answer() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD, Payment_Method::SEPA ] );
+		$sepa_token = $this->generate_sepa_token( 'pm_sepa', 0, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
+		$tokens     = $this->key_by_id( $sepa_token );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_payment_methods_for_customer' )
+			->withConsecutive(
+				[ 'cus_12345', 'card' ],
+				[ 'cus_12345', 'sepa_debit' ]
+			)
+			->willReturn( [] );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, '' );
+
+		$this->assertSame( [], $result );
+		$this->assertNull( WC_Payment_Tokens::get( $sepa_token->get_id() ) );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_reconciles_cached_and_fetched_types() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD, Payment_Method::LINK ] );
+		update_user_meta(
+			1,
+			WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY,
+			[
+				'customer_id'         => 'cus_12345',
+				'payment_method_card' => [ $this->generate_card_pm_response( 'pm_card' ) ],
+			]
+		);
+		$card_token       = $this->generate_card_token( 'pm_card' );
+		$stale_card_token = $this->generate_card_token( 'pm_card_gone' );
+		$link_token       = $this->generate_link_token( 'pm_link_gone' );
+		$sepa_token       = $this->generate_sepa_token( 'pm_sepa', 0, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
+		$tokens           = $this->key_by_id( $card_token, $stale_card_token, $link_token, $sepa_token );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345', 'link' )
+			->willReturn( [] );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, '' );
+
+		$this->assertSame( [ 'pm_card' ], $this->get_stripe_ids( $result ) );
+		$this->assertNull( WC_Payment_Tokens::get( $stale_card_token->get_id() ) );
+		$this->assertNull( WC_Payment_Tokens::get( $link_token->get_id() ) );
+		$this->assertNotNull( WC_Payment_Tokens::get( $sepa_token->get_id() ) );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_deletes_nothing_when_a_later_fetch_fails() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD, Payment_Method::SEPA ] );
+		$stale_card_token = $this->generate_card_token( 'pm_card_gone' );
+		$sepa_token       = $this->generate_sepa_token( 'pm_sepa', 0, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
+		$tokens           = $this->key_by_id( $stale_card_token, $sepa_token );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_payment_methods_for_customer' )
+			->willReturnOnConsecutiveCalls(
+				[],
+				$this->throwException( new \WCPay\Exceptions\API_Exception( 'Stripe is down.', 'api_error', 500 ) )
+			);
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, '' );
+
+		$this->assertSame( [ 'pm_card_gone', 'pm_sepa' ], $this->get_stripe_ids( $result ) );
+		$this->assertNotNull( WC_Payment_Tokens::get( $stale_card_token->get_id() ) );
+		$this->assertNotNull( WC_Payment_Tokens::get( $sepa_token->get_id() ) );
+	}
+
 	/**
 	 * @dataProvider valid_and_invalid_payment_methods_for_comparison_provider
 	 */
@@ -936,10 +1052,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		return $token;
 	}
 
-	private function generate_sepa_token( $stripe_id, $wp_id = 0 ) {
+	private function generate_sepa_token( $stripe_id, $wp_id = 0, $gateway_id = 'woocommerce_payments' ) {
 		$token = new WC_Payment_Token_WCPay_SEPA();
 		$token->set_id( $wp_id );
-		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_gateway_id( $gateway_id );
 		$token->set_token( $stripe_id );
 		$token->set_last4( '3000' );
 		$token->save();
@@ -954,6 +1070,44 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$token->set_email( 'test@test.com' );
 		$token->save();
 		return $token;
+	}
+
+	private function generate_amazon_pay_token( $stripe_id ) {
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY );
+		$token->set_token( $stripe_id );
+		$token->set_email( 'test@test.com' );
+		$token->set_user_id( 1 );
+		$token->save();
+		return $token;
+	}
+
+	/**
+	 * Keys tokens by their database ID, the way WooCommerce passes them to the filter.
+	 */
+	private function key_by_id( WC_Payment_Token ...$tokens ): array {
+		$keyed = [];
+		foreach ( $tokens as $token ) {
+			$keyed[ $token->get_id() ] = $token;
+		}
+		return $keyed;
+	}
+
+	private function get_stripe_ids( array $tokens ): array {
+		return array_values(
+			array_map(
+				function ( $token ) {
+					return $token->get_token();
+				},
+				$tokens
+			)
+		);
+	}
+
+	private function set_enabled_payment_methods( array $payment_method_ids ): void {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( $payment_method_ids );
+		WC_Payments::set_gateway( $mock_gateway );
 	}
 
 	/**

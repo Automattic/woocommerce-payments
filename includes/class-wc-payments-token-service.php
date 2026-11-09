@@ -247,9 +247,16 @@ class WC_Payments_Token_Service {
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 
 		// Remove the payment methods that no longer exist in Stripe's side.
+		// The list above covers every retrievable type (a failed fetch throws before this point), and those types
+		// leave out turned-off methods. Tokens of other types are hidden from this list but kept, so subscriptions
+		// that point at them can still renew.
+		$retrieved_types = $this->get_retrievable_payment_method_types( $gateway_id );
 		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10 );
 		foreach ( $stored_tokens as $token ) {
 			unset( $tokens[ $token->get_id() ] );
+			if ( ! in_array( $this->get_payment_method_type_for_token( $token ), $retrieved_types, true ) ) {
+				continue;
+			}
 			$token->delete();
 		}
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
@@ -375,6 +382,30 @@ class WC_Payments_Token_Service {
 		}
 
 		return $types;
+	}
+
+	/**
+	 * Returns the Stripe payment method type a token was saved from.
+	 *
+	 * Link tokens share the card gateway ID, so the token class tells the types apart.
+	 *
+	 * @param WC_Payment_Token $token The token.
+	 * @return string|null The Stripe payment method type, or null for a token class this service does not create.
+	 */
+	private function get_payment_method_type_for_token( WC_Payment_Token $token ) {
+		if ( $token instanceof WC_Payment_Token_WCPay_SEPA ) {
+			return Payment_Method::SEPA;
+		}
+		if ( $token instanceof WC_Payment_Token_WCPay_Link ) {
+			return Payment_Method::LINK;
+		}
+		if ( $token instanceof WC_Payment_Token_WCPay_Amazon_Pay ) {
+			return Payment_Method::AMAZON_PAY;
+		}
+		if ( $token instanceof WC_Payment_Token_CC ) {
+			return Payment_Method::CARD;
+		}
+		return null;
 	}
 
 	/**
