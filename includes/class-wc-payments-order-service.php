@@ -2337,7 +2337,12 @@ class WC_Payments_Order_Service {
 					$charge = $intent->get_charge();
 
 					// WooCommerce has already completed the order by now, so the merchant can only be told.
-					if ( Intent_Status::REQUIRES_CAPTURE === $cached_intent_status && Intent_Status::CANCELED === $intent->get_status() ) {
+					// An order moved to another payment method may well be paid, so it gets no note.
+					if (
+						Intent_Status::REQUIRES_CAPTURE === $cached_intent_status
+						&& Intent_Status::CANCELED === $intent->get_status()
+						&& 0 === strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID )
+					) {
 						$order->add_order_note(
 							WC_Payments_Utils::esc_interpolated_html(
 								__( '<strong>No payment was captured.</strong> The authorization expired or was canceled before the order was completed, so this order is not paid.', 'woocommerce-payments' ),

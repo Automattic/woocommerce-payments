@@ -306,18 +306,18 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * A re-submitted order with an open authorization gets the intent's details, including the charge ID
-	 * that webhooks look orders up by.
+	 * A re-submitted order with an open authorization stores the charge ID that webhooks look orders up by.
 	 */
-	public function test_check_payment_intent_attached_to_order_succeeded_attaches_open_authorization() {
-		$order  = $this->create_order_with_attached_intent();
-		$intent = $this->mock_attached_intent( $order, Intent_Status::REQUIRES_CAPTURE );
-		$this->mock_order_service
-			->expects( $this->once() )
-			->method( 'attach_intent_info_to_order' )
-			->with( $order, $intent );
+	public function test_check_payment_intent_attached_to_order_succeeded_stores_charge_id_of_open_authorization() {
+		$this->service->init( $this->mock_gateway, new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) ) );
+		$order = $this->create_order_with_attached_intent();
+		$this->mock_attached_intent( $order, Intent_Status::REQUIRES_CAPTURE );
 
 		$this->service->check_payment_intent_attached_to_order_succeeded( $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'ch_attached_charge_id', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'on-hold', $order->get_status() );
 	}
 
 	/**
@@ -366,16 +366,15 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param WC_Order $order         The order the intent belongs to.
 	 * @param string   $intent_status The intent status.
-	 *
-	 * @return WC_Payments_API_Payment_Intention
 	 */
-	private function mock_attached_intent( WC_Order $order, string $intent_status ): WC_Payments_API_Payment_Intention {
+	private function mock_attached_intent( WC_Order $order, string $intent_status ): void {
 		$intent = WC_Helper_Intention::create_intention(
 			[
 				'id'       => 'pi_attached_intent_id',
 				'status'   => $intent_status,
 				'amount'   => WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ),
 				'metadata' => [ 'order_id' => $order->get_id() ],
+				'charge'   => [ 'id' => 'ch_attached_charge_id' ],
 			]
 		);
 
@@ -383,8 +382,6 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
-
-		return $intent;
 	}
 
 	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {

@@ -385,7 +385,11 @@ class WC_Payments_Webhook_Processing_Service {
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 		if ( ! $order ) {
-			$order = $this->get_order_for_expired_authorization_without_charge_id( (string) ( $event_object['payment_intent'] ?? '' ) );
+			$order = $this->wcpay_db->order_from_intent_id( (string) ( $event_object['payment_intent'] ?? '' ) );
+			// Nothing for this webhook to change, and an error would only make the server send it again.
+			if ( $order instanceof WC_Order && ! $this->is_order_waiting_for_expired_authorization( $order ) ) {
+				return;
+			}
 		}
 		if ( ! $order ) {
 			throw new Invalid_Payment_Method_Exception(
@@ -410,11 +414,9 @@ class WC_Payments_Webhook_Processing_Service {
 			if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
 				$order->add_order_note( $note );
 			}
+			// Stripe cancels a payment when its authorization expires. Storing that spares a request when the order is completed.
+			$this->order_service->set_intention_status_for_order( $order, Intent_Status::CANCELED );
 			return;
-		}
-
-		if ( '' === $this->order_service->get_charge_id_for_order( $order ) ) {
-			$this->order_service->set_charge_id_for_order( $order, $charge_id );
 		}
 
 		// Get the intent_id and then its status.
@@ -426,34 +428,29 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$intent_status = $intent->get_status();
 
+		// Stored only after the request: if it fails, the retry must still find the order by its intent and check it.
+		if ( '' === $this->order_service->get_charge_id_for_order( $order ) ) {
+			$this->order_service->set_charge_id_for_order( $order, $charge_id );
+		}
+
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
 		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
 	}
 
 	/**
-	 * Finds the order of an expired authorization when the order never got its charge ID.
+	 * Checks whether an order found by its intent still waits for the payment whose authorization expired.
 	 *
-	 * @param string $intent_id The ID of the payment intent the expired charge belongs to.
+	 * @param WC_Order $order The order found by the intent of the expired charge.
 	 *
-	 * @return WC_Order|null The order, or null when no order should be failed for this authorization.
+	 * @return bool
 	 */
-	private function get_order_for_expired_authorization_without_charge_id( string $intent_id ): ?WC_Order {
-		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
-		if ( ! $order instanceof WC_Order ) {
-			return null;
-		}
-
+	private function is_order_waiting_for_expired_authorization( WC_Order $order ): bool {
 		// The charge lookup already failed, so a stored charge ID belongs to another payment.
 		if ( '' !== $this->order_service->get_charge_id_for_order( $order ) ) {
-			return null;
+			return false;
 		}
 
-		// Only an order still waiting for this payment should fail when the authorization expires.
-		if ( ! $order->has_status( [ Order_Status::ON_HOLD, Order_Status::PENDING ] ) ) {
-			return null;
-		}
-
-		return $order;
+		return $order->has_status( [ Order_Status::ON_HOLD, Order_Status::PENDING ] );
 	}
 
 	/**

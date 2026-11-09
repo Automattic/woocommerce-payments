@@ -4502,9 +4502,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Completing an order whose authorization expired or was canceled captures nothing,
-	 * so the merchant gets a note saying the order isn't paid.
+	 * so the merchant gets a note saying the order isn't paid. Completing it again adds no second note.
 	 */
-	public function test_capture_authorization_on_order_status_change_notes_canceled_authorization() {
+	public function test_capture_authorization_on_order_status_change_notes_canceled_authorization_once() {
 		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
 		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
 		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' )
@@ -4513,9 +4513,29 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] ) );
 
 		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
 
-		$this->assertStringContainsString( '<strong>No payment was captured.</strong>', $this->order_note_contents() );
+		$this->assertSame( 1, substr_count( $this->order_note_contents(), '<strong>No payment was captured.</strong>' ) );
 		$this->assertSame( 'canceled', $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+	}
+
+	/**
+	 * An order moved to another payment method may well be paid, so a canceled authorization gets no note.
+	 */
+	public function test_capture_authorization_on_order_status_change_does_not_note_canceled_authorization_for_other_payment_method() {
+		$this->order->set_payment_method( 'bacs' );
+		$this->order->save();
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$notes_before = $this->order_note_contents();
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] ) );
+
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		$this->assertSame( $notes_before, $this->order_note_contents() );
 	}
 
 	/**
