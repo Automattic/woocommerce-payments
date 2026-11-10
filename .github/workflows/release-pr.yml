@@ -126,8 +126,33 @@ jobs:
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
-          PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout $BRANCH_NAME && git pull \n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
-          PR_URL=$(gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk")
+          # The body goes through a file, so the Markdown below reads as it renders.
+          # The heredoc expands variables; backticks are escaped to keep them literal.
+          PR_BODY_FILE="$(mktemp)"
+          cat > "$PR_BODY_FILE" <<PR_BODY_END
+          > [!WARNING]
+          > **Don't merge this PR with the GitHub merge button, and don't enable auto-merge on it.**
+          > This repository only allows squash merges. Squashing would turn the whole release into one new commit on \`trunk\`, so \`trunk\` would not contain the release branch's commits. The \`$RELEASE_VERSION\` tag would then sit on a commit with no history, and the next release PR would conflict with \`trunk\` even more. A local \`--no-ff\` merge keeps every release commit in \`trunk\`'s history.
+
+          Merge it locally, after the deploy simulation has passed:
+
+          \`\`\`
+          git fetch origin
+          git checkout trunk && git pull --ff-only origin trunk
+          git merge --no-ff origin/$BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk'
+          git push origin trunk
+          \`\`\`
+
+          Before you push:
+          - This PR needs an approving review from a member of \`@Automattic/pci-guardians\`, and the required checks must be green on its head. Without them, \`trunk\`'s branch protection rejects the push (GH006), and admins can't bypass it.
+          - The live deploy (\`Deploy - WordPress.org\` with \`branch\` = \`trunk\` and \`simulate\` unticked) runs after this merge.
+
+          Changelog:
+          \`\`\`
+          ${CHANGELOG}
+          \`\`\`
+          PR_BODY_END
+          PR_URL=$(gh pr create --title "Release branch for $RELEASE_VERSION" --body-file "$PR_BODY_FILE" --base="trunk")
           PR_ID=${PR_URL##*/}
           if [[ $PR_ID =~ ^[0-9]+$ ]]; then
             echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
