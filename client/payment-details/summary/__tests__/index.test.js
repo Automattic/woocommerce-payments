@@ -301,9 +301,14 @@ describe( 'PaymentDetailsSummary', () => {
 		await userEvent.click(
 			screen.getByRole( 'button', { name: /Transaction actions/i } )
 		);
-		expect(
+		await userEvent.click(
 			await screen.findByRole( 'menuitem', { name: 'Refund in full' } )
-		).toBeInTheDocument();
+		);
+		expect(
+			await screen.findByText( /This will issue a full refund of/ )
+		).toHaveTextContent(
+			'This will issue a full refund of $10.00 to the customer.'
+		);
 	} );
 
 	test( 'renders the Tap to Pay channel from metadata with ios COTS_DEVICE', () => {

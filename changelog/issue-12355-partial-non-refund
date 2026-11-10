@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Show partially captured payments as paid at the captured amount instead of as partially refunded.
+Show partially captured payments as paid at the captured amount instead of as partially refunded, and refund only what is left when refunding a payment in full.

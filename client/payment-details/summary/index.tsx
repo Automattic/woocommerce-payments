@@ -33,6 +33,7 @@ import {
 	getChargeChannel,
 	isOnHoldByFraudTools,
 	getBankName,
+	getRefundableAmount,
 	getUncapturedAmount,
 	isChargeRefunded,
 } from 'utils/charge';
@@ -450,6 +451,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const uncapturedAmount = getUncapturedAmount( charge );
 	const formattedAmount = formatCurrency(
 		charge.amount - uncapturedAmount,
+		charge.currency,
+		balance.currency
+	);
+	const formattedRefundableAmount = formatCurrency(
+		getRefundableAmount( charge ),
 		charge.currency,
 		balance.currency
 	);
@@ -897,7 +903,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<RefundModal
 					charge={ charge }
 					dispute={ refundTarget.dispute }
-					formattedAmount={ formattedAmount }
+					formattedAmount={ formattedRefundableAmount }
 					orderUrl={ charge.order?.url }
 					onModalClose={ () => {
 						setRefundTarget( null );

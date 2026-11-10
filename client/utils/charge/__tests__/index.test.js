@@ -900,6 +900,33 @@ describe( 'Charge utilities / partial capture', () => {
 		expect( utils.getChargeStatus( charge ) ).toBe( 'paid' );
 	} );
 
+	// Known limitation: without the reversal in `refunds`, the settlement
+	// amount and net stay at the authorized values.
+	test( 'reports the authorized settlement amounts when the reversal is not listed', () => {
+		const charge = { ...buildCharge( {} ), refunds: null };
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			currency: 'usd',
+			amount: 2910,
+			fee: 86,
+			refunded: 0,
+			net: 2824,
+		} );
+	} );
+
+	test.each( [
+		[ 'nothing was refunded', AUTHORIZED_AMOUNT - CAPTURED_AMOUNT, 1300 ],
+		[ 'part was refunded', AUTHORIZED_AMOUNT - CAPTURED_AMOUNT + 500, 800 ],
+		[ 'everything was refunded', AUTHORIZED_AMOUNT, 0 ],
+	] )(
+		'leaves the captured amount less refunds to refund when %s',
+		( _, amountRefunded, expected ) => {
+			const charge = buildCharge( { amount_refunded: amountRefunded } );
+
+			expect( utils.getRefundableAmount( charge ) ).toBe( expected );
+		}
+	);
+
 	test( 'is paid when the released amount is not reported as refunded', () => {
 		const charge = buildCharge( { amount_refunded: 0, refunds: [] } );
 
@@ -1103,8 +1130,24 @@ describe( 'Charge utilities / partial capture', () => {
 			} );
 		} );
 
+		test( 'reports nothing refunded when withdrawals do not cover the reversal', () => {
+			const charge = withEnvelope( buildCharge( {} ), {
+				gross: 2910,
+				net: 1500,
+			} );
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 0,
+				net: 1500,
+			} );
+		} );
+
 		// Known limitation: without the reversal in `refunds`, its settlement
-		// amount is unknown, so the amounts stay at the authorized values.
+		// amount is unknown, so the gross and refunded amounts stay at the
+		// authorized values. The server's net is still right.
 		test( 'reports the authorized amounts when the reversal is not listed', () => {
 			const charge = withEnvelope(
 				{ ...buildCharge( {} ), refunds: null },

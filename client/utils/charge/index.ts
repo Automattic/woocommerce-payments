@@ -65,7 +65,7 @@ const isUnsuccessfulRefund = ( refund: { status?: string | null } ): boolean =>
 // refund on the charge: it counts towards `amount_refunded` and shows up in
 // `refunds`, but nobody refunded anything. Its balance transaction is the only
 // field that tells it apart from a refund the merchant issued.
-export const isPartialCaptureReversal = ( refund: ChargeRefund ): boolean =>
+const isPartialCaptureReversal = ( refund: ChargeRefund ): boolean =>
 	refund.balance_transaction?.reporting_category ===
 	'partial_capture_reversal';
 
@@ -98,6 +98,18 @@ export const getChargeRefundedAmount = (
 	Math.max(
 		0,
 		( charge.amount_refunded ?? 0 ) - getUncapturedAmount( charge )
+	);
+
+/**
+ * What is left to refund, in the charge currency: the captured amount less
+ * what the merchant already refunded.
+ */
+export const getRefundableAmount = ( charge: Charge = < Charge >{} ): number =>
+	Math.max(
+		0,
+		charge.amount -
+			getUncapturedAmount( charge ) -
+			getChargeRefundedAmount( charge )
 	);
 
 /**
@@ -331,7 +343,10 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 			amount: breakdown.totals.gross.amount - released,
 			fee: totalFee,
 			net: breakdown.totals.net.amount,
-			refunded: withdrawn - released,
+			// A breakdown whose withdrawals don't cover the reversal still
+			// has nothing refunded.
+			refunded:
+				released > 0 ? Math.max( 0, withdrawn - released ) : withdrawn,
 		};
 	}
 

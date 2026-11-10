@@ -90,6 +90,24 @@ describe( 'refundCharge', () => {
 		);
 	} );
 
+	it( 'refunds what is left after an earlier refund', async () => {
+		await refundCharge(
+			{
+				...charge,
+				amount_captured: 1000,
+				amount_refunded: 1800,
+				captured: true,
+			},
+			null
+		);
+
+		expect( mockApiFetch ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				data: expect.objectContaining( { amount: 700 } ),
+			} )
+		);
+	} );
+
 	it( 'settles after a failed refund', async () => {
 		mockApiFetch.mockRejectedValue( new Error( 'nope' ) );
 
