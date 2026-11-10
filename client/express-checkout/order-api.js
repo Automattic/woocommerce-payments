@@ -21,6 +21,11 @@ const ERRORS_BEFORE_PERSISTENCE = [
 	'woocommerce_rest_checkout_order_address_change_not_allowed',
 	// The request failed the endpoint's schema, e.g. a malformed wallet email or phone.
 	'rest_invalid_param',
+	// Rejected before the route runs, or for an order that can't be paid.
+	'woocommerce_rest_missing_nonce',
+	'woocommerce_rest_invalid_nonce',
+	'rate_limit_exceeded',
+	'invalid_order_update_status',
 ];
 
 const CONTACT_FIELDS = [
@@ -163,13 +168,11 @@ export default class ExpressCheckoutOrderApi {
 				path: `/wc/store/v1/checkout/${ this.orderId }`,
 				headers: {
 					Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
-					// The wallet's address needs the same normalization as on the cart (state names, address lines).
-					...( hasNoOrderBillingAddress && {
-						'X-WooPayments-Tokenized-Cart': true,
-						'X-WooPayments-Tokenized-Cart-Nonce':
-							getExpressCheckoutData( 'nonce' )
-								.tokenized_cart_nonce,
-					} ),
+					// Normalizes the addresses as on the cart (state names, address lines). It's needed on
+					// every attempt, because a retry sends the wallet's address that an earlier one saved.
+					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce,
 				},
 				data: {
 					...paymentData,
@@ -187,9 +190,9 @@ export default class ExpressCheckoutOrderApi {
 			return response;
 		} catch ( error ) {
 			// A failed payment still persisted the addresses (they are saved before payment is taken),
-			// so remember them for the same reason. Skip the failures that happen before persistence,
-			// which a payment failure never is (it carries `process_payment_error`, or no code at
-			// all when apiFetch rejects with an unparsed response).
+			// so remember them for the same reason. Skip the failures that happen before persistence.
+			// A payment failure carries `process_payment_error`; network and unparseable-response
+			// errors (`fetch_error`, `invalid_json`) may come after the order was saved.
 			if ( ! ERRORS_BEFORE_PERSISTENCE.includes( error?.code ) ) {
 				rememberPersistedData();
 			}

@@ -373,8 +373,12 @@ describe( 'ExpressCheckoutOrderApi', () => {
 					phone: '5551234567',
 				} );
 				expect( data.shipping_address.country ).toBe( 'GB' );
+				// The saved address is the wallet's, so it's normalized again.
 				expect( headers ).toEqual( {
 					Nonce: 'global_store_api_nonce',
+					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						'global_tokenized_cart_nonce',
 				} );
 			}
 		);
@@ -615,6 +619,10 @@ describe( 'ExpressCheckoutOrderApi', () => {
 	it.each( [
 		'woocommerce_rest_checkout_order_address_change_not_allowed',
 		'rest_invalid_param',
+		'woocommerce_rest_missing_nonce',
+		'woocommerce_rest_invalid_nonce',
+		'rate_limit_exceeded',
+		'invalid_order_update_status',
 	] )(
 		'does not remember the email when the request fails with %s',
 		async ( code ) => {
@@ -678,9 +686,11 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			expect.objectContaining( {
 				method: 'POST',
 				path: '/wc/store/v1/checkout/1',
-				// An order's own address doesn't go through the wallet address normalization.
 				headers: {
 					Nonce: 'global_store_api_nonce',
+					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						'global_tokenized_cart_nonce',
 				},
 				data: expect.objectContaining( {
 					key: 'key_123',
