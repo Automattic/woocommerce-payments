@@ -53,6 +53,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	const AUTHORIZATION_INTENT_ID = 'pi_mock';
 
 	/**
+	 * The intent of a later attempt the order is waiting on.
+	 */
+	const CURRENT_INTENT_ID = 'pi_current_attempt';
+
+	/**
 	 * The intent of an authorization the `charge.expired` tests send.
 	 */
 	const EXPIRED_INTENT_ID = 'pi_expired';
@@ -720,7 +725,70 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cod', $order->get_payment_method() );
 		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*refund/', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*paid with another payment method/', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * When the takeover could not cancel the earlier attempt, its payment can succeed on an order the other
+	 * gateway hasn't paid. That gateway may still be taking its own payment, so the order keeps its status, and
+	 * the note asks the merchant to check it before keeping or refunding this payment.
+	 *
+	 * @dataProvider provider_unpaid_order_statuses
+	 *
+	 * @param string $status          The status the order is in when the payment succeeds.
+	 * @param string $expected_status The order's status afterwards.
+	 */
+	public function test_payment_intent_succeeded_leaves_an_unpaid_order_for_an_attempt_from_before_another_gateway_took_it( string $status, string $expected_status ) {
+		$order = $this->create_order_taken_over_by_another_gateway( $status );
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( $expected_status, $order->get_status() );
+		$this->assertSame( 'cod', $order->get_payment_method() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*switched to another payment method.*If that payment method has paid or authorized this order, refund this payment/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A redelivered event for a late payment the order already records leaves the order with a single note.
+	 */
+	public function test_payment_intent_succeeded_notes_a_late_payment_once_when_the_event_is_redelivered() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_wcpay_superseded_payment_succeeded' ) );
+		$this->assertSame( 1, substr_count( $this->get_order_notes_text( $order ), 'switched to another payment method' ) );
+	}
+
+	public function provider_unpaid_order_statuses(): array {
+		return [
+			'Pending'   => [ Order_Status::PENDING, 'pending' ],
+			'Failed'    => [ Order_Status::FAILED, 'failed' ],
+			'On hold'   => [ Order_Status::ON_HOLD, 'on-hold' ],
+			'Cancelled' => [ Order_Status::CANCELLED, 'cancelled' ],
+		];
+	}
+
+	/**
+	 * A pending order with a successful payment from before the takeover isn't cancelled as unpaid when the stock
+	 * hold runs out, so the shopper isn't charged for a cancelled order.
+	 */
+	public function test_payment_intent_succeeded_keeps_a_pending_order_from_the_unpaid_order_cancel() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		/** This filter is documented in WooCommerce's wc_cancel_unpaid_orders(). */
+		$this->assertFalse( apply_filters( 'woocommerce_cancel_unpaid_order', true, wc_get_order( $order->get_id() ) ) );
 	}
 
 	/**
@@ -774,7 +842,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'processing', $order->get_status() );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_late_payment.*refund/s', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*paid with another payment method/s', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
@@ -4084,6 +4152,76 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A failed order keeps that status when the shopper retries it on the classic checkout or the order-pay page,
+	 * so an authorization after 3DS the browser never reported puts it on hold too.
+	 */
+	public function test_amount_capturable_updated_puts_failed_order_on_hold() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::FAILED );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A cancelled order is not reopened by an authorization.
+	 */
+	public function test_amount_capturable_updated_leaves_cancelled_order_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::CANCELLED );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+	}
+
+	/**
+	 * An authorization from an earlier attempt leaves a pending order waiting on a later payment alone, so that
+	 * payment's own return still matches the order, and the merchant gets a note naming both payments.
+	 */
+	public function test_amount_capturable_updated_ignores_an_attempt_the_order_is_not_waiting_on() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', self::CURRENT_INTENT_ID );
+		$order->save();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( 'pi_current_attempt', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*was authorized, but this order is waiting on payment.*pi_current_attempt/s', $this->get_order_notes_text( $order ) );
+		// The order can still be updated with this payment by the request that created it, so the note is conditional.
+		$this->assertMatchesRegularExpression( '/Unless the order is later updated with payment.*pi_mock.*expires on its own/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An authorization of the payment the order is waiting on puts it on hold.
+	 */
+	public function test_amount_capturable_updated_puts_on_hold_the_order_waiting_on_that_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', self::AUTHORIZATION_INTENT_ID );
+		$order->save();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+	}
+
+	/**
 	 * Tests that an order the browser already put On hold is left as it is.
 	 */
 	public function test_amount_capturable_updated_leaves_on_hold_order_unchanged() {
@@ -4161,7 +4299,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
 		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
 		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment method/s', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was switched to another payment method, so the order was not updated/s', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
@@ -4179,7 +4317,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'pending', $order->get_status() );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment method/s', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was switched to another payment method, so the order was not updated/s', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
