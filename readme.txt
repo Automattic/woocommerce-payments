@@ -95,6 +95,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 11.3.0-test-2 - unreleased =
+
+
 = 11.3.0 - 2026-11-11 =
 * Add - Add a Payments Overview task for payments flagged by an early fraud warning
 * Add - Log which filter to use when the server rejects an express checkout payment because its confirmation token and the payment disagree about saving the card.

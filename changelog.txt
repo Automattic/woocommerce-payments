@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 11.3.0-test-2 - 2026-xx-xx =
+
 = 11.3.0 - 2026-11-11 =
 * Add - Add a Payments Overview task for payments flagged by an early fraud warning
 * Add - Log which filter to use when the server rejects an express checkout payment because its confirmation token and the payment disagree about saving the card.
