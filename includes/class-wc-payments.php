@@ -1984,7 +1984,9 @@ class WC_Payments {
 			// by the time WordPress outputs scripts in the footer, WC Core's lazy registration has already run (the cart block renders before `wp_footer`).
 			$cart_block_deps = wp_script_is( 'wc-cart-block-frontend', 'registered' ) ? [ 'wc-cart-block-frontend' ] : [];
 			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', $cart_block_deps );
-			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+			if ( [] !== WC_Payments_Utils::get_active_bnpl_payment_method_ids( self::get_gateway() ) ) {
+				wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+			}
 
 			// Enqueue cart block styles.
 			WC_Payments_Utils::enqueue_style(

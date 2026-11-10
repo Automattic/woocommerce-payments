@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Constants\Payment_Method;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -48,6 +46,19 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		$is_cart_block = WC_Payments_Utils::is_cart_block();
 
 		if ( ! is_product() && ! is_cart() && ! $is_cart_block ) {
+			return;
+		}
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
+		wp_register_style(
+			'wcpay-product-details',
+			plugins_url( 'dist/product-details.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/product-details.css' )
+		);
+
+		$bnpl_payment_methods = WC_Payments_Utils::get_active_bnpl_payment_method_ids( $this->gateway );
+		if ( [] === $bnpl_payment_methods ) {
 			return;
 		}
 
@@ -106,40 +117,8 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			}
 		}
 
-		$enabled_upe_payment_methods = $this->gateway->get_upe_enabled_payment_method_ids();
-		// Filter non BNPL out of the list of payment methods.
-		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, Payment_Method::BNPL_PAYMENT_METHODS );
-
-		// Filter out inactive payment methods to ensure only active BNPL methods are provided to the front-end.
-		$payment_method_statuses = $this->gateway->get_upe_enabled_payment_method_statuses();
-		$capability_key_map      = $this->gateway->get_payment_method_capability_key_map();
-		$bnpl_payment_methods    = array_filter(
-			$bnpl_payment_methods,
-			function ( $payment_method_id ) use ( $payment_method_statuses, $capability_key_map ) {
-				$capability_key = $capability_key_map[ $payment_method_id ] ?? null;
-				if ( ! $capability_key ) {
-					return false;
-				}
-
-				if ( ! array_key_exists( $capability_key, $payment_method_statuses ) ) {
-					return false;
-				}
-
-				return 'active' === $payment_method_statuses[ $capability_key ]['status'];
-			}
-		);
-
-		// register the script.
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
 		wp_enqueue_script( 'WCPAY_PRODUCT_DETAILS' );
-
-		// Enqueue the styles.
-		wp_enqueue_style(
-			'wcpay-product-details',
-			plugins_url( 'dist/product-details.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/product-details.css' ),
-		);
+		wp_enqueue_style( 'wcpay-product-details' );
 
 		$country = empty( $billing_country ) ? $store_country : $billing_country;
 
