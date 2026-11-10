@@ -537,8 +537,12 @@ class FrontendPrices {
 		}
 
 		$this->order_coupon = $coupon;
-		// Available, not enabled: the merchant may have disabled the order's currency since checkout.
-		$this->order_coupon_currency = $this->multi_currency->get_available_currencies()[ $order->get_currency() ] ?? $this->multi_currency->get_default_currency();
+		// The enabled currency carries the merchant's manual rate, as at checkout. The available one, which
+		// only has the automatic rate, covers a currency the merchant disabled since checkout.
+		$order_currency              = $order->get_currency();
+		$this->order_coupon_currency = $this->multi_currency->get_enabled_currencies()[ $order_currency ]
+			?? $this->multi_currency->get_available_currencies()[ $order_currency ]
+			?? $this->multi_currency->get_default_currency();
 
 		// Decide whether the amount read back for this coupon is in the store currency and so needs
 		// converting. A live coupon's amount is the store-currency value. A deleted coupon is rebuilt by
