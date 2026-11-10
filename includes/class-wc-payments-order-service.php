@@ -487,7 +487,7 @@ class WC_Payments_Order_Service {
 				if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
 					$this->mark_order_held_for_review_for_fraud( $order, $intent_data );
 				} else {
-					$this->mark_payment_authorized( $order, $intent_data );
+					$this->mark_payment_authorized( $order, $intent, $intent_data );
 				}
 				break;
 			case Intent_Status::REQUIRES_ACTION:
@@ -2029,6 +2029,19 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Checks whether a payment intent is for less than the order's current total, in the same currency.
+	 *
+	 * @param WC_Payments_API_Payment_Intention $intent The intent to compare.
+	 * @param WC_Order                          $order  The order to compare against.
+	 *
+	 * @return bool
+	 */
+	private function intent_amount_below_order_total( WC_Payments_API_Payment_Intention $intent, WC_Order $order ): bool {
+		return strtolower( $intent->get_currency() ) === strtolower( $order->get_currency() )
+			&& (int) $intent->get_amount() < WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+	}
+
+	/**
 	 * Puts an order on hold when its payment succeeded for an amount or currency that differs from the order total.
 	 *
 	 * @param WC_Order                          $order       Order object.
@@ -2083,13 +2096,14 @@ class WC_Payments_Order_Service {
 	/**
 	 * Updates an order to on-hold status, while adding a note with a link to the transaction.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param array    $intent_data   The intent data associated with this order.
+	 * @param WC_Order                           $order       Order object.
+	 * @param WC_Payments_API_Abstract_Intention $intent      The authorized intent.
+	 * @param array                              $intent_data The intent data associated with this order.
 	 *
 	 * @return void
 	 */
-	private function mark_payment_authorized( $order, $intent_data ) {
-		$note = $this->generate_payment_authorized_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+	private function mark_payment_authorized( $order, WC_Payments_API_Abstract_Intention $intent, $intent_data ) {
+		$note = $this->generate_payment_authorized_note( $order, $intent, $intent_data['intent_id'], $intent_data['charge_id'] );
 		if ( $this->order_note_exists( $order, $note )
 			|| $order->has_status( [ Order_Status::ON_HOLD ] ) ) {
 			return;
@@ -2666,13 +2680,40 @@ class WC_Payments_Order_Service {
 	/**
 	 * Generates the payment authorized order note.
 	 *
-	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param WC_Order                           $order     Order object.
+	 * @param WC_Payments_API_Abstract_Intention $intent    The authorized intent.
+	 * @param string                             $intent_id The ID of the intent associated with this order.
+	 * @param string                             $charge_id The charge ID related to the intent/order.
 	 *
 	 * @return string
 	 */
-	private function generate_payment_authorized_note( $order, $intent_id, $charge_id ): string {
+	private function generate_payment_authorized_note( $order, WC_Payments_API_Abstract_Intention $intent, $intent_id, $charge_id ): string {
+		// A merchant can edit a pending order while the shopper is still paying, so show what Stripe holds.
+		$authorized_amount = $this->get_order_amount( $order );
+		$total_warning     = '';
+		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
+			$intent_currency   = strtoupper( $intent->get_currency() );
+			$authorized_amount = WC_Payments_Multi_Currency()->get_backend_formatted_wc_price(
+				WC_Payments_Utils::interpret_stripe_amount( (int) $intent->get_amount(), $intent_currency ),
+				[ 'currency' => $intent_currency ]
+			);
+			if ( strtoupper( $order->get_currency() ) !== $intent_currency ) {
+				// Without Multi-Currency there's no code, and "$12.00" on a CAD order reads as CAD.
+				if ( false === strpos( wp_strip_all_tags( $authorized_amount ), $intent_currency ) ) {
+					$authorized_amount .= ' ' . $intent_currency;
+				}
+			} else {
+				$authorized_amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $authorized_amount, $intent_currency );
+			}
+			if ( $this->intent_amount_below_order_total( $intent, $order ) ) {
+				$total_warning = ' ' . sprintf(
+					/* translators: %1: the order total */
+					esc_html__( 'The order total, %1$s, is higher than the authorized amount, so capturing the full total will fail. Lower the order total or cancel the authorization.', 'woocommerce-payments' ),
+					$this->get_order_amount( $order )
+				);
+			}
+		}
+
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -2683,13 +2724,13 @@ class WC_Payments_Order_Service {
 					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order ),
+			$authorized_amount,
 			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
 			$transaction_url
 		);
 
-		return $note;
+		return $note . $total_warning;
 	}
 
 	/**
