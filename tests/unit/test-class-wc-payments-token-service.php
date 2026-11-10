@@ -628,11 +628,9 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			->with( 'cus_12345' )
 			->willReturn( $mock_payment_methods );
 
-		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
-		$result_tokens = array_values( $result );
-		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
-		$this->assertEquals( 'pm_mock1', $result_tokens[1]->get_token() );
-		$this->assertEquals( 'pm_mock2', $result_tokens[2]->get_token() );
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
+
+		$this->assertSame( [ 'pm_mock1', 'pm_mock2' ], $this->get_stripe_ids( $result ) );
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_multiple_tokens_multiple_types() {
@@ -921,7 +919,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		update_option( 'posts_per_page', 2 );
 		$card_token = $this->generate_card_token( 'pm_card' );
 		$link_token = $this->generate_link_token( 'pm_link' );
-		$tokens     = $this->key_by_id( $card_token, $link_token );
+		WC_Data_Store::load( 'payment-token' )->set_default_status( $link_token->get_id(), true );
+		$tokens = $this->key_by_id( $card_token, WC_Payment_Tokens::get( $link_token->get_id() ) );
 
 		$this->mock_customer_service
 			->expects( $this->never() )
@@ -930,7 +929,49 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID );
 
 		$this->assertSame( [ 'pm_card' ], $this->get_stripe_ids( $result ) );
+
+		$kept_link_token = WC_Payment_Tokens::get( $link_token->get_id() );
+		$this->assertNotNull( $kept_link_token );
+		$this->assertFalse( $kept_link_token->is_default() );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_hides_every_row_of_an_unsynced_payment_method() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD ] );
+		$card_token     = $this->generate_card_token( 'pm_card' );
+		$link_token     = $this->generate_link_token( 'pm_link' );
+		$duplicate_link = $this->generate_link_token( 'pm_link' );
+		$tokens         = $this->key_by_id( $card_token, $link_token, $duplicate_link );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'get_payment_methods_for_customer' )
+			->willReturn( [ $this->generate_card_pm_response( 'pm_card' ) ] );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( [ 'pm_card' ], $this->get_stripe_ids( $result ) );
 		$this->assertNotNull( WC_Payment_Tokens::get( $link_token->get_id() ) );
+		$this->assertNotNull( WC_Payment_Tokens::get( $duplicate_link->get_id() ) );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_makes_an_imported_token_default_when_the_default_is_hidden() {
+		$this->set_enabled_payment_methods( [ Payment_Method::CARD ] );
+		$link_token = $this->generate_link_token( 'pm_link' );
+		$link_token->set_user_id( 1 );
+		$link_token->save();
+		WC_Data_Store::load( 'payment-token' )->set_default_status( $link_token->get_id(), true );
+		$tokens = $this->key_by_id( WC_Payment_Tokens::get( $link_token->get_id() ) );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'get_payment_methods_for_customer' )
+			->willReturn( [ $this->generate_card_pm_response( 'pm_new_card' ) ] );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( [ 'pm_new_card' ], $this->get_stripe_ids( $result ) );
+		$this->assertTrue( array_values( $result )[0]->is_default() );
+		$this->assertFalse( WC_Payment_Tokens::get( $link_token->get_id() )->is_default() );
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_deletes_unsynced_types_when_deleting_the_user() {

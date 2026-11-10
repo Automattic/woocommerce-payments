@@ -230,6 +230,9 @@ class WC_Payments_Token_Service {
 			return $this->remove_tokens_of_unsynced_types( $tokens, $gateway_id );
 		}
 
+		// Before the import, so a newly imported token can take the default a hidden token gives up.
+		$tokens = $this->remove_tokens_of_unsynced_types( $tokens, $gateway_id );
+
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
 		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10 );
 
@@ -248,10 +251,9 @@ class WC_Payments_Token_Service {
 
 		// Remove the payment methods that no longer exist in Stripe's side.
 		// The list above covers every retrievable type, since a failed fetch throws before this point. Tokens of
-		// other types, such as a turned-off Link or Amazon Pay, are hidden from this list but kept, so subscriptions
-		// that point at them can still renew. They give up default status, so the next saved method becomes the
-		// default. When an admin deletes the user, WooCommerce deletes only the tokens this filter returns, so the
-		// hidden ones go here instead.
+		// other types, such as a turned-off Link or Amazon Pay, are already hidden and stay in the database, so
+		// subscriptions that point at them can still renew. When an admin deletes the user, WooCommerce deletes
+		// only the tokens this filter returns, so the hidden ones go here instead.
 		$retrieved_types = $this->get_retrievable_payment_method_types( $gateway_id );
 		$deleting_user   = doing_action( 'delete_user' );
 		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10 );
@@ -263,10 +265,6 @@ class WC_Payments_Token_Service {
 			}
 			if ( in_array( $this->get_payment_method_type_for_token( $token ), $retrieved_types, true ) ) {
 				$token->delete();
-				continue;
-			}
-			if ( $token->is_default() ) {
-				WC_Data_Store::load( 'payment-token' )->set_default_status( $token->get_id(), false );
 			}
 		}
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
@@ -395,7 +393,7 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
-	 * Hides WooPayments tokens of types the sync doesn't fetch for this gateway, for returns that skip the sync.
+	 * Hides WooPayments tokens of types the sync doesn't fetch for this gateway, and clears their default flag.
 	 *
 	 * While a user is being deleted, every token stays in the list so that WooCommerce deletes them all.
 	 *
@@ -415,6 +413,10 @@ class WC_Payments_Token_Service {
 			}
 			if ( in_array( $this->get_payment_method_type_for_token( $token ), $synced_types, true ) ) {
 				continue;
+			}
+			// A hidden default would stop WooCommerce from making the next saved method the default.
+			if ( $token->is_default() ) {
+				WC_Data_Store::load( 'payment-token' )->set_default_status( $token->get_id(), false );
 			}
 			unset( $tokens[ $key ] );
 		}
