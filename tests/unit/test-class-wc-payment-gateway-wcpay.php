@@ -2404,15 +2404,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Data provider for BNPL failures reported by both the webhook and the redirect return.
 	 *
-	 * @return array[] Test cases with the payment method type, error code, decline code, whether the webhook
+	 * @return array[] Test cases with the payment method type, decline code, whether the webhook
 	 *                 arrives first, the expected order status and whether the customer returns to the pay-for-order page.
 	 */
 	public function bnpl_failure_reported_twice_provider(): array {
 		return [
-			'retryable klarna decline, webhook first'  => [ Payment_Method::KLARNA, 'payment_intent_payment_attempt_failed', 'klarna_payment_declined', true, 'pending', true ],
-			'retryable klarna decline, redirect first' => [ Payment_Method::KLARNA, 'payment_intent_payment_attempt_failed', 'klarna_payment_declined', false, 'pending', true ],
-			'non-retryable afterpay decline, webhook first' => [ Payment_Method::AFTERPAY, 'payment_intent_payment_attempt_failed', 'generic_decline', true, 'failed', false ],
-			'non-retryable afterpay decline, redirect first' => [ Payment_Method::AFTERPAY, 'payment_intent_payment_attempt_failed', 'generic_decline', false, 'failed', false ],
+			'retryable klarna decline, webhook first'  => [ Payment_Method::KLARNA, 'klarna_payment_declined', true, 'pending', true ],
+			'retryable klarna decline, redirect first' => [ Payment_Method::KLARNA, 'klarna_payment_declined', false, 'pending', true ],
+			'non-retryable afterpay decline, webhook first' => [ Payment_Method::AFTERPAY, 'generic_decline', true, 'failed', false ],
+			'non-retryable afterpay decline, redirect first' => [ Payment_Method::AFTERPAY, 'generic_decline', false, 'failed', false ],
 		];
 	}
 
@@ -2423,7 +2423,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider bnpl_failure_reported_twice_provider
 	 *
 	 * @param string $payment_method_type     The BNPL payment method type.
-	 * @param string $error_code              The error code of the last payment error.
 	 * @param string $decline_code            The decline code of the last payment error.
 	 * @param bool   $webhook_first           Whether the webhook arrives before the customer returns.
 	 * @param string $expected_status         The expected order status.
@@ -2431,7 +2430,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_bnpl_failure_reported_by_webhook_and_redirect_adds_a_single_note(
 		string $payment_method_type,
-		string $error_code,
 		string $decline_code,
 		bool $webhook_first,
 		string $expected_status,
@@ -2441,7 +2439,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_method_id   = 'pm_mock';
 		$save_payment_method = false;
 		$error               = [
-			'code'           => $error_code,
+			'code'           => 'payment_intent_payment_attempt_failed',
 			'message'        => 'The customer has terminated the authorization flow.',
 			'decline_code'   => $decline_code,
 			'doc_url'        => 'https://docs.example.com/decline',

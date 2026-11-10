@@ -589,11 +589,9 @@ class WC_Payments_Order_Service {
 		}
 
 		// Another request for the same intent (e.g. a reloaded return page) may have failed the order
-		// after this one loaded it. The existing note can't stop the status change here, so read the
+		// after this one loaded it. The existing note can't stop the status change here, so check the
 		// stored status to avoid failing the order and sending the failed order emails twice.
-		$stored_order = clone $order;
-		$stored_order->get_data_store()->read( $stored_order );
-		if ( $order->has_status( [ Order_Status::FAILED ] ) || $stored_order->has_status( [ Order_Status::FAILED ] ) ) {
+		if ( $order->has_status( [ Order_Status::FAILED ] ) || $this->get_stored_order( $order )->has_status( [ Order_Status::FAILED ] ) ) {
 			$this->complete_order_processing( $order );
 			return;
 		}
@@ -3452,11 +3450,8 @@ class WC_Payments_Order_Service {
 	 * @return boolean True if it has a paid status, false if not.
 	 */
 	private function is_order_paid( $order ) {
-		wp_cache_delete( $order->get_id(), 'posts' );
-
 		// Read the latest order properties from the database to avoid race conditions if webhook was handled during this request.
-		$clone_order = clone $order;
-		$clone_order->get_data_store()->read( $clone_order );
+		$clone_order = $this->get_stored_order( $order );
 
 		// Check if the order is already complete.
 		if ( function_exists( 'wc_get_is_paid_statuses' ) ) {
@@ -3467,6 +3462,23 @@ class WC_Payments_Order_Service {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Reads a copy of the order as currently stored, bypassing the post cache, so that changes made
+	 * by another request after this one loaded the order are visible.
+	 *
+	 * @param WC_Order $order The order to read.
+	 *
+	 * @return WC_Order A copy of the order with the stored properties.
+	 */
+	private function get_stored_order( WC_Order $order ): WC_Order {
+		wp_cache_delete( $order->get_id(), 'posts' );
+
+		$stored_order = clone $order;
+		$stored_order->get_data_store()->read( $stored_order );
+
+		return $stored_order;
 	}
 
 	/**

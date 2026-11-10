@@ -2673,7 +2673,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( ! empty( $error ) ) {
-				Logger::log( 'Error when processing payment: ' . $error['message'] );
+				Logger::log( 'Error when processing payment: ' . ( $error['message'] ?? $error['code'] ?? '' ) );
 				$error_code = $this->is_retryable_decline( $error )
 					? self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE
 					: 'upe_payment_intent_error';

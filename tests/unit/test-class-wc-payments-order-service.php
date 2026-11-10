@@ -1889,15 +1889,49 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'decline_code' => 'generic_decline',
 		];
 		$stale_order = wc_get_order( $this->order->get_id() );
+		// Another request fails the order in the database, leaving this request's caches untouched.
+		$this->set_stored_order_status_without_clearing_caches( $this->order->get_id(), 'wc-failed' );
 
-		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), '', $error );
 		$this->order_service->mark_payment_declined( $stale_order, $intent->get_id(), $intent->get_status(), '', $error );
 
-		$this->assertSame( 'failed', wc_get_order( $this->order->get_id() )->get_status() );
-		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertCount( 2, $notes );
-		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
+		$this->assertSame( 'failed', $this->get_stored_order_status( $this->order->get_id() ) );
+		$this->assertSame( [], wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Changes an order's status directly in the database, as another request would.
+	 *
+	 * @param int    $order_id The order ID.
+	 * @param string $status   The stored status, including the `wc-` prefix.
+	 */
+	private function set_stored_order_status_without_clearing_caches( int $order_id, string $status ): void {
+		global $wpdb;
+
+		$wpdb->update( $wpdb->posts, [ 'post_status' => $status ], [ 'ID' => $order_id ] );
+		if ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$wpdb->update( \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders(), [ 'status' => $status ], [ 'id' => $order_id ] );
+		}
+	}
+
+	/**
+	 * Reads an order's status from the database, bypassing the caches.
+	 *
+	 * @param int $order_id The order ID.
+	 *
+	 * @return string The status without the `wc-` prefix.
+	 */
+	private function get_stored_order_status( int $order_id ): string {
+		global $wpdb;
+
+		if ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$table  = \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders();
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$table} WHERE id = %d", $order_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		} else {
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT post_status FROM {$wpdb->posts} WHERE ID = %d", $order_id ) );
+		}
+
+		return str_replace( 'wc-', '', (string) $status );
 	}
 
 	/**
@@ -1946,6 +1980,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$message = $this->order_service->get_provider_decline_message( [ 'message' => $long_message ] );
 
 		$this->assertSame( 'With the following message: <code>' . str_repeat( 'a', 1000 ) . '…</code>', $message );
+	}
+
+	/**
+	 * Tests that a provider message at the length limit is kept whole.
+	 */
+	public function test_get_provider_decline_message_keeps_message_at_length_limit() {
+		$message_at_limit = str_repeat( 'a', 1000 );
+
+		$message = $this->order_service->get_provider_decline_message( [ 'message' => $message_at_limit ] );
+
+		$this->assertSame( 'With the following message: <code>' . str_repeat( 'a', 1000 ) . '</code>', $message );
 	}
 
 	/**
