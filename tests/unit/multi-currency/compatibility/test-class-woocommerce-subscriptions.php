@@ -607,13 +607,13 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->willReturn( true );
 
 		// Arrange/Assert: Apply the woocommerce_subscription_price_string_details filter and confirm the filter does not change the passed array.
-		$this->assertSame( [ 1, 2, 3 ], apply_filters( 'woocommerce_subscription_price_string_details', [ 1, 2, 3 ], $mock_subscription ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		$this->assertSame( [ 1, 2, 3 ], apply_filters( 'woocommerce_subscription_price_string_details', [ 1, 2, 3 ], $mock_subscription ) );
 
 		// Act/Assert: Confirm the currency is what we set.
 		$this->assertSame( 'EUR', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 
 		// Arrange/Assert: Apply the woocommerce_get_formatted_subscription_total filter and confirm the filter does not change the passed string.
-		$this->assertSame( 'expected_string', apply_filters( 'woocommerce_get_formatted_subscription_total', 'expected_string', $mock_subscription ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		$this->assertSame( 'expected_string', apply_filters( 'woocommerce_get_formatted_subscription_total', 'expected_string', $mock_subscription ) );
 
 		// Assert: Confirm override_selected_currency returns false again.
 		$this->assertFalse( $this->woocommerce_subscriptions->override_selected_currency( false ) );
@@ -1308,7 +1308,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->willReturn( true );
 
 		// Arrange/Assert: Apply the woocommerce_subscription_price_string_details filter and confirm the filter does not change the passed array.
-		$this->assertSame( [ 1, 2, 3 ], apply_filters( 'woocommerce_subscription_price_string_details', [ 1, 2, 3 ], $mock_subscription ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+		$this->assertSame( [ 1, 2, 3 ], apply_filters( 'woocommerce_subscription_price_string_details', [ 1, 2, 3 ], $mock_subscription ) );
 
 		// Assert: Confirm the price returned is what is expected.
 		$this->assertSame( $expected, $this->woocommerce_subscriptions->maybe_get_explicit_format_for_subscription_total( $price, '14.00', [], 14.00, 14.00 ) );

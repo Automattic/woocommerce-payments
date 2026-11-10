@@ -163,7 +163,7 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 		$res   = [];
 		$files = glob( dirname( __DIR__, 1 ) . '/fixtures/captured-payments/*.json' );
 		foreach ( $files as $file ) {
-			$array_from_file = json_decode( file_get_contents( $file ), true ); //phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			$array_from_file = json_decode( file_get_contents( $file ), true );
 			$title           = $array_from_file['title'];
 			$captured_event  = $array_from_file['capturedEvent'];
 			$expectation     = $array_from_file['expectation'];

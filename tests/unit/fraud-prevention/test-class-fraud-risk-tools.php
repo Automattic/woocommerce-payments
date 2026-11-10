@@ -434,11 +434,10 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 		global $current_screen;
 
 		if ( ! $is_admin ) {
-			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+			$current_screen = null;
 			return;
 		}
 
-		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->addMethods( [ 'in_admin' ] )
 			->getMock();
@@ -452,7 +451,6 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 	private function set_current_user_can( bool $can ) {
 		global $current_user_can;
 
-		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_user_can = $this->getMockBuilder( \stdClass::class )
 			->addMethods( [ 'current_user_can' ] )
 			->getMock();

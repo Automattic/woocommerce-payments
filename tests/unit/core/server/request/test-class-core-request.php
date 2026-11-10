@@ -11,7 +11,7 @@ use WCPay\Core\Server\Request\Paginated;
 use WCPay\Core\Server\Request\List_Transactions;
 use WCPay\Core\Server\Request\Update_Intention;
 
-// phpcs:disable
+// phpcs:disable Squiz.Commenting.ClassComment.Missing
 class My_Request extends Request {
 	const DEFAULT_PARAMS = [
 		'default_1' => 1,
@@ -60,8 +60,7 @@ class Another_ThirdParty_Request extends WooPay_Request {
 class Request_With_Id extends Update_Intention {
 
 }
-// phpcs:enable
-// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
+// phpcs:enable Squiz.Commenting.ClassComment.Missing
 
 /**
  * WCPay\Core\Server\Capture_Intention_Test unit tests.
@@ -122,7 +121,7 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
-		$filtered = $request->apply_filters( $hook ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$filtered = $request->apply_filters( $hook );
 		$result   = $filtered->get_params();
 
 		// Assert: It's important that we got here without exceptions, but everything should be set.
@@ -153,7 +152,7 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
-		$filtered = $base->apply_filters( $hook ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$filtered = $base->apply_filters( $hook );
 		$this->assertInstanceOf( Request_With_Id::class, $filtered );
 		$this->assertStringContainsString( $intent_id, $filtered->get_api() );
 	}

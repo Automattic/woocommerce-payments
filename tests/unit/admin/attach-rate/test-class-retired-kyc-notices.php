@@ -15,8 +15,8 @@ class Retired_Kyc_Notices_Test extends WCPAY_UnitTestCase {
 		$previous_scripts = wp_scripts();
 		$previous_styles  = wp_styles();
 		try {
-			$GLOBALS['wp_scripts'] = new WP_Scripts(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Isolate dependency resolution.
-			$GLOBALS['wp_styles']  = new WP_Styles(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Isolate dependency resolution.
+			$GLOBALS['wp_scripts'] = new WP_Scripts();
+			$GLOBALS['wp_styles']  = new WP_Styles();
 			WC_Payments_Admin_Notices::register_retired_notice_assets();
 			wp_register_script( 'kyc-test-extension', 'https://example.test/extension.js', [ $handle ], '1.0', true );
 			wp_register_style( 'kyc-test-extension', 'https://example.test/extension.css', [ $handle ], '1.0' );
@@ -31,8 +31,8 @@ class Retired_Kyc_Notices_Test extends WCPAY_UnitTestCase {
 			$this->assertFalse( wp_scripts()->registered[ $handle ]->src );
 			$this->assertFalse( wp_styles()->registered[ $handle ]->src );
 		} finally {
-			$GLOBALS['wp_scripts'] = $previous_scripts; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restore the original registry.
-			$GLOBALS['wp_styles']  = $previous_styles; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restore the original registry.
+			$GLOBALS['wp_scripts'] = $previous_scripts;
+			$GLOBALS['wp_styles']  = $previous_styles;
 		}
 	}
 

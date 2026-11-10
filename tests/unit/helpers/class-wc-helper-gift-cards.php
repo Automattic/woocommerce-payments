@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-// phpcs:disable
-
 use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
 
 /**
@@ -15,6 +13,11 @@ use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
  * Mock class for test usage.
  */
 class WC_GC_Gift_Card_Data {
+	/**
+	 * Gift card balance.
+	 *
+	 * @var int
+	 */
 	private $balance = 0;
 
 	public function __construct( $balance ) {
@@ -81,6 +84,6 @@ class WC_GC_Checkout_Blocks_Integration implements IntegrationInterface {
 	}
 }
 
-function WC_GC() {
+function WC_GC() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
 	return new WC_Gift_Cards();
 }

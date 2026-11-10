@@ -301,7 +301,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		return base64_encode( wp_json_encode( $envelope ) );
 	}
 
@@ -1532,7 +1531,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @return string The claim key.
 	 */
 	private function attestation_claim_key( string $hash ): string {
-		return WooPay_Session::ATTESTATION_CLAIM_PREFIX . hash( 'sha256', base64_decode( $hash, true ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		return WooPay_Session::ATTESTATION_CLAIM_PREFIX . hash( 'sha256', base64_decode( $hash, true ) );
 	}
 
 	/**
@@ -1563,9 +1562,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$ciphertext = openssl_encrypt( $payload, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
 
 		return [
-			'data' => base64_encode( $ciphertext ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-			'iv'   => base64_encode( $iv ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-			'hash' => base64_encode( hash_hmac( 'sha256', $iv . $ciphertext, $key ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+			'data' => base64_encode( $ciphertext ),
+			'iv'   => base64_encode( $iv ),
+			'hash' => base64_encode( hash_hmac( 'sha256', $iv . $ciphertext, $key ) ),
 		];
 	}
 

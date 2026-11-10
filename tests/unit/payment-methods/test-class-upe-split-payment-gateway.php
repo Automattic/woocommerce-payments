@@ -846,7 +846,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
 
-		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		unset( $_POST['payment_method'] );
 	}
 
 	/**
@@ -880,7 +880,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order               = WC_Helper_Order::create_order();
 		$payment_information = new Payment_Information( 'pm_mock', $order, null, $token );
 
-		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		unset( $_POST['payment_method'] );
 
 		$mock_upe_gateway->expects( $this->once() )
 			->method( 'get_payment_methods_from_gateway_id' )
