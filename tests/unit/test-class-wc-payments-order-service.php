@@ -1879,6 +1879,76 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a second request for the same declined payment, which loaded the order before
+	 * the first one failed it, does not fail the order again.
+	 */
+	public function test_mark_payment_declined_does_not_fail_a_stale_order_again() {
+		$intent      = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$error       = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+		$stale_order = wc_get_order( $this->order->get_id() );
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), '', $error );
+		$this->order_service->mark_payment_declined( $stale_order, $intent->get_id(), $intent->get_status(), '', $error );
+
+		$this->assertSame( 'failed', wc_get_order( $this->order->get_id() )->get_status() );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Data provider for provider errors without a message.
+	 *
+	 * @return array[] Test cases with the provider error and the expected decline message.
+	 */
+	public function provider_errors_without_message_provider(): array {
+		return [
+			'error code only'         => [
+				[ 'code' => 'payment_intent_payment_attempt_failed' ],
+				'With the following message: <code>payment_intent_payment_attempt_failed</code>',
+			],
+			'no message and no code'  => [
+				[ 'decline_code' => 'generic_decline' ],
+				'With the following message: <code>We&#039;re not able to process this payment. Please try again later.</code>. Decline code: <code>generic_decline</code>.',
+			],
+			'empty message with code' => [
+				[
+					'code'    => 'card_declined',
+					'message' => '',
+				],
+				'With the following message: <code>card_declined</code>',
+			],
+		];
+	}
+
+	/**
+	 * Tests that a decline message is never empty when the provider error has no message.
+	 *
+	 * @dataProvider provider_errors_without_message_provider
+	 *
+	 * @param array  $error            The payment provider's error.
+	 * @param string $expected_message The expected decline message.
+	 */
+	public function test_get_provider_decline_message_without_provider_message( array $error, string $expected_message ) {
+		$this->assertSame( $expected_message, $this->order_service->get_provider_decline_message( $error ) );
+	}
+
+	/**
+	 * Tests that an overlong provider message is shortened so the failure note can be saved.
+	 */
+	public function test_get_provider_decline_message_shortens_long_provider_message() {
+		$long_message = str_repeat( 'a', 70000 );
+
+		$message = $this->order_service->get_provider_decline_message( [ 'message' => $long_message ] );
+
+		$this->assertSame( 'With the following message: <code>' . str_repeat( 'a', 1000 ) . '…</code>', $message );
+	}
+
+	/**
 	 * Tests that a declined payment does not change an order that is already failed.
 	 */
 	public function test_mark_payment_declined_exits_on_existing_order_status_failed() {

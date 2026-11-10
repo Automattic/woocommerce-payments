@@ -99,6 +99,13 @@ class WC_Payments_Order_Service {
 	const CHARGE_RISK_LEVEL_META_KEY = '_charge_risk_level';
 
 	/**
+	 * Maximum length of the payment provider's error message in an order note.
+	 *
+	 * @const int
+	 */
+	private const MAX_PROVIDER_ERROR_LENGTH = 1000;
+
+	/**
 	 * Meta key used to store customer Id.
 	 *
 	 * @const string
@@ -581,7 +588,12 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		if ( $order->has_status( [ Order_Status::FAILED ] ) ) {
+		// Another request for the same intent (e.g. a reloaded return page) may have failed the order
+		// after this one loaded it. The existing note can't stop the status change here, so read the
+		// stored status to avoid failing the order and sending the failed order emails twice.
+		$stored_order = clone $order;
+		$stored_order->get_data_store()->read( $stored_order );
+		if ( $order->has_status( [ Order_Status::FAILED ] ) || $stored_order->has_status( [ Order_Status::FAILED ] ) ) {
 			$this->complete_order_processing( $order );
 			return;
 		}
@@ -617,18 +629,29 @@ class WC_Payments_Order_Service {
 	 * @return string The formatted decline message.
 	 */
 	public function get_provider_decline_message( array $error ): string {
-		$decline_code = $error['decline_code'] ?? '';
+		$decline_code   = $error['decline_code'] ?? '';
+		$provider_error = (string) ( $error['message'] ?? '' );
+		if ( '' === $provider_error ) {
+			$provider_error = (string) ( $error['code'] ?? '' );
+		}
+		if ( '' === $provider_error ) {
+			$provider_error = __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
+		}
+		// Keep the note well within the comment size limit, otherwise it is not saved.
+		if ( mb_strlen( $provider_error ) > self::MAX_PROVIDER_ERROR_LENGTH ) {
+			$provider_error = mb_substr( $provider_error, 0, self::MAX_PROVIDER_ERROR_LENGTH ) . '…';
+		}
 
 		if ( ! empty( $decline_code ) ) {
 			$message = sprintf(
 				/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
 				__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
-				esc_html( $error['message'] ?? '' ),
+				esc_html( $provider_error ),
 				esc_html( $decline_code )
 			);
 		} else {
 			// translators: %s Stripe error message.
-			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $error['message'] ?? '' ) );
+			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $provider_error ) );
 		}
 
 		if ( ! empty( $error['doc_url'] ) ) {
