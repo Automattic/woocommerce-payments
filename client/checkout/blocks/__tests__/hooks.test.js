@@ -48,6 +48,14 @@ describe( 'usePaymentFailHandler', () => {
 
 	it.each( [
 		[ 'an empty error message', { paymentDetails: { errorMessage: '' } } ],
+		[
+			'a blank error message',
+			{ paymentDetails: { errorMessage: '   ' } },
+		],
+		[
+			'a non-string error message',
+			{ paymentDetails: { errorMessage: 42 } },
+		],
 		[ 'no error message', { paymentDetails: {} } ],
 		[ 'empty payment details', { paymentDetails: [] } ],
 		[ 'no payment details', {} ],
