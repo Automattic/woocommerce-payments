@@ -1807,6 +1807,55 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( WC_Payment_Gateway_WCPay::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE . '=yes', $redirect_url );
 	}
 
+	/**
+	 * Test that a declined setup intent for a zero-amount order fails the order and records
+	 * the payment provider's decline details.
+	 */
+	public function test_process_redirect_payment_with_setup_intent_error_marks_order_failed() {
+		$setup_intent_id = 'seti_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0 );
+		$order->update_meta_data( '_intent_id', $setup_intent_id );
+		$order->save();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 1, $setup_intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'               => $setup_intent_id,
+						'status'           => Intent_Status::REQUIRES_PAYMENT_METHOD,
+						'metadata'         => [ 'order_id' => (string) $order->get_id() ],
+						'last_setup_error' => [
+							'code'         => 'setup_intent_authentication_failure',
+							'message'      => 'The bank declined the setup.',
+							'decline_code' => 'generic_decline',
+						],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$mock_gateway->process_redirect_payment( $order, $setup_intent_id, false );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'failed', $result_order->get_status() );
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments (<code>seti_mock</code>)', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The bank declined the setup.</code>. Decline code: <code>generic_decline</code>.', $note_text );
+		$this->assertStringNotContainsString( 'UPE payment failed', $note_text );
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+	}
+
 	// This test uses a mock of the gateway class due to get_selected_payment_method()'s reliance on the static method WC_Payments::get_payment_method_map(), which can't be mocked. Refactoring the gateway class to avoid using this static method would allow mocking it in tests.
 	public function test_process_redirect_payment_save_payment_token() {
 		/** @var WC_Payment_Gateway_WCPay */
