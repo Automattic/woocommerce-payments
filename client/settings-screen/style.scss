@@ -229,3 +229,13 @@
 		margin-inline-start: 12px;
 	}
 }
+
+// The column WooCommerce's settings screen uses for its pages, so the sub-pages line up with the main page.
+// Positioned so visually hidden text stays inside the Page's scroll area.
+.wcpay-settings-screen__subpage {
+	position: relative;
+	box-sizing: border-box;
+	margin-inline: auto;
+	max-width: 680px;
+	width: 100%;
+}

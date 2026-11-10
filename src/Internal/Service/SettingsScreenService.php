@@ -47,6 +47,14 @@ class SettingsScreenService {
 	const SCRIPT_HANDLE = 'wcpay-settings-screen';
 
 	/**
+	 * Built script modules of the sub-page route, without their extension.
+	 */
+	const SUBPAGE_MODULES = [
+		'route' => 'dist/settings-screen-modules/settings-screen-route',
+		'stage' => 'dist/settings-screen-modules/settings-screen-stage',
+	];
+
+	/**
 	 * Express checkout methods with their own customisation sub-page, keyed by the classic `method` argument.
 	 * Each sub-page is an entity named `woopayments/{path}`.
 	 */
@@ -96,7 +104,7 @@ class SettingsScreenService {
 	}
 
 	/**
-	 * Gets the name of a sub-page's entity. WooCommerce shows it at `/settings/payments/{name}`, below the main page.
+	 * Gets the name of a sub-page's entity. WooPayments' own route shows it at `/settings/payments/{name}`, below the main page.
 	 *
 	 * @param string $path The sub-page's path, such as `woopay`.
 	 * @return string
@@ -429,7 +437,7 @@ class SettingsScreenService {
 	}
 
 	/**
-	 * Enqueues the screen's script and styles on the payment settings screen.
+	 * Enqueues the screen's script and styles on the payment settings screen, and adds the sub-page route.
 	 *
 	 * The script registers the entities and their fields before the screen loads, from the definitions
 	 * passed here.
@@ -439,7 +447,7 @@ class SettingsScreenService {
 			return;
 		}
 
-		WC_Payments::register_script_with_dependencies( self::SCRIPT_HANDLE, 'dist/settings-screen' );
+		WC_Payments::register_script_with_dependencies( self::SCRIPT_HANDLE, 'dist/settings-screen', $this->register_subpage_route() );
 		wp_localize_script(
 			self::SCRIPT_HANDLE,
 			'wcpaySettingsScreenConfig',
@@ -650,6 +658,44 @@ class SettingsScreenService {
 			],
 			1
 		);
+	}
+
+	/**
+	 * Adds the sub-pages to the screen as WooPayments' own route, `/settings/payments/woopayments/{path}`.
+	 *
+	 * WooCommerce shows one page per entity and leaves sub-pages to plugins. The route's script modules
+	 * use some WordPress scripts, which script modules can't depend on, so the screen's script loads them.
+	 *
+	 * @return string[] Handles of the WordPress scripts the route's modules use.
+	 */
+	private function register_subpage_route(): array {
+		// wp-build generates this from the screen's page, and WooCommerce only loads it while it loads the screen.
+		if ( ! function_exists( 'woocommerce_routes_register_wc_settings_screen_wp_admin_route' ) ) {
+			return [];
+		}
+
+		$dependencies = [];
+		foreach ( self::SUBPAGE_MODULES as $part => $path ) {
+			$asset_path = WCPAY_ABSPATH . $path . '.asset.php';
+			if ( ! file_exists( $asset_path ) ) {
+				return [];
+			}
+			$asset = require $asset_path; // nosemgrep: audit.php.lang.security.file.inclusion-arg -- server generated path is used.
+			$id    = self::SCRIPT_HANDLE . '/' . $part;
+			wp_register_script_module( $id, plugins_url( $path . '.js', WCPAY_PLUGIN_FILE ), $asset['module_dependencies'], $asset['version'] );
+			if ( function_exists( 'wp_set_script_module_translations' ) ) {
+				wp_set_script_module_translations( $id, 'woocommerce-payments' );
+			}
+			$dependencies = array_merge( $dependencies, $asset['dependencies'] );
+		}
+
+		woocommerce_routes_register_wc_settings_screen_wp_admin_route(
+			'/settings/payments/' . self::SCREEN_ID . '/$subpage',
+			self::SCRIPT_HANDLE . '/stage',
+			self::SCRIPT_HANDLE . '/route'
+		);
+
+		return array_values( array_unique( $dependencies ) );
 	}
 
 	/**

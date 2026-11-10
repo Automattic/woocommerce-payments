@@ -29,24 +29,24 @@ const { kind, baseURL, recordId, entities } = wcpaySettingsScreenConfig;
 const fieldParts = getFieldParts();
 window.wcpaySettingsScreen = { fieldParts };
 
-// WooCommerce shows a page for each entity of its kind, so they're registered before the screen loads.
-// Sub-pages are named after their path below the main page, and every page edits the same settings record.
+// WooCommerce shows the main page's entity, so the entities are registered before the screen loads.
+// Sub-pages are named after their path below the main page and shown by WooPayments' own route
+// (`subpages/`). Every page edits the same settings record.
 dispatch( 'core' ).addEntities(
 	entities.map( ( { name, label } ) => ( {
 		kind,
 		name,
 		baseURL,
 		key: 'id',
-		recordId,
 		label,
 		getTitle: () => label,
 	} ) )
 );
-entities.forEach( ( { name, fields } ) => {
-	fields.forEach( ( field ) => {
-		registerEntityField( kind, name, {
+entities
+	.find( ( { name } ) => name === recordId )
+	?.fields.forEach( ( field ) => {
+		registerEntityField( kind, recordId, {
 			...field,
 			...fieldParts[ field.id ],
 		} );
 	} );
-} );
