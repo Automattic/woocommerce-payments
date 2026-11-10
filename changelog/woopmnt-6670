@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show the payment failure reason on the block checkout when paying with a saved card.

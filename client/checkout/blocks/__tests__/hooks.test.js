@@ -45,6 +45,20 @@ describe( 'usePaymentFailHandler', () => {
 			messageContext: 'payments_context',
 		} );
 	} );
+
+	it( 'should fall back to the default Blocks notice when there is no error message', () => {
+		renderHook( () =>
+			usePaymentFailHandler( mockOnCheckoutFail, mockEmitResponse )
+		);
+
+		const failHandler = mockOnCheckoutFail.mock.calls[ 0 ][ 0 ];
+
+		expect(
+			failHandler( { processingResponse: { paymentDetails: {} } } )
+		).toBe( true );
+		expect( failHandler( { processingResponse: {} } ) ).toBe( true );
+		expect( failHandler( { processingResponse: null } ) ).toBe( true );
+	} );
 } );
 
 describe( 'useFingerprint', () => {

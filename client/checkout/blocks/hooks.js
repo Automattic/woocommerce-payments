@@ -39,6 +39,7 @@ export const usePaymentCompleteHandler = (
  * Handles onCheckoutFail event emitter which fires after Blocks checkout processor responds with error.
  *
  * Displays the error message returned from checkout processor in the noticeContexts.PAYMENTS area.
+ * Without an error message, Blocks keeps its default checkout error notice.
  *
  * @param {Function} onCheckoutFail The onCheckoutFail event emitter.
  * @param {Object}   emitResponse   Various helpers for usage with observer.
@@ -46,10 +47,17 @@ export const usePaymentCompleteHandler = (
 export const usePaymentFailHandler = ( onCheckoutFail, emitResponse ) => {
 	useEffect(
 		() =>
-			onCheckoutFail( ( { processingResponse: { paymentDetails } } ) => {
+			onCheckoutFail( ( { processingResponse } ) => {
+				const errorMessage =
+					processingResponse?.paymentDetails?.errorMessage;
+
+				if ( ! errorMessage ) {
+					return true;
+				}
+
 				return {
 					type: 'failure',
-					message: paymentDetails.errorMessage,
+					message: errorMessage,
 					messageContext: emitResponse.noticeContexts.PAYMENTS,
 				};
 			} ),
