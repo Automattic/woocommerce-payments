@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Record only shopper events from the browser's Tracks requests, and stop a batch of events once the Tracks service is unavailable.

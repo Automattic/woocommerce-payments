@@ -44,6 +44,7 @@ export const getStripeElementOptions = (
 	email
 ) => {
 	const options = {
+		layout: 'tabs',
 		fields: {
 			billingDetails: {
 				name: 'never',

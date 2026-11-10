@@ -305,6 +305,85 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $return_url, $result['redirect'] );
 	}
 
+	/**
+	 * A re-submitted order with an open authorization stores the charge ID that webhooks look orders up by.
+	 */
+	public function test_check_payment_intent_attached_to_order_succeeded_stores_charge_id_of_open_authorization() {
+		$this->service->init( $this->mock_gateway, new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) ) );
+		$order = $this->create_order_with_attached_intent();
+		$this->mock_attached_intent( $order, Intent_Status::REQUIRES_CAPTURE );
+
+		$this->service->check_payment_intent_attached_to_order_succeeded( $order );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'ch_attached_charge_id', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'on-hold', $order->get_status() );
+	}
+
+	/**
+	 * Other authorized intents keep the order's stored status, which picks how the order is updated,
+	 * such as recording the fees of a payment captured after it was authorized.
+	 *
+	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_does_not_attach_other_statuses
+	 *
+	 * @param string $intent_status The intent status.
+	 */
+	public function test_check_payment_intent_attached_to_order_succeeded_does_not_attach_other_statuses( string $intent_status ) {
+		$order = $this->create_order_with_attached_intent();
+		$this->mock_attached_intent( $order, $intent_status );
+		$this->mock_order_service
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' );
+
+		$this->service->check_payment_intent_attached_to_order_succeeded( $order );
+	}
+
+	public function provider_check_payment_intent_attached_to_order_succeeded_does_not_attach_other_statuses(): array {
+		return [
+			'Succeeded'  => [ Intent_Status::SUCCEEDED ],
+			'Processing' => [ Intent_Status::PROCESSING ],
+		];
+	}
+
+	/**
+	 * Creates an order with an attached intent.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_with_attached_intent(): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_attached_intent_id' );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Mocks fetching the order's authorized intent.
+	 *
+	 * @param WC_Order $order         The order the intent belongs to.
+	 * @param string   $intent_status The intent status.
+	 */
+	private function mock_attached_intent( WC_Order $order, string $intent_status ): void {
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => 'pi_attached_intent_id',
+				'status'   => $intent_status,
+				'amount'   => WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ),
+				'metadata' => [ 'order_id' => $order->get_id() ],
+				'charge'   => [ 'id' => 'ch_attached_charge_id' ],
+			]
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_attached_intent_id' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+	}
+
 	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
 		$ret = [];
 		foreach ( Intent_Status::AUTHORIZED_STATUSES as $status ) {
