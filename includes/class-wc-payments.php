@@ -693,6 +693,9 @@ class WC_Payments {
 
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
+			// This checks selected methods, not active ones: capability statuses need account data, and
+			// loading that on every request just to add hooks isn't worth it. Each handler asks
+			// WC_Payments_Utils::get_active_bnpl_payment_method_ids() when it runs instead.
 			$enabled_bnpl_payment_methods = array_intersect(
 				Payment_Method::BNPL_PAYMENT_METHODS,
 				self::get_gateway()->get_upe_enabled_payment_method_ids()
@@ -1906,12 +1909,9 @@ class WC_Payments {
 		$currency = sanitize_text_field( wp_unslash( $_POST['currency'] ) );
 		$country  = sanitize_text_field( wp_unslash( $_POST['country'] ) );
 
-		$enabled_bnpl_payment_methods = array_intersect(
-			Payment_Method::BNPL_PAYMENT_METHODS,
-			self::get_gateway()->get_upe_enabled_payment_method_ids()
-		);
+		$active_bnpl_payment_methods = WC_Payments_Utils::get_active_bnpl_payment_method_ids( self::get_gateway() );
 
-		$is_available = WC_Payments_Utils::is_any_bnpl_method_available( $enabled_bnpl_payment_methods, $country, $currency, $price );
+		$is_available = WC_Payments_Utils::is_any_bnpl_method_available( $active_bnpl_payment_methods, $country, $currency, $price );
 
 		wp_send_json_success( [ 'is_available' => $is_available ] );
 	}

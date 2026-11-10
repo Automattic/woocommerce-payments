@@ -6,6 +6,8 @@
  */
 
 use WCPay\WooPay\WooPay_Session;
+use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Payment_Method;
 
 /**
@@ -102,6 +104,69 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		return [
 			'approved' => [ 'active', true ],
 			'rejected' => [ 'rejected', false ],
+		];
+	}
+
+	/**
+	 * @dataProvider bnpl_availability_prices
+	 *
+	 * @param int  $price_in_cents Cart total sent by the product page.
+	 * @param bool $expected_is_available Expected AJAX response flag.
+	 */
+	public function test_bnpl_availability_ignores_rejected_methods( $price_in_cents, $expected_is_available ) {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::AFFIRM, Payment_Method::AFTERPAY ] );
+		$gateway->method( 'get_upe_enabled_payment_method_statuses' )->willReturn(
+			[
+				'affirm_payments'            => [ 'status' => 'active' ],
+				'afterpay_clearpay_payments' => [ 'status' => 'rejected' ],
+			]
+		);
+		$gateway->method( 'get_payment_method_capability_key_map' )->willReturn(
+			[
+				Payment_Method::AFFIRM   => 'affirm_payments',
+				Payment_Method::AFTERPAY => 'afterpay_clearpay_payments',
+			]
+		);
+		WC_Payments::set_gateway( $gateway );
+
+		$_POST                = [
+			'price'    => $price_in_cents,
+			'currency' => Currency_Code::UNITED_STATES_DOLLAR,
+			'country'  => Country_Code::UNITED_STATES,
+		];
+		$_REQUEST['security'] = wp_create_nonce( 'wcpay-is-bnpl-available' );
+
+		// wp_send_json_*() only goes through wp_die(), which can be intercepted, on AJAX requests.
+		$die_handler = function () {
+			return function () {
+				throw new WPDieException();
+			};
+		};
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', $die_handler );
+
+		ob_start();
+		try {
+			WC_Payments::ajax_check_bnpl_availability();
+		} catch ( WPDieException $e ) {
+			unset( $e );
+		} finally {
+			$response = json_decode( ob_get_clean(), true );
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', $die_handler );
+			unset( $_REQUEST['security'] );
+			$_POST = [];
+		}
+
+		$this->assertTrue( $response['success'] );
+		$this->assertSame( $expected_is_available, $response['data']['is_available'] );
+	}
+
+	public function bnpl_availability_prices() {
+		return [
+			'below the active method minimum' => [ 2000, false ],
+			'within the active method limits' => [ 5000, true ],
 		];
 	}
 
