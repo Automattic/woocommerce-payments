@@ -1121,6 +1121,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$order = wc_get_order( $order_id );
 		}
 
+		// An order paid with another gateway can still have cards attached by an earlier WooPayments attempt.
+		// Copying one back would undo WC_Payments_Order_Service::maybe_remove_payment_details_for_other_gateway().
+		if ( ! $order || 0 !== strpos( (string) $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
+			return;
+		}
+
 		$payment_token = $this->get_payment_token( $order );
 
 		// If we can't get the payment token for this order, then we check if we already have a payment token
@@ -1227,6 +1233,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY,
 			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
 			'_wcpay_net',
+			// These describe one takeover of this order by another gateway, not a payment to carry to a
+			// subscription or its renewals.
+			WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY,
+			WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY,
+			WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY,
 		];
 	}
 

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improve the accuracy of Multi-Currency cart, order and renewal totals.

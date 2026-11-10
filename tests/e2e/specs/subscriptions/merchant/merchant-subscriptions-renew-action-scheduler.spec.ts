@@ -81,6 +81,8 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 				.locator( 'tr' )
 				.filter( { hasText: subscriptionId } )
 				.first();
+			// WP keeps row actions off-screen until the row is hovered.
+			await actionRow.hover();
 			await actionRow.getByRole( 'link', { name: 'Run' } ).click();
 
 			await expect(

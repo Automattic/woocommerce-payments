@@ -36,6 +36,7 @@ describe( 'Blocks checkout utils', () => {
 			);
 
 			expect( options ).toEqual( {
+				layout: 'tabs',
 				fields: {
 					billingDetails: {
 						address: {
@@ -88,6 +89,7 @@ describe( 'Blocks checkout utils', () => {
 			);
 
 			expect( options ).toEqual( {
+				layout: 'tabs',
 				fields: {
 					billingDetails: {
 						address: {
@@ -132,6 +134,7 @@ describe( 'Blocks checkout utils', () => {
 			);
 
 			expect( options ).toEqual( {
+				layout: 'tabs',
 				fields: {
 					billingDetails: {
 						address: {
@@ -179,6 +182,7 @@ describe( 'Blocks checkout utils', () => {
 			);
 
 			expect( options ).toEqual( {
+				layout: 'tabs',
 				fields: {
 					billingDetails: {
 						address: {

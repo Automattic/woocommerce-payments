@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+chore: keep CI tests compatible with Ubuntu 26.04.
