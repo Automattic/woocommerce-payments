@@ -594,6 +594,9 @@ class WooPay_Session {
 	/**
 	 * Returns the initial session request data.
 	 *
+	 * For a pay-for-order request, ends the request with a 403 when the caller is not
+	 * authorized to pay the given order.
+	 *
 	 * @param int|null             $order_id Pay-for-order order ID.
 	 * @param string|null          $key Pay-for-order key.
 	 * @param string|null          $billing_email Pay-for-order billing email.
@@ -617,8 +620,21 @@ class WooPay_Session {
 
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
-		$order            = wc_get_order( $order_id );
-		$customer_id      = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
+		$order            = null;
+
+		if ( $is_pay_for_order ) {
+			// Only a caller holding the order's payment link may open a session for it.
+			$order = \WC_Payments_Utils::get_authorized_pay_for_order( $order_id, $key );
+
+			if ( null === $order ) {
+				wp_send_json_error(
+					__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+					403
+				);
+			}
+		}
+
+		$customer_id = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
