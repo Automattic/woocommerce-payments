@@ -424,6 +424,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * Puts a pending order on hold once its payment is authorized. After 3DS, the browser
 	 * may never report the result, and Hold stock would then cancel the order and void the authorization.
+	 * A failed order is retried without leaving that status on the classic checkout and the order-pay page,
+	 * so it is put on hold too, as the succeeded webhook completes it with automatic capture.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
@@ -468,7 +470,28 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
-		if ( ! $order->has_status( Order_Status::PENDING ) ) {
+		if ( ! $order->has_status( [ Order_Status::PENDING, Order_Status::FAILED ] ) ) {
+			return;
+		}
+
+		// Only the payment the order is waiting on moves it on, as when the browser reports it. An earlier attempt's
+		// 3DS completed after a retry would otherwise replace that payment, whose own return would then fail.
+		// A retry's event can also arrive before the checkout request saves the retry on the order, which then
+		// updates the order itself, so the note does not claim the authorization is lost.
+		$intent_id         = (string) ( $event_object['id'] ?? '' );
+		$current_intent_id = $this->order_service->get_intent_id_for_order( $order );
+		if ( '' !== $current_intent_id && $current_intent_id !== $intent_id ) {
+			$order->add_order_note(
+				sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the ID of the authorized WooPayments payment, %2: the ID of the payment the order is waiting on. */
+						__( 'A WooPayments payment <code>%1$s</code> was authorized, but this order is waiting on payment <code>%2$s</code>, so the order was not updated. Unless the order is later updated with payment <code>%1$s</code>, its authorization is not captured and expires on its own.', 'woocommerce-payments' ),
+						[ 'code' => '<code>' ]
+					),
+					$intent_id,
+					$current_intent_id
+				)
+			);
 			return;
 		}
 
