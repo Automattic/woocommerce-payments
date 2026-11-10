@@ -122,6 +122,14 @@ class WC_Payments_Order_Service {
 	const SUPERSEDED_INTENT_IDS_META_KEY = '_wcpay_superseded_intent_ids';
 
 	/**
+	 * Meta key holding the intent of a WooPayments attempt that succeeded after another gateway took the order
+	 * over. The payment isn't attached to the order, so the merchant keeps or refunds it.
+	 *
+	 * @const string
+	 */
+	const SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY = '_wcpay_superseded_payment_succeeded';
+
+	/**
 	 * Meta key used to store WCPay fraud meta box type.
 	 *
 	 * @const string
@@ -337,6 +345,7 @@ class WC_Payments_Order_Service {
 		// Keep these below 50: WooCommerce Subscriptions copies the order's meta into switches and new subscriptions at 50 and 100.
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'maybe_remove_payment_details_for_other_gateway' ] );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'maybe_remove_payment_details_for_other_gateway' ] );
+		add_filter( 'woocommerce_cancel_unpaid_order', [ $this, 'keep_order_with_superseded_payment' ], 10, 2 );
 
 		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
 		// test-mode sale is noticed before fulfilment. The mode is read from the order meta at
@@ -1321,6 +1330,30 @@ class WC_Payments_Order_Service {
 		$taken_over_at = (int) $order->get_meta( self::PAYMENT_DETAILS_REMOVED_META_KEY );
 
 		return 0 < $taken_over_at && 0 < $intent_created_at && $intent_created_at < $taken_over_at;
+	}
+
+	/**
+	 * Keeps an unpaid order out of WooCommerce's unpaid order cancel once a WooPayments payment from before
+	 * another gateway took it over has succeeded, so that payment isn't left on a cancelled order while the
+	 * merchant decides whether to keep or refund it.
+	 *
+	 * @internal
+	 *
+	 * @param mixed $cancel Whether WooCommerce cancels the order.
+	 * @param mixed $order  The unpaid order.
+	 *
+	 * @return mixed
+	 */
+	public function keep_order_with_superseded_payment( $cancel, $order ) {
+		if ( ! $order instanceof WC_Order ) {
+			return $cancel;
+		}
+
+		if ( '' === (string) $order->get_meta( self::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY ) ) {
+			return $cancel;
+		}
+
+		return false;
 	}
 
 	/**

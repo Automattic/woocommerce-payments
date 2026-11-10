@@ -654,6 +654,28 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Only an order a superseded payment succeeded on is kept from WooCommerce's unpaid order cancel; any other
+	 * order gets WooCommerce's own decision.
+	 */
+	public function test_keep_order_with_superseded_payment_leaves_other_orders_to_woocommerce() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->assertTrue( $this->order_service->keep_order_with_superseded_payment( true, $order ) );
+		$this->assertTrue( $this->order_service->keep_order_with_superseded_payment( true, $order->get_id() ) );
+	}
+
+	/**
+	 * An order a superseded payment succeeded on isn't cancelled as unpaid.
+	 */
+	public function test_keep_order_with_superseded_payment_keeps_the_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY, self::LATER_PAYMENT_INTENT_ID );
+		$order->save();
+
+		$this->assertFalse( $this->order_service->keep_order_with_superseded_payment( true, $order ) );
+	}
+
+	/**
 	 * The removed intent is known by name, so it is told apart whatever the two clocks say about its time.
 	 */
 	public function test_is_intent_from_superseded_attempt_knows_the_removed_intent_whatever_its_time() {

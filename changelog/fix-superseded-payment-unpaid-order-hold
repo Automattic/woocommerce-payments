@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep an unpaid order from being cancelled as unpaid when a WooPayments payment from before it was switched to another payment method succeeds anyway.
