@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Remove react-transition-group from the Overview inbox so the bundle no longer ships ReactDOM.findDOMNode, which React 19 removes.
