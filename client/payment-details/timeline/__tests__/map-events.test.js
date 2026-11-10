@@ -574,6 +574,63 @@ describe( 'mapTimelineEvents', () => {
 					'A payment of €13.00 EUR was successfully refunded.'
 				);
 			} );
+
+			test( 'keeps other event types for a reversal transaction', () => {
+				const items = mapTimelineEvents(
+					[
+						{
+							...releaseEvent( 'refund_failed' ),
+							amount_refunded: 1300,
+						},
+					],
+					null,
+					undefined,
+					undefined,
+					undefined,
+					[ RELEASED_TRANSACTION_ID ]
+				);
+
+				expect( headlines( items ) ).not.toContain(
+					'The uncaptured €13.00 EUR of the authorization was released to the customer.'
+				);
+			} );
+
+			test( 'keeps refund events as refunds without reversal transactions', () => {
+				const items = mapTimelineEvents(
+					[ releaseEvent( 'partial_refund' ) ],
+					null,
+					undefined,
+					undefined,
+					undefined,
+					null
+				);
+
+				expect( headlines( items ) ).toContain(
+					'A payment of €13.00 EUR was successfully refunded.'
+				);
+			} );
+
+			test( 'shows the payout deduction in the store currency', () => {
+				const items = mapTimelineEvents( [
+					{
+						...releaseEvent( 'partial_capture_reversal' ),
+						transaction_details: {
+							customer_currency: 'EUR',
+							customer_amount: 1300,
+							store_currency: 'USD',
+							store_amount: 1455,
+						},
+					},
+				] );
+
+				expect( headlines( items ) ).toEqual( [
+					'$14.55 USD will be deducted from a future payout.',
+					'The uncaptured €13.00 EUR of the authorization was released to the customer.',
+				] );
+				expect( items[ 1 ].body ).toEqual( [
+					'1.00 EUR → 1.11923 USD: $14.55 USD',
+				] );
+			} );
 		} );
 
 		test( 'renders a free-text refund reason when present', () => {

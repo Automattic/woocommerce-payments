@@ -72,6 +72,24 @@ describe( 'refundCharge', () => {
 		await expect( refundCharge( charge, null ) ).resolves.toBeUndefined();
 	} );
 
+	it( 'refunds the captured amount of a partially captured charge', async () => {
+		await refundCharge(
+			{
+				...charge,
+				amount_captured: 1000,
+				amount_refunded: 1500,
+				captured: true,
+			},
+			null
+		);
+
+		expect( mockApiFetch ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				data: expect.objectContaining( { amount: 1000 } ),
+			} )
+		);
+	} );
+
 	it( 'settles after a failed refund', async () => {
 		mockApiFetch.mockRejectedValue( new Error( 'nope' ) );
 

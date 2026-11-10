@@ -318,12 +318,12 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 			breakdown.totals.gross.amount -
 			breakdown.totals.net.amount -
 			totalFee;
-		// `gross` is the charge's balance transaction, so it still includes
-		// the released remainder that `net` already excludes. Move it out of
-		// the withdrawn amount only when it is there to move, so a server
-		// that starts reporting the captured `gross` isn't double-counted.
+		// While `gross` is the charge's balance transaction, it still holds
+		// the released remainder that `net` already excludes, so move it out
+		// of the withdrawn amount. A `gross` reported at the captured amount
+		// no longer matches that transaction and needs no correction.
 		const released =
-			releasedBalanceAmount > 0 && withdrawn >= releasedBalanceAmount
+			breakdown.totals.gross.amount === charge.balance_transaction?.amount
 				? releasedBalanceAmount
 				: 0;
 		return {

@@ -1499,7 +1499,7 @@ const mapEventToTimelineItems = (
 const asPartialCaptureReversal = ( event, releasedTransactionIds ) =>
 	[ 'partial_refund', 'full_refund' ].includes( event.type ) &&
 	event.transaction_id &&
-	releasedTransactionIds.includes( event.transaction_id )
+	( releasedTransactionIds ?? [] ).includes( event.transaction_id )
 		? { ...event, type: 'partial_capture_reversal' }
 		: event;
 

@@ -18,6 +18,7 @@ import {
 	UpdatePaymentIntentAction,
 } from './types';
 import { Charge } from 'wcpay/types/charges';
+import { getUncapturedAmount } from 'wcpay/utils/charge';
 import { PAYMENT_INTENTS_STORE_NAME as STORE_NAME } from '../store-names';
 // Take these two names from their store modules, not from `store-names`: the import
 // is also what registers the store, and neither is otherwise loaded on the payment
@@ -58,7 +59,9 @@ export function* refundCharge(
 			method: 'post',
 			data: {
 				charge_id: charge.id,
-				amount: charge.amount,
+				// A partially captured charge can only be refunded up to the
+				// captured amount.
+				amount: charge.amount - getUncapturedAmount( charge ),
 				reason: reason,
 				order_id: charge?.order?.id,
 			},
