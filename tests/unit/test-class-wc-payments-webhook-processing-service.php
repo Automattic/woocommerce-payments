@@ -51,6 +51,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	const AUTHORIZATION_INTENT_ID = 'pi_mock';
 
 	/**
+	 * The intent of a later attempt the order is waiting on.
+	 */
+	const CURRENT_INTENT_ID = 'pi_current_attempt';
+
+	/**
 	 * System under test.
 	 *
 	 * @var WC_Payments_Webhook_Processing_Service
@@ -4069,6 +4074,76 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
 		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
 		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A failed order keeps that status when the shopper retries it on the classic checkout or the order-pay page,
+	 * so an authorization after 3DS the browser never reported puts it on hold too.
+	 */
+	public function test_amount_capturable_updated_puts_failed_order_on_hold() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::FAILED );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A cancelled order is not reopened by an authorization.
+	 */
+	public function test_amount_capturable_updated_leaves_cancelled_order_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::CANCELLED );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+	}
+
+	/**
+	 * An authorization from an earlier attempt leaves a pending order waiting on a later payment alone, so that
+	 * payment's own return still matches the order, and the merchant gets a note naming both payments.
+	 */
+	public function test_amount_capturable_updated_ignores_an_attempt_the_order_is_not_waiting_on() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', self::CURRENT_INTENT_ID );
+		$order->save();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( 'pi_current_attempt', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*was authorized, but this order is waiting on payment.*pi_current_attempt/s', $this->get_order_notes_text( $order ) );
+		// The order can still be updated with this payment by the request that created it, so the note is conditional.
+		$this->assertMatchesRegularExpression( '/Unless the order is later updated with payment.*pi_mock.*expires on its own/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An authorization of the payment the order is waiting on puts it on hold.
+	 */
+	public function test_amount_capturable_updated_puts_on_hold_the_order_waiting_on_that_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', self::AUTHORIZATION_INTENT_ID );
+		$order->save();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
 	}
 
 	/**

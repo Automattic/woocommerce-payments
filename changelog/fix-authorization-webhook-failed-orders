@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Put a failed order on hold when a retried manual capture payment is authorized after 3DS and the shopper leaves before checkout finishes.
