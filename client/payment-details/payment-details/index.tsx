@@ -18,7 +18,11 @@ import PaymentTransactionBreakdown from '../transaction-breakdown';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
-import { getBankName, getDisputeOrdinals } from 'wcpay/utils/charge';
+import {
+	getBankName,
+	getDisputeOrdinals,
+	getPartialCaptureReversalTransactionIds,
+} from 'wcpay/utils/charge';
 import { getKlarnaLossReasons } from 'wcpay/disputes/utils';
 
 interface PaymentDetailsProps {
@@ -98,6 +102,9 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 						disputeOrder={ disputeOrder }
 						onRefund={ () => refundModalOpener.current?.() }
 						klarnaLossReasons={ klarnaLossReasons }
+						releasedTransactionIds={ getPartialCaptureReversalTransactionIds(
+							charge
+						) }
 					/>
 				</ErrorBoundary>
 			) }

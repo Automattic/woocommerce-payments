@@ -512,6 +512,70 @@ describe( 'mapTimelineEvents', () => {
 			).toMatchSnapshot();
 		} );
 
+		describe( 'partial capture reversal', () => {
+			const RELEASED_TRANSACTION_ID = 'txn_released';
+			const releaseEvent = ( type ) => ( {
+				amount_refunded: 1300,
+				currency: 'EUR',
+				datetime: 1585940281,
+				deposit: null,
+				type,
+				transaction_id: RELEASED_TRANSACTION_ID,
+			} );
+			const headlines = ( items ) =>
+				items.map( ( item ) => item.headline );
+
+			test( 'formats partial_capture_reversal events as a release', () => {
+				const items = mapTimelineEvents( [
+					releaseEvent( 'partial_capture_reversal' ),
+				] );
+
+				expect( headlines( items ) ).toEqual( [
+					'€13.00 EUR will be deducted from a future payout.',
+					'The uncaptured €13.00 EUR of the authorization was released to the customer.',
+				] );
+			} );
+
+			test.each( [ 'partial_refund', 'full_refund' ] )(
+				'formats a %s event for a reversal transaction as a release',
+				( type ) => {
+					const items = mapTimelineEvents(
+						[ releaseEvent( type ) ],
+						null,
+						undefined,
+						undefined,
+						undefined,
+						[ RELEASED_TRANSACTION_ID ]
+					);
+
+					expect( headlines( items ) ).toEqual( [
+						'€13.00 EUR will be deducted from a future payout.',
+						'The uncaptured €13.00 EUR of the authorization was released to the customer.',
+					] );
+				}
+			);
+
+			test( 'keeps refund events for other transactions as refunds', () => {
+				const items = mapTimelineEvents(
+					[
+						{
+							...releaseEvent( 'partial_refund' ),
+							transaction_id: 'txn_refund',
+						},
+					],
+					null,
+					undefined,
+					undefined,
+					undefined,
+					[ RELEASED_TRANSACTION_ID ]
+				);
+
+				expect( headlines( items ) ).toContain(
+					'A payment of €13.00 EUR was successfully refunded.'
+				);
+			} );
+		} );
+
 		test( 'renders a free-text refund reason when present', () => {
 			const [ , , mainItem ] = mapTimelineEvents( [
 				{

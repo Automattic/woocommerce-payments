@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show partially captured payments as paid at the captured amount instead of as partially refunded.
