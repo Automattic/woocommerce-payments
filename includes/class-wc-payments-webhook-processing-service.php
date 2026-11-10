@@ -521,6 +521,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Only the payment the order is waiting on moves it on, as when the browser reports it. An earlier attempt's
 		// 3DS completed after a retry would otherwise replace that payment, whose own return would then fail.
+		// A retry's event can also arrive before the checkout request saves the retry on the order, which then
+		// updates the order itself, so the note does not claim the authorization is lost.
 		$intent_id         = (string) ( $event_object['id'] ?? '' );
 		$current_intent_id = $this->order_service->get_intent_id_for_order( $order );
 		if ( '' !== $current_intent_id && $current_intent_id !== $intent_id ) {
@@ -528,7 +530,7 @@ class WC_Payments_Webhook_Processing_Service {
 				sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the ID of the authorized WooPayments payment, %2: the ID of the payment the order is waiting on. */
-						__( 'A WooPayments payment <code>%1$s</code> was authorized, but this order is waiting on payment <code>%2$s</code>, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' ),
+						__( 'A WooPayments payment <code>%1$s</code> was authorized, but this order is waiting on payment <code>%2$s</code>, so the order was not updated. Unless the order is later updated with payment <code>%1$s</code>, its authorization is not captured and expires on its own.', 'woocommerce-payments' ),
 						[ 'code' => '<code>' ]
 					),
 					$intent_id,

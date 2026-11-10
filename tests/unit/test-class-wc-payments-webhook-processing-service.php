@@ -4138,6 +4138,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'pi_current_attempt', $order->get_meta( '_intent_id' ) );
 		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
 		$this->assertMatchesRegularExpression( '/pi_mock.*was authorized, but this order is waiting on payment.*pi_current_attempt/s', $this->get_order_notes_text( $order ) );
+		// The order can still be updated with this payment by the request that created it, so the note is conditional.
+		$this->assertMatchesRegularExpression( '/Unless the order is later updated with payment.*pi_mock.*expires on its own/s', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
