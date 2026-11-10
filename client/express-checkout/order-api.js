@@ -19,6 +19,45 @@ const ERRORS_BEFORE_PERSISTENCE = [
 	'woocommerce_rest_invalid_address_country',
 ];
 
+const WALLET_CONTACT_FIELDS = [
+	'first_name',
+	'last_name',
+	'company',
+	'email',
+	'phone',
+];
+
+// Kept together, so an order never mixes its own location with the wallet's.
+const LOCATION_FIELDS = [
+	'address_1',
+	'address_2',
+	'city',
+	'state',
+	'postcode',
+	'country',
+];
+
+/**
+ * Returns the order address with its blank contact fields and all of its location fields taken from the wallet.
+ *
+ * @param {Object} orderAddress  The address saved on the order.
+ * @param {Object} walletAddress The billing address from the wallet.
+ * @return {Object} The address to send to the Store API.
+ */
+const fillMissingFields = ( orderAddress, walletAddress = {} ) => {
+	const address = { ...orderAddress };
+
+	WALLET_CONTACT_FIELDS.forEach( ( field ) => {
+		address[ field ] =
+			orderAddress[ field ] || walletAddress[ field ] || '';
+	} );
+	LOCATION_FIELDS.forEach( ( field ) => {
+		address[ field ] = walletAddress[ field ] || '';
+	} );
+
+	return address;
+};
+
 export default class ExpressCheckoutOrderApi {
 	// parameters used in every request, just in different ways.
 	orderId;
@@ -57,6 +96,7 @@ export default class ExpressCheckoutOrderApi {
 		// Keep the merchant's address (it determines tax) and only fill the contact fields a
 		// merchant-created pay-for-order may be missing (email, phone). The Store API needs them to
 		// take payment and the wallet provides them, so backfilling is safe and tax stays untouched.
+		// The exception, below, is an order with no address at all.
 		// See https://github.com/woocommerce/woocommerce/issues/48540
 		const walletEmail = paymentData.billing_address?.email;
 		const walletPhone = paymentData.billing_address?.phone;
@@ -64,15 +104,31 @@ export default class ExpressCheckoutOrderApi {
 		const orderBillingAddress = this.cachedCartData.billing_address;
 		const orderShippingAddress = this.cachedCartData.shipping_address;
 
-		const billingAddress = orderBillingAddress && {
-			...orderBillingAddress,
-			email: orderBillingAddress.email || walletEmail,
-			phone: orderBillingAddress.phone || walletPhone,
-		};
-		const shippingAddress = orderShippingAddress && {
-			...orderShippingAddress,
-			phone: orderShippingAddress.phone || walletPhone,
-		};
+		// An order with no billing country (e.g. one created in the mobile apps and shared as a
+		// payment link) can't pass the Store API address validation, so it takes the
+		// wallet's billing address: WooCommerce taxes it at the store's base address until then, and
+		// lets its first address re-price it.
+		const hasNoOrderBillingAddress =
+			orderBillingAddress && ! orderBillingAddress.country;
+
+		const billingAddress = hasNoOrderBillingAddress
+			? fillMissingFields(
+					orderBillingAddress,
+					paymentData.billing_address
+				)
+			: orderBillingAddress && {
+					...orderBillingAddress,
+					email: orderBillingAddress.email || walletEmail,
+					phone: orderBillingAddress.phone || walletPhone,
+				};
+		// A blank shipping address would replace the billing one WooCommerce ships to when none is sent.
+		const shippingAddress =
+			hasNoOrderBillingAddress && ! orderShippingAddress?.country
+				? undefined
+				: orderShippingAddress && {
+						...orderShippingAddress,
+						phone: orderShippingAddress.phone || walletPhone,
+					};
 
 		const sentBillingEmail = billingAddress?.email;
 

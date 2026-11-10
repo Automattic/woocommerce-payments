@@ -141,6 +141,139 @@ describe( 'ExpressCheckoutOrderApi', () => {
 		);
 	} );
 
+	describe( 'when the order has no billing address', () => {
+		// The Store API returns every address field, blank on an order created without an address.
+		const BLANK_BILLING_ADDRESS = {
+			first_name: '',
+			last_name: '',
+			company: '',
+			address_1: '',
+			address_2: '',
+			city: '',
+			state: '',
+			postcode: '',
+			country: '',
+			email: '',
+			phone: '',
+		};
+		const BLANK_SHIPPING_ADDRESS = {
+			first_name: '',
+			last_name: '',
+			company: '',
+			address_1: '',
+			address_2: '',
+			city: '',
+			state: '',
+			postcode: '',
+			country: '',
+			phone: '',
+		};
+		const WALLET_BILLING_ADDRESS = {
+			first_name: 'Wallet',
+			last_name: 'Holder',
+			company: '',
+			address_1: '1 Wallet Street',
+			address_2: '',
+			city: 'London',
+			state: '',
+			postcode: 'SW1A 1AA',
+			country: 'GB',
+			email: 'buyer@wallet.com',
+			phone: '5551234567',
+		};
+
+		const placeOrderFor = async ( orderAddresses ) => {
+			const api = new ExpressCheckoutOrderApi( {
+				orderId: '1',
+				key: 'key_123',
+			} );
+			apiFetch.mockResolvedValueOnce( orderAddresses );
+			await api.getCart();
+
+			await api.placeOrder( {
+				billing_address: WALLET_BILLING_ADDRESS,
+			} );
+
+			return apiFetch.mock.calls[ 1 ][ 0 ].data;
+		};
+
+		it( "sends the wallet's billing address, so WooCommerce ships to it", async () => {
+			const data = await placeOrderFor( {
+				billing_address: BLANK_BILLING_ADDRESS,
+				shipping_address: BLANK_SHIPPING_ADDRESS,
+			} );
+
+			expect( data.billing_address ).toEqual( {
+				first_name: 'Wallet',
+				last_name: 'Holder',
+				company: '',
+				address_1: '1 Wallet Street',
+				address_2: '',
+				city: 'London',
+				state: '',
+				postcode: 'SW1A 1AA',
+				country: 'GB',
+				email: 'buyer@wallet.com',
+				phone: '5551234567',
+			} );
+			expect( data.shipping_address ).toBeUndefined();
+		} );
+
+		it( "keeps the order's contact details and replaces any partial location with the wallet's", async () => {
+			const data = await placeOrderFor( {
+				billing_address: {
+					...BLANK_BILLING_ADDRESS,
+					first_name: 'Merchant',
+					last_name: 'Set',
+					email: 'shopper@order.com',
+					// A location without a country is never kept, so it can't mix with the wallet's.
+					city: 'Orderville',
+				},
+				shipping_address: BLANK_SHIPPING_ADDRESS,
+			} );
+
+			expect( data.billing_address ).toEqual( {
+				first_name: 'Merchant',
+				last_name: 'Set',
+				company: '',
+				address_1: '1 Wallet Street',
+				address_2: '',
+				city: 'London',
+				state: '',
+				postcode: 'SW1A 1AA',
+				country: 'GB',
+				email: 'shopper@order.com',
+				phone: '5551234567',
+			} );
+		} );
+
+		it( "keeps the order's own shipping address", async () => {
+			const data = await placeOrderFor( {
+				billing_address: BLANK_BILLING_ADDRESS,
+				shipping_address: {
+					...BLANK_SHIPPING_ADDRESS,
+					address_1: '2 Order Road',
+					city: 'Paris',
+					postcode: '75001',
+					country: 'FR',
+				},
+			} );
+
+			expect( data.shipping_address ).toEqual( {
+				first_name: '',
+				last_name: '',
+				company: '',
+				address_1: '2 Order Road',
+				address_2: '',
+				city: 'Paris',
+				state: '',
+				postcode: '75001',
+				country: 'FR',
+				phone: '5551234567',
+			} );
+		} );
+	} );
+
 	it( 'authorizes a later attempt (e.g. switching express method) once the order has been placed', async () => {
 		const api = new ExpressCheckoutOrderApi( {
 			orderId: '1',
@@ -326,10 +459,12 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			billing_address: {
 				first_name: 'Fake',
 				last_name: 'Test',
+				country: 'US',
 			},
 			shipping_address: {
 				first_name: 'Test',
 				last_name: 'Fake',
+				country: 'US',
 			},
 		} );
 		await api.getCart();
