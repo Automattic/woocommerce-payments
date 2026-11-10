@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Stop a saved dispute cover letter from being wrongly marked as edited when store settings load late or the merchant returns on a later day.
+Stop showing the manual-edit warning on an untouched dispute cover letter, so the letter keeps updating with the evidence.
