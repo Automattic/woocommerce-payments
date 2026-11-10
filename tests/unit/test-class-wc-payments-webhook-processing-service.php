@@ -11,7 +11,9 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Database_Cache;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -49,6 +51,21 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 * The intent of an authorization the `amount_capturable_updated` tests send.
 	 */
 	const AUTHORIZATION_INTENT_ID = 'pi_mock';
+
+	/**
+	 * The intent of a later attempt the order is waiting on.
+	 */
+	const CURRENT_INTENT_ID = 'pi_current_attempt';
+
+	/**
+	 * The intent of an authorization the `charge.expired` tests send.
+	 */
+	const EXPIRED_INTENT_ID = 'pi_expired';
+
+	/**
+	 * The charge of that authorization.
+	 */
+	const EXPIRED_CHARGE_ID = 'ch_expired';
 
 	/**
 	 * System under test.
@@ -708,7 +725,70 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cod', $order->get_payment_method() );
 		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*refund/', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*paid with another payment method/', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * When the takeover could not cancel the earlier attempt, its payment can succeed on an order the other
+	 * gateway hasn't paid. That gateway may still be taking its own payment, so the order keeps its status, and
+	 * the note asks the merchant to check it before keeping or refunding this payment.
+	 *
+	 * @dataProvider provider_unpaid_order_statuses
+	 *
+	 * @param string $status          The status the order is in when the payment succeeds.
+	 * @param string $expected_status The order's status afterwards.
+	 */
+	public function test_payment_intent_succeeded_leaves_an_unpaid_order_for_an_attempt_from_before_another_gateway_took_it( string $status, string $expected_status ) {
+		$order = $this->create_order_taken_over_by_another_gateway( $status );
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( $expected_status, $order->get_status() );
+		$this->assertSame( 'cod', $order->get_payment_method() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*switched to another payment method.*If that payment method has paid or authorized this order, refund this payment/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A redelivered event for a late payment the order already records leaves the order with a single note.
+	 */
+	public function test_payment_intent_succeeded_notes_a_late_payment_once_when_the_event_is_redelivered() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_wcpay_superseded_payment_succeeded' ) );
+		$this->assertSame( 1, substr_count( $this->get_order_notes_text( $order ), 'switched to another payment method' ) );
+	}
+
+	public function provider_unpaid_order_statuses(): array {
+		return [
+			'Pending'   => [ Order_Status::PENDING, 'pending' ],
+			'Failed'    => [ Order_Status::FAILED, 'failed' ],
+			'On hold'   => [ Order_Status::ON_HOLD, 'on-hold' ],
+			'Cancelled' => [ Order_Status::CANCELLED, 'cancelled' ],
+		];
+	}
+
+	/**
+	 * A pending order with a successful payment from before the takeover isn't cancelled as unpaid when the stock
+	 * hold runs out, so the shopper isn't charged for a cancelled order.
+	 */
+	public function test_payment_intent_succeeded_keeps_a_pending_order_from_the_unpaid_order_cancel() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		/** This filter is documented in WooCommerce's wc_cancel_unpaid_orders(). */
+		$this->assertFalse( apply_filters( 'woocommerce_cancel_unpaid_order', true, wc_get_order( $order->get_id() ) ) );
 	}
 
 	/**
@@ -762,7 +842,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'processing', $order->get_status() );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_late_payment.*refund/s', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*paid with another payment method/s', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
@@ -4072,6 +4152,76 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A failed order keeps that status when the shopper retries it on the classic checkout or the order-pay page,
+	 * so an authorization after 3DS the browser never reported puts it on hold too.
+	 */
+	public function test_amount_capturable_updated_puts_failed_order_on_hold() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::FAILED );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A cancelled order is not reopened by an authorization.
+	 */
+	public function test_amount_capturable_updated_leaves_cancelled_order_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::CANCELLED );
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+	}
+
+	/**
+	 * An authorization from an earlier attempt leaves a pending order waiting on a later payment alone, so that
+	 * payment's own return still matches the order, and the merchant gets a note naming both payments.
+	 */
+	public function test_amount_capturable_updated_ignores_an_attempt_the_order_is_not_waiting_on() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', self::CURRENT_INTENT_ID );
+		$order->save();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( 'pi_current_attempt', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*was authorized, but this order is waiting on payment.*pi_current_attempt/s', $this->get_order_notes_text( $order ) );
+		// The order can still be updated with this payment by the request that created it, so the note is conditional.
+		$this->assertMatchesRegularExpression( '/Unless the order is later updated with payment.*pi_mock.*expires on its own/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An authorization of the payment the order is waiting on puts it on hold.
+	 */
+	public function test_amount_capturable_updated_puts_on_hold_the_order_waiting_on_that_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', self::AUTHORIZATION_INTENT_ID );
+		$order->save();
+		$this->set_up_amount_capturable_updated_event( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
+	}
+
+	/**
 	 * Tests that an order the browser already put On hold is left as it is.
 	 */
 	public function test_amount_capturable_updated_leaves_on_hold_order_unchanged() {
@@ -4149,7 +4299,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
 		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
 		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment method/s', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was switched to another payment method, so the order was not updated/s', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
@@ -4167,7 +4317,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'pending', $order->get_status() );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment method/s', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was switched to another payment method, so the order was not updated/s', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
@@ -4180,6 +4330,197 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 
 		$this->assertSame( 'on-hold', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	/**
+	 * An expired authorization fails its order when the order never got the charge ID,
+	 * and stores the charge ID so later webhooks find the order.
+	 *
+	 * @dataProvider provider_charge_expired_order_statuses_waiting_for_payment
+	 *
+	 * @param string $status The order status before the authorization expires.
+	 */
+	public function test_charge_expired_fails_order_without_charge_id( string $status ) {
+		$order = $this->create_order_for_charge_expired( $status, WC_Payment_Gateway_WCPay::GATEWAY_ID, '' );
+		$this->set_up_charge_expired_event( $order );
+		$this->mock_wcpay_request( Get_Intention::class, 1, self::EXPIRED_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'     => self::EXPIRED_INTENT_ID,
+						'status' => Intent_Status::CANCELED,
+					]
+				)
+			);
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'failed', $order->get_status() );
+		$this->assertSame( 'ch_expired', $order->get_meta( '_charge_id' ) );
+	}
+
+	public function provider_charge_expired_order_statuses_waiting_for_payment(): array {
+		return [
+			'On hold' => [ Order_Status::ON_HOLD ],
+			'Pending' => [ Order_Status::PENDING ],
+		];
+	}
+
+	/**
+	 * When fetching the intent fails, the charge ID isn't stored yet, so the server's retry
+	 * finds the order by its intent again and checks it again.
+	 */
+	public function test_charge_expired_does_not_store_charge_id_when_intent_request_fails() {
+		$order = $this->create_order_for_charge_expired( Order_Status::ON_HOLD, WC_Payment_Gateway_WCPay::GATEWAY_ID, '' );
+		$this->set_up_charge_expired_event( $order );
+		$this->mock_wcpay_request( Get_Intention::class, 1, self::EXPIRED_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Server error.', 'server_error', 500 ) );
+
+		try {
+			$this->webhook_processing_service->process( $this->event_body );
+			$this->fail( 'The failed request should reach the server as an error, so that it retries.' );
+		} catch ( API_Exception $e ) {
+			$this->assertSame( 'server_error', $e->get_error_code() );
+		}
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_charge_id' ) );
+	}
+
+	/**
+	 * An expired authorization that matches no order is an error.
+	 */
+	public function test_charge_expired_throws_when_no_order_matches() {
+		$this->set_up_charge_expired_event( null );
+
+		$this->expectException( Invalid_Payment_Method_Exception::class );
+		$this->expectExceptionMessage( 'Could not find order via charge ID: ch_expired' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * An expired authorization leaves alone an order found by its intent that no longer waits for that payment,
+	 * without an error that would make the server send the event again.
+	 *
+	 * @dataProvider provider_charge_expired_orders_not_waiting_for_payment
+	 *
+	 * @param string $status         The order status.
+	 * @param string $payment_method The order's payment method.
+	 * @param string $charge_id      The charge ID stored on the order.
+	 */
+	public function test_charge_expired_leaves_order_not_waiting_for_payment( string $status, string $payment_method, string $charge_id ) {
+		$order = $this->create_order_for_charge_expired( $status, $payment_method, $charge_id );
+		$this->set_up_charge_expired_event( $order );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( $status, $order->get_status() );
+		$this->assertSame( $charge_id, $order->get_meta( '_charge_id' ) );
+	}
+
+	public function provider_charge_expired_orders_not_waiting_for_payment(): array {
+		return [
+			'Processing'         => [ Order_Status::PROCESSING, WC_Payment_Gateway_WCPay::GATEWAY_ID, '' ],
+			'Cancelled'          => [ Order_Status::CANCELLED, WC_Payment_Gateway_WCPay::GATEWAY_ID, '' ],
+			'Has another charge' => [ Order_Status::ON_HOLD, WC_Payment_Gateway_WCPay::GATEWAY_ID, 'ch_other' ],
+		];
+	}
+
+	/**
+	 * An expired authorization leaves an order the shopper paid another way as it is, and notes it.
+	 * The order stores the canceled intent status, so completing it later doesn't fetch the intent.
+	 *
+	 * @dataProvider provider_charge_expired_stored_charge_ids
+	 *
+	 * @param string $stored_charge_id The charge ID stored on the order.
+	 */
+	public function test_charge_expired_notes_order_paid_with_another_gateway( string $stored_charge_id ) {
+		$order = $this->create_order_for_charge_expired( Order_Status::ON_HOLD, 'bacs', $stored_charge_id );
+		$this->set_up_charge_expired_event( $order, '' !== $stored_charge_id );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( $stored_charge_id, $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'canceled', $order->get_meta( '_intention_status' ) );
+		$this->assertStringContainsString( 'This order now uses another payment method, so its status was not changed.', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A repeated expiry event for an order paid another way doesn't repeat the note.
+	 */
+	public function test_charge_expired_notes_order_paid_with_another_gateway_once() {
+		$order = $this->create_order_for_charge_expired( Order_Status::ON_HOLD, 'bacs', self::EXPIRED_CHARGE_ID );
+		$this->set_up_charge_expired_event( $order, true );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 1, substr_count( $this->get_order_notes_text( $order ), 'This order now uses another payment method' ) );
+	}
+
+	public function provider_charge_expired_stored_charge_ids(): array {
+		return [
+			'Found by charge ID' => [ self::EXPIRED_CHARGE_ID ],
+			'Found by intent ID' => [ '' ],
+		];
+	}
+
+	/**
+	 * Creates an order whose WooPayments authorization is about to expire.
+	 *
+	 * @param string $status         The order status.
+	 * @param string $payment_method The order's payment method.
+	 * @param string $charge_id      The charge ID stored on the order.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_for_charge_expired( string $status, string $payment_method, string $charge_id ): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( $payment_method );
+		$order->set_status( $status );
+		$order->update_meta_data( '_intent_id', self::EXPIRED_INTENT_ID );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Sets up a `charge.expired` event for an order.
+	 *
+	 * @param WC_Order|null $order           The order the lookups find, or null when neither finds one.
+	 * @param bool          $found_by_charge Whether the lookup by charge finds the order, or only the one by intent.
+	 */
+	private function set_up_charge_expired_event( ?WC_Order $order, bool $found_by_charge = false ) {
+		$this->event_body['type']           = 'charge.expired';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => self::EXPIRED_CHARGE_ID,
+			'payment_intent' => self::EXPIRED_INTENT_ID,
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'ch_expired' )
+			->willReturn( $found_by_charge ? $order : false );
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_expired' )
+			->willReturn( $order ?? false );
 	}
 
 	/**

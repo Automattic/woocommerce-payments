@@ -34,6 +34,7 @@ class WC_Payments_Features {
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
+	const STRIPE_JS_DAHLIA_FLAG_NAME                          = '_wcpay_feature_stripe_js_dahlia';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -464,6 +465,15 @@ class WC_Payments_Features {
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 
 		return is_array( $account ) && ! ( $account['ece_confirmation_tokens_disabled'] ?? false );
+	}
+
+	/**
+	 * Checks whether Stripe.js should load from the Dahlia release instead of v3. Disabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_js_dahlia_enabled(): bool {
+		return '1' === get_option( self::STRIPE_JS_DAHLIA_FLAG_NAME, '0' );
 	}
 
 	/**

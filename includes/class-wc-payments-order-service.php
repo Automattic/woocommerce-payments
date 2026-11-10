@@ -18,6 +18,7 @@ use WCPay\Logger;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Internal\Service\Level3Service;
 use WCPay\Constants\Order_Mode;
 
 defined( 'ABSPATH' ) || exit;
@@ -119,6 +120,14 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const SUPERSEDED_INTENT_IDS_META_KEY = '_wcpay_superseded_intent_ids';
+
+	/**
+	 * Meta key holding the intent of a WooPayments attempt that succeeded after another gateway took the order
+	 * over. The payment isn't attached to the order, so the merchant keeps or refunds it.
+	 *
+	 * @const string
+	 */
+	const SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY = '_wcpay_superseded_payment_succeeded';
 
 	/**
 	 * Meta key used to store WCPay fraud meta box type.
@@ -336,6 +345,7 @@ class WC_Payments_Order_Service {
 		// Keep these below 50: WooCommerce Subscriptions copies the order's meta into switches and new subscriptions at 50 and 100.
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'maybe_remove_payment_details_for_other_gateway' ] );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'maybe_remove_payment_details_for_other_gateway' ] );
+		add_filter( 'woocommerce_cancel_unpaid_order', [ $this, 'keep_order_with_superseded_payment' ], 10, 2 );
 
 		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
 		// test-mode sale is noticed before fulfilment. The mode is read from the order meta at
@@ -1320,6 +1330,30 @@ class WC_Payments_Order_Service {
 		$taken_over_at = (int) $order->get_meta( self::PAYMENT_DETAILS_REMOVED_META_KEY );
 
 		return 0 < $taken_over_at && 0 < $intent_created_at && $intent_created_at < $taken_over_at;
+	}
+
+	/**
+	 * Keeps an unpaid order out of WooCommerce's unpaid order cancel once a WooPayments payment from before
+	 * another gateway took it over has succeeded, so that payment isn't left on a cancelled order while the
+	 * merchant decides whether to keep or refund it.
+	 *
+	 * @internal
+	 *
+	 * @param mixed $cancel Whether WooCommerce cancels the order.
+	 * @param mixed $order  The unpaid order.
+	 *
+	 * @return mixed
+	 */
+	public function keep_order_with_superseded_payment( $cancel, $order ) {
+		if ( ! $order instanceof WC_Order ) {
+			return $cancel;
+		}
+
+		if ( '' === (string) $order->get_meta( self::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY ) ) {
+			return $cancel;
+		}
+
+		return false;
 	}
 
 	/**
@@ -2327,13 +2361,29 @@ class WC_Payments_Order_Service {
 		$order = wc_get_order( $order_id );
 
 		if ( $order instanceof WC_Order ) {
-			$intent_id = $this->get_intent_id_for_order( $order );
-			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
+			$intent_id            = $this->get_intent_id_for_order( $order );
+			$cached_intent_status = $this->get_intention_status_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $cached_intent_status, self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
 					$intent = $request->send();
 					$charge = $intent->get_charge();
+
+					// WooCommerce has already completed the order by now, so the merchant can only be told.
+					// An order moved to another payment method may well be paid, so it gets no note.
+					if (
+						Intent_Status::REQUIRES_CAPTURE === $cached_intent_status
+						&& Intent_Status::CANCELED === $intent->get_status()
+						&& 0 === strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID )
+					) {
+						$order->add_order_note(
+							WC_Payments_Utils::esc_interpolated_html(
+								__( '<strong>No payment was captured.</strong> The authorization expired or was canceled before the order was completed, so this order is not paid.', 'woocommerce-payments' ),
+								[ 'strong' => '<strong>' ]
+							)
+						);
+					}
 
 					/**
 					 * Successful but not captured Charge is an authorization
@@ -2346,6 +2396,11 @@ class WC_Payments_Order_Service {
 					) {
 							$request = Capture_Intention::create( $intent_id );
 							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+							// Without fresh Level 3 data, Stripe checks the capture against the data saved at
+							// authorization and refuses an edited total. Same Level 3 rule as capture_charge().
+						if ( 'woocommerce_payments_amazon_pay' !== $order->get_payment_method() ) {
+							$request->set_level3( wcpay_get_container()->get( Level3Service::class )->get_data_from_order( $order->get_id() ) );
+						}
 							$request->set_hook_args( $order );
 							$intent = $request->send();
 

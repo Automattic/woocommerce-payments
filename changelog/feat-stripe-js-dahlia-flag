@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Load Stripe.js Dahlia behind a feature flag, and stop loading Stripe.js twice on the settings page.

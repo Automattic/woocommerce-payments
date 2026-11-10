@@ -1237,6 +1237,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			// subscription or its renewals.
 			WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY,
 			WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY,
+			WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY,
 		];
 	}
 
