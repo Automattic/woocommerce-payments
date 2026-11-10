@@ -1040,6 +1040,43 @@ ${ data.merchantName }`;
 
 // --- Main Cover Letter Generation ---
 
+const getTodayFormatted = (): string =>
+	formatDateTimeFromTimestamp( Math.floor( Date.now() / 1000 ), {
+		separator: ', ',
+		includeTime: false,
+	} );
+
+/**
+ * Compares a saved cover letter with one generated now, ignoring the date line, which changes
+ * every day. Without this, a letter saved on an earlier day would look hand-edited and stop
+ * updating with the evidence.
+ *
+ * @param savedLetter     The cover letter saved with the dispute evidence.
+ * @param generatedLetter A cover letter generated now from the same evidence.
+ * @return Whether the letters match apart from the date line.
+ */
+export const isSameCoverLetterIgnoringDate = (
+	savedLetter: string,
+	generatedLetter: string
+): boolean => {
+	if ( savedLetter === generatedLetter ) {
+		return true;
+	}
+	const savedLines = savedLetter.split( '\n' );
+	const generatedLines = generatedLetter.split( '\n' );
+	if ( savedLines.length !== generatedLines.length ) {
+		return false;
+	}
+	// Find the date by its content: the merchant address above it can span several lines.
+	const dateLineIndex = generatedLines.indexOf( getTodayFormatted() );
+	if ( dateLineIndex === -1 ) {
+		return false;
+	}
+	savedLines.splice( dateLineIndex, 1 );
+	generatedLines.splice( dateLineIndex, 1 );
+	return savedLines.join( '\n' ) === generatedLines.join( '\n' );
+};
+
 export const generateCoverLetter = (
 	dispute: ExtendedDispute,
 	accountDetails: AccountDetails,
@@ -1049,11 +1086,6 @@ export const generateCoverLetter = (
 	duplicateStatus?: string,
 	productType?: string
 ): string => {
-	const todayUnixTimestamp = Math.floor( Date.now() / 1000 );
-	const todayFormatted = formatDateTimeFromTimestamp( todayUnixTimestamp, {
-		separator: ', ',
-		includeTime: false,
-	} );
 	const data: CoverLetterData = {
 		merchantAddress: formatMerchantAddress( accountDetails ),
 		merchantName: accountDetails.name,
@@ -1063,7 +1095,7 @@ export const generateCoverLetter = (
 		merchantPhone:
 			settings?.account_business_support_phone ||
 			__( '<Business Phone Number>', 'woocommerce-payments' ),
-		today: todayFormatted,
+		today: getTodayFormatted(),
 		acquiringBank: bankName || __( '<Bank Name>', 'woocommerce-payments' ),
 		caseNumber:
 			dispute?.id || __( '<Case Number>', 'woocommerce-payments' ),

@@ -1029,6 +1029,74 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 			).not.toBeInTheDocument();
 		} );
 
+		describe( 'saved on an earlier day', () => {
+			const TODAY = Date.UTC( 2026, 10, 10, 12 );
+			const YESTERDAY = Date.UTC( 2026, 10, 9, 12 );
+
+			const getLetterSavedYesterday = async () => {
+				jest.spyOn( Date, 'now' ).mockReturnValue( YESTERDAY );
+				const letter = (
+					( await openCoverLetter() ) as HTMLTextAreaElement
+				 ).value;
+				cleanup();
+				jest.spyOn( Date, 'now' ).mockReturnValue( TODAY );
+				return letter;
+			};
+
+			afterEach( () => {
+				jest.restoreAllMocks();
+			} );
+
+			it( 'regenerates an untouched letter', async () => {
+				mockApiFetch.mockResolvedValue( {
+					...regularDispute,
+					evidence: {
+						uncategorized_text: await getLetterSavedYesterday(),
+					},
+				} );
+
+				render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+				fireEvent.change(
+					await screen.findByLabelText(
+						'PRODUCT OR SERVICE DESCRIPTION'
+					),
+					{ target: { value: 'Handmade mug' } }
+				);
+				fireEvent.click(
+					screen.getByRole( 'button', { name: 'Next' } )
+				);
+				const coverLetter = ( await screen.findByLabelText(
+					'COVER LETTER'
+				) ) as HTMLTextAreaElement;
+
+				expect( coverLetter.value ).toContain(
+					'ordered Handmade mug on'
+				);
+				expect(
+					screen.queryByRole( 'button', {
+						name: 'Restore generated letter',
+					} )
+				).not.toBeInTheDocument();
+			} );
+
+			it( 'keeps flagging a letter the merchant edited', async () => {
+				const editedLetter = `${ await getLetterSavedYesterday() }\nP.S. Thank you.`;
+				mockApiFetch.mockResolvedValue( {
+					...regularDispute,
+					evidence: { uncategorized_text: editedLetter },
+				} );
+
+				const coverLetter = await openCoverLetter();
+
+				expect( coverLetter ).toHaveValue( editedLetter );
+				expect(
+					screen.getByRole( 'button', {
+						name: 'Restore generated letter',
+					} )
+				).toBeInTheDocument();
+			} );
+		} );
+
 		it( 'stays empty after the merchant clears it', async () => {
 			const coverLetter = await openCoverLetter();
 

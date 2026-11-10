@@ -31,6 +31,7 @@ import { encodePathSegment } from 'utils/path-segment';
 import {
 	generateCoverLetter,
 	getBusinessDetails,
+	isSameCoverLetterIgnoringDate,
 } from './cover-letter-generator';
 import { useDisputeEvidence } from 'wcpay/data/disputes';
 import { useGetSettings, useSettings } from 'wcpay/data/settings';
@@ -280,7 +281,10 @@ export default ( { query }: { query: { id: string } } ) => {
 							suggestedProductType
 						);
 						setIsCoverLetterManuallyEdited(
-							savedCoverLetter !== generatedContent
+							! isSameCoverLetterIgnoringDate(
+								savedCoverLetter,
+								generatedContent
+							)
 						);
 					}
 				} else if (
