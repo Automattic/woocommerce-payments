@@ -118,7 +118,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":warning: Latest Plugin Check fails on develop",
+                    "text": ":warning: Weekly Plugin Check run failed on develop",
                     "emoji": true
                   }
                 },
@@ -126,7 +126,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "The weekly run with the latest Plugin Check release failed. PRs still use the pinned version, so nothing is blocked yet. Fix the findings, then bump the pin in `.github/workflows/plugin-check.yml`."
+                    "text": "The weekly Plugin Check run failed. Check the run for the cause."
                   }
                 },
                 {
