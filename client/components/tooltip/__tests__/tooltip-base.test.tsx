@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from 'jest-utils/user-event-timers';
 
 /**
@@ -72,6 +72,32 @@ describe( 'TooltipBase', () => {
 
 		expect( screen.queryByText( 'Trigger element' ) ).toBeInTheDocument();
 		expect( handleHideMock ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows the tooltip synchronously on the render after isVisible flips to true', () => {
+		// Pin for WOOPMNT-6292: useHideDelay must mirror the isVisible prop to
+		// state in the same render tick so the tooltip DOM is present on the
+		// first render after the prop flips (no cascading effect render).
+		const { rerender } = render(
+			<TooltipBase isVisible={ false } content="Tooltip content">
+				<span>Trigger element</span>
+			</TooltipBase>
+		);
+
+		expect( screen.queryByRole( 'tooltip' ) ).not.toBeInTheDocument();
+
+		act( () => {
+			rerender(
+				<TooltipBase isVisible content="Tooltip content">
+					<span>Trigger element</span>
+				</TooltipBase>
+			);
+		} );
+
+		// Must be present synchronously after the rerender — no findBy / no
+		// awaiting of effects. The role query is used (not text) because the
+		// test does not need to be coupled to the content string.
+		expect( screen.getByRole( 'tooltip' ) ).toBeInTheDocument();
 	} );
 
 	it( 'calls onHide when an external element is clicked', async () => {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Lint: fix react-hooks/refs in shared tooltip, accordion, and grouped select components (WOOPMNT-6292)
