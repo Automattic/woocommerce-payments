@@ -2705,7 +2705,8 @@ class WC_Payments_Order_Service {
 			} else {
 				$authorized_amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $authorized_amount, $intent_currency );
 			}
-			if ( $this->intent_amount_below_order_total( $intent, $order ) ) {
+			// Processing intents (async methods like SEPA) aren't waiting on a manual capture.
+			if ( Intent_Status::REQUIRES_CAPTURE === $intent->get_status() && $this->intent_amount_below_order_total( $intent, $order ) ) {
 				$total_warning = ' ' . sprintf(
 					/* translators: %1: the order total */
 					esc_html__( 'The order total, %1$s, is higher than the authorized amount, so capturing the full total will fail. Lower the order total or cancel the authorization.', 'woocommerce-payments' ),

@@ -1502,6 +1502,24 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_payment_authorized_note_has_no_warning_when_intent_is_processing() {
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => self::AUTHORIZED_AMOUNT,
+				'status' => Intent_Status::PROCESSING,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertStringContainsString( 'A payment of $12.00 was authorized', $note_text );
+		$this->assertStringNotContainsString( 'The order total', $note_text );
+	}
+
 	public function test_payment_authorized_note_has_no_warning_when_currencies_differ() {
 		$this->order->set_currency( Currency_Code::CANADIAN_DOLLAR );
 		$this->order->set_total( self::RAISED_ORDER_TOTAL );
