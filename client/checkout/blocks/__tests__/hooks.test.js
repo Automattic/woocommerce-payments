@@ -46,18 +46,35 @@ describe( 'usePaymentFailHandler', () => {
 		} );
 	} );
 
-	it( 'should fall back to the default Blocks notice when there is no error message', () => {
-		renderHook( () =>
+	it.each( [
+		[ 'an empty error message', { paymentDetails: { errorMessage: '' } } ],
+		[ 'no error message', { paymentDetails: {} } ],
+		[ 'empty payment details', { paymentDetails: [] } ],
+		[ 'no payment details', {} ],
+		[ 'no processing response', null ],
+	] )(
+		'should fall back to the default Blocks notice when there is %s',
+		( _, processingResponse ) => {
+			renderHook( () =>
+				usePaymentFailHandler( mockOnCheckoutFail, mockEmitResponse )
+			);
+
+			const failHandler = mockOnCheckoutFail.mock.calls[ 0 ][ 0 ];
+
+			expect( failHandler( { processingResponse } ) ).toBe( true );
+		}
+	);
+
+	it( 'should remove the observer on unmount', () => {
+		const unsubscribe = jest.fn();
+		mockOnCheckoutFail.mockReturnValue( unsubscribe );
+
+		const { unmount } = renderHook( () =>
 			usePaymentFailHandler( mockOnCheckoutFail, mockEmitResponse )
 		);
+		unmount();
 
-		const failHandler = mockOnCheckoutFail.mock.calls[ 0 ][ 0 ];
-
-		expect(
-			failHandler( { processingResponse: { paymentDetails: {} } } )
-		).toBe( true );
-		expect( failHandler( { processingResponse: {} } ) ).toBe( true );
-		expect( failHandler( { processingResponse: null } ) ).toBe( true );
+		expect( unsubscribe ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
 
