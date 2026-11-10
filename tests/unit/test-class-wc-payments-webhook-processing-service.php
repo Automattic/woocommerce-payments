@@ -735,6 +735,22 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*switched to another payment method.*If that payment method has paid or authorized this order, refund this payment/s', $this->get_order_notes_text( $order ) );
 	}
 
+	/**
+	 * A redelivered event for a late payment the order already records leaves the order with a single note.
+	 */
+	public function test_payment_intent_succeeded_notes_a_late_payment_once_when_the_event_is_redelivered() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PENDING );
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_wcpay_superseded_payment_succeeded' ) );
+		$this->assertSame( 1, substr_count( $this->get_order_notes_text( $order ), 'switched to another payment method' ) );
+	}
+
 	public function provider_unpaid_order_statuses(): array {
 		return [
 			'Pending'   => [ Order_Status::PENDING, 'pending' ],

@@ -611,6 +611,11 @@ class WC_Payments_Webhook_Processing_Service {
 		// 3DS. The order keeps its status, since the other gateway may still be taking its own payment, and some,
 		// such as WooCommerce Stripe, don't record a payment on an order on hold. Instead, the order is kept out of
 		// WooCommerce's unpaid order cancel, which would otherwise leave this payment on a cancelled order.
+		// A redelivered event for a payment already recorded on the order would only repeat its note.
+		if ( $intent_id === (string) $order->get_meta( WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY ) ) {
+			return;
+		}
+
 		if ( $this->skip_superseded_attempt(
 			$order,
 			$event_object,
