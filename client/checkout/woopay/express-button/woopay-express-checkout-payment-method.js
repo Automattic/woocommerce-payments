@@ -1,69 +1,45 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect, useRef } from 'react';
-import { createRoot } from 'react-dom/client';
+import { lazy, Suspense } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import { getConfig } from '../../../utils/checkout';
-import WCPayAPI from '../../api';
-import request from '../../utils/request';
-import usePreferredCard from './use-preferred-card';
 
 export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
 	'woocommerce_payments_woopay_express_checkout';
 
-// Create an API object, which will be used throughout the checkout.
-const api = new WCPayAPI(
-	{
-		publishableKey: getConfig( 'publishableKey' ),
-		accountId: getConfig( 'accountId' ),
-		forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
-		locale: getConfig( 'locale' ),
-	},
-	request
+// Only the button code loads on demand, keeping it out of the checkout bundle on stores without WooPay.
+// The method itself must register synchronously: WC Blocks checks express methods on first render and
+// again only on cart changes, so a method registered after an async import may never appear.
+const LazyButtonContainer = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "woopay-express-checkout-button" */ './woopay-express-checkout-button-container'
+		)
+);
+const LazyButtonPreview = lazy( () =>
+	import(
+		/* webpackChunkName: "woopay-express-checkout-button" */ './woopay-express-checkout-button'
+	).then( ( { WoopayExpressCheckoutButton } ) => ( {
+		default: WoopayExpressCheckoutButton,
+	} ) )
 );
 
-const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
-	const preferredCard = usePreferredCard();
+const WooPayExpressCheckoutButtonContainer = ( props ) => (
+	<Suspense fallback={ null }>
+		<LazyButtonContainer { ...props } />
+	</Suspense>
+);
 
-	const rootRef = useRef( null );
-
-	useEffect( () => {
-		return () => {
-			const root = rootRef.current;
-			rootRef.current = null;
-			// Defer unmount to avoid race with React's own unmount cycle.
-			setTimeout( () => root?.unmount(), 0 );
-		};
-	}, [] );
-
-	const onRefChange = useCallback( ( node ) => {
-		if ( node && ! rootRef.current ) {
-			rootRef.current = createRoot( node );
-		}
-	}, [] );
-
-	useEffect( () => {
-		if ( rootRef.current ) {
-			rootRef.current.render(
-				<WoopayExpressCheckoutButton
-					buttonSettings={ getConfig( 'woopayButton' ) }
-					api={ api }
-					emailSelector="#email"
-					buttonAttributes={ buttonAttributes }
-					preferredCard={ preferredCard }
-				/>
-			);
-		}
-	}, [ buttonAttributes, preferredCard ] );
-
-	return <div ref={ onRefChange } />;
-};
+const WooPayExpressCheckoutButtonPreview = ( props ) => (
+	<Suspense fallback={ null }>
+		<LazyButtonPreview { ...props } />
+	</Suspense>
+);
 
 const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
@@ -75,7 +51,7 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 	gatewayId: 'woocommerce_payments',
 	content: <WooPayExpressCheckoutButtonContainer />,
 	edit: (
-		<WoopayExpressCheckoutButton
+		<WooPayExpressCheckoutButtonPreview
 			buttonSettings={ getConfig( 'woopayButton' ) }
 			isPreview={ true }
 			emailSelector="#email"

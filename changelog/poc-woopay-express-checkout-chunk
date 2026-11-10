@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+perf: load WooPay checkout code only on stores that use WooPay.
