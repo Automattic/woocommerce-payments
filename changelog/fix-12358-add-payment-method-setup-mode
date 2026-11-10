@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed the Add payment method page not loading the card form when the shopper's cart total was over the maximum Stripe accepts.

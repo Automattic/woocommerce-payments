@@ -387,6 +387,78 @@ describe( 'Stripe Payment Element mounting', () => {
 		);
 	} );
 
+	// The Add payment method page charges nothing, so it must not ask Stripe
+	// for a payment whatever the shopper has in the cart.
+	// https://github.com/Automattic/woocommerce-payments/issues/12358
+	describe( 'element mode', () => {
+		const OVER_STRIPE_LIMIT = 100000000;
+		const CART_TOTAL = 4500;
+
+		const mockConfigWithCartTotal = ( cartTotal ) =>
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'paymentMethodsConfig' ) {
+					return {
+						card: {
+							label: 'Card',
+							forceNetworkSavedCards: true,
+						},
+					};
+				}
+
+				if ( argument === 'currency' ) {
+					return 'eur';
+				}
+
+				if ( argument === 'cartTotal' ) {
+					return cartTotal;
+				}
+			} );
+
+		beforeEach( () => {
+			getFingerprint.mockImplementation( () => 'fingerprint' );
+			__resetGatewayUPEComponentsElement( 'card' );
+			mockDomElement.dataset.paymentMethodType = 'card';
+		} );
+
+		test( 'is setup on the add payment method page whatever the cart total is', async () => {
+			mockConfigWithCartTotal( OVER_STRIPE_LIMIT );
+
+			await mountStripePaymentElement(
+				apiMock,
+				mockDomElement,
+				'add_payment_method'
+			);
+
+			expect( mockElements ).toHaveBeenCalledWith(
+				expect.objectContaining( { mode: 'setup', amount: 0 } )
+			);
+		} );
+
+		test( 'is payment for the cart total on the checkout', async () => {
+			mockConfigWithCartTotal( CART_TOTAL );
+
+			await mountStripePaymentElement(
+				apiMock,
+				mockDomElement,
+				'shortcode_checkout'
+			);
+
+			expect( mockElements ).toHaveBeenCalledWith(
+				expect.objectContaining( { mode: 'payment', amount: 4500 } )
+			);
+		} );
+
+		test( 'still follows the cart total when the location is unknown', async () => {
+			mockConfigWithCartTotal( CART_TOTAL );
+
+			await mountStripePaymentElement( apiMock, mockDomElement );
+
+			expect( mockElements ).toHaveBeenCalledWith(
+				expect.objectContaining( { mode: 'payment', amount: 4500 } )
+			);
+		} );
+	} );
+
 	describe( 'updateLinkEmail', () => {
 		beforeEach( async () => {
 			isLinkEnabled.mockReturnValue( true );
