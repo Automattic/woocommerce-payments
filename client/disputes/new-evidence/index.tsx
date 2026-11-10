@@ -33,7 +33,7 @@ import {
 	getBusinessDetails,
 } from './cover-letter-generator';
 import { useDisputeEvidence } from 'wcpay/data/disputes';
-import { useGetSettings } from 'wcpay/data/settings';
+import { useGetSettings, useSettings } from 'wcpay/data/settings';
 // The only dispatch made through this store handle invalidates getPaymentIntent,
 // which now lives in the payment-intents store.
 import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
@@ -135,6 +135,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 	const settings = useGetSettings();
+	const { isLoading: isLoadingSettings } = useSettings();
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 	const [ refundStatus, setRefundStatus ] = useState(
 		'refund_has_been_issued'
@@ -157,6 +158,13 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Data loading ---
 	useEffect( () => {
+		// A saved letter counts as hand-edited when it differs from one generated now, and the
+		// generated letter includes the support email and phone from settings. Comparing before
+		// settings load would flag an untouched letter. A failed settings fetch still finishes
+		// resolving, so the form loads with empty settings instead of waiting forever.
+		if ( isLoadingSettings ) {
+			return;
+		}
 		const fetchDispute = async () => {
 			try {
 				setIsInitialLoading( true );
@@ -306,8 +314,9 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Load once per dispute: each run resets the form to the saved evidence, so re-running when
 		// settings or the status selections change would wipe what the merchant has typed. The
 		// evidence update effect regenerates the cover letter when those values change.
+		// isLoadingSettings flips to false once per page load, as nothing invalidates getSettings.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ disputeId ] );
+	}, [ disputeId, isLoadingSettings ] );
 
 	// --- File name display logic ---
 	useEffect( () => {

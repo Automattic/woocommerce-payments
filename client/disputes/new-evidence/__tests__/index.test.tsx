@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import {
+	act,
 	render,
 	screen,
 	fireEvent,
@@ -18,7 +19,7 @@ import { useDispatch } from '@wordpress/data';
 import NewEvidence from '../index';
 import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
 import type { DisputeReason } from 'wcpay/types/disputes';
-import { useGetSettings } from 'wcpay/data/settings';
+import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import { useDisputeEvidence } from 'wcpay/data/disputes';
 import { PAYMENT_INTENTS_STORE_NAME } from 'wcpay/data/store-names';
 
@@ -28,6 +29,7 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // Mock the data hooks
 jest.mock( 'wcpay/data/settings', () => ( {
 	useGetSettings: jest.fn(),
+	useSettings: jest.fn(),
 } ) );
 jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeEvidence: jest.fn(),
@@ -56,6 +58,9 @@ jest.mock( '@wordpress/data', () => ( {
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 const mockUseGetSettings = useGetSettings as jest.MockedFunction<
 	typeof useGetSettings
+>;
+const mockUseSettings = useSettings as jest.MockedFunction<
+	typeof useSettings
 >;
 const mockUseDisputeEvidence = useDisputeEvidence as jest.MockedFunction<
 	typeof useDisputeEvidence
@@ -119,6 +124,12 @@ Object.defineProperty( window, 'scrollTo', {
 
 // Mock window.confirm
 global.confirm = jest.fn() as jest.MockedFunction< typeof confirm >;
+
+beforeEach( () => {
+	mockUseSettings.mockReturnValue( {
+		isLoading: false,
+	} as ReturnType< typeof useSettings > );
+} );
 
 describe( 'NewEvidence - Visa Compliance Flow', () => {
 	const baseDispute = {
@@ -958,6 +969,65 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 			);
 			return screen.findByLabelText( 'COVER LETTER' );
 		};
+
+		it( 'compares a saved letter with the store settings once they load', async () => {
+			const loadedSettings = {
+				account_country: 'US',
+				account_business_name: 'Test Store',
+				account_business_support_email: 'support@test.com',
+				account_business_support_phone: '1234567890',
+			};
+			mockUseGetSettings.mockReturnValue( loadedSettings );
+			const generatedLetter = (
+				( await openCoverLetter() ) as HTMLTextAreaElement
+			 ).value;
+			cleanup();
+			let settings = {};
+			let isLoadingSettings = true;
+			mockUseGetSettings.mockImplementation( () => settings );
+			mockUseSettings.mockImplementation(
+				() =>
+					( {
+						isLoading: isLoadingSettings,
+					} ) as ReturnType< typeof useSettings >
+			);
+			mockApiFetch.mockResolvedValue( {
+				...regularDispute,
+				evidence: { uncategorized_text: generatedLetter },
+			} );
+
+			const { rerender } = render(
+				<NewEvidence query={ { id: 'dp_test_456' } } />
+			);
+			// Let the dispute request settle, so the form would show if it didn't wait for settings.
+			await act( () => Promise.resolve() );
+
+			expect(
+				screen.getByTestId( 'new-evidence-loading' )
+			).toBeInTheDocument();
+
+			settings = loadedSettings;
+			isLoadingSettings = false;
+			rerender( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+			fireEvent.change(
+				await screen.findByLabelText(
+					'PRODUCT OR SERVICE DESCRIPTION'
+				),
+				{ target: { value: 'Handmade mug' } }
+			);
+			fireEvent.click( screen.getByRole( 'button', { name: 'Next' } ) );
+
+			const coverLetter = ( await screen.findByLabelText(
+				'COVER LETTER'
+			) ) as HTMLTextAreaElement;
+
+			expect( coverLetter.value ).toContain( 'ordered Handmade mug on' );
+			expect(
+				screen.queryByRole( 'button', {
+					name: 'Restore generated letter',
+				} )
+			).not.toBeInTheDocument();
+		} );
 
 		it( 'stays empty after the merchant clears it', async () => {
 			const coverLetter = await openCoverLetter();
