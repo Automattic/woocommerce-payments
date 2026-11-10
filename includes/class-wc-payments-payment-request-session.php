@@ -166,26 +166,6 @@ class WC_Payments_Payment_Request_Session {
 	}
 
 	/**
-	 * Stops the cart cookies on requests that only read product prices and payment methods.
-	 *
-	 * Adding the product to the throwaway cart would send `woocommerce_items_in_cart`, and page caches skip shoppers
-	 * who have it, even though the cart is emptied before the response. If the shopper has a real cart, its hash
-	 * cookie would be swapped for the throwaway cart's.
-	 *
-	 * @param bool   $enabled Whether WooCommerce should set the cookie.
-	 * @param string $name    Cookie name.
-	 *
-	 * @return bool
-	 */
-	public function disable_ephemeral_cart_cookies( $enabled, $name ) {
-		if ( in_array( $name, [ 'woocommerce_items_in_cart', 'woocommerce_cart_hash' ], true ) ) {
-			return false;
-		}
-
-		return $enabled;
-	}
-
-	/**
 	 * This filter is used to add a custom session handler before processing Store API request callbacks.
 	 * This is only necessary because the Store API SessionHandler currently doesn't provide an `init_session_cookie` method.
 	 *
@@ -224,9 +204,6 @@ class WC_Payments_Payment_Request_Session {
 		add_filter( 'rest_post_dispatch', [ $this, 'store_api_headers' ] );
 		// clearing the cart contents if the request is made just to fetch product attributes and prices.
 		add_filter( 'rest_post_dispatch', [ $this, 'maybe_clear_cart_data' ], 10, 3 );
-		if ( wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] ?? '' ) ) === '1' ) {
-			add_filter( 'woocommerce_set_cookie_enabled', [ $this, 'disable_ephemeral_cart_cookies' ], 10, 2 );
-		}
 
 		require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session-handler.php';
 
