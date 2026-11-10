@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop the product page Express Checkout price lookup from setting WooCommerce cart cookies, so the page cache keeps serving the shopper.

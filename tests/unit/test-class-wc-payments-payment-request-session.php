@@ -10,11 +10,19 @@
  */
 class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 
+	const CART_HASH = 'existing-cart-hash';
+
 	/**
 	 * Previous user ID.
 	 * @var int
 	 */
 	private $previous_user_id;
+
+	/**
+	 * Names of the cookies WooCommerce tried to set, in order.
+	 * @var string[]
+	 */
+	private $sent_cookies = [];
 
 	/**
 	 * Pre-test setup
@@ -26,12 +34,18 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$this->previous_user_id = get_current_user_id();
 		wp_set_current_user( 1 );
 		WC()->cart->empty_cart();
+
+		$this->sent_cookies = [];
+		add_filter( 'woocommerce_set_cookie_enabled', [ $this, 'record_sent_cookie' ], 20, 2 );
 	}
 
 	public function tear_down() {
 		wp_set_current_user( $this->previous_user_id );
 		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] );
 		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'] );
+		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] );
+		unset( $_COOKIE['woocommerce_items_in_cart'] );
+		unset( $_COOKIE['woocommerce_cart_hash'] );
 		unset( $_SERVER['REQUEST_URI'] );
 		unset( $_REQUEST['rest_route'] );
 		// we need to manually unset the session, otherwise it'll linger between test cases.
@@ -39,6 +53,86 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		WC()->initialize_session();
 
 		parent::tear_down();
+	}
+
+	public function record_sent_cookie( $enabled, $name ) {
+		if ( $enabled ) {
+			$this->sent_cookies[] = $name;
+		}
+
+		// headers were already sent by the test runner's output.
+		return false;
+	}
+
+	/**
+	 * Runs WooCommerce's own cart cookie update.
+	 * `maybe_set_cart_cookies()` bails because the test runner has already sent output, so this skips its guards.
+	 *
+	 * @param bool $set Whether the cookies should be set, or expired.
+	 */
+	private function set_cart_cookies( $set ) {
+		$cart_session = new ReflectionProperty( WC_Cart::class, 'session' );
+		$cart_session->setAccessible( true );
+		$set_cart_cookies = new ReflectionMethod( WC_Cart_Session::class, 'set_cart_cookies' );
+		$set_cart_cookies->setAccessible( true );
+		$set_cart_cookies->invoke( $cart_session->getValue( WC()->cart ), $set );
+	}
+
+	private function init_store_api_session( $headers ) {
+		foreach ( $headers as $name => $value ) {
+			$_SERVER[ $name ] = $value;
+		}
+		$_SERVER['REQUEST_URI'] = '/index.php';
+		$_REQUEST['rest_route'] = '/wc/store/v1/cart/add-item';
+
+		$session = new WC_Payments_Payment_Request_Session();
+		$session->init();
+
+		// need to manually call this method, because otherwise WooCommerce hasn't instantiated the session when the request is made.
+		WC()->initialize_session();
+	}
+
+	public function test_ephemeral_cart_does_not_send_cart_cookies() {
+		$this->init_store_api_session(
+			[
+				'HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
+				'HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART' => '1',
+			]
+		);
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 1 );
+
+		$this->set_cart_cookies( true );
+
+		$this->assertInstanceOf( WC_Payments_Payment_Request_Session_Handler::class, WC()->session );
+		$this->assertNotContains( 'woocommerce_items_in_cart', $this->sent_cookies );
+		$this->assertNotContains( 'woocommerce_cart_hash', $this->sent_cookies );
+	}
+
+	public function test_ephemeral_cart_does_not_expire_the_real_cart_cookies() {
+		$_COOKIE['woocommerce_items_in_cart'] = '1';
+		$_COOKIE['woocommerce_cart_hash']     = self::CART_HASH;
+		$this->init_store_api_session(
+			[
+				'HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
+				'HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART' => '1',
+			]
+		);
+
+		$this->set_cart_cookies( false );
+
+		$this->assertNotContains( 'woocommerce_items_in_cart', $this->sent_cookies );
+		$this->assertNotContains( 'woocommerce_cart_hash', $this->sent_cookies );
+	}
+
+	public function test_regular_cart_sends_cart_cookies() {
+		$this->init_store_api_session( [] );
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 1 );
+
+		$this->set_cart_cookies( true );
+
+		$this->assertNotInstanceOf( WC_Payments_Payment_Request_Session_Handler::class, WC()->session );
+		$this->assertContains( 'woocommerce_items_in_cart', $this->sent_cookies );
+		$this->assertContains( 'woocommerce_cart_hash', $this->sent_cookies );
 	}
 
 	public function test_adds_tokenized_session_headers() {
