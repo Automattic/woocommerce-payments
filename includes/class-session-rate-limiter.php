@@ -9,6 +9,8 @@ namespace WCPay;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
+use WC_Order;
+
 /**
  * A wrapper class for keeping track of events in registries, and to trigger a rate limiter after a threshold.
  */
@@ -60,52 +62,126 @@ class Session_Rate_Limiter {
 	}
 
 	/**
-	 * Saves an event in an specified registry using a key.
-	 * If the number of events in the registry match the threshold,
-	 * a new rate limiter is enabled with the given delay.
+	 * Saves an event in the session registry and, when given, in the order's registry.
+	 * Once a registry holds as many events as the threshold, the rate limiter is enabled with the given delay.
 	 *
-	 * The registry of declined card attemps is cleaned after a new rate limiter is enabled.
+	 * @param WC_Order|null $order The order being paid, if any.
 	 */
-	public function bump() {
-		if ( ! isset( WC()->session ) ) {
+	public function bump( ?WC_Order $order = null ) {
+		if ( isset( WC()->session ) ) {
+			$registry   = WC()->session->get( $this->key ) ?? [];
+			$registry[] = time();
+			WC()->session->set( $this->key, $registry );
+		}
+
+		if ( null === $order ) {
 			return;
 		}
 
-		$registry   = WC()->session->get( $this->key ) ?? [];
+		// The order keeps its own count, so attempts to pay it are counted across sessions.
+		$registry   = $order->get_meta( $this->get_order_meta_key() );
+		$registry   = is_array( $registry ) ? $registry : [];
 		$registry[] = time();
-		WC()->session->set( $this->key, $registry );
+		$order->update_meta_data( $this->get_order_meta_key(), $registry );
+		$order->save();
 	}
 
-
 	/**
-	 * Checks if the rate limiter is enabled.
+	 * Checks if the rate limiter is enabled for the current session or, when given, for the order.
 	 *
-	 * Returns a boolean.
+	 * @param WC_Order|null $order The order being paid, if any.
 	 *
 	 * @return bool   The rate limiter is in use.
 	 */
-	public function is_limited(): bool {
-		if ( ! isset( WC()->session ) ) {
-			return false;
-		}
-
+	public function is_limited( ?WC_Order $order = null ): bool {
 		if ( 'yes' === get_option( 'wcpay_session_rate_limiter_disabled_' . $this->key ) ) {
 			return false;
 		}
 
-		$registry = WC()->session->get( $this->key ) ?? [];
-
-		if ( ( is_countable( $registry ) ? count( $registry ) : 0 ) >= $this->threshold ) {
-			$start_time_limiter  = end( $registry );
-			$next_try_allowed_at = $start_time_limiter + $this->delay;
-			$is_limited          = time() <= $next_try_allowed_at;
-			if ( ! $is_limited ) {
-				WC()->session->set( $this->key, [] );
-			}
-
-			return $is_limited;
+		if ( $this->is_session_limited() ) {
+			return true;
 		}
 
+		if ( null === $order ) {
+			return false;
+		}
+
+		return $this->is_order_limited( $order );
+	}
+
+	/**
+	 * Checks the session registry, and clears it once the delay is over.
+	 *
+	 * @return bool
+	 */
+	private function is_session_limited(): bool {
+		if ( ! isset( WC()->session ) ) {
+			return false;
+		}
+
+		$registry = WC()->session->get( $this->key ) ?? [];
+		if ( ! $this->has_reached_threshold( $registry ) ) {
+			return false;
+		}
+
+		if ( $this->is_within_delay( $registry ) ) {
+			return true;
+		}
+
+		WC()->session->set( $this->key, [] );
 		return false;
+	}
+
+	/**
+	 * Checks the order registry, and clears it once the delay is over.
+	 *
+	 * @param WC_Order $order The order being paid.
+	 *
+	 * @return bool
+	 */
+	private function is_order_limited( WC_Order $order ): bool {
+		$registry = $order->get_meta( $this->get_order_meta_key() );
+		if ( ! $this->has_reached_threshold( $registry ) ) {
+			return false;
+		}
+
+		if ( $this->is_within_delay( $registry ) ) {
+			return true;
+		}
+
+		$order->delete_meta_data( $this->get_order_meta_key() );
+		$order->save();
+		return false;
+	}
+
+	/**
+	 * Whether a registry holds enough events to enable the rate limiter.
+	 *
+	 * @param mixed $registry The stored registry.
+	 *
+	 * @return bool
+	 */
+	private function has_reached_threshold( $registry ): bool {
+		return is_array( $registry ) && count( $registry ) >= $this->threshold;
+	}
+
+	/**
+	 * Whether the delay that started with the registry's last event is still running.
+	 *
+	 * @param array $registry The stored registry.
+	 *
+	 * @return bool
+	 */
+	private function is_within_delay( array $registry ): bool {
+		return time() <= end( $registry ) + $this->delay;
+	}
+
+	/**
+	 * The order meta key holding the order's registry.
+	 *
+	 * @return string
+	 */
+	private function get_order_meta_key(): string {
+		return '_' . $this->key;
 	}
 }

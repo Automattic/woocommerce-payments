@@ -1501,7 +1501,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			if ( $this->failed_transaction_rate_limiter->is_limited( $order ) ) {
 				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -1614,7 +1614,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
-				$this->failed_transaction_rate_limiter->bump();
+				$this->failed_transaction_rate_limiter->bump( $order );
 			}
 
 			// The server rejects an express checkout confirmation token minted without setup_future_usage
