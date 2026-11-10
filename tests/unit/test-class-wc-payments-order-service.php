@@ -1827,8 +1827,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $intent->get_charge()->get_id(), $error );
 
-		$this->assertTrue( $this->order->has_status( Order_Status::FAILED ) );
-		$this->assertEquals( Intent_Status::REQUIRES_PAYMENT_METHOD, $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertSame( 'failed', $this->order->get_status() );
+		$this->assertEquals( 'requires_payment_method', $this->order_service->get_intention_status_for_order( $this->order ) );
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertStringContainsString( 'failed</strong> using WooPayments', $notes[0]->content );
@@ -1854,11 +1854,28 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $charge_id, $error );
 
-		$this->assertTrue( $this->order->has_status( Order_Status::FAILED ) );
+		$this->assertSame( 'failed', $this->order->get_status() );
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertStringContainsString( 'Pending payment to Failed', $notes[0]->content );
 		$this->assertStringContainsString( 'Decline code: <code>generic_decline</code>', $notes[1]->content );
+	}
+
+	/**
+	 * Tests that a declined payment does not change an order that another process is updating.
+	 */
+	public function test_mark_payment_declined_exits_if_order_locked() {
+		$intent         = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$transient_name = 'wcpay_processing_intent_' . $this->order->get_id();
+		set_transient( $transient_name, $intent->get_id(), 5 * MINUTE_IN_SECONDS );
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), '', [ 'message' => 'Declined.' ] );
+
+		$this->assertSame( 'pending', $this->order->get_status() );
+		$this->assertEquals( '', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+		$this->assertSame( $intent->get_id(), get_transient( $transient_name ) );
 	}
 
 	/**

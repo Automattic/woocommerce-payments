@@ -2233,6 +2233,43 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that an exception without the payment provider's error details, e.g. a failed request
+	 * to the server, still fails the order with the generic failure message.
+	 */
+	public function test_process_redirect_payment_without_provider_error_marks_order_failed_with_generic_note() {
+		$intent_id           = 'pi_mock';
+		$save_payment_method = false;
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Server unavailable', 'server_error', 500 ) );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'failed', $result_order->get_status() );
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'UPE payment failed: Server unavailable', $note_text );
+		$this->assertStringNotContainsString( 'With the following message', $note_text );
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+	}
+
+	/**
 	 * Test that a retryable decline does not duplicate the order note when the customer
 	 * returns from the payment provider's page after the webhook already recorded the failure.
 	 */
@@ -2430,7 +2467,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		if ( $webhook_first ) {
 			$process_webhook();
 			// The webhook only notes the failure, it doesn't change the order status.
-			$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+			$this->assertSame( 'pending', wc_get_order( $order_id )->get_status() );
+			$this->assertCount( 1, wc_get_order_notes( [ 'order_id' => $order_id ] ) );
 			$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
 		} else {
 			$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
@@ -2441,6 +2479,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1, substr_count( $note_text, '<strong>failed</strong>' ) );
 		$this->assertSame( 1, substr_count( $note_text, "Decline code: <code>{$decline_code}</code>" ) );
 		$this->assertStringNotContainsString( 'UPE payment failed', $note_text );
+		// Besides the failure note, a failed order only gets the status change note.
+		$this->assertCount( 'failed' === $expected_status ? 2 : 1, wc_get_order_notes( [ 'order_id' => $order_id ] ) );
 		$this->assertSame( $expected_status, wc_get_order( $order_id )->get_status() );
 		$this->assertSame( $expect_pay_for_order ? $order->get_checkout_payment_url() : wc_get_checkout_url(), $redirect_url );
 	}
