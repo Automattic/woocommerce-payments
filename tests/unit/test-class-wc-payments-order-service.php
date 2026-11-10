@@ -1816,6 +1816,67 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a declined payment fails the order and records the provider's decline details.
+	 */
+	public function test_mark_payment_declined() {
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$error  = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $intent->get_charge()->get_id(), $error );
+
+		$this->assertTrue( $this->order->has_status( Order_Status::FAILED ) );
+		$this->assertEquals( Intent_Status::REQUIRES_PAYMENT_METHOD, $this->order_service->get_intention_status_for_order( $this->order ) );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $notes[0]->content );
+		$this->assertStringContainsString( 'With the following message: <code>The customer has terminated the authorization flow.</code>. Decline code: <code>generic_decline</code>.', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests that a declined payment still fails the order when the same failure note was
+	 * already added, e.g. by the BNPL webhook, without duplicating the note.
+	 */
+	public function test_mark_payment_declined_with_existing_note_fails_order_without_duplicate_note() {
+		$intent    = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$charge_id = $intent->get_charge()->get_id();
+		$error     = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+		$this->order->add_order_note(
+			$this->order_service->get_payment_failure_note( $this->order, $intent->get_id(), $charge_id, $this->order_service->get_provider_decline_message( $error ) )
+		);
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $charge_id, $error );
+
+		$this->assertTrue( $this->order->has_status( Order_Status::FAILED ) );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'Pending payment to Failed', $notes[0]->content );
+		$this->assertStringContainsString( 'Decline code: <code>generic_decline</code>', $notes[1]->content );
+	}
+
+	/**
+	 * Tests that a declined payment does not change an order that is already failed.
+	 */
+	public function test_mark_payment_declined_exits_on_existing_order_status_failed() {
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::FAILED );
+		$this->order->save();
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), '', [ 'message' => 'Declined.' ] );
+
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
 	 * Tests if the payment capture was noted failed.
 	 *
 	 * @dataProvider mark_payment_capture_failed_provider

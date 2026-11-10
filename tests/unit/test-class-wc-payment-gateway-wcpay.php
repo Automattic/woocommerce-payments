@@ -2223,8 +2223,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Errors that are not retryable declines keep the previous behavior: the order is failed.
 		$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
 
+		// The note records the provider's decline details.
 		$note_text = $this->get_order_notes_text( $result_order->get_id() );
-		$this->assertStringContainsString( 'UPE payment failed', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>' . esc_html( $last_payment_error['message'] ) . '</code>', $note_text );
+		$this->assertStringNotContainsString( 'UPE payment failed', $note_text );
 
 		// The customer is sent back to the checkout page.
 		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
@@ -2314,20 +2316,52 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * A redirect return must not duplicate the failure note already written by the BNPL webhook.
+	 * Data provider for BNPL failures reported by both the webhook and the redirect return.
+	 *
+	 * @return array[] Test cases with the payment method type, error code, decline code, whether the webhook
+	 *                 arrives first, the expected order status and whether the customer returns to the pay-for-order page.
 	 */
-	public function test_process_redirect_payment_does_not_duplicate_bnpl_webhook_note() {
+	public function bnpl_failure_reported_twice_provider(): array {
+		return [
+			'retryable klarna decline, webhook first'  => [ Payment_Method::KLARNA, 'payment_intent_payment_attempt_failed', 'klarna_payment_declined', true, 'pending', true ],
+			'retryable klarna decline, redirect first' => [ Payment_Method::KLARNA, 'payment_intent_payment_attempt_failed', 'klarna_payment_declined', false, 'pending', true ],
+			'non-retryable afterpay decline, webhook first' => [ Payment_Method::AFTERPAY, 'payment_intent_payment_attempt_failed', 'generic_decline', true, 'failed', false ],
+			'non-retryable afterpay decline, redirect first' => [ Payment_Method::AFTERPAY, 'payment_intent_payment_attempt_failed', 'generic_decline', false, 'failed', false ],
+		];
+	}
+
+	/**
+	 * A BNPL failure reported by both the webhook and the redirect return must result in a single
+	 * failure note, whichever arrives first, and the order status must not depend on the order.
+	 *
+	 * @dataProvider bnpl_failure_reported_twice_provider
+	 *
+	 * @param string $payment_method_type     The BNPL payment method type.
+	 * @param string $error_code              The error code of the last payment error.
+	 * @param string $decline_code            The decline code of the last payment error.
+	 * @param bool   $webhook_first           Whether the webhook arrives before the customer returns.
+	 * @param string $expected_status         The expected order status.
+	 * @param bool   $expect_pay_for_order    Whether the customer is sent to the pay-for-order page.
+	 */
+	public function test_bnpl_failure_reported_by_webhook_and_redirect_adds_a_single_note(
+		string $payment_method_type,
+		string $error_code,
+		string $decline_code,
+		bool $webhook_first,
+		string $expected_status,
+		bool $expect_pay_for_order
+	) {
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 		$save_payment_method = false;
 		$error               = [
-			'code'           => 'payment_intent_payment_attempt_failed',
-			'message'        => 'The customer declined the payment.',
-			'decline_code'   => 'klarna_payment_declined',
-			'doc_url'        => 'https://docs.example.com/klarna-decline',
+			'code'           => $error_code,
+			'message'        => 'The customer has terminated the authorization flow.',
+			'decline_code'   => $decline_code,
+			'doc_url'        => 'https://docs.example.com/decline',
 			'payment_method' => [
 				'id'   => $payment_method_id,
-				'type' => Payment_Method::KLARNA,
+				'type' => $payment_method_type,
 			],
 		];
 
@@ -2352,7 +2386,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( 'pi_mock' )
 			->willReturn( $order );
 
-		$webhook = new WC_Payments_Webhook_Processing_Service(
+		$webhook         = new WC_Payments_Webhook_Processing_Service(
 			$this->mock_api_client,
 			$db,
 			$this->mock_wcpay_account,
@@ -2364,26 +2398,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->createMock( WC_Payments_Onboarding_Service::class ),
 			$this->mock_token_service
 		);
-
-		$webhook->process(
-			[
-				'id'       => 'evt_mock',
-				'type'     => 'payment_intent.payment_failed',
-				'livemode' => WC_Payments::mode()->is_live(),
-				'data'     => [
-					'object' => [
-						'id'                 => $intent_id,
-						'metadata'           => [ 'order_id' => (string) $order_id ],
-						'charges'            => [ 'data' => [ [ 'id' => $charge_id ] ] ],
-						'last_payment_error' => $error,
+		$process_webhook = function () use ( $webhook, $intent_id, $order_id, $charge_id, $error ) {
+			$webhook->process(
+				[
+					'id'       => 'evt_mock',
+					'type'     => 'payment_intent.payment_failed',
+					'livemode' => WC_Payments::mode()->is_live(),
+					'data'     => [
+						'object' => [
+							'id'                 => $intent_id,
+							'metadata'           => [ 'order_id' => (string) $order_id ],
+							'charges'            => [ 'data' => [ [ 'id' => $charge_id ] ] ],
+							'last_payment_error' => $error,
+						],
 					],
-				],
-			]
-		);
-
-		$notes_before_return = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' );
-		$this->assertSame( 1, substr_count( implode( "\n", $notes_before_return ), 'Decline code: <code>klarna_payment_declined</code>' ) );
-		$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+				]
+			);
+		};
 
 		wp_get_current_user();
 		$redirect_url = null;
@@ -2396,12 +2427,22 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+		if ( $webhook_first ) {
+			$process_webhook();
+			// The webhook only notes the failure, it doesn't change the order status.
+			$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+			$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+		} else {
+			$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+			$process_webhook();
+		}
 
-		$notes_after_return = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' );
-		$this->assertSame( $notes_before_return, $notes_after_return );
-		$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
-		$this->assertSame( $order->get_checkout_payment_url(), $redirect_url );
+		$note_text = $this->get_order_notes_text( $order_id );
+		$this->assertSame( 1, substr_count( $note_text, '<strong>failed</strong>' ) );
+		$this->assertSame( 1, substr_count( $note_text, "Decline code: <code>{$decline_code}</code>" ) );
+		$this->assertStringNotContainsString( 'UPE payment failed', $note_text );
+		$this->assertSame( $expected_status, wc_get_order( $order_id )->get_status() );
+		$this->assertSame( $expect_pay_for_order ? $order->get_checkout_payment_url() : wc_get_checkout_url(), $redirect_url );
 	}
 
 	public function test_get_payment_methods_with_post_request_context() {

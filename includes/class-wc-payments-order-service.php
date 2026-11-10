@@ -562,6 +562,40 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Updates an order to failed status after the payment provider declined the payment,
+	 * adding a note with the provider's decline details.
+	 *
+	 * The `payment_intent.payment_failed` webhook adds the same note for BNPL payment methods
+	 * without changing the order status, so an existing note does not stop the status change.
+	 *
+	 * @param WC_Order    $order         Order object.
+	 * @param string      $intent_id     The ID of the intent associated with this order.
+	 * @param string|null $intent_status The status of the intent related to this order.
+	 * @param string|null $charge_id     The charge ID related to the intent/order.
+	 * @param array       $error         The payment provider's error.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_declined( $order, $intent_id, $intent_status, $charge_id, array $error ): void {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		if ( $order->has_status( [ Order_Status::FAILED ] ) ) {
+			$this->complete_order_processing( $order );
+			return;
+		}
+
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $this->get_provider_decline_message( $error ) );
+
+		$this->update_order_status( $order, Order_Status::FAILED );
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+		}
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
 	 * Get content for the payment failure order note.
 	 *
 	 * @param WC_Order $order     Order object.

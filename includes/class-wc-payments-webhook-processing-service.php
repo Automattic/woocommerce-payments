@@ -572,9 +572,10 @@ class WC_Payments_Webhook_Processing_Service {
 		];
 
 		// BNPL methods are not actionable here: their failures are handled when the customer
-		// returns from the payment provider's page, and the order is left pending for a retry.
-		// But if the customer abandons the payment (e.g. the provider's session expires), no
-		// other flow records the failure, so note it without changing the order status.
+		// returns from the payment provider's page, which leaves the order pending for a retry
+		// or marks it failed, adding the same note. But if the customer abandons the payment
+		// (e.g. the provider's session expires), no other flow records the failure, so note it
+		// without changing the order status.
 		if ( in_array( $payment_method_type, Payment_Method::BNPL_PAYMENT_METHODS, true ) ) {
 			$this->maybe_add_bnpl_payment_failure_note( $event_body, $last_payment_error, $charge_id );
 		}

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid duplicate failure notes when a BNPL payment is declined and both the webhook and the customer's return record the failure.
