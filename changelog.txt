@@ -28,6 +28,7 @@
 * Fix - Improve subscription handling during payment method changes.
 * Fix - Improve the accuracy of Multi-Currency cart, order and renewal totals.
 * Fix - Keep a connected store in its current test or live mode during onboarding.
+* Fix - Keep a manual capture authorization from an earlier attempt from replacing the payment an order is waiting on.
 * Fix - Keep Apple Pay and Google Pay working on product pages served from a full-page cache after their nonces expired, and after a new account was created but the payment failed.
 * Fix - Keep Google Pay and Apple Pay showing on the Cart and Checkout blocks after the cart switches to a currency Amazon Pay doesn't support.
 * Fix - Keep manual capture orders paid with 3DS from being cancelled when the shopper leaves before checkout finishes.
@@ -37,15 +38,19 @@
 * Fix - Load right-to-left styles for lazy-loaded admin pages on right-to-left sites.
 * Fix - Make capital loan table columns configurable via column visibility menu
 * Fix - Make sure the WooCommerce session is loaded when a shopper adds a payment method from My Account.
+* Fix - Multi-Currency: convert coupons re-applied to an existing order with the merchant's manual exchange rate, not the automatic rate.
 * Fix - Only accept a saved payment method at checkout when it belongs to the logged-in customer paying with it.
 * Fix - Only add payment methods from My Account while WooPayments and saved cards are enabled.
 * Fix - Only save a card from My Account when it was set up for the signed-in customer.
 * Fix - Only use the order from a Pay for order link to pick payment methods when the link is valid.
 * Fix - Prevented payment method errors from splitting log entries or causing checkout errors.
+* Fix - Put a failed order on hold when a retried manual capture payment is authorized after 3DS and the shopper leaves before checkout finishes.
 * Fix - Recognize returning Stripe Link customers from the checkout email field.
+* Fix - Record only shopper events from the browser's Tracks requests, and stop a batch of events once the Tracks service is unavailable.
 * Fix - Recreate the customer during a payment only when the error names the customer itself as the missing object.
 * Fix - Remove WooPayments payment details from orders paid with another payment method.
 * Fix - Restore vertical spacing in Payments Overview task list rows.
+* Fix - Send Level 3 data when marking an authorized order completed captures it, so a total edited after authorization can still be captured.
 * Fix - Send shopper Tracks events in a single request per page to reduce server load.
 * Fix - Show Amazon Pay on the Cart and Checkout blocks when the shopper switches to a currency it supports, without a page reload.
 * Fix - Show Apple Pay, Google Pay, and Amazon Pay on the block cart and checkout when the first product is added to an empty cart, without a page reload.
@@ -75,6 +80,7 @@
 * Update - Show one development mode notice that names what turned development mode on across the Payments Overview, Connect, Settings, onboarding, transactions, payouts, disputes, documents and loans pages, and stop showing an empty notice on Overview for live accounts in development mode.
 * Update - Stop rebuilding the Express Checkout block button's Stripe options on renders that don't change them.
 * Update - Update the Jetpack Connection package to 9.13.0, which lets the connection owner hand it to another administrator from Settings > Connectors on WordPress 7.0 or later.
+* Update - Update the Klarna logo and clarify the available ways to pay in the payment method description.
 * Dev - Add a browse command for checking changes by hand in a browser on the local dev site.
 * Dev - Bump Jetpack Connection to 9.11.0 and Jetpack Sync to 5.4.1.
 * Dev - Bump PHPStan to 2.3.1.
@@ -103,6 +109,7 @@
 * Dev - Modernize PHPStan configuration with WordPress-aware analysis and a scoped baseline
 * Dev - Move the local and E2E Docker images to PHP 8.4 to match the Transact server, pull a fresh base image on each build, and run each E2E job on the PHP version it names.
 * Dev - Name the security contact address in SECURITY.md.
+* Dev - Pin Plugin Check to 2.1.0 in CI by installing its release zip, because wp-env dropped the version flag.
 * Dev - Point the E2E phpMyAdmin image at the official `phpmyadmin` image instead of the deprecated `phpmyadmin/phpmyadmin` one.
 * Dev - Prepare React mounts and ref callbacks for React 19.
 * Dev - Remove the connect incentive from the Connect page, which merchants no longer reach from the admin.

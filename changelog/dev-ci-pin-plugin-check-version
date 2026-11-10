@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Pin Plugin Check to 2.1.0 in CI by installing its release zip, because wp-env dropped the version flag.
