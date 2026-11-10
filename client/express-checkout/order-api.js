@@ -17,9 +17,13 @@ const ERRORS_BEFORE_PERSISTENCE = [
 	'woocommerce_rest_invalid_user',
 	'woocommerce_rest_invalid_address',
 	'woocommerce_rest_invalid_address_country',
+	// WooCommerce 11.3+ rejects an address change that would re-price the order.
+	'woocommerce_rest_checkout_order_address_change_not_allowed',
+	// The request failed the endpoint's schema, e.g. a malformed wallet email or phone.
+	'rest_invalid_param',
 ];
 
-const WALLET_CONTACT_FIELDS = [
+const CONTACT_FIELDS = [
 	'first_name',
 	'last_name',
 	'company',
@@ -27,7 +31,7 @@ const WALLET_CONTACT_FIELDS = [
 	'phone',
 ];
 
-// Kept together, so an order never mixes its own location with the wallet's.
+// Kept together, so an address never mixes its own location with another one's.
 const LOCATION_FIELDS = [
 	'address_1',
 	'address_2',
@@ -38,21 +42,21 @@ const LOCATION_FIELDS = [
 ];
 
 /**
- * Returns the order address with its blank contact fields and all of its location fields taken from the wallet.
+ * Returns the order address with its blank contact fields and all of its location fields taken from another address.
  *
  * @param {Object} orderAddress  The address saved on the order.
- * @param {Object} walletAddress The billing address from the wallet.
+ * @param {Object} sourceAddress The address to fill from, e.g. the wallet's billing address.
  * @return {Object} The address to send to the Store API.
  */
-const fillMissingFields = ( orderAddress, walletAddress = {} ) => {
+const fillMissingFields = ( orderAddress, sourceAddress = {} ) => {
 	const address = { ...orderAddress };
 
-	WALLET_CONTACT_FIELDS.forEach( ( field ) => {
+	CONTACT_FIELDS.forEach( ( field ) => {
 		address[ field ] =
-			orderAddress[ field ] || walletAddress[ field ] || '';
+			orderAddress[ field ] || sourceAddress[ field ] || '';
 	} );
 	LOCATION_FIELDS.forEach( ( field ) => {
-		address[ field ] = walletAddress[ field ] || '';
+		address[ field ] = sourceAddress[ field ] || '';
 	} );
 
 	return address;
@@ -96,7 +100,7 @@ export default class ExpressCheckoutOrderApi {
 		// Keep the merchant's address (it determines tax) and only fill the contact fields a
 		// merchant-created pay-for-order may be missing (email, phone). The Store API needs them to
 		// take payment and the wallet provides them, so backfilling is safe and tax stays untouched.
-		// The exception, below, is an order with no address at all.
+		// Orders with no billing country are the exception, handled below.
 		// See https://github.com/woocommerce/woocommerce/issues/48540
 		const walletEmail = paymentData.billing_address?.email;
 		const walletPhone = paymentData.billing_address?.phone;
@@ -105,9 +109,8 @@ export default class ExpressCheckoutOrderApi {
 		const orderShippingAddress = this.cachedCartData.shipping_address;
 
 		// An order with no billing country (e.g. one created in the mobile apps and shared as a
-		// payment link) can't pass the Store API address validation, so it takes the
-		// wallet's billing address: WooCommerce taxes it at the store's base address until then, and
-		// lets its first address re-price it.
+		// payment link) can't pass the Store API address validation, so it takes the wallet's
+		// billing address. WooCommerce allows an order's first address even when it re-prices the order.
 		const hasNoOrderBillingAddress =
 			orderBillingAddress && ! orderBillingAddress.country;
 
@@ -121,14 +124,21 @@ export default class ExpressCheckoutOrderApi {
 					email: orderBillingAddress.email || walletEmail,
 					phone: orderBillingAddress.phone || walletPhone,
 				};
-		// A blank shipping address would replace the billing one WooCommerce ships to when none is sent.
-		const shippingAddress =
-			hasNoOrderBillingAddress && ! orderShippingAddress?.country
-				? undefined
-				: orderShippingAddress && {
-						...orderShippingAddress,
-						phone: orderShippingAddress.phone || walletPhone,
-					};
+
+		let shippingAddress = orderShippingAddress && {
+			...orderShippingAddress,
+			phone: orderShippingAddress.phone || walletPhone,
+		};
+		if ( hasNoOrderBillingAddress && ! orderShippingAddress?.country ) {
+			// The order ships to its new billing address. It's sent explicitly, because WooCommerce
+			// before 11.0 passes a missing shipping address straight to `WC_Order::set_shipping_address()`.
+			shippingAddress = fillMissingFields(
+				orderShippingAddress ?? {},
+				billingAddress
+			);
+			// The shipping address has no email field.
+			delete shippingAddress.email;
+		}
 
 		const sentBillingEmail = billingAddress?.email;
 
@@ -138,6 +148,13 @@ export default class ExpressCheckoutOrderApi {
 				path: `/wc/store/v1/checkout/${ this.orderId }`,
 				headers: {
 					Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
+					// The wallet's address needs the same normalization as on the cart (state names, address lines).
+					...( hasNoOrderBillingAddress && {
+						'X-WooPayments-Tokenized-Cart': true,
+						'X-WooPayments-Tokenized-Cart-Nonce':
+							getExpressCheckoutData( 'nonce' )
+								.tokenized_cart_nonce,
+					} ),
 				},
 				data: {
 					...paymentData,

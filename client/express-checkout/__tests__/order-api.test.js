@@ -14,6 +14,8 @@ global.wcpayExpressCheckoutParams = {};
 global.wcpayExpressCheckoutParams.nonce = {};
 global.wcpayExpressCheckoutParams.nonce.store_api_nonce =
 	'global_store_api_nonce';
+global.wcpayExpressCheckoutParams.nonce.tokenized_cart_nonce =
+	'global_tokenized_cart_nonce';
 
 describe( 'ExpressCheckoutOrderApi', () => {
 	afterEach( () => {
@@ -182,7 +184,10 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			phone: '5551234567',
 		};
 
-		const placeOrderFor = async ( orderAddresses ) => {
+		const placeOrderFor = async (
+			orderAddresses,
+			walletBillingAddress = WALLET_BILLING_ADDRESS
+		) => {
 			const api = new ExpressCheckoutOrderApi( {
 				orderId: '1',
 				key: 'key_123',
@@ -191,14 +196,14 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			await api.getCart();
 
 			await api.placeOrder( {
-				billing_address: WALLET_BILLING_ADDRESS,
+				billing_address: walletBillingAddress,
 			} );
 
-			return apiFetch.mock.calls[ 1 ][ 0 ].data;
+			return apiFetch.mock.lastCall[ 0 ];
 		};
 
-		it( "sends the wallet's billing address, so WooCommerce ships to it", async () => {
-			const data = await placeOrderFor( {
+		it( "sends the wallet's billing address, and ships to it", async () => {
+			const { data, headers } = await placeOrderFor( {
 				billing_address: BLANK_BILLING_ADDRESS,
 				shipping_address: BLANK_SHIPPING_ADDRESS,
 			} );
@@ -216,11 +221,30 @@ describe( 'ExpressCheckoutOrderApi', () => {
 				email: 'buyer@wallet.com',
 				phone: '5551234567',
 			} );
-			expect( data.shipping_address ).toBeUndefined();
+			// Sent explicitly: WooCommerce before 11.0 fails when it's missing.
+			expect( data.shipping_address ).toEqual( {
+				first_name: 'Wallet',
+				last_name: 'Holder',
+				company: '',
+				address_1: '1 Wallet Street',
+				address_2: '',
+				city: 'London',
+				state: '',
+				postcode: 'SW1A 1AA',
+				country: 'GB',
+				phone: '5551234567',
+			} );
+			// Lets WooPayments normalize the wallet's address, as it does on the cart.
+			expect( headers ).toEqual( {
+				Nonce: 'global_store_api_nonce',
+				'X-WooPayments-Tokenized-Cart': true,
+				'X-WooPayments-Tokenized-Cart-Nonce':
+					'global_tokenized_cart_nonce',
+			} );
 		} );
 
 		it( "keeps the order's contact details and replaces any partial location with the wallet's", async () => {
-			const data = await placeOrderFor( {
+			const { data } = await placeOrderFor( {
 				billing_address: {
 					...BLANK_BILLING_ADDRESS,
 					first_name: 'Merchant',
@@ -245,10 +269,60 @@ describe( 'ExpressCheckoutOrderApi', () => {
 				email: 'shopper@order.com',
 				phone: '5551234567',
 			} );
+			expect( data.shipping_address ).toEqual( {
+				first_name: 'Merchant',
+				last_name: 'Set',
+				company: '',
+				address_1: '1 Wallet Street',
+				address_2: '',
+				city: 'London',
+				state: '',
+				postcode: 'SW1A 1AA',
+				country: 'GB',
+				phone: '5551234567',
+			} );
+		} );
+
+		it( "keeps the contact details of an order's shipping address that has no country", async () => {
+			const { data } = await placeOrderFor( {
+				billing_address: BLANK_BILLING_ADDRESS,
+				shipping_address: {
+					...BLANK_SHIPPING_ADDRESS,
+					first_name: 'Gift',
+					last_name: 'Recipient',
+					city: 'Orderville',
+				},
+			} );
+
+			expect( data.shipping_address ).toEqual( {
+				first_name: 'Gift',
+				last_name: 'Recipient',
+				company: '',
+				address_1: '1 Wallet Street',
+				address_2: '',
+				city: 'London',
+				state: '',
+				postcode: 'SW1A 1AA',
+				country: 'GB',
+				phone: '5551234567',
+			} );
+		} );
+
+		it( 'sends a blank country when the wallet has none, so WooCommerce reports it', async () => {
+			const { data } = await placeOrderFor(
+				{
+					billing_address: BLANK_BILLING_ADDRESS,
+					shipping_address: BLANK_SHIPPING_ADDRESS,
+				},
+				{ ...WALLET_BILLING_ADDRESS, country: undefined }
+			);
+
+			expect( data.billing_address.country ).toBe( '' );
+			expect( data.shipping_address.country ).toBe( '' );
 		} );
 
 		it( "keeps the order's own shipping address", async () => {
-			const data = await placeOrderFor( {
+			const { data } = await placeOrderFor( {
 				billing_address: BLANK_BILLING_ADDRESS,
 				shipping_address: {
 					...BLANK_SHIPPING_ADDRESS,
@@ -271,6 +345,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 				country: 'FR',
 				phone: '5551234567',
 			} );
+			expect( data.billing_address.country ).toBe( 'GB' );
 		} );
 	} );
 
@@ -448,6 +523,37 @@ describe( 'ExpressCheckoutOrderApi', () => {
 		);
 	} );
 
+	it.each( [
+		'woocommerce_rest_checkout_order_address_change_not_allowed',
+		'rest_invalid_param',
+	] )(
+		'does not remember the email when the request fails with %s',
+		async ( code ) => {
+			const api = new ExpressCheckoutOrderApi( {
+				orderId: '1',
+				key: 'key_123',
+				billingEmail: '',
+			} );
+			apiFetch.mockResolvedValueOnce( {
+				billing_address: { first_name: 'Merchant', email: '' },
+			} );
+			await api.getCart();
+			apiFetch.mockRejectedValueOnce( { code } );
+			await expect(
+				api.placeOrder( {
+					billing_address: { email: 'buyer@wallet.com' },
+				} )
+			).rejects.toEqual( { code } );
+
+			apiFetch.mockResolvedValueOnce( {} );
+			await api.placeOrder( {
+				billing_address: { email: 'buyer@wallet.com' },
+			} );
+
+			expect( apiFetch.mock.lastCall[ 0 ].data.billing_email ).toBe( '' );
+		}
+	);
+
 	it( 'places an order with the previous API request data', async () => {
 		const api = new ExpressCheckoutOrderApi( {
 			orderId: '1',
@@ -483,9 +589,10 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			expect.objectContaining( {
 				method: 'POST',
 				path: '/wc/store/v1/checkout/1',
-				headers: expect.objectContaining( {
+				// An order's own address doesn't go through the wallet address normalization.
+				headers: {
 					Nonce: 'global_store_api_nonce',
-				} ),
+				},
 				data: expect.objectContaining( {
 					key: 'key_123',
 					billing_email: 'cheese@toast.com',
