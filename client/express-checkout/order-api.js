@@ -9,12 +9,13 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { getExpressCheckoutData } from './utils';
 
-// Failures that happen before the Store API persists the billing address to the order, so the
-// email we sent was not stored and should not be remembered for the next attempt.
+// Failures that happen before the Store API persists the addresses to the order, so the
+// addresses and email we sent were not stored and should not be remembered for the next attempt.
 const ERRORS_BEFORE_PERSISTENCE = [
 	'woocommerce_rest_invalid_billing_email',
 	'woocommerce_rest_invalid_order',
 	'woocommerce_rest_invalid_user',
+	// Before saving on WooCommerce 11.0+ only; older versions save the order first.
 	'woocommerce_rest_invalid_address',
 	'woocommerce_rest_invalid_address_country',
 	// WooCommerce 11.3+ rejects an address change that would re-price the order.
