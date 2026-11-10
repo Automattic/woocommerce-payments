@@ -735,8 +735,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Completing the order no longer captures the earlier attempt: WooPayments captures on completion from the
-	 * intent on the order, with no check on the order's gateway, and the attempt's intent is gone.
+	 * Completing the order no longer captures the earlier attempt: the attempt's intent is gone from the order,
+	 * so WooPayments has nothing to look up.
 	 */
 	public function test_completing_an_order_paid_with_other_gateway_does_not_capture_the_earlier_attempt() {
 		$order = $this->create_order_with_payment_details( 'cod' );

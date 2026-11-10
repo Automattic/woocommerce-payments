@@ -2396,7 +2396,7 @@ class WC_Payments_Order_Service {
 						$note = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the ID of a WooPayments charge. */
-								__( 'A WooPayments authorization (<code>%1$s</code>) is still open, but this order now uses another payment method, so it was not captured. Capture or cancel it under Payments > Transactions > Uncaptured, or let it expire.', 'woocommerce-payments' ),
+								__( 'A WooPayments authorization (<code>%1$s</code>) is still open, but this order now uses another payment method, so it was not captured. Capture it under Payments > Transactions > Uncaptured, or let it expire.', 'woocommerce-payments' ),
 								[ 'code' => '<code>' ]
 							),
 							$charge->get_id()
