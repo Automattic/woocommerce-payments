@@ -126,6 +126,10 @@ jobs:
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
+          # The changelog output is escaped for sed (see the process-changelog action): undo it here.
+          # Backslashes are doubled and line breaks are stored as \n, which %b reverses; ampersands are stored as \&.
+          CHANGELOG=$(printf '%b' "$CHANGELOG")
+          CHANGELOG=${CHANGELOG//\\&/"&"}
           # The body goes through a file, so the Markdown below reads as it renders.
           # The heredoc expands variables; backticks are escaped to keep them literal.
           PR_BODY_FILE="$(mktemp)"
