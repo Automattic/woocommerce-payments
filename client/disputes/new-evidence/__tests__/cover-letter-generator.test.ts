@@ -2162,5 +2162,70 @@ describe( 'Cover Letter Generator', () => {
 				isSameCoverLetterIgnoringDate( savedLetter, generatedLetter )
 			).toBe( false );
 		} );
+
+		it( 'treats a date older than the evidence window as an edit', () => {
+			const savedLetter = `Test Store\nFormatted ${
+				todayInSeconds - 91 * 86400
+			}\nDear bank,`;
+
+			expect(
+				isSameCoverLetterIgnoringDate( savedLetter, generatedLetter )
+			).toBe( false );
+		} );
+
+		describe( 'with month names', () => {
+			const formatInLocale =
+				( locale: string ) => ( timestamp: number ) => {
+					const date = new Date( timestamp * 1000 );
+					const month = date.toLocaleString( locale, {
+						month: 'long',
+						timeZone: 'UTC',
+					} );
+					return `${ month } ${ date.getUTCDate() }, ${ date.getUTCFullYear() }`;
+				};
+
+			afterEach( () => {
+				jest.mocked( formatDateTimeFromTimestamp ).mockImplementation(
+					( timestamp ) => `Formatted ${ timestamp }`
+				);
+			} );
+
+			it( 'matches a localized letter saved in the previous month', () => {
+				jest.mocked( formatDateTimeFromTimestamp ).mockImplementation(
+					formatInLocale( 'hi-IN' )
+				);
+				nowSpy.mockReturnValue( Date.UTC( 2026, 10, 1, 12 ) );
+				const savedLetter = 'Test Store\nअक्टूबर 31, 2026\nDear bank,';
+				const hindiGeneratedLetter =
+					'Test Store\nनवंबर 1, 2026\nDear bank,';
+
+				expect(
+					isSameCoverLetterIgnoringDate(
+						savedLetter,
+						hindiGeneratedLetter
+					)
+				).toBe( true );
+			} );
+
+			it.each( [ 'November 99, 2026', 'Reference 10, 2026' ] )(
+				'treats "%s" on the date line as an edit',
+				( savedDateLine ) => {
+					jest.mocked(
+						formatDateTimeFromTimestamp
+					).mockImplementation( formatInLocale( 'en-US' ) );
+					nowSpy.mockReturnValue( Date.UTC( 2026, 10, 10, 12 ) );
+					const savedLetter = `Test Store\n${ savedDateLine }\nDear bank,`;
+					const englishGeneratedLetter =
+						'Test Store\nNovember 10, 2026\nDear bank,';
+
+					expect(
+						isSameCoverLetterIgnoringDate(
+							savedLetter,
+							englishGeneratedLetter
+						)
+					).toBe( false );
+				}
+			);
+		} );
 	} );
 } );
