@@ -146,6 +146,10 @@ class Duplicate_Payment_Prevention_Service {
 			);
 		}
 
+		if ( Intent_Status::REQUIRES_CAPTURE === $intent_status ) {
+			$this->order_service->attach_intent_info_to_order( $order, $intent );
+		}
+
 		// Amounts match, proceed with normal status update.
 		$this->order_service->update_order_status_from_intent( $order, $intent );
 

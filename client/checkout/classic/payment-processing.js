@@ -287,6 +287,7 @@ async function createStripePaymentElement(
 	const upeSettings = getUpeSettings( paymentMethodType );
 	const createdStripePaymentElement = elements.create( 'payment', {
 		...upeSettings,
+		layout: 'tabs',
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',

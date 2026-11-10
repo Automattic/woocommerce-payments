@@ -18,6 +18,7 @@ use WCPay\Logger;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Internal\Service\Level3Service;
 use WCPay\Constants\Order_Mode;
 
 defined( 'ABSPATH' ) || exit;
@@ -2360,13 +2361,29 @@ class WC_Payments_Order_Service {
 		$order = wc_get_order( $order_id );
 
 		if ( $order instanceof WC_Order ) {
-			$intent_id = $this->get_intent_id_for_order( $order );
-			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
+			$intent_id            = $this->get_intent_id_for_order( $order );
+			$cached_intent_status = $this->get_intention_status_for_order( $order );
+			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $cached_intent_status, self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
 					$intent = $request->send();
 					$charge = $intent->get_charge();
+
+					// WooCommerce has already completed the order by now, so the merchant can only be told.
+					// An order moved to another payment method may well be paid, so it gets no note.
+					if (
+						Intent_Status::REQUIRES_CAPTURE === $cached_intent_status
+						&& Intent_Status::CANCELED === $intent->get_status()
+						&& 0 === strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID )
+					) {
+						$order->add_order_note(
+							WC_Payments_Utils::esc_interpolated_html(
+								__( '<strong>No payment was captured.</strong> The authorization expired or was canceled before the order was completed, so this order is not paid.', 'woocommerce-payments' ),
+								[ 'strong' => '<strong>' ]
+							)
+						);
+					}
 
 					/**
 					 * Successful but not captured Charge is an authorization
@@ -2379,6 +2396,11 @@ class WC_Payments_Order_Service {
 					) {
 							$request = Capture_Intention::create( $intent_id );
 							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+							// Without fresh Level 3 data, Stripe checks the capture against the data saved at
+							// authorization and refuses an edited total. Same Level 3 rule as capture_charge().
+						if ( 'woocommerce_payments_amazon_pay' !== $order->get_payment_method() ) {
+							$request->set_level3( wcpay_get_container()->get( Level3Service::class )->get_data_from_order( $order->get_id() ) );
+						}
 							$request->set_hook_args( $order );
 							$intent = $request->send();
 
