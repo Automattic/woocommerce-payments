@@ -36,13 +36,13 @@ describe( 'SavedTokenHandler', () => {
 
 		const failHandler = onCheckoutFail.mock.calls[ 0 ][ 0 ];
 
-		expect(
-			failHandler( {
-				processingResponse: {
-					paymentDetails: { errorMessage: ERROR_MESSAGE },
-				},
-			} )
-		).toEqual( {
+		const response = failHandler( {
+			processingResponse: {
+				paymentDetails: { errorMessage: ERROR_MESSAGE },
+			},
+		} );
+
+		expect( response ).toEqual( {
 			type: 'failure',
 			message: 'Error: Amount must be no more than $999,999.99',
 			messageContext: 'wc/payment-area',
