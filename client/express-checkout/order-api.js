@@ -141,6 +141,21 @@ export default class ExpressCheckoutOrderApi {
 		}
 
 		const sentBillingEmail = billingAddress?.email;
+		// Placing the order persists what was sent, so a later attempt (a retry, or switching express
+		// method) must start from it: authorize with the new email, and keep the saved address
+		// instead of sending another wallet's.
+		const rememberPersistedData = () => {
+			if ( sentBillingEmail ) {
+				this.billingEmail = sentBillingEmail;
+			}
+			if ( hasNoOrderBillingAddress ) {
+				this.cachedCartData = {
+					...this.cachedCartData,
+					billing_address: billingAddress,
+					shipping_address: shippingAddress,
+				};
+			}
+		};
 
 		try {
 			const response = await apiFetch( {
@@ -167,23 +182,16 @@ export default class ExpressCheckoutOrderApi {
 				},
 			} );
 
-			// Placing the order persists this email value server-side, so a later attempt (a retry, or
-			// switching express method) must authorize with it. Remembering it, to ensure retries succeed.
-			if ( sentBillingEmail ) {
-				this.billingEmail = sentBillingEmail;
-			}
+			rememberPersistedData();
 
 			return response;
 		} catch ( error ) {
-			// A failed payment still persisted the email (it is saved before payment is taken), so
-			// remember it for the same reason. Skip the failures that happen before persistence,
+			// A failed payment still persisted the addresses (they are saved before payment is taken),
+			// so remember them for the same reason. Skip the failures that happen before persistence,
 			// which a payment failure never is (it carries `process_payment_error`, or no code at
 			// all when apiFetch rejects with an unparsed response).
-			if (
-				sentBillingEmail &&
-				! ERRORS_BEFORE_PERSISTENCE.includes( error?.code )
-			) {
-				this.billingEmail = sentBillingEmail;
+			if ( ! ERRORS_BEFORE_PERSISTENCE.includes( error?.code ) ) {
+				rememberPersistedData();
 			}
 
 			throw error;

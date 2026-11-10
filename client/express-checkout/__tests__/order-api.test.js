@@ -321,6 +321,90 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			expect( data.shipping_address.country ).toBe( '' );
 		} );
 
+		it.each( [
+			[
+				'the payment fails',
+				{ code: 'woocommerce_rest_checkout_process_payment_error' },
+			],
+			[ 'the order is placed', null ],
+		] )(
+			"keeps the first wallet's saved address on a retry after %s",
+			async ( _, placeOrderError ) => {
+				const api = new ExpressCheckoutOrderApi( {
+					orderId: '1',
+					key: 'key_123',
+				} );
+				apiFetch.mockResolvedValueOnce( {
+					billing_address: BLANK_BILLING_ADDRESS,
+					shipping_address: BLANK_SHIPPING_ADDRESS,
+				} );
+				await api.getCart();
+				if ( placeOrderError ) {
+					apiFetch.mockRejectedValueOnce( placeOrderError );
+				}
+				await api
+					.placeOrder( { billing_address: WALLET_BILLING_ADDRESS } )
+					.catch( () => {} );
+
+				await api.placeOrder( {
+					billing_address: {
+						...WALLET_BILLING_ADDRESS,
+						address_1: '9 Other Street',
+						city: 'Paris',
+						postcode: '75001',
+						country: 'FR',
+						email: 'other@wallet.com',
+					},
+				} );
+
+				const { data, headers } = apiFetch.mock.lastCall[ 0 ];
+				expect( data.billing_email ).toBe( 'buyer@wallet.com' );
+				expect( data.billing_address ).toEqual( {
+					first_name: 'Wallet',
+					last_name: 'Holder',
+					company: '',
+					address_1: '1 Wallet Street',
+					address_2: '',
+					city: 'London',
+					state: '',
+					postcode: 'SW1A 1AA',
+					country: 'GB',
+					email: 'buyer@wallet.com',
+					phone: '5551234567',
+				} );
+				expect( data.shipping_address.country ).toBe( 'GB' );
+				expect( headers ).toEqual( {
+					Nonce: 'global_store_api_nonce',
+				} );
+			}
+		);
+
+		it( "sends the wallet's address again on a retry after a request rejected before saving", async () => {
+			const api = new ExpressCheckoutOrderApi( {
+				orderId: '1',
+				key: 'key_123',
+			} );
+			apiFetch.mockResolvedValueOnce( {
+				billing_address: BLANK_BILLING_ADDRESS,
+				shipping_address: BLANK_SHIPPING_ADDRESS,
+			} );
+			await api.getCart();
+			apiFetch.mockRejectedValueOnce( {
+				code: 'woocommerce_rest_invalid_address',
+			} );
+			await api
+				.placeOrder( { billing_address: WALLET_BILLING_ADDRESS } )
+				.catch( () => {} );
+
+			await api.placeOrder( {
+				billing_address: { ...WALLET_BILLING_ADDRESS, country: 'FR' },
+			} );
+
+			const { data } = apiFetch.mock.lastCall[ 0 ];
+			expect( data.billing_email ).toBe( '' );
+			expect( data.billing_address.country ).toBe( 'FR' );
+		} );
+
 		it( "keeps the order's own shipping address", async () => {
 			const { data } = await placeOrderFor( {
 				billing_address: BLANK_BILLING_ADDRESS,
@@ -357,7 +441,12 @@ describe( 'ExpressCheckoutOrderApi', () => {
 		} );
 
 		apiFetch.mockResolvedValueOnce( {
-			billing_address: { first_name: 'Merchant', email: '', phone: '' },
+			billing_address: {
+				first_name: 'Merchant',
+				country: 'US',
+				email: '',
+				phone: '',
+			},
 		} );
 		await api.getCart();
 
