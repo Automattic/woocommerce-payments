@@ -384,9 +384,19 @@ export default ( { query }: { query: { id: string } } ) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- We only want to fetch the file details when uploadedFiles changes.
 	}, [ dispute?.evidence ] );
 
+	// --- Read-only logic ---
+	const readOnly =
+		dispute &&
+		dispute.status !== 'needs_response' &&
+		dispute.status !== 'warning_needs_response';
+
 	// Update cover letter when evidence changes
 	useEffect( () => {
 		if ( ! dispute || ! settings ) return;
+		// Show a submitted letter as the bank got it, not rebuilt with today's date.
+		if ( readOnly ) {
+			return;
+		}
 
 		// Get the document fields that are applicable for the current reason + product type
 		// This ensures we only include evidence for fields shown in the current UI
@@ -494,6 +504,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		duplicateStatus,
 		coverLetter,
 		productType,
+		readOnly,
 	] );
 
 	// --- Step logic ---
@@ -710,12 +721,6 @@ export default ( { query }: { query: { id: string } } ) => {
 			handleSaveError( err, submit );
 		}
 	};
-
-	// --- Read-only logic ---
-	const readOnly =
-		dispute &&
-		dispute.status !== 'needs_response' &&
-		dispute.status !== 'warning_needs_response';
 
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {

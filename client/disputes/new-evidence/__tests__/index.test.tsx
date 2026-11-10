@@ -1079,6 +1079,19 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 				).not.toBeInTheDocument();
 			} );
 
+			it( 'shows a submitted letter as it was sent', async () => {
+				const submittedLetter = await getLetterSavedYesterday();
+				mockApiFetch.mockResolvedValue( {
+					...regularDispute,
+					status: 'under_review',
+					evidence: { uncategorized_text: submittedLetter },
+				} );
+
+				const coverLetter = await openCoverLetter();
+
+				expect( coverLetter ).toHaveValue( submittedLetter );
+			} );
+
 			it( 'keeps flagging a letter the merchant edited', async () => {
 				const editedLetter = `${ await getLetterSavedYesterday() }\nP.S. Thank you.`;
 				mockApiFetch.mockResolvedValue( {

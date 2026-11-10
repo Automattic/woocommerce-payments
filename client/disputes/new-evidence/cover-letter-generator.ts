@@ -1046,10 +1046,15 @@ const getTodayFormatted = (): string =>
 		includeTime: false,
 	} );
 
+// Replaces digit runs and letter runs, so dates in the same format share a shape whatever the
+// day, month name or language.
+const getDateShape = ( line: string ): string =>
+	line.replace( /\d+/g, '0' ).replace( /\p{L}+/gu, 'a' );
+
 /**
  * Compares a saved cover letter with one generated now, ignoring the date line, which changes
  * every day. Without this, a letter saved on an earlier day would look hand-edited and stop
- * updating with the evidence.
+ * updating with the evidence. The saved date line must still hold a date in the same format.
  *
  * @param savedLetter     The cover letter saved with the dispute evidence.
  * @param generatedLetter A cover letter generated now from the same evidence.
@@ -1067,9 +1072,18 @@ export const isSameCoverLetterIgnoringDate = (
 	if ( savedLines.length !== generatedLines.length ) {
 		return false;
 	}
-	// Find the date by its content: the merchant address above it can span several lines.
-	const dateLineIndex = generatedLines.indexOf( getTodayFormatted() );
+	// Find the date by its content rather than a fixed line number, so a newline in a header
+	// field such as the site title can't shift it.
+	const todayFormatted = getTodayFormatted();
+	const dateLineIndex = generatedLines.indexOf( todayFormatted );
 	if ( dateLineIndex === -1 ) {
+		return false;
+	}
+	// Anything else the merchant typed on the date line still counts as an edit.
+	if (
+		getDateShape( savedLines[ dateLineIndex ] ) !==
+		getDateShape( todayFormatted )
+	) {
 		return false;
 	}
 	savedLines.splice( dateLineIndex, 1 );

@@ -15,6 +15,7 @@ import {
 	generateBody,
 	generateClosing,
 	generateCoverLetter,
+	isSameCoverLetterIgnoringDate,
 } from '../cover-letter-generator';
 import type {
 	ExtendedDispute,
@@ -2127,6 +2128,39 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
 			);
+		} );
+	} );
+
+	describe( 'isSameCoverLetterIgnoringDate', () => {
+		const todayInSeconds = 1794312000;
+		const yesterdayInSeconds = 1794225600;
+		const generatedLetter = `Test Store\nFormatted ${ todayInSeconds }\nDear bank,`;
+		let nowSpy: jest.SpyInstance;
+
+		beforeEach( () => {
+			nowSpy = jest
+				.spyOn( Date, 'now' )
+				.mockReturnValue( todayInSeconds * 1000 );
+		} );
+
+		afterEach( () => {
+			nowSpy.mockRestore();
+		} );
+
+		it( 'matches a letter saved on an earlier day', () => {
+			const savedLetter = `Test Store\nFormatted ${ yesterdayInSeconds }\nDear bank,`;
+
+			expect(
+				isSameCoverLetterIgnoringDate( savedLetter, generatedLetter )
+			).toBe( true );
+		} );
+
+		it( 'treats other text on the date line as an edit', () => {
+			const savedLetter = 'Test Store\nRef: 123\nDear bank,';
+
+			expect(
+				isSameCoverLetterIgnoringDate( savedLetter, generatedLetter )
+			).toBe( false );
 		} );
 	} );
 } );
