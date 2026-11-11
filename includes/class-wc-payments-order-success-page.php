@@ -532,7 +532,9 @@ class WC_Payments_Order_Success_Page {
 		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		$order     = wc_get_order( $order_id );
 
-		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+		// The flag can outlive the attempt that set it, so also require a WooPayments charge or authorization.
+		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) || $order->needs_payment()
+			|| ! in_array( $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ), [ Intent_Status::SUCCEEDED, Intent_Status::REQUIRES_CAPTURE ], true ) ) {
 			return $value;
 		}
 

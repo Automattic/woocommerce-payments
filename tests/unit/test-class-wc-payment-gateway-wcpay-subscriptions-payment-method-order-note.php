@@ -416,39 +416,39 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
-			'Stripe Link',
+			'Link',
 			WC_Payment_Gateway_WCPay::GATEWAY_ID,
 			$this->subscription
 		);
 
 		$this->assertStringContainsString( '***omer@example.com', $old_payment_method_title_modified );
-		$this->assertStringContainsString( 'Stripe Link', $old_payment_method_title_modified );
+		$this->assertStringContainsString( 'Link', $old_payment_method_title_modified );
 	}
 
 	public function test_link_new_saved_payment_method_displays_email() {
 		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'buyer@link.com' );
 
 		$this->renewal_order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-		$this->renewal_order->set_payment_method_title( 'Stripe Link' );
+		$this->renewal_order->set_payment_method_title( 'Link' );
 
 		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
 
 		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_new_payment_method_title',
-			'Stripe Link',
+			'Link',
 			WC_Payment_Gateway_WCPay::GATEWAY_ID,
 			$this->subscription
 		);
 
 		$this->assertStringContainsString( '***uyer@link.com', $new_payment_method_title_modified );
-		$this->assertStringContainsString( 'Stripe Link', $new_payment_method_title_modified );
+		$this->assertStringContainsString( 'Link', $new_payment_method_title_modified );
 	}
 
 	public function test_switching_from_card_to_link() {
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$old_payment_method_title = 'Credit card';
-		$new_payment_method_title = 'Stripe Link';
+		$new_payment_method_title = 'Link';
 
 		// Old payment is a card (already set up in setUp with token1 and token2).
 		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'switcher@test.com' );
@@ -476,9 +476,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->assertStringContainsString( '***cher@test.com', $new_payment_method_title_modified );
 	}
 
-	public function test_switching_from_link_to_card_uses_stripe_link_title_even_when_gateway_says_card() {
-		// WC Subscriptions passes the gateway title ("Card") as the default, not "Stripe Link".
-		// Our filter should produce "Stripe Link (email)" regardless.
+	public function test_switching_from_link_to_card_uses_link_title_even_when_gateway_says_card() {
+		// WC Subscriptions passes the gateway title ("Card") as the default, not "Link".
+		// Our filter should produce "Link (email)" regardless.
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$old_payment_method_title = 'Card';
 
@@ -500,15 +500,15 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			$this->subscription
 		);
 
-		// Should say "Stripe Link (email)" not "Card (email)".
-		$this->assertStringContainsString( 'Stripe Link', $old_payment_method_title_modified );
+		// Should say "Link (email)" not "Card (email)".
+		$this->assertStringContainsString( 'Link', $old_payment_method_title_modified );
 		$this->assertStringContainsString( '***nker@test.com', $old_payment_method_title_modified );
 		$this->assertStringNotContainsString( 'Card (', $old_payment_method_title_modified );
 	}
 
 	public function test_switching_from_link_to_card() {
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$old_payment_method_title = 'Stripe Link';
+		$old_payment_method_title = 'Link';
 		$new_payment_method_title = 'Credit card';
 
 		// Replace setup's CC tokens with Link + CC tokens on the renewal order.
@@ -596,7 +596,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_old_payment_method_title',
-			'Stripe Link',
+			'Link',
 			WC_Payment_Gateway_WCPay::GATEWAY_ID,
 			$this->subscription
 		);
@@ -611,14 +611,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'buyer@link.com' );
 
 		$this->renewal_order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-		$this->renewal_order->set_payment_method_title( 'Stripe Link' );
+		$this->renewal_order->set_payment_method_title( 'Link' );
 
 		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
 
 		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 			'woocommerce_subscription_note_new_payment_method_title',
-			'Stripe Link',
+			'Link',
 			WC_Payment_Gateway_WCPay::GATEWAY_ID,
 			$this->subscription
 		);

@@ -1,6 +1,6 @@
 <?php
 /**
- * Set up Stripe Link note for WooCommerce inbox.
+ * Set up Link note for WooCommerce inbox.
  *
  * @package WooCommerce\Payments\Admin
  */
@@ -74,7 +74,7 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 		$note->set_title( __( 'Increase conversion at checkout', 'woocommerce-payments' ) );
 		$note->set_content(
 			sprintf(
-				/* translators: %1$s: Link brand name (Stripe Link or Onelink). */
+				/* translators: %1$s: Link brand name (Link or Onelink). */
 				__( 'Reduce cart abandonment and create a frictionless checkout experience with %1$s. %1$s autofills your customer’s payment and shipping details, so they can check out in just six seconds with the %1$s optimized experience.', 'woocommerce-payments' ),
 				$link_brand
 			)

@@ -99,6 +99,13 @@ class WC_Payments_Order_Service {
 	const CHARGE_RISK_LEVEL_META_KEY = '_charge_risk_level';
 
 	/**
+	 * Maximum length of the payment provider's error message in an order note.
+	 *
+	 * @const int
+	 */
+	private const MAX_PROVIDER_ERROR_LENGTH = 1000;
+
+	/**
 	 * Meta key used to store customer Id.
 	 *
 	 * @const string
@@ -562,6 +569,43 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Updates an order to failed status after the payment provider declined the payment,
+	 * adding a note with the provider's decline details.
+	 *
+	 * The `payment_intent.payment_failed` webhook adds the same note for BNPL payment methods
+	 * without changing the order status, so an existing note does not stop the status change.
+	 *
+	 * @param WC_Order    $order         Order object.
+	 * @param string      $intent_id     The ID of the intent associated with this order.
+	 * @param string|null $intent_status The status of the intent related to this order.
+	 * @param string|null $charge_id     The charge ID related to the intent/order.
+	 * @param array       $error         The payment provider's error.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_declined( $order, $intent_id, $intent_status, $charge_id, array $error ): void {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		// Another request for the same intent (e.g. a reloaded return page) may have failed the order
+		// after this one loaded it. The existing note can't stop the status change here, so check the
+		// stored status to avoid failing the order and sending the failed order emails twice.
+		if ( $order->has_status( [ Order_Status::FAILED ] ) || $this->get_stored_order( $order )->has_status( [ Order_Status::FAILED ] ) ) {
+			$this->complete_order_processing( $order );
+			return;
+		}
+
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $this->get_provider_decline_message( $error ) );
+
+		$this->update_order_status( $order, Order_Status::FAILED );
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+		}
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
 	 * Get content for the payment failure order note.
 	 *
 	 * @param WC_Order $order     Order object.
@@ -583,18 +627,29 @@ class WC_Payments_Order_Service {
 	 * @return string The formatted decline message.
 	 */
 	public function get_provider_decline_message( array $error ): string {
-		$decline_code = $error['decline_code'] ?? '';
+		$decline_code   = $error['decline_code'] ?? '';
+		$provider_error = (string) ( $error['message'] ?? '' );
+		if ( '' === $provider_error ) {
+			$provider_error = (string) ( $error['code'] ?? '' );
+		}
+		if ( '' === $provider_error ) {
+			$provider_error = __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
+		}
+		// Keep the note well within the comment size limit, otherwise it is not saved.
+		if ( mb_strlen( $provider_error ) > self::MAX_PROVIDER_ERROR_LENGTH ) {
+			$provider_error = mb_substr( $provider_error, 0, self::MAX_PROVIDER_ERROR_LENGTH ) . '…';
+		}
 
 		if ( ! empty( $decline_code ) ) {
 			$message = sprintf(
 				/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
 				__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
-				esc_html( $error['message'] ?? '' ),
+				esc_html( $provider_error ),
 				esc_html( $decline_code )
 			);
 		} else {
 			// translators: %s Stripe error message.
-			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $error['message'] ?? '' ) );
+			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $provider_error ) );
 		}
 
 		if ( ! empty( $error['doc_url'] ) ) {
@@ -3395,11 +3450,8 @@ class WC_Payments_Order_Service {
 	 * @return boolean True if it has a paid status, false if not.
 	 */
 	private function is_order_paid( $order ) {
-		wp_cache_delete( $order->get_id(), 'posts' );
-
 		// Read the latest order properties from the database to avoid race conditions if webhook was handled during this request.
-		$clone_order = clone $order;
-		$clone_order->get_data_store()->read( $clone_order );
+		$clone_order = $this->get_stored_order( $order );
 
 		// Check if the order is already complete.
 		if ( function_exists( 'wc_get_is_paid_statuses' ) ) {
@@ -3410,6 +3462,23 @@ class WC_Payments_Order_Service {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Reads a copy of the order as currently stored, bypassing the post cache, so that changes made
+	 * by another request after this one loaded the order are visible.
+	 *
+	 * @param WC_Order $order The order to read.
+	 *
+	 * @return WC_Order A copy of the order with the stored properties.
+	 */
+	private function get_stored_order( WC_Order $order ): WC_Order {
+		wp_cache_delete( $order->get_id(), 'posts' );
+
+		$stored_order = clone $order;
+		$stored_order->get_data_store()->read( $stored_order );
+
+		return $stored_order;
 	}
 
 	/**
