@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevented payment method errors from splitting log entries or causing checkout errors.

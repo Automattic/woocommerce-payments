@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Show Apple Pay, Google Pay, and Amazon Pay on the block cart and checkout when the first product is added to an empty cart, without a page reload.
