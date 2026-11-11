@@ -4,15 +4,15 @@
  */
 import React from 'react';
 import clsx from 'clsx';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import {
-	Card,
 	CheckboxControl,
 	TextareaControl,
 	ExternalLink,
@@ -31,6 +31,7 @@ import {
 	useWooPayGlobalThemeSupportEnabledSettings,
 } from 'wcpay/data/settings';
 import InlineNotice from 'wcpay/components/inline-notice';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import {
 	LinkWooPayConflictNotice,
@@ -83,9 +84,13 @@ const WooPaySettings = ( { section } ) => {
 					{ isConflicting && <LinkWooPayConflictNotice /> }
 					{ isStripeLinkEnabled && ! isConflicting && (
 						<InlineNotice status="warning" isDismissible={ false }>
-							{ __(
-								'To enable WooPay, you must first disable Link by Stripe.',
-								'woocommerce-payments'
+							{ sprintf(
+								/* translators: %s: Payment method name, e.g. "Link" or "Onelink". */
+								__(
+									'To enable WooPay, you must first disable %s.',
+									'woocommerce-payments'
+								),
+								methodsConfiguration.link.label
 							) }
 						</InlineNotice>
 					) }
@@ -107,7 +112,7 @@ const WooPaySettings = ( { section } ) => {
 									? __(
 											'When enabled, customers will be able to checkout using WooPay.',
 											'woocommerce-payments'
-									  )
+										)
 									: interpolateComponents( {
 											mixedString: __(
 												/* eslint-disable-next-line max-len */
@@ -149,7 +154,7 @@ const WooPaySettings = ( { section } ) => {
 													/>
 												),
 											},
-									  } )
+										} )
 								/* eslint-enable jsx-a11y/anchor-has-content */
 							}
 							__nextHasNoMarginBottom

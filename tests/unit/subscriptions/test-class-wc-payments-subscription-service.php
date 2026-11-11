@@ -557,6 +557,18 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected_result, $actual_result );
 	}
 
+	public function test_zero_quantity_item_is_kept_with_a_zero_unit_amount() {
+		$mock_order = WC_Helper_Order::create_order();
+		array_values( $mock_order->get_items() )[0]->set_quantity( 0 );
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+
+		$recurring_items = $this->subscription_service->get_recurring_item_data_for_subscription( $mock_subscription );
+
+		$this->assertSame( 0, $recurring_items[0]['quantity'] );
+		$this->assertSame( 0.0, $recurring_items[0]['price_data']['unit_amount_decimal'] );
+	}
+
 	/**
 	 * Test WC_Payments_Subscription_Service->update_subscription()
 	 */
@@ -652,6 +664,133 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 			'maybe_attempt_payment_for_subscription',
 			[ $mock_subscription, new WC_Payment_Token_CC() ]
 		);
+	}
+
+	/**
+	 * Keeps the successful token without completing an order the paid invoice does not match.
+	 *
+	 * @dataProvider provider_invoice_payments_that_cannot_complete_order
+	 *
+	 * @param array $response The paid invoice response.
+	 */
+	public function test_maybe_attempt_payment_for_subscription_does_not_complete_order_without_matching_invoice( array $response ) {
+		$mock_subscription       = new WC_Subscription();
+		$mock_pending_invoice_id = 'wcpay_pending_invoice_idtest123';
+
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service::PENDING_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_123' );
+		$mock_subscription->payment_method = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$mock_subscription->save();
+
+		$mock_renewal_order = WC_Helper_Order::create_order( 1, 50 );
+		$mock_renewal_order->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_renewal_order->save();
+		$new_token = WC_Helper_Token::create_token( 'pm_new_card' );
+
+		$invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->createMock( WC_Payments_Order_Service::class ) );
+		$subscription_service = new WC_Payments_Subscription_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_product_service, $invoice_service );
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_subscription ) {
+				return true;
+			}
+		);
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'charge_invoice' )
+			->with( 'wcpay_pending_invoice_idtest123' )
+			->willReturn( $response );
+
+		$original_session = WC()->session;
+		WC()->session     = new WC_Session_Handler();
+
+		try {
+			$subscription_service->maybe_attempt_payment_for_subscription( $mock_subscription, $new_token );
+
+			$stored_order = wc_get_order( $mock_renewal_order->get_id() );
+			$this->assertSame( 'pending', $stored_order->get_status() );
+			$this->assertFalse( $stored_order->is_paid() );
+			$this->assertSame( [ $new_token->get_id() ], $stored_order->get_payment_tokens() );
+			$this->assertSame( '', $mock_subscription->get_meta( '_wcpay_pending_invoice_id', true ) );
+			$this->assertSame( [], wc_get_notices( 'success' ) );
+		} finally {
+			WC()->session = $original_session;
+		}
+	}
+
+	/**
+	 * Paid invoices that cannot establish whether the 50 USD order is covered.
+	 *
+	 * @return array
+	 */
+	public function provider_invoice_payments_that_cannot_complete_order(): array {
+		return [
+			'amount below order total' => [
+				[
+					'status'      => 'paid',
+					'amount_paid' => 1000,
+					'currency'    => 'usd',
+				],
+			],
+			'missing amount'           => [
+				[
+					'status'   => 'paid',
+					'currency' => 'usd',
+				],
+			],
+			'missing currency'         => [
+				[
+					'status'      => 'paid',
+					'amount_paid' => 5000,
+				],
+			],
+			'missing both fields'      => [ [ 'status' => 'paid' ] ],
+		];
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->maybe_attempt_payment_for_subscription() completes the
+	 * order when the invoice collected the order total.
+	 */
+	public function test_maybe_attempt_payment_for_subscription_completes_order_when_amount_matches() {
+		$mock_subscription       = new WC_Subscription();
+		$mock_pending_invoice_id = 'wcpay_pending_invoice_idtest123';
+
+		$mock_subscription->update_meta_data( WC_Payments_Invoice_Service_Test::PENDING_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_123' );
+		$mock_subscription->payment_method = 'woocommerce_payments';
+		$mock_subscription->save();
+
+		$mock_renewal_order = WC_Helper_Order::create_order( 1, 50 );
+		$mock_renewal_order->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, $mock_pending_invoice_id );
+		$mock_renewal_order->save();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_subscription ) {
+				return true;
+			}
+		);
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'charge_invoice' )
+			->with( $mock_pending_invoice_id )
+			->willReturn(
+				[
+					'status'      => 'paid',
+					'amount_paid' => 5000,
+					'currency'    => 'usd',
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->subscription_service,
+			'maybe_attempt_payment_for_subscription',
+			[ $mock_subscription, new WC_Payment_Token_CC() ]
+		);
+
+		$stored_order = wc_get_order( $mock_renewal_order->get_id() );
+		$this->assertSame( 'processing', $stored_order->get_status() );
+		$this->assertTrue( $stored_order->is_paid() );
 	}
 
 	/**
@@ -932,34 +1071,68 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, $actual );
 	}
 
+	public function provider_check_wcpay_mode_for_subscription_matching_modes(): array {
+		return [
+			'test subscription in test mode' => [ Order_Mode::TEST, true ],
+			'live subscription in live mode' => [ Order_Mode::PRODUCTION, false ],
+		];
+	}
+
 	/**
-	 * Test WC_Payments_Subscription_Service->check_wcpay_mode_for_subscription()
+	 * Test WC_Payments_Subscription_Service->check_wcpay_mode_for_subscription() when the modes match.
+	 *
+	 * @dataProvider provider_check_wcpay_mode_for_subscription_matching_modes
+	 *
+	 * @param string $subscription_mode Mode stored on the parent order.
+	 * @param bool   $is_test_mode      Whether WooPayments runs in test mode.
 	 */
-	public function test_check_wcpay_mode_for_subscription() {
+	public function test_check_wcpay_mode_for_subscription_returns_items_when_modes_match( string $subscription_mode, bool $is_test_mode ) {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
-		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $subscription_mode );
 
-		WC_Payments::mode()->test();
+		$is_test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
 
 		$items  = [ 'item1', 'item2' ];
 		$result = $this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
-		$this->assertEquals( $items, $result );
+		$this->assertEquals( [ 'item1', 'item2' ], $result );
+	}
 
-		WC_Payments::mode()->live();
+	public function provider_check_wcpay_mode_for_subscription_mismatched_modes(): array {
+		return [
+			'test subscription in live mode' => [
+				Order_Mode::TEST,
+				false,
+				'Subscription was made when WooPayments was in the test mode and cannot be renewed in the live mode.',
+			],
+			'live subscription in test mode' => [
+				Order_Mode::PRODUCTION,
+				true,
+				'Subscription was made when WooPayments was in the live mode and cannot be renewed in the test mode.',
+			],
+		];
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->check_wcpay_mode_for_subscription() when the modes differ.
+	 *
+	 * @dataProvider provider_check_wcpay_mode_for_subscription_mismatched_modes
+	 *
+	 * @param string $subscription_mode Mode stored on the parent order.
+	 * @param bool   $is_test_mode      Whether WooPayments runs in test mode.
+	 * @param string $expected_message  Expected exception message.
+	 */
+	public function test_check_wcpay_mode_for_subscription_throws_when_modes_differ( string $subscription_mode, bool $is_test_mode, string $expected_message ) {
+		$mock_order        = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $mock_order );
+		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $subscription_mode );
+
+		$is_test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
 
 		$this->expectException( Subscription_Mode_Mismatch_Exception::class );
-		$this->expectExceptionMessage( 'Subscription was made when WooPayments was in the test mode and cannot be renewed in the live mode.' );
-		$this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
-
-		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
-		$result = $this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
-		$this->assertEquals( $items, $result );
-
-		WC_Payments::mode()->test();
-		$this->expectException( Subscription_Mode_Mismatch_Exception::class );
-		$this->expectExceptionMessage( 'Subscription was made when WooPayments was in the live mode and cannot be renewed in the test mode.' );
-		$this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
+		$this->expectExceptionMessage( $expected_message );
+		$this->subscription_service->check_wcpay_mode_for_subscription( [ 'item1', 'item2' ], $mock_order, $mock_subscription );
 	}
 }

@@ -18,6 +18,7 @@ use WCPay\Logger;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Internal\Service\Level3Service;
 use WCPay\Constants\Order_Mode;
 
 defined( 'ABSPATH' ) || exit;
@@ -48,6 +49,13 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const PAID_INTENT_ID_SESSION_KEY = 'wcpay_paid_intent_id';
+
+	/**
+	 * Key used to store the ID of the WooCommerce session the paid intent ID above was stored in.
+	 *
+	 * @const string
+	 */
+	const PAID_INTENT_ID_SESSION_OWNER_KEY = 'wcpay_paid_intent_id_session';
 
 	/**
 	 * Meta key used to store payment method Id.
@@ -91,11 +99,34 @@ class WC_Payments_Order_Service {
 	const CHARGE_RISK_LEVEL_META_KEY = '_charge_risk_level';
 
 	/**
+	 * Maximum length of the payment provider's error message in an order note.
+	 *
+	 * @const int
+	 */
+	private const MAX_PROVIDER_ERROR_LENGTH = 1000;
+
+	/**
 	 * Meta key used to store customer Id.
 	 *
 	 * @const string
 	 */
 	const CUSTOMER_ID_META_KEY = '_stripe_customer_id';
+
+	/**
+	 * Meta key holding the Unix time at which another gateway last took the order over from a WooPayments
+	 * attempt, whose payment details were removed then. Webhooks compare an intent's creation time against it.
+	 *
+	 * @const string
+	 */
+	const PAYMENT_DETAILS_REMOVED_META_KEY = '_wcpay_payment_details_removed';
+
+	/**
+	 * Meta key listing the intents of WooPayments attempts whose payment details were removed because another
+	 * gateway took the order over. Webhooks for these intents leave the order alone.
+	 *
+	 * @const string
+	 */
+	const SUPERSEDED_INTENT_IDS_META_KEY = '_wcpay_superseded_intent_ids';
 
 	/**
 	 * Meta key used to store WCPay fraud meta box type.
@@ -262,11 +293,34 @@ class WC_Payments_Order_Service {
 	const WCPAY_EARLY_FRAUD_WARNING_META_KEY = '_wcpay_early_fraud_warning';
 
 	/**
+	 * Meta key indexing orders whose stored early fraud warning is still actionable.
+	 *
+	 * Present only while actionable, so the bounded warning query can filter on it: the
+	 * warning itself is a serialized array MySQL cannot read, and its row is never removed
+	 * (the order screen keeps showing resolved warnings), so without this key resolved rows
+	 * would hold window slots forever and hide older still-actionable ones.
+	 *
+	 * The value is the warning's Unix `created` timestamp, so `wc_get_orders` can sort by
+	 * when the warning arrived rather than when the order was placed.
+	 *
+	 * @const string
+	 */
+	const WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY = '_wcpay_early_fraud_warning_actionable';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
 	 */
 	protected $api_client;
+
+	/**
+	 * Earlier WooPayments attempts whose removal finishes once the request ends, by order ID: the removed
+	 * intent, and whether it is still waiting for 3DS and must be cancelled.
+	 *
+	 * @var array<int, array{intent_id: string, cancel: bool}>
+	 */
+	private $earlier_attempts_to_finish = [];
 
 	/**
 	 * WC_Payments_Order_Service constructor.
@@ -285,6 +339,11 @@ class WC_Payments_Order_Service {
 	public function init_hooks(): void {
 		add_action( 'woocommerce_order_status_processing', [ $this, 'maybe_record_first_live_sale' ] );
 		add_action( 'woocommerce_order_status_completed', [ $this, 'maybe_record_first_live_sale' ] );
+		add_action( 'woocommerce_order_refunded', [ $this, 'maybe_clear_early_fraud_warning_caches' ] );
+
+		// Keep these below 50: WooCommerce Subscriptions copies the order's meta into switches and new subscriptions at 50 and 100.
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'maybe_remove_payment_details_for_other_gateway' ] );
+		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'maybe_remove_payment_details_for_other_gateway' ] );
 
 		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
 		// test-mode sale is noticed before fulfilment. The mode is read from the order meta at
@@ -368,6 +427,8 @@ class WC_Payments_Order_Service {
 	 * required (it excludes completed test-mode orders), so live orders created before that
 	 * meta existed aren't detected.
 	 *
+	 * @deprecated 11.3.0 Its only callers were the retired activation notice and reminder emails.
+	 *
 	 * @return bool
 	 */
 	public function has_live_sale(): bool {
@@ -403,6 +464,12 @@ class WC_Payments_Order_Service {
 	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
 	 */
 	public function update_order_status_from_intent( $order, $intent ) {
+		// Only orders are completed from an intent, never a subscription. The webhook, the duplicate payment
+		// check and the redirect handler all pass through here.
+		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) {
+			return;
+		}
+
 		$intent_data = $this->get_intent_data( $intent );
 
 		if ( ! isset( $intent_data['intent_id'] ) || ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {
@@ -416,6 +483,8 @@ class WC_Payments_Order_Service {
 			case Intent_Status::SUCCEEDED:
 				if ( Intent_Status::REQUIRES_CAPTURE === $this->get_intention_status_for_order( $order ) ) {
 					$this->mark_payment_capture_completed( $order, $intent );
+				} elseif ( $intent instanceof WC_Payments_API_Payment_Intention && ! $this->intent_amount_matches_order( $intent, $order ) ) {
+					$this->mark_payment_held_for_amount_mismatch( $order, $intent, $intent_data );
 				} else {
 					$this->mark_payment_completed( $order, $intent_data );
 				}
@@ -478,7 +547,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $message );
 		if ( $this->order_note_exists( $order, $note )
 			|| $order->has_status( [ Order_Status::FAILED ] ) ) {
 			$this->complete_order_processing( $order );
@@ -488,6 +557,101 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, Order_Status::FAILED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Updates an order to failed status after the payment provider declined the payment,
+	 * adding a note with the provider's decline details.
+	 *
+	 * The `payment_intent.payment_failed` webhook adds the same note for BNPL payment methods
+	 * without changing the order status, so an existing note does not stop the status change.
+	 *
+	 * @param WC_Order    $order         Order object.
+	 * @param string      $intent_id     The ID of the intent associated with this order.
+	 * @param string|null $intent_status The status of the intent related to this order.
+	 * @param string|null $charge_id     The charge ID related to the intent/order.
+	 * @param array       $error         The payment provider's error.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_declined( $order, $intent_id, $intent_status, $charge_id, array $error ): void {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		// Another request for the same intent (e.g. a reloaded return page) may have failed the order
+		// after this one loaded it. The existing note can't stop the status change here, so check the
+		// stored status to avoid failing the order and sending the failed order emails twice.
+		if ( $order->has_status( [ Order_Status::FAILED ] ) || $this->get_stored_order( $order )->has_status( [ Order_Status::FAILED ] ) ) {
+			$this->complete_order_processing( $order );
+			return;
+		}
+
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $this->get_provider_decline_message( $error ) );
+
+		$this->update_order_status( $order, Order_Status::FAILED );
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+		}
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Get content for the payment failure order note.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param string   $message   Optional message to add to the note.
+	 *
+	 * @return string Note content.
+	 */
+	public function get_payment_failure_note( $order, $intent_id, $charge_id, $message = '' ) {
+		return $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+	}
+
+	/**
+	 * Gets the payment provider's decline details for a failure note.
+	 *
+	 * @param array $error The payment provider's error.
+	 *
+	 * @return string The formatted decline message.
+	 */
+	public function get_provider_decline_message( array $error ): string {
+		$decline_code   = $error['decline_code'] ?? '';
+		$provider_error = (string) ( $error['message'] ?? '' );
+		if ( '' === $provider_error ) {
+			$provider_error = (string) ( $error['code'] ?? '' );
+		}
+		if ( '' === $provider_error ) {
+			$provider_error = __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
+		}
+		// Keep the note well within the comment size limit, otherwise it is not saved.
+		if ( mb_strlen( $provider_error ) > self::MAX_PROVIDER_ERROR_LENGTH ) {
+			$provider_error = mb_substr( $provider_error, 0, self::MAX_PROVIDER_ERROR_LENGTH ) . '…';
+		}
+
+		if ( ! empty( $decline_code ) ) {
+			$message = sprintf(
+				/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
+				__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
+				esc_html( $provider_error ),
+				esc_html( $decline_code )
+			);
+		} else {
+			// translators: %s Stripe error message.
+			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $provider_error ) );
+		}
+
+		if ( ! empty( $error['doc_url'] ) ) {
+			$message .= ' ' . sprintf(
+				/* translators: %1$s: a URL with more information about the declined payment. */
+				__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
+				esc_url( $error['doc_url'] )
+			);
+		}
+
+		return $message;
 	}
 
 	/**
@@ -1096,6 +1260,206 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Removes the payment details of an earlier WooPayments attempt from an order paid with another gateway.
+	 *
+	 * WooCommerce can reuse a pending or failed order at checkout, which keeps what an earlier WooPayments
+	 * attempt stored on it. Every attempt stores its mode with its details and this cleanup removes it, so a
+	 * mode means an attempt since the last cleanup. Other gateways, such as WooCommerce Stripe, store
+	 * `_stripe_customer_id` too, and never the mode, so what they store stays.
+	 *
+	 * @param int|WC_Order $order The order, or its ID.
+	 *
+	 * @return void
+	 */
+	public function maybe_remove_payment_details_for_other_gateway( $order ): void {
+		$order = $order instanceof WC_Order ? $order : wc_get_order( $order );
+		if (
+			! $order instanceof WC_Order
+			|| 0 === strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID )
+			|| '' === (string) $order->get_meta( self::WCPAY_MODE_META_KEY )
+		) {
+			return;
+		}
+
+		$intent_status = $this->get_intention_status_for_order( $order );
+		// A payment that went through is not an earlier attempt: the merchant reopened a paid order.
+		if ( in_array( $intent_status, Intent_Status::AUTHORIZED_STATUSES, true ) ) {
+			return;
+		}
+
+		// An attached intent is often still the order's transaction id, which the capture and cancel actions act
+		// on, and a 3DS step left open can still charge the card. A setup intent (`seti_`) can't charge, and the
+		// payment intent cancel endpoint doesn't take it. Both are dealt with once the request ends, because a
+		// Store API cart update during the checkout can save the session's earlier gateway on the order.
+		$intent_id = $this->get_intent_id_for_order( $order );
+		$cancel    = 0 === strpos( $intent_id, 'pi_' ) && Intent_Status::REQUIRES_ACTION === $intent_status;
+		if ( $cancel || ( '' !== $intent_id && $order->get_transaction_id() === $intent_id ) ) {
+			$this->earlier_attempts_to_finish[ $order->get_id() ] = [
+				'intent_id' => $intent_id,
+				'cancel'    => $cancel,
+			];
+			add_action( 'shutdown', [ $this, 'finish_removing_earlier_attempts' ] );
+		}
+
+		// With no intent on the order, the paths that read it (3DS callback, redirect return, duplicate payment
+		// check, capture) have nothing to act on. Webhooks find the order through the intent's metadata, so the
+		// removed intent is listed, and the time covers older attempts the order no longer named.
+		$superseded_intent_ids = $order->get_meta( self::SUPERSEDED_INTENT_IDS_META_KEY );
+		$superseded_intent_ids = is_array( $superseded_intent_ids ) ? $superseded_intent_ids : [];
+		if ( '' !== $intent_id && ! in_array( $intent_id, $superseded_intent_ids, true ) ) {
+			$superseded_intent_ids[] = $intent_id;
+		}
+
+		$order->delete_meta_data( self::CUSTOMER_ID_META_KEY );
+		$order->delete_meta_data( self::PAYMENT_METHOD_ID_META_KEY );
+		$order->delete_meta_data( self::INTENT_ID_META_KEY );
+		$order->delete_meta_data( self::INTENTION_STATUS_META_KEY );
+		$order->delete_meta_data( self::WCPAY_MODE_META_KEY );
+		if ( ! empty( $superseded_intent_ids ) ) {
+			$order->update_meta_data( self::SUPERSEDED_INTENT_IDS_META_KEY, $superseded_intent_ids );
+		}
+		$order->update_meta_data( self::PAYMENT_DETAILS_REMOVED_META_KEY, (string) time() );
+		$order->save_meta_data();
+
+		if ( '' === $intent_id ) {
+			$order->add_order_note( __( 'The payment details of an earlier WooPayments attempt were removed because this order is being paid with another payment method.', 'woocommerce-payments' ) );
+		} else {
+			$this->add_note_naming_intent(
+				$order,
+				/* translators: %1: the ID of a WooPayments payment. */
+				__( 'The payment details of an earlier WooPayments attempt (<code>%1$s</code>) were removed because this order is being paid with another payment method.', 'woocommerce-payments' ),
+				$intent_id
+			);
+		}
+	}
+
+	/**
+	 * Adds an order note whose message names a WooPayments payment in its `<code>%1$s</code>` placeholder.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $message   The translated message, with the `<code>` tag around `%1$s`.
+	 * @param string   $intent_id The payment to name.
+	 *
+	 * @return void
+	 */
+	private function add_note_naming_intent( WC_Order $order, string $message, string $intent_id ): void {
+		$order->add_order_note( sprintf( WC_Payments_Utils::esc_interpolated_html( $message, [ 'code' => '<code>' ] ), $intent_id ) );
+	}
+
+	/**
+	 * Whether an intent belongs to a WooPayments attempt from before another gateway took the order over.
+	 *
+	 * Webhooks find the order through the intent's metadata rather than the intent on the order. An intent
+	 * the cleanup removed is named on the order, which is exact. An older attempt the order no longer named
+	 * at the takeover is told apart by its creation time against the takeover time, which compares Stripe's
+	 * clock with the store's, so it can miss an attempt started within the clock difference of the takeover.
+	 * That comparison stops once a new WooPayments attempt writes the mode back: a store clock ahead of
+	 * Stripe's would otherwise make a retry seconds after a failed takeover look superseded, and for a method
+	 * that pays later the skipped webhook is what completes the order.
+	 *
+	 * @param WC_Order $order             The order.
+	 * @param string   $intent_id         The intent.
+	 * @param int      $intent_created_at When the intent was created, as a Unix time; 0 when unknown.
+	 *
+	 * @return bool
+	 */
+	public function is_intent_from_superseded_attempt( WC_Order $order, string $intent_id, int $intent_created_at ): bool {
+		$superseded_intent_ids = $order->get_meta( self::SUPERSEDED_INTENT_IDS_META_KEY );
+		if ( is_array( $superseded_intent_ids ) && in_array( $intent_id, $superseded_intent_ids, true ) ) {
+			return true;
+		}
+
+		if ( '' !== (string) $order->get_meta( self::WCPAY_MODE_META_KEY ) ) {
+			return false;
+		}
+
+		$taken_over_at = (int) $order->get_meta( self::PAYMENT_DETAILS_REMOVED_META_KEY );
+
+		return 0 < $taken_over_at && 0 < $intent_created_at && $intent_created_at < $taken_over_at;
+	}
+
+	/**
+	 * Finishes removing earlier WooPayments attempts from orders another gateway took over in this request.
+	 *
+	 * Runs on `shutdown`, once the checkout has saved the order: clears each attempt's transaction id and
+	 * cancels an attempt still waiting for 3DS. Each attempt is handled once. An uncaught error is fatal on
+	 * `shutdown`, so both steps catch every throwable, and a failed clear doesn't stop the cancel.
+	 *
+	 * @internal
+	 *
+	 * @return void
+	 */
+	public function finish_removing_earlier_attempts(): void {
+		$earlier_attempts                 = $this->earlier_attempts_to_finish;
+		$this->earlier_attempts_to_finish = [];
+
+		foreach ( $earlier_attempts as $order_id => $earlier_attempt ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order instanceof WC_Order ) {
+				continue;
+			}
+
+			$this->clear_transaction_id_of_earlier_attempt( $order, $earlier_attempt['intent_id'] );
+			if ( $earlier_attempt['cancel'] ) {
+				$this->cancel_intent_of_earlier_attempt( $order, $earlier_attempt['intent_id'] );
+			}
+		}
+	}
+
+	/**
+	 * Clears the transaction id of an order when it is the intent of an earlier WooPayments attempt.
+	 *
+	 * The capture and cancel actions on the authorizations screen act on the transaction id. A transaction id
+	 * another gateway set stays.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $intent_id The intent of the earlier attempt.
+	 *
+	 * @return void
+	 */
+	private function clear_transaction_id_of_earlier_attempt( WC_Order $order, string $intent_id ): void {
+		if ( $order->get_transaction_id() !== $intent_id ) {
+			return;
+		}
+
+		try {
+			$order->set_transaction_id( '' );
+			$order->save();
+		} catch ( \Throwable $e ) {
+			Logger::error( sprintf( 'Could not clear transaction id %1$s of order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Cancels the intent of an earlier WooPayments attempt on an order another gateway took over, and notes
+	 * whether it worked.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $intent_id The intent of the earlier attempt.
+	 *
+	 * @return void
+	 */
+	private function cancel_intent_of_earlier_attempt( WC_Order $order, string $intent_id ): void {
+		try {
+			$request = Cancel_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$request->send();
+			/* translators: %1: the ID of a WooPayments payment. */
+			$message = __( 'The earlier WooPayments payment <code>%1$s</code> was cancelled because this order was paid with another payment method.', 'woocommerce-payments' );
+		} catch ( \Throwable $e ) {
+			Logger::error( sprintf( 'Could not cancel intent %1$s of order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
+			/* translators: %1: the ID of a WooPayments payment. */
+			$message = __( 'The earlier WooPayments payment <code>%1$s</code> could not be cancelled when this order was paid with another payment method. Check that it was not charged.', 'woocommerce-payments' );
+		}
+
+		try {
+			$this->add_note_naming_intent( $order, $message, $intent_id );
+		} catch ( \Throwable $e ) {
+			Logger::error( sprintf( 'Could not note the cancel of intent %1$s on order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
+		}
+	}
+
+	/**
 	 * Get the payment metadata for customer id.
 	 *
 	 * @param  mixed $order The order Id or order object.
@@ -1303,6 +1667,16 @@ class WC_Payments_Order_Service {
 	public function set_early_fraud_warning_for_order( $order, array $early_fraud_warning ) {
 		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, $early_fraud_warning );
+
+		if ( ! empty( $early_fraud_warning['efw_actionable'] ) ) {
+			$order->update_meta_data(
+				self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
+				(int) ( $early_fraud_warning['created'] ?? 0 )
+			);
+		} else {
+			$order->delete_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY );
+		}
+
 		$order->save_meta_data();
 	}
 
@@ -1320,6 +1694,86 @@ class WC_Payments_Order_Service {
 		$early_fraud_warning = $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, true );
 
 		return is_array( $early_fraud_warning ) ? $early_fraud_warning : null;
+	}
+
+	/**
+	 * Returns orders whose latest early fraud warning is still actionable.
+	 *
+	 * Inspects the $limit most recent actionable warnings by warning date, so
+	 * the result is a lower bound on very large stores. Callers should cache
+	 * the result — the meta query is too slow to run on every admin request.
+	 *
+	 * The actionable index stores the warning timestamp, so the query itself
+	 * returns the newest warnings first even when a warning lands long after
+	 * the order was placed.
+	 *
+	 * @param int $limit Maximum number of warning-carrying orders to inspect.
+	 *
+	 * @return array[] Arrays with `order_id`, `order_number`, `charge_id` and `created` keys, newest warning first.
+	 */
+	public function get_actionable_early_fraud_warning_orders( int $limit = 100 ): array {
+		$orders = wc_get_orders(
+			[
+				'limit'    => $limit,
+				'orderby'  => 'meta_value_num',
+				'order'    => 'DESC',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key' => self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
+			]
+		);
+
+		$is_test_mode      = WC_Payments::mode()->is_test();
+		$actionable_orders = [];
+		foreach ( $orders as $order ) {
+			// A warning stored in the other mode can never clear: the webhook that would
+			// resolve it is discarded as a mode mismatch. Orders predating the mode meta
+			// read as live, matching has_live_sale().
+			if ( $is_test_mode !== $this->is_order_in_test_mode( $order ) ) {
+				continue;
+			}
+
+			$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
+			if ( empty( $early_fraud_warning['efw_actionable'] ) ) {
+				continue;
+			}
+
+			// Refunding is the action the warning asks for, so treat a fully refunded order
+			// as resolved rather than waiting on a webhook that may never arrive.
+			$total = (float) $order->get_total();
+			if ( $total > 0 && (float) $order->get_total_refunded() >= $total ) {
+				continue;
+			}
+
+			$actionable_orders[] = [
+				'order_id'     => $order->get_id(),
+				'order_number' => $order->get_order_number(),
+				'charge_id'    => $this->get_charge_id_for_order( $order ),
+				'created'      => (int) $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY, true ),
+			];
+		}
+
+		return $actionable_orders;
+	}
+
+	/**
+	 * Drops the cached early fraud warning lists when a flagged order is refunded.
+	 *
+	 * Only a warning webhook invalidates them otherwise, which leaves the refunded-order
+	 * guard in get_actionable_early_fraud_warning_orders() unreachable on a cache hit —
+	 * exactly when no resolving webhook is coming. What counts as resolved stays in that
+	 * query, so this only decides that the list may be stale.
+	 *
+	 * @param int $order_id The refunded order's ID.
+	 *
+	 * @return void
+	 */
+	public function maybe_clear_early_fraud_warning_caches( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || ! $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY ) ) {
+			return;
+		}
+
+		WC_Payments::get_database_cache()->delete_early_fraud_warning_caches();
 	}
 
 	/**
@@ -1615,6 +2069,73 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Checks whether a payment intent is for the order's current total and currency.
+	 *
+	 * The order total can change after the intent is created, for example when a merchant edits a pending order.
+	 *
+	 * @param WC_Payments_API_Payment_Intention $intent The intent to compare.
+	 * @param WC_Order                          $order  The order to compare against.
+	 *
+	 * @return bool
+	 */
+	private function intent_amount_matches_order( WC_Payments_API_Payment_Intention $intent, WC_Order $order ): bool {
+		return strtolower( $intent->get_currency() ) === strtolower( $order->get_currency() )
+			&& (int) $intent->get_amount() === WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+	}
+
+	/**
+	 * Puts an order on hold when its payment succeeded for an amount or currency that differs from the order total.
+	 *
+	 * @param WC_Order                          $order       Order object.
+	 * @param WC_Payments_API_Payment_Intention $intent      The succeeded intent.
+	 * @param array                             $intent_data The data of the intent associated with this order.
+	 *
+	 * @return void
+	 */
+	private function mark_payment_held_for_amount_mismatch( $order, WC_Payments_API_Payment_Intention $intent, $intent_data ) {
+		$charged_currency = strtoupper( $intent->get_currency() );
+		$order_currency   = strtoupper( $order->get_currency() );
+		// Always show the codes: USD and CAD both render as "$", and single-currency stores hide codes by default.
+		$charged_amount  = wc_price( WC_Payments_Utils::interpret_stripe_amount( (int) $intent->get_amount(), $charged_currency ), [ 'currency' => $charged_currency ] ) . ' ' . $charged_currency;
+		$order_amount    = wc_price( $order->get_total(), [ 'currency' => $order_currency ] ) . ' ' . $order_currency;
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_data['intent_id'], $intent_data['charge_id'] );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: the order total, %5: transaction details URL */
+				__( 'A payment of %1$s was charged using %2$s (<a>%3$s</a>), but the order total is %4$s. The order was put <strong>on hold</strong>; review it before fulfilling.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%5$s" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$charged_amount,
+			'WooPayments',
+			WC_Payments_Utils::get_transaction_url_id( $intent_data['intent_id'], $intent_data['charge_id'] ),
+			$order_amount,
+			$transaction_url
+		);
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		Logger::error(
+			sprintf(
+				'Order %1$d put on hold: intent %2$s succeeded for %3$d %4$s, but the order total is %5$s %6$s.',
+				$order->get_id(),
+				$intent_data['intent_id'],
+				$intent->get_amount(),
+				$intent->get_currency(),
+				$order->get_total(),
+				$order->get_currency()
+			)
+		);
+
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
+		$order->add_order_note( $note );
+		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
 	 * Updates an order to on-hold status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -1858,9 +2379,10 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function capture_authorization_on_order_status_change( int $order_id ) {
-		$order = new WC_Order( $order_id );
+		// wc_get_order() returns false for a missing order, where `new WC_Order` throws.
+		$order = wc_get_order( $order_id );
 
-		if ( null !== $order ) {
+		if ( $order instanceof WC_Order ) {
 			$intent_id = $this->get_intent_id_for_order( $order );
 			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
@@ -1880,6 +2402,11 @@ class WC_Payments_Order_Service {
 					) {
 							$request = Capture_Intention::create( $intent_id );
 							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+							// Without fresh Level 3 data, Stripe checks the capture against the data saved at
+							// authorization and refuses an edited total. Same Level 3 rule as capture_charge().
+						if ( 'woocommerce_payments_amazon_pay' !== $order->get_payment_method() ) {
+							$request->set_level3( wcpay_get_container()->get( Level3Service::class )->get_data_from_order( $order->get_id() ) );
+						}
 							$request->set_hook_args( $order );
 							$intent = $request->send();
 
@@ -2874,11 +3401,8 @@ class WC_Payments_Order_Service {
 	 * @return boolean True if it has a paid status, false if not.
 	 */
 	private function is_order_paid( $order ) {
-		wp_cache_delete( $order->get_id(), 'posts' );
-
 		// Read the latest order properties from the database to avoid race conditions if webhook was handled during this request.
-		$clone_order = clone $order;
-		$clone_order->get_data_store()->read( $clone_order );
+		$clone_order = $this->get_stored_order( $order );
 
 		// Check if the order is already complete.
 		if ( function_exists( 'wc_get_is_paid_statuses' ) ) {
@@ -2889,6 +3413,23 @@ class WC_Payments_Order_Service {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Reads a copy of the order as currently stored, bypassing the post cache, so that changes made
+	 * by another request after this one loaded the order are visible.
+	 *
+	 * @param WC_Order $order The order to read.
+	 *
+	 * @return WC_Order A copy of the order with the stored properties.
+	 */
+	private function get_stored_order( WC_Order $order ): WC_Order {
+		wp_cache_delete( $order->get_id(), 'posts' );
+
+		$stored_order = clone $order;
+		$stored_order->get_data_store()->read( $stored_order );
+
+		return $stored_order;
 	}
 
 	/**

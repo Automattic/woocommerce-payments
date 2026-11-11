@@ -8,6 +8,9 @@
 use WCPay\WooPay\WooPay_Adapted_Extensions;
 use WCPay\WooPay\WooPay_Scheduler;
 
+require_once __DIR__ . '/../helpers/class-wc-helper-points-and-rewards.php';
+require_once __DIR__ . '/../helpers/class-wc-helper-gift-cards.php';
+
 /**
  * WooPay_Adapted_Extensions unit tests.
  */
@@ -145,6 +148,10 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $this->woopay_adapted_extensions->get_extension_data(), [] );
 	}
 
+	/**
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
 	public function test_get_extension_data() {
 		define( 'WOOCOMMERCE_MULTICURRENCY_VERSION', '0.0.0' );
 

@@ -6,6 +6,8 @@ An authorization may be captured from one of these pages - Order details, Uncapt
 
 The authorization API allows you to get data related to authorizations.
 
+Monetary fields in these responses, including `amount`, `net`, `fees`, `amount_captured`, `amount_refunded`, and summary `total`, are returned in minor units of `currency`. See [Monetary amounts](#monetary-amounts) for examples.
+
 ## Get authorizations
 
 _@since v4.9.0_

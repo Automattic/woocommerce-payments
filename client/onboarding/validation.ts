@@ -31,7 +31,7 @@ export const useValidation = ( name: keyof OnboardingFields ) => {
 		const error = isValid( name, value )
 			? undefined
 			: ( strings.errors as Record< string, string > )[ name ] ||
-			  strings.errors.generic;
+				strings.errors.generic;
 
 		setErrors( { [ name ]: error } );
 	};

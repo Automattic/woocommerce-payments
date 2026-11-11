@@ -21,6 +21,8 @@ class Erase_Deprecated_Flags_And_Options_Test extends WCPAY_UnitTestCase {
 	private $migration;
 
 	public function set_up() {
+		parent::set_up();
+
 		$this->migration = new Erase_Deprecated_Flags_And_Options();
 		// one of the old options, for which we'll test for.
 		update_option( '_wcpay_feature_grouped_settings', '1' );

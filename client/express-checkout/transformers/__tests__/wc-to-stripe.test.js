@@ -27,7 +27,7 @@ describe( 'wc-to-stripe transformers', () => {
 				transformCartDataForDisplayItems( {
 					items: [
 						{
-							key: '6fd9b4da889ae534ceae47561b939f24',
+							key: '6fd9b4da889ae534ceae47561b939f24', // gitleaks:allow
 							id: 214,
 							type: 'simple',
 							quantity: 2,
@@ -104,7 +104,7 @@ describe( 'wc-to-stripe transformers', () => {
 							},
 						},
 						{
-							key: '30e94626ff41df1be0572e19f249746f',
+							key: '30e94626ff41df1be0572e19f249746f', // gitleaks:allow
 							id: 44,
 							type: 'subscription',
 							quantity: 1,
@@ -160,7 +160,7 @@ describe( 'wc-to-stripe transformers', () => {
 							},
 						},
 						{
-							key: '4cf7f86c98b84855e3d5811a5712b35d',
+							key: '4cf7f86c98b84855e3d5811a5712b35d', // gitleaks:allow
 							id: 66,
 							type: 'booking',
 							quantity: 1,
@@ -497,7 +497,7 @@ describe( 'wc-to-stripe transformers', () => {
 				transformCartDataForDisplayItems( {
 					items: [
 						{
-							key: '6fd9b4da889ae534ceae47561b939f24',
+							key: '6fd9b4da889ae534ceae47561b939f24', // gitleaks:allow
 							id: 214,
 							type: 'simple',
 							quantity: 2,

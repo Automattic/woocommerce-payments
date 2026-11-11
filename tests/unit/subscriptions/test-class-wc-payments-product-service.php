@@ -58,6 +58,8 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		WC_Payments::mode()->live();
+
+		parent::tear_down();
 	}
 
 	/**

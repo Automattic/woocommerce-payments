@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 
 /**
  * Handles and process WC payment tokens API.
@@ -130,7 +131,7 @@ class WC_Payments_Token_Service {
 	 *
 	 * @param string  $payment_method_id Payment method to be added.
 	 * @param WP_User $user              User to attach payment method to.
-	 * @return WC_Payment_Token_CC       The newly created token.
+	 * @return WC_Payment_Token          The newly created token.
 	 */
 	public function add_payment_method_to_user( $payment_method_id, $user ) {
 		$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
@@ -230,7 +231,7 @@ class WC_Payments_Token_Service {
 		}
 
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
-		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10 );
 
 		foreach ( $payment_methods as $payment_method ) {
 			if ( ! isset( $payment_method['type'] ) ) {
@@ -243,10 +244,10 @@ class WC_Payments_Token_Service {
 				unset( $stored_tokens[ $payment_method['id'] ] );
 			}
 		}
-		add_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 
 		// Remove the payment methods that no longer exist in Stripe's side.
-		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10 );
 		foreach ( $stored_tokens as $token ) {
 			unset( $tokens[ $token->get_id() ] );
 			$token->delete();
@@ -365,7 +366,7 @@ class WC_Payments_Token_Service {
 				continue;
 			}
 
-			// Stripe Link is part of the card gateway, so we need to check separately if Link is enabled.
+			// Link is part of the card gateway, so we need to check separately if Link is enabled.
 			if ( Payment_Method::LINK === $payment_method && ! $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
 				continue;
 			}
@@ -477,7 +478,7 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
-	 * Controls the output for Stripe Link on the My account page.
+	 * Controls the output for Link on the My account page.
 	 *
 	 * @param  array                                        $item          Individual list item from woocommerce_saved_payment_methods_list.
 	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Link $payment_token The payment token associated with this method entry.
@@ -485,8 +486,13 @@ class WC_Payments_Token_Service {
 	 */
 	public function get_account_saved_payment_methods_list_item_link( $item, $payment_token ) {
 		if ( WC_Payment_Token_WCPay_Link::TYPE === strtolower( $payment_token->get_type() ) ) {
+			$account_country         = WC_Payments::get_gateway()->get_account_country();
 			$item['method']['last4'] = $payment_token->get_redacted_email();
-			$item['method']['brand'] = esc_html__( 'Stripe Link email', 'woocommerce-payments' );
+			$item['method']['brand'] = sprintf(
+				/* translators: %s: Link brand name (Link or Onelink). */
+				esc_html__( '%s email', 'woocommerce-payments' ),
+				LinkDefinition::get_title( $account_country )
+			);
 		}
 		return $item;
 	}
@@ -556,14 +562,19 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
-	 * Normalizes the Stripe Link label on My Account page.
+	 * Normalizes the Link label on My Account page.
 	 *
 	 * @param string $label Token label.
-	 * @return string $label Capitalized SEPA IBAN label.
+	 * @return string $label Capitalized Link/Onelink label.
 	 */
 	public function normalize_stripe_link_label( $label ) {
-		if ( 'stripe link email' === strtolower( $label ) ) {
-			return 'Stripe Link email';
+		$lowered = strtolower( $label );
+		if ( 'link email' === $lowered || 'stripe link email' === $lowered ) {
+			return 'Link email';
+		}
+
+		if ( 'onelink email' === $lowered ) {
+			return 'Onelink email';
 		}
 
 		return $label;

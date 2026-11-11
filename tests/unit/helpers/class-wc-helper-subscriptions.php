@@ -22,7 +22,7 @@ function wcs_get_subscriptions_for_order( $order ) {
 
 function wcs_get_subscriptions_for_renewal_order( $order ) {
 	if ( ! WC_Subscriptions::$wcs_get_subscriptions_for_renewal_order ) {
-		return;
+		return [];
 	}
 	return ( WC_Subscriptions::$wcs_get_subscriptions_for_renewal_order )( $order );
 }
@@ -109,6 +109,13 @@ function wcs_is_manual_renewal_enabled() {
 		return;
 	}
 	return ( WC_Subscriptions::$wcs_is_manual_renewal_enabled )();
+}
+
+function wcs_is_checkout_blocks_api_request( $endpoint = '' ) {
+	if ( ! WC_Subscriptions::$wcs_is_checkout_blocks_api_request ) {
+		return;
+	}
+	return ( WC_Subscriptions::$wcs_is_checkout_blocks_api_request )( $endpoint );
 }
 
 /**
@@ -229,6 +236,13 @@ class WC_Subscriptions {
 	 */
 	public static $wcs_is_manual_renewal_enabled = null;
 
+	/**
+	 * wcs_is_checkout_blocks_api_request mock.
+	 *
+	 * @var function
+	 */
+	public static $wcs_is_checkout_blocks_api_request = null;
+
 	public static function set_wcs_order_contains_subscription( $callback ) {
 		self::$wcs_order_contains_subscription = $callback;
 	}
@@ -287,5 +301,9 @@ class WC_Subscriptions {
 
 	public static function set_wcs_is_manual_renewal_enabled( $callback ) {
 		self::$wcs_is_manual_renewal_enabled = $callback;
+	}
+
+	public static function set_wcs_is_checkout_blocks_api_request( $callback ) {
+		self::$wcs_is_checkout_blocks_api_request = $callback;
 	}
 }

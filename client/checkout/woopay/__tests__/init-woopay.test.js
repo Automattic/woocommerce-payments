@@ -64,7 +64,7 @@ describe( 'initWooPay', () => {
 	// than poking an attribute: the first call holds the flag, the second should bail out.
 	test( 'skips the request while one is already in flight', async () => {
 		getConfig.mockImplementation(
-			( key ) => ( { initWooPayNonce: 'foo' }[ key ] )
+			( key ) => ( { initWooPayNonce: 'foo' } )[ key ]
 		);
 
 		let resolveInFlight;

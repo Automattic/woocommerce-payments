@@ -4,17 +4,12 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import {
-	Button,
-	CardBody,
-	Flex,
-	FlexBlock,
-	FlexItem,
-} from '@wordpress/components';
+import { Button, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { CardBody } from 'wcpay/components/card';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import Loadable from 'components/loadable';
 import OverviewCard from 'wcpay/components/overview-card';

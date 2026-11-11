@@ -27,6 +27,7 @@ import { HorizontalList } from 'components/horizontal-list';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getBankName } from 'utils/charge';
+import { encodePathSegment } from 'utils/path-segment';
 import {
 	generateCoverLetter,
 	getBusinessDetails,
@@ -37,6 +38,7 @@ import { useGetSettings } from 'wcpay/data/settings';
 // which now lives in the payment-intents store.
 import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
 import CustomerDetails from './customer-details';
+import { getErrorMessage } from './utils';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
@@ -95,9 +97,12 @@ const steps = [
 	},
 ];
 
+const getDisputePath = ( id: string ) =>
+	`/wc/v3/payments/disputes/${ encodePathSegment( id ) }`;
+
 // --- Main Component ---
 export default ( { query }: { query: { id: string } } ) => {
-	const path = `/wc/v3/payments/disputes/${ query.id }`;
+	const disputeId = query.id;
 	const [ dispute, setDispute ] = useState< any >();
 	const [ evidence, setEvidence ] = useState< EvidenceState >( {} );
 	const [ productType, setProductType ] = useState< string >( '' );
@@ -137,9 +142,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ duplicateStatus, setDuplicateStatus ] = useState( 'is_duplicate' );
 
 	// Refs for heading elements to focus on step navigation
-	const stepHeadingRefs = useRef< {
-		[ key: number ]: HTMLHeadingElement | null;
-	} >( {} );
+	const stepHeadingRef = useRef< HTMLHeadingElement >( null );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
 	const getDisputeTracksProperties = () => ( {
@@ -157,8 +160,13 @@ export default ( { query }: { query: { id: string } } ) => {
 		const fetchDispute = async () => {
 			try {
 				setIsInitialLoading( true );
-				const d: any = await apiFetch( { path } );
+				const d: any = await apiFetch( {
+					path: getDisputePath( disputeId ),
+				} );
 				setDispute( d );
+				const fetchedBankName = d.charge
+					? getBankName( d.charge )
+					: null;
 				const isFetchedDisputeVisaCompliance =
 					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
@@ -258,7 +266,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							disputeWithCurrentEvidence,
 							getBusinessDetails(),
 							settings,
-							bankName,
+							fetchedBankName,
 							refundStatus,
 							duplicateStatus,
 							suggestedProductType
@@ -280,7 +288,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						d,
 						getBusinessDetails(),
 						settings,
-						bankName,
+						fetchedBankName,
 						refundStatus,
 						duplicateStatus,
 						suggestedProductType
@@ -289,17 +297,17 @@ export default ( { query }: { query: { id: string } } ) => {
 					setIsCoverLetterManuallyEdited( false );
 				}
 			} catch ( error ) {
-				createErrorNotice( String( error ) );
+				createErrorNotice( getErrorMessage( error ) );
 			} finally {
 				setIsInitialLoading( false );
 			}
 		};
 		fetchDispute();
-		// We intentionally exclude duplicateStatus and refundStatus from dependencies to prevent
-		// re-fetching dispute data when status changes (which would reset the product type selection).
-		// Cover letter regeneration on status changes is handled by the evidence update effect.
+		// Load once per dispute: each run resets the form to the saved evidence, so re-running when
+		// settings or the status selections change would wipe what the merchant has typed. The
+		// evidence update effect regenerates the cover letter when those values change.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ path, createErrorNotice, settings, bankName ] );
+	}, [ disputeId ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -313,43 +321,51 @@ export default ( { query }: { query: { id: string } } ) => {
 			if ( fileKeys.length === 0 ) return;
 			// If we already loaded the file details, return.
 			if ( Object.keys( uploadedFiles ).length > 0 ) return;
-			// Build the URLS to bulk fetch the file details.
-			const fileDetails = await Promise.all(
-				fileKeys.map( async ( fileKey ) => {
-					const fileId = dispute?.evidence?.[ fileKey ];
-					if ( ! fileId ) return null;
-					const file: any = await apiFetch( {
-						path: `/wc/v3/payments/file/${ fileId }/details`,
-					} );
-					return {
-						fileKey: fileKey,
-						filename: file.filename,
-						size: file.size,
-					};
-				} )
-			);
-			const filteredFileDetails = fileDetails.filter(
-				( fileDetail ) => fileDetail !== null
-			);
-			setUploadedFiles( ( prev ) => ( {
-				...prev,
-				...Object.fromEntries(
-					filteredFileDetails.map( ( fileDetail ) => [
-						fileDetail?.fileKey,
-						fileDetail?.filename,
-					] )
-				),
-			} ) );
-			// Also set the file sizes
-			setFileSizes( ( prev ) => ( {
-				...prev,
-				...Object.fromEntries(
-					filteredFileDetails.map( ( fileDetail ) => [
-						fileDetail?.fileKey,
-						fileDetail?.size,
-					] )
-				),
-			} ) );
+			try {
+				// Build the URLS to bulk fetch the file details.
+				const fileDetails = await Promise.all(
+					fileKeys.map( async ( fileKey ) => {
+						const fileId = dispute?.evidence?.[ fileKey ];
+						if ( ! fileId ) return null;
+						const file: any = await apiFetch( {
+							path: `/wc/v3/payments/file/${ encodePathSegment(
+								fileId
+							) }/details`,
+						} );
+						return {
+							fileKey: fileKey,
+							filename: file.filename,
+							size: file.size,
+						};
+					} )
+				);
+				const filteredFileDetails = fileDetails.filter(
+					( fileDetail ) => fileDetail !== null
+				);
+				setUploadedFiles( ( prev ) => ( {
+					...prev,
+					...Object.fromEntries(
+						filteredFileDetails.map( ( fileDetail ) => [
+							fileDetail?.fileKey,
+							fileDetail?.filename,
+						] )
+					),
+				} ) );
+				// Also set the file sizes
+				setFileSizes( ( prev ) => ( {
+					...prev,
+					...Object.fromEntries(
+						filteredFileDetails.map( ( fileDetail ) => [
+							fileDetail?.fileKey,
+							fileDetail?.size,
+						] )
+					),
+				} ) );
+			} catch ( error ) {
+				createErrorNotice(
+					__( 'Error retrieving file.', 'woocommerce-payments' )
+				);
+			}
 		};
 		fetchFile();
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- We only want to fetch the file details when uploadedFiles changes.
@@ -537,12 +553,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		const message = submit
 			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
 			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-		createErrorNotice(
-			sprintf(
-				message,
-				err instanceof Error ? err.message : String( err )
-			)
-		);
+		createErrorNotice( sprintf( message, getErrorMessage( err ) ) );
 	};
 
 	const doSave = async ( submit: boolean, notify = true ) => {
@@ -627,7 +638,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				'uncategorized_file',
 			];
 
-			// Filter evidence: include shipping and document fields even if empty (to clear them),
+			// Filter evidence: include shipping, document and cover letter fields even if empty (to clear them),
 			// but filter out other empty fields
 			const evidenceToSend = Object.fromEntries(
 				Object.entries( baseEvidence ).filter( ( [ key, value ] ) => {
@@ -638,6 +649,10 @@ export default ( { query }: { query: { id: string } } ) => {
 					// Always include document fields (even if empty) to ensure they're cleared on Stripe
 					// when a document is removed by the user
 					if ( documentFieldKeys.includes( key ) ) {
+						return true;
+					}
+					// Stripe submits a saved draft letter unless an empty one replaces it
+					if ( key === 'uncategorized_text' ) {
 						return true;
 					}
 					// For other fields, only include if they have a value
@@ -651,8 +666,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				__product_type: productType,
 			};
 
+			// Save to the dispute the server returned, not the ID from the page URL.
 			const updatedDispute = await apiFetch( {
-				path,
+				path: getDisputePath( dispute.id ),
 				method: 'post',
 				data: {
 					evidence: evidenceToSend,
@@ -706,7 +722,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					? formatDateTimeFromTimestamp( dispute.created, {
 							separator: ', ',
 							includeTime: false,
-					  } )
+						} )
 					: '–',
 			},
 			{
@@ -768,10 +784,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		// Use setTimeout to ensure the DOM has updated with the new step content
 		const timeoutId = setTimeout( () => {
-			const headingRef = stepHeadingRefs.current[ currentStep ];
-			if ( headingRef ) {
-				headingRef.focus();
-			}
+			stepHeadingRef.current?.focus();
 		}, 100 );
 
 		return () => clearTimeout( timeoutId );
@@ -835,6 +848,21 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Reset the manual edit flag so the cover letter regenerates with the new product type
 		// This ensures attachment labels are updated to match the selected product type
 		setIsCoverLetterManuallyEdited( false );
+	};
+
+	const handleRestoreCoverLetter = () => {
+		if (
+			coverLetter.trim() === '' ||
+			window.confirm(
+				__(
+					'Replace your cover letter with the generated one? Your edits will be lost.',
+					'woocommerce-payments'
+				)
+			)
+		) {
+			// Clearing the flag lets the cover letter effect regenerate the letter.
+			setIsCoverLetterManuallyEdited( false );
+		}
 	};
 
 	const updateProductDescription = ( value: string ) => {
@@ -950,14 +978,14 @@ export default ( { query }: { query: { id: string } } ) => {
 		} catch ( err ) {
 			recordEvent( 'wcpay_dispute_file_upload_failed', {
 				...getDisputeTracksProperties(),
-				message: err instanceof Error ? err.message : String( err ),
+				message: getErrorMessage( err ),
 			} );
 
 			// Display error as WordPress admin notice
 			createErrorNotice(
 				sprintf(
 					__( 'Failed to upload file. (%s)', 'woocommerce-payments' ),
-					err instanceof Error ? err.message : String( err )
+					getErrorMessage( err )
 				)
 			);
 
@@ -1047,11 +1075,11 @@ export default ( { query }: { query: { id: string } } ) => {
 								'woocommerce-payments'
 							),
 							bankNameValue
-					  )
+						)
 					: __(
 							"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 							'woocommerce-payments'
-					  ),
+						),
 				{
 					strong: <strong />,
 				}
@@ -1151,7 +1179,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => ( stepHeadingRefs.current[ 0 ] = el ) }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 0 ].heading }
@@ -1200,7 +1228,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => ( stepHeadingRefs.current[ 1 ] = el ) }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 1 ].heading }
@@ -1238,9 +1266,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) =>
-							( stepHeadingRefs.current[ reviewStep ] = el )
-						}
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 2 ].heading }
@@ -1248,12 +1274,22 @@ export default ( { query }: { query: { id: string } } ) => {
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
 						{ steps[ 2 ].subheading }
 					</p>
-					{ isCoverLetterManuallyEdited && (
+					{ /* Unmount the notice rather than drop its action: Notice runs its children's hooks to build the screen reader text, so losing the button mid-life crashes it. */ }
+					{ isCoverLetterManuallyEdited && ! readOnly && (
 						<InlineNotice
 							icon
 							isDismissible={ false }
 							status="warning"
 							className="wcpay-dispute-evidence-new__cover-letter-warning"
+							actions={ [
+								{
+									label: __(
+										'Restore generated letter',
+										'woocommerce-payments'
+									),
+									onClick: handleRestoreCoverLetter,
+								},
+							] }
 						>
 							{ __(
 								"You've made some manual edits to your cover letter. If you update your evidence again, those changes won't be reflected here automatically — but you can always make further edits yourself.",
@@ -1301,22 +1337,6 @@ export default ( { query }: { query: { id: string } } ) => {
 									shipping_address: shippingAddress,
 								},
 							};
-
-							// If the value is empty, regenerate the content
-							if ( newValue.trim() === '' ) {
-								const generatedContent = generateCoverLetter(
-									disputeWithCurrentEvidence,
-									getBusinessDetails(),
-									settings,
-									bankName,
-									refundStatus,
-									duplicateStatus,
-									productType
-								);
-								setCoverLetter( generatedContent );
-								setIsCoverLetterManuallyEdited( false );
-								return;
-							}
 
 							// Compare with what would be auto-generated
 							const generatedContent = generateCoverLetter(
@@ -1513,10 +1533,15 @@ export default ( { query }: { query: { id: string } } ) => {
 							onClick={ () => {
 								// Show browser confirmation dialog first
 								const confirmed = window.confirm(
-									__(
-										"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
-										'woocommerce-payments'
-									)
+									coverLetter.trim() === ''
+										? __(
+												"Your cover letter is empty. Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+												'woocommerce-payments'
+											)
+										: __(
+												"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+												'woocommerce-payments'
+											)
 								);
 
 								if ( confirmed ) {
@@ -1576,7 +1601,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					{ /* Section 2: Visa Compliance, Stepper, or Confirmation */ }
 					{ showConfirmation ? (
 						<ConfirmationScreen
-							disputeId={ query.id }
+							disputeId={ disputeId }
 							bankName={ bankName }
 							isVisaComplianceDispute={ isVisaCompliance }
 						/>

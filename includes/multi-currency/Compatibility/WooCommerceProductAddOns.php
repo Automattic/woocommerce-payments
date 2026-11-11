@@ -31,7 +31,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 				add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );
 				add_filter( 'woocommerce_product_addons_get_item_data', [ $this, 'get_item_data' ], 50, 3 );
-				add_filter( 'woocommerce_product_addons_update_product_price', [ $this, 'update_product_price' ], 50, 4 );
+				add_filter( 'woocommerce_product_addons_update_product_price', [ $this, 'update_product_price' ], 50, 3 );
 				add_filter( 'woocommerce_product_addons_order_line_item_meta', [ $this, 'order_line_item_meta' ], 50, 4 );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
 			}

@@ -81,7 +81,7 @@ const stateReducer = (
 							? Math.min(
 									items.indexOf( selectedItem ) + 1,
 									items.length - 1
-							  )
+								)
 							: 0
 					],
 			};

@@ -110,6 +110,169 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
 
 	/**
+	 * The main gateway's form fields in English, without calling the translation functions.
+	 *
+	 * Used by get_main_gateway_form_fields() before `init`, when translations are not available
+	 * yet. Keep this an exact English copy of get_main_gateway_translated_form_fields(); the two
+	 * are compared by WC_Payment_Gateway_WCPay_Test::test_untranslated_form_fields_match_translated_definitions.
+	 *
+	 * @var array
+	 */
+	private const MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS = [
+		'account_statement_descriptor'      => [
+			'type'        => 'account_statement_descriptor',
+			'title'       => 'Customer bank statement',
+			'description' => 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">here</a>).',
+		],
+		'manual_capture'                    => [
+			'title'       => 'Manual capture',
+			'label'       => 'Issue an authorization on checkout, and capture later.',
+			'type'        => 'checkbox',
+			'description' => 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.',
+			'default'     => 'no',
+		],
+		'saved_cards'                       => [
+			'title'       => 'Saved cards',
+			'label'       => 'Enable payment via saved cards',
+			'type'        => 'checkbox',
+			'description' => 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.',
+			'default'     => 'yes',
+			'desc_tip'    => true,
+		],
+		'test_mode'                         => [
+			'title'       => 'Test mode',
+			'label'       => 'Enable test mode',
+			'type'        => 'checkbox',
+			'description' => 'Simulate transactions using test card numbers.',
+			'default'     => 'no',
+			'desc_tip'    => true,
+		],
+		'enable_logging'                    => [
+			'title'       => 'Debug log',
+			'label'       => 'When enabled debug notes will be added to the log.',
+			'type'        => 'checkbox',
+			'description' => '',
+			'default'     => 'no',
+		],
+		'payment_request_details'           => [
+			'title'       => 'Payment request buttons',
+			'type'        => 'title',
+			'description' => '',
+		],
+		'payment_request_button_type'       => [
+			'title'       => 'Button type',
+			'type'        => 'select',
+			'description' => 'Select the button type you would like to show.',
+			'default'     => 'default',
+			'desc_tip'    => true,
+			'options'     => [
+				'default' => 'Only icon',
+				'buy'     => 'Buy',
+				'donate'  => 'Donate',
+				'book'    => 'Book',
+			],
+		],
+		'payment_request_button_theme'      => [
+			'title'       => 'Button theme',
+			'type'        => 'select',
+			'description' => 'Select the button theme you would like to show.',
+			'default'     => 'dark',
+			'desc_tip'    => true,
+			'options'     => [
+				'dark'          => 'Dark',
+				'light'         => 'Light',
+				'light-outline' => 'Light-Outline',
+			],
+		],
+		'payment_request_button_height'     => [
+			'title'       => 'Button height',
+			'type'        => 'text',
+			'description' => 'Enter the height you would like the button to be in pixels. Width will always be 100%.',
+			'default'     => '44',
+			'desc_tip'    => true,
+		],
+		'payment_request_button_label'      => [
+			'title'       => 'Custom button label',
+			'type'        => 'text',
+			'description' => 'Enter the custom text you would like the button to have.',
+			'default'     => 'Buy now',
+			'desc_tip'    => true,
+		],
+		'payment_request_button_locations'  => [
+			'title'             => 'Button locations',
+			'type'              => 'multiselect',
+			'description'       => 'Select where you would like to display the button.',
+			'default'           => [
+				'product',
+				'cart',
+				'checkout',
+			],
+			'class'             => 'wc-enhanced-select',
+			'desc_tip'          => true,
+			'options'           => [
+				'product'  => 'Product',
+				'cart'     => 'Cart',
+				'checkout' => 'Checkout',
+			],
+			'custom_attributes' => [
+				'data-placeholder' => 'Select pages',
+			],
+		],
+		'upe_enabled_payment_method_ids'    => [
+			'title'   => 'Payments accepted on checkout',
+			'type'    => 'multiselect',
+			'default' => [ 'card' ],
+			'options' => [],
+		],
+		'payment_request_button_size'       => [
+			'title'       => 'Size of the button displayed for Express Checkouts',
+			'type'        => 'select',
+			'description' => 'Select the size of the button.',
+			'default'     => 'medium',
+			'desc_tip'    => true,
+			'options'     => [
+				'small'  => 'Small',
+				'medium' => 'Medium',
+				'large'  => 'Large',
+			],
+		],
+		'platform_checkout_custom_message'  => [ 'default' => 'By placing this order, you agree to our [terms] and understand our [privacy_policy].' ],
+		'express_checkout_product_methods'  => [
+			'title'   => 'Express checkout methods on product page',
+			'type'    => 'multiselect',
+			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+			'options' => [
+				'payment_request' => 'Apple Pay / Google Pay',
+				'woopay'          => 'WooPay',
+				'amazon_pay'      => 'Amazon Pay',
+				'link'            => 'Link',
+			],
+		],
+		'express_checkout_cart_methods'     => [
+			'title'   => 'Express checkout methods on cart page',
+			'type'    => 'multiselect',
+			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+			'options' => [
+				'payment_request' => 'Apple Pay / Google Pay',
+				'woopay'          => 'WooPay',
+				'amazon_pay'      => 'Amazon Pay',
+				'link'            => 'Link',
+			],
+		],
+		'express_checkout_checkout_methods' => [
+			'title'   => 'Express checkout methods on checkout page',
+			'type'    => 'multiselect',
+			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+			'options' => [
+				'payment_request' => 'Apple Pay / Google Pay',
+				'woopay'          => 'WooPay',
+				'amazon_pay'      => 'Amazon Pay',
+				'link'            => 'Link',
+			],
+		],
+	];
+
+	/**
 	 * Set a large limit argument for retrieving user tokens.
 	 *
 	 * @type int
@@ -117,6 +280,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
 	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
+
+	const PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE = 'upe_process_redirect_retryable_decline';
+
+	/**
+	 * Payment provider error code and decline code combinations after which the customer
+	 * can retry the payment with a different payment method, so the order is left in
+	 * pending status.
+	 *
+	 * @type array<string, string[]>
+	 */
+	const RETRYABLE_DECLINE_CODES = [
+		'payment_intent_authentication_failure' => [
+			'klarna_payment_declined',
+		],
+		'payment_intent_payment_attempt_failed' => [
+			'klarna_payment_declined',
+		],
+		'payment_method_provider_decline'       => [
+			'partner_high_risk_customer',
+			'partner_generic_decline',
+		],
+	];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -386,167 +571,200 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( self::GATEWAY_ID === $this->id ) {
-			$main_gateway_only_fields = [
-				'account_statement_descriptor'      => [
-					'type'        => 'account_statement_descriptor',
-					'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
-					'description' => WC_Payments_Utils::esc_interpolated_html(
-						__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-						[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
-					),
-				],
-				'manual_capture'                    => [
-					'title'       => __( 'Manual capture', 'woocommerce-payments' ),
-					'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
-					'type'        => 'checkbox',
-					'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
-					'default'     => 'no',
-				],
-				'saved_cards'                       => [
-					'title'       => __( 'Saved cards', 'woocommerce-payments' ),
-					'label'       => __( 'Enable payment via saved cards', 'woocommerce-payments' ),
-					'type'        => 'checkbox',
-					'description' => __( 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.', 'woocommerce-payments' ),
-					'default'     => 'yes',
-					'desc_tip'    => true,
-				],
-				'test_mode'                         => [
-					'title'       => __( 'Test mode', 'woocommerce-payments' ),
-					'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
-					'type'        => 'checkbox',
-					'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
-					'default'     => 'no',
-					'desc_tip'    => true,
-				],
-				'enable_logging'                    => [
-					'title'       => __( 'Debug log', 'woocommerce-payments' ),
-					'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
-					'type'        => 'checkbox',
-					'description' => '',
-					'default'     => 'no',
-				],
-				'payment_request_details'           => [
-					'title'       => __( 'Payment request buttons', 'woocommerce-payments' ),
-					'type'        => 'title',
-					'description' => '',
-				],
-				'payment_request_button_type'       => [
-					'title'       => __( 'Button type', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
-					'default'     => 'default',
-					'desc_tip'    => true,
-					'options'     => [
-						'default' => __( 'Only icon', 'woocommerce-payments' ),
-						'buy'     => __( 'Buy', 'woocommerce-payments' ),
-						'donate'  => __( 'Donate', 'woocommerce-payments' ),
-						'book'    => __( 'Book', 'woocommerce-payments' ),
-					],
-				],
-				'payment_request_button_theme'      => [
-					'title'       => __( 'Button theme', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
-					'default'     => 'dark',
-					'desc_tip'    => true,
-					'options'     => [
-						'dark'          => __( 'Dark', 'woocommerce-payments' ),
-						'light'         => __( 'Light', 'woocommerce-payments' ),
-						'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
-					],
-				],
-				'payment_request_button_height'     => [
-					'title'       => __( 'Button height', 'woocommerce-payments' ),
-					'type'        => 'text',
-					'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
-					'default'     => '44',
-					'desc_tip'    => true,
-				],
-				'payment_request_button_label'      => [
-					'title'       => __( 'Custom button label', 'woocommerce-payments' ),
-					'type'        => 'text',
-					'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
-					'default'     => __( 'Buy now', 'woocommerce-payments' ),
-					'desc_tip'    => true,
-				],
-				'payment_request_button_locations'  => [
-					'title'             => __( 'Button locations', 'woocommerce-payments' ),
-					'type'              => 'multiselect',
-					'description'       => __( 'Select where you would like to display the button.', 'woocommerce-payments' ),
-					'default'           => [
-						'product',
-						'cart',
-						'checkout',
-					],
-					'class'             => 'wc-enhanced-select',
-					'desc_tip'          => true,
-					'options'           => [
-						'product'  => __( 'Product', 'woocommerce-payments' ),
-						'cart'     => __( 'Cart', 'woocommerce-payments' ),
-						'checkout' => __( 'Checkout', 'woocommerce-payments' ),
-					],
-					'custom_attributes' => [
-						'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
-					],
-				],
-				'upe_enabled_payment_method_ids'    => [
-					'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
-					'type'    => 'multiselect',
-					'default' => [ 'card' ],
-					'options' => [],
-				],
-				'payment_request_button_size'       => [
-					'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
-					'default'     => 'medium',
-					'desc_tip'    => true,
-					'options'     => [
-						'small'  => __( 'Small', 'woocommerce-payments' ),
-						'medium' => __( 'Medium', 'woocommerce-payments' ),
-						'large'  => __( 'Large', 'woocommerce-payments' ),
-					],
-				],
-				'platform_checkout_custom_message'  => [ 'default' => __( 'By placing this order, you agree to our [terms] and understand our [privacy_policy].', 'woocommerce-payments' ) ],
-				'express_checkout_product_methods'  => [
-					'title'   => __( 'Express checkout methods on product page', 'woocommerce-payments' ),
-					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
-					'options' => [
-						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
-						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
-						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
-						'link'            => __( 'Link', 'woocommerce-payments' ),
-					],
-				],
-				'express_checkout_cart_methods'     => [
-					'title'   => __( 'Express checkout methods on cart page', 'woocommerce-payments' ),
-					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
-					'options' => [
-						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
-						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
-						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
-						'link'            => __( 'Link', 'woocommerce-payments' ),
-					],
-				],
-				'express_checkout_checkout_methods' => [
-					'title'   => __( 'Express checkout methods on checkout page', 'woocommerce-payments' ),
-					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
-					'options' => [
-						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
-						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
-						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
-						'link'            => __( 'Link', 'woocommerce-payments' ),
-					],
-				],
-			];
-
-			$this->form_fields = array_merge( $this->form_fields, $main_gateway_only_fields );
+			$this->form_fields = array_merge( $this->form_fields, $this->get_main_gateway_form_fields() );
 		}
 
 		return parent::get_form_fields();
+	}
+
+	/**
+	 * Returns the form fields which only the main gateway registers.
+	 *
+	 * Called during the gateway's constructor on `plugins_loaded`, which is before translations
+	 * are available: WC_Settings_API::init_settings() reads the field defaults when the settings
+	 * row does not exist yet (a fresh install), and get_option() does the same for any single
+	 * setting missing from an existing row. Building the labels that early triggers the
+	 * `_load_textdomain_just_in_time` notice, so until `init` has run the fields are returned
+	 * in English. Nothing reads their text before then: the settings screen is rendered by the
+	 * React app, and the REST controllers which expose these fields run on `rest_api_init`.
+	 *
+	 * @return array
+	 */
+	private function get_main_gateway_form_fields() {
+		if ( ! did_action( 'init' ) ) {
+			return self::MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS;
+		}
+
+		return $this->get_main_gateway_translated_form_fields();
+	}
+
+	/**
+	 * Returns the main gateway's form fields with their translated text.
+	 *
+	 * Only called once `init` has run, so the translations are available. Any change here must
+	 * be copied, in English, to MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS.
+	 *
+	 * @return array
+	 */
+	private function get_main_gateway_translated_form_fields() {
+		$fields = [
+			'account_statement_descriptor'      => [
+				'type'        => 'account_statement_descriptor',
+				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
+				'description' => WC_Payments_Utils::esc_interpolated_html(
+					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
+					[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+				),
+			],
+			'manual_capture'                    => [
+				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
+				'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
+				'default'     => 'no',
+			],
+			'saved_cards'                       => [
+				'title'       => __( 'Saved cards', 'woocommerce-payments' ),
+				'label'       => __( 'Enable payment via saved cards', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.', 'woocommerce-payments' ),
+				'default'     => 'yes',
+				'desc_tip'    => true,
+			],
+			'test_mode'                         => [
+				'title'       => __( 'Test mode', 'woocommerce-payments' ),
+				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			],
+			'enable_logging'                    => [
+				'title'       => __( 'Debug log', 'woocommerce-payments' ),
+				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			],
+			'payment_request_details'           => [
+				'title'       => __( 'Payment request buttons', 'woocommerce-payments' ),
+				'type'        => 'title',
+				'description' => '',
+			],
+			'payment_request_button_type'       => [
+				'title'       => __( 'Button type', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
+				'default'     => 'default',
+				'desc_tip'    => true,
+				'options'     => [
+					'default' => __( 'Only icon', 'woocommerce-payments' ),
+					'buy'     => __( 'Buy', 'woocommerce-payments' ),
+					'donate'  => __( 'Donate', 'woocommerce-payments' ),
+					'book'    => __( 'Book', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_theme'      => [
+				'title'       => __( 'Button theme', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
+				'default'     => 'dark',
+				'desc_tip'    => true,
+				'options'     => [
+					'dark'          => __( 'Dark', 'woocommerce-payments' ),
+					'light'         => __( 'Light', 'woocommerce-payments' ),
+					'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_height'     => [
+				'title'       => __( 'Button height', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
+				'default'     => '44',
+				'desc_tip'    => true,
+			],
+			'payment_request_button_label'      => [
+				'title'       => __( 'Custom button label', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
+				'default'     => __( 'Buy now', 'woocommerce-payments' ),
+				'desc_tip'    => true,
+			],
+			'payment_request_button_locations'  => [
+				'title'             => __( 'Button locations', 'woocommerce-payments' ),
+				'type'              => 'multiselect',
+				'description'       => __( 'Select where you would like to display the button.', 'woocommerce-payments' ),
+				'default'           => [
+					'product',
+					'cart',
+					'checkout',
+				],
+				'class'             => 'wc-enhanced-select',
+				'desc_tip'          => true,
+				'options'           => [
+					'product'  => __( 'Product', 'woocommerce-payments' ),
+					'cart'     => __( 'Cart', 'woocommerce-payments' ),
+					'checkout' => __( 'Checkout', 'woocommerce-payments' ),
+				],
+				'custom_attributes' => [
+					'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
+				],
+			],
+			'upe_enabled_payment_method_ids'    => [
+				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'card' ],
+				'options' => [],
+			],
+			'payment_request_button_size'       => [
+				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
+				'default'     => 'medium',
+				'desc_tip'    => true,
+				'options'     => [
+					'small'  => __( 'Small', 'woocommerce-payments' ),
+					'medium' => __( 'Medium', 'woocommerce-payments' ),
+					'large'  => __( 'Large', 'woocommerce-payments' ),
+				],
+			],
+			'platform_checkout_custom_message'  => [ 'default' => __( 'By placing this order, you agree to our [terms] and understand our [privacy_policy].', 'woocommerce-payments' ) ],
+			'express_checkout_product_methods'  => [
+				'title'   => __( 'Express checkout methods on product page', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+				'options' => [
+					'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+					'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+					'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+					'link'            => __( 'Link', 'woocommerce-payments' ),
+				],
+			],
+			'express_checkout_cart_methods'     => [
+				'title'   => __( 'Express checkout methods on cart page', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+				'options' => [
+					'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+					'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+					'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+					'link'            => __( 'Link', 'woocommerce-payments' ),
+				],
+			],
+			'express_checkout_checkout_methods' => [
+				'title'   => __( 'Express checkout methods on checkout page', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+				'options' => [
+					'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+					'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+					'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+					'link'            => __( 'Link', 'woocommerce-payments' ),
+				],
+			],
+		];
+
+		return $fields;
 	}
 
 	/**
@@ -559,11 +777,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
-			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
+			add_filter( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 			add_action( 'woocommerce_order_status_cancelled', [ $this->order_service, 'cancel_authorizations_on_order_status_change' ] );
-			add_action( 'woocommerce_order_status_completed', [ $this->order_service, 'capture_authorization_on_order_status_change' ], 10, 3 );
+			add_action( 'woocommerce_order_status_completed', [ $this->order_service, 'capture_authorization_on_order_status_change' ], 10, 1 );
 
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
@@ -581,6 +799,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
 
 			add_action( 'woocommerce_settings_save_general', [ $this, 'update_fraud_rules_based_on_general_options' ], 20 );
+
+			// On a fresh install the defaults were first read on `plugins_loaded`, before translations
+			// were available. Read them again as `init` starts, ahead of install_actions(), so we can
+			// persist and localize the entire settings array properly.
+			add_action( 'init', [ $this, 'init_settings' ], 0 );
 		}
 
 		$this->maybe_init_subscriptions_hooks();
@@ -703,8 +926,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return mixed
 	 */
 	public function remove_all_actions_on_preflight_check( $response, $handler, $request ) {
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
 		$payment_data = $this->get_request_payment_data( $request );
 		if ( ! empty( $payment_data['is-woopay-preflight-check'] ) ) {
+			// Only WooPay can request a dry run that skips checkout side effects.
+			if ( ! $this->is_request_composed_by_woopay() ) {
+				// A malformed or stale vouch logs its own reason; a missing one and an ignored
+				// signature do not, and those are what a legitimate WooPay preflight would hit.
+				Logger::log(
+					sprintf(
+						'WooPay preflight rejected: %s, and %s.',
+						isset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] ) ? 'the vouch did not verify' : 'no vouch was sent',
+						WC_Payments_Features::is_woopay_force_signed_requests_enabled() ? 'the request is not signed with the blog token' : 'this store does not accept a blog token signature'
+					)
+				);
+
+				return new WP_Error(
+					'wcpay_invalid_woopay_preflight',
+					__( "We're not able to verify this WooPay preflight request. Please try again.", 'woocommerce-payments' ),
+					[ 'status' => 403 ]
+				);
+			}
+
 			remove_all_actions( 'woocommerce_store_api_checkout_update_order_meta' );
 			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
 			// Avoid increasing coupon usage count during preflight check.
@@ -713,12 +959,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Avoid creating new accounts during preflight check.
 			remove_all_filters( 'woocommerce_checkout_registration_required' );
 
-			add_filter( 'woocommerce_coupon_get_usage_limit', '__return_null' );
-
-			add_filter( 'woocommerce_coupon_get_usage_limit_per_user', '__return_zero' );
+			// Keep coupon usage limits on, but don't hold a use: the dry run never releases it, so
+			// the real checkout would count it. Last, so no other filter can put the hold back.
+			add_filter( 'woocommerce_coupon_hold_minutes', '__return_zero', PHP_INT_MAX );
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Whether WooPay authenticated the current request with an attestation or signature.
+	 *
+	 * @return bool True if the request carries valid WooPay proof.
+	 */
+	private function is_request_composed_by_woopay(): bool {
+		return WooPay_Session::is_request_vouched_by_woopay() || WooPay_Session::is_authenticated_by_blog_token_signature();
 	}
 
 	/**
@@ -741,10 +996,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array
 	 */
 	private function get_request_payment_data( \WP_REST_Request $request ) {
-		static $payment_data = [];
-		if ( ! empty( $payment_data ) ) {
-			return $payment_data;
-		}
+		$payment_data = [];
 		if ( ! empty( $request['payment_data'] ) ) {
 			foreach ( $request['payment_data'] as $data ) {
 				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
@@ -924,8 +1176,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( in_array( $this->payment_method->get_id(), [ Payment_Method::AFTERPAY, Payment_Method::AFFIRM ], true ) && is_wc_endpoint_url( 'order-pay' ) ) {
-			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-			$order = is_a( $order, 'WC_Order' ) ? $order : null;
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
 			if ( $order ) {
 				$address = $this->retrieve_usable_shipping_data_from_order( $order );
@@ -1202,7 +1453,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
+		// A subscription only reaches the gateway to change its payment method; refuse any other pay-for-order
+		// request for one. Returned as a failure, not thrown: a subscription rejects update_status( 'failed' ) in the catch.
+		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) && ! $this->is_changing_payment_method_for_subscription() ) {
+			Logger::error( sprintf( 'Refused to process a payment for subscription #%d outside of the change payment method flow.', $order->get_id() ) );
+			wc_add_notice( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ), 'error' );
+
+			return [
+				'result'   => 'fail',
+				'redirect' => '',
+			];
+		}
+
 		try {
+			$is_request_composed_by_woopay = $this->is_request_composed_by_woopay();
+			// Reject an unverified dry run instead of turning it into a payment attempt.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( ! empty( $_POST['is-woopay-preflight-check'] ) && ! $is_request_composed_by_woopay ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to verify this WooPay preflight request. Please try again.", 'woocommerce-payments' ),
+					'wcpay_invalid_woopay_preflight'
+				);
+			}
+
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
 				throw new Invalid_Phone_Number_Exception(
 					__( 'Invalid phone number.', 'woocommerce-payments' ),
@@ -1217,11 +1490,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// card-testing protection off is not something a shopper should be able to ask for
 			// by sending a header. WooPay seals that proof in the vouch envelope or, for a store
 			// the platform keeps on the signed path, signs the request instead of sending one.
-			if (
-				WC()->session &&
-				! WooPay_Session::is_request_vouched_by_woopay() &&
-				! WooPay_Session::is_authenticated_by_blog_token_signature()
-			) {
+			if ( WC()->session && ! $is_request_composed_by_woopay ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
@@ -1251,6 +1520,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'result'   => 'success',
 					'redirect' => '',
 				];
+			}
+
+			// WooCommerce keeps copying the cart into a checkout-draft order, so its total could change
+			// after the intent is created. Core's checkout moves drafts to pending first; pay-for-order doesn't.
+			if ( $order->has_status( 'checkout-draft' ) ) {
+				$order->update_status( Order_Status::PENDING );
 			}
 
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
@@ -1340,6 +1615,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
 				$this->failed_transaction_rate_limiter->bump();
+			}
+
+			// The server rejects an express checkout confirmation token minted without setup_future_usage
+			// when this payment saves the card.
+			if ( $e instanceof API_Exception && 'confirmation_token_setup_future_usage_mismatch' === $e->get_error_code() ) {
+				Logger::error(
+					sprintf(
+						'Order %s: the express checkout token and the payment disagree about saving the card. '
+						. 'If a plugin other than WooCommerce Subscriptions saves cards, return \'off_session\' '
+						. 'from the wcpay_express_checkout_setup_future_usage filter.',
+						$order_id
+					)
+				);
 			}
 
 			if ( $blocked_by_fraud_rules ) {
@@ -1671,6 +1959,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new \Exception( $error->get_error_message() );
 		}
 
+		// Before the setters below, so their save persists it: the takeover cleanup reads the mode as the sign
+		// of a new WooPayments attempt.
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
+
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		// Note: For confirmation tokens (ctoken_*), we don't store them here as they are not valid
 		// payment method IDs. The real payment method ID will be stored after intent creation.
@@ -1679,7 +1971,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
 		}
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
-		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
 		/**
 		 * Filters whether the order payment can be confirmed without a payment intent.
@@ -1704,7 +1995,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->store_card_details_meta_for_order( $order, $zero_amount_pm_details['type'], $zero_amount_pm_details );
 			}
 
-			$order->payment_complete();
+			// A card change on a subscription saves the card without completing anything.
+			if ( ! ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) ) {
+				$order->payment_complete();
+			}
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
 				// We need to make sure the saved payment method is saved to the order so we can
@@ -1728,12 +2022,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $payment_token instanceof \WC_Payment_Token_WCPay_Link ) {
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1$s: redacted email address for Link payment method */
-							__( 'Payment method is changed to: <strong>Link ending in %1$s</strong>.', 'woocommerce-payments' ),
+							/* translators: %1$s: Link brand name (Link or Onelink), %2$s: redacted email address for the Link payment method */
+							__( 'Payment method is changed to: <strong>%1$s ending in %2$s</strong>.', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
 							]
 						),
+						LinkDefinition::get_title( $this->get_account_country() ),
 						$payment_token->get_redacted_email()
 					);
 				} else {
@@ -1765,7 +2060,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $payment_information->is_using_saved_payment_method() ) {
 				$token_for_title = $payment_information->get_payment_token();
 				if ( $token_for_title instanceof \WC_Payment_Token_WCPay_Link ) {
-					$order->set_payment_method_title( __( 'Link', 'woocommerce-payments' ) );
+					$order->set_payment_method_title( LinkDefinition::get_title( $this->get_account_country() ) );
 				} elseif ( ! $zero_amount_pm_details ) {
 					// Keep the branded title set above when we sourced the card from the payment method;
 					// otherwise fall back to a generic title. WOOPMNT-2882.
@@ -1861,7 +2156,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								add_query_arg(
 									[
 										'wc_payment_method' => self::GATEWAY_ID,
-										'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+										'_wpnonce' => wp_create_nonce( $this->get_process_redirect_nonce_action( $order->get_id() ) ),
 									],
 									$this->get_return_url( $order )
 								)
@@ -1871,7 +2166,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
-				$request->set_fingerprint( $payment_information->get_fingerprint() );
+				$request->set_fingerprint( $payment_information->get_fingerprint(), $order );
 				if ( $save_payment_method_to_store ) {
 					// Only set setup_future_usage for reusable payment methods.
 					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
@@ -1886,7 +2181,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
+				// For Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
 				if ( $this->should_send_mandate_data( $payment_information ) ) {
 					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
@@ -1993,7 +2288,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->set_customer( $customer_id );
 					$request->set_payment_method( $payment_credential );
 					$request->set_metadata( $metadata );
-					$request->set_fingerprint( $payment_information->get_fingerprint() );
+					$request->set_fingerprint( $payment_information->get_fingerprint(), $order );
 					$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
 					$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 
@@ -2018,7 +2313,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge_id     = '';
 			$charge        = null;
 			$client_secret = $intent->get_client_secret();
-			$currency      = $order->get_currency();
 			$next_action   = $intent->get_next_action();
 			$processing    = [];
 		}
@@ -2157,6 +2451,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// from a leaked order key.
 			if ( WC()->session && '' !== (string) $intent_id ) {
 				WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, (string) $intent_id );
+				WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY, (string) WC()->session->get_customer_id() );
 			}
 		}
 		// Set the branded payment method title + card meta from the charge details BEFORE the status update.
@@ -2199,13 +2494,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
-		if ( $is_changing_payment_method_for_subscription ) {
-			$this->with_stock_reduction_disabled(
-				function () use ( $order, $intent ) {
-					$this->order_service->update_order_status_from_intent( $order, $intent );
-				}
-			);
-		} else {
+		// A card change only saves the card, so skip payment completion on the subscription.
+		if ( ! $is_changing_payment_method_for_subscription ) {
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 		}
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
@@ -2271,8 +2561,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
+		$order_id = absint( get_query_var( 'order-received' ) );
+
 		// Verify softly so a stale/refreshed return URL no-ops instead of fatalling.
-		$is_nonce_valid = wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wcpay_process_redirect_order_nonce' );
+		$is_nonce_valid = wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), $this->get_process_redirect_nonce_action( $order_id ) );
 		if ( ! $is_nonce_valid ) {
 			return;
 		}
@@ -2285,7 +2577,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$order_id               = absint( get_query_var( 'order-received' ) );
 		$order_key_from_request = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
 		$save_payment_method    = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false;
 
@@ -2305,9 +2596,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// Perform additional checks for non-zero-amount. For zero-amount orders, we can't compare intents because they are not attached to the order at this stage.
-		// Once https://github.com/Automattic/woocommerce-payments/issues/6575 is closed, this check can be applied for zero-amount orders as well.
-		if ( $order->get_total() > 0 && ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
+		// The intent named in the request must be the one attached to the order by process_payment_for_order().
+		// Zero-amount orders are no exception: their setup intent is attached the same way, and without this
+		// check any succeeded setup intent on the account (e.g. a card saved under My Account) would complete them.
+		if ( ! $this->is_proper_intent_used_with_order( $order, $intent_id_from_request ) ) {
 			return;
 		}
 
@@ -2358,15 +2650,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$error                  = $intent->get_last_payment_error();
 
-				// This check applies to payment intents only due to two reasons:
-				// (1) metadata is missed for setup intents. See https://github.com/Automattic/woocommerce-payments/issues/6575.
-				// (2) most issues so far affect only payment intents.
 				$intent_metadata = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent_metadata );
 			} else {
 				$request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent            = $request->send();
+				$intent = $request->send();
+
+				// Setup intents created by process_payment_for_order() carry the order id in their metadata too.
+				$this->validate_order_id_received_vs_intent_meta_order_id( $order, $intent->get_metadata() );
+
 				$client_secret     = $intent->get_client_secret();
 				$status            = $intent->get_status();
 				$charge_id         = '';
@@ -2380,10 +2673,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( ! empty( $error ) ) {
-				Logger::log( 'Error when processing payment: ' . $error['message'] );
+				Logger::log( 'Error when processing payment: ' . ( $error['message'] ?? $error['code'] ?? '' ) );
+				$error_code = $this->is_retryable_decline( $error )
+					? self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE
+					: 'upe_payment_intent_error';
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-					'upe_payment_intent_error'
+					$error_code
 				);
 			} else {
 				$payment_method = $this->get_selected_payment_method( $payment_method_type );
@@ -2437,27 +2733,80 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
+			$is_retryable_decline =
+				$e instanceof Process_Payment_Exception
+				&& self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE === $e->get_error_code();
+
+			if ( $is_retryable_decline && ! empty( $error ) ) {
+				// The payment provider declined the payment, but the customer can retry with a
+				// different payment method, so the order is left pending and the provider's error
+				// details are recorded for the merchant.
+				$message = $this->order_service->get_provider_decline_message( $error );
+				$note    = $this->order_service->get_payment_failure_note( $order, $intent_id, $charge_id ?? '', $message );
+				// The webhook may have already recorded the same failure, so don't duplicate the note.
+				if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
+					$order->add_order_note( $note );
+				}
+			}
+
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
 			// Because the outcome of the payment intent is for another order, not for the order processed here.
-			if ( ! $is_order_id_mismatched_exception ) {
+			// Retryable declines also leave the order pending so the customer can try a different payment method.
+			if ( ! $is_order_id_mismatched_exception && ! $is_retryable_decline ) {
 				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
 				$status    = $status ?? null;
 				$charge_id = $charge_id ?? null;
 
-				/* translators: localized exception message */
-				$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
-				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+				if ( ! empty( $error ) ) {
+					// Record the provider's decline details, matching the note the webhook adds for BNPL methods,
+					// so a failure reported by both flows results in a single note.
+					$this->order_service->mark_payment_declined( $order, $intent_id, $status, $charge_id, $error );
+				} else {
+					/* translators: localized exception message */
+					$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
+					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+				}
 			}
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
-			$redirect_url = wc_get_checkout_url();
-			if ( $is_order_id_mismatched_exception ) {
-				$redirect_url = add_query_arg( self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE, 'yes', $redirect_url );
+			if ( $is_retryable_decline ) {
+				// Send the customer to the pay-for-order page so they can retry with a different payment method.
+				$redirect_url = $order->get_checkout_payment_url();
+			} else {
+				$redirect_url = wc_get_checkout_url();
+				if ( $is_order_id_mismatched_exception ) {
+					$redirect_url = add_query_arg( self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE, 'yes', $redirect_url );
+				}
 			}
-			wp_safe_redirect( $redirect_url );
-			exit;
+			$this->redirect_and_exit( $redirect_url );
 		}
+	}
+
+	/**
+	 * Redirects to the given URL and exits.
+	 *
+	 * @param string $url The URL to redirect to.
+	 */
+	protected function redirect_and_exit( string $url ): void {
+		wp_safe_redirect( $url );
+		exit;
+	}
+
+	/**
+	 * Whether a redirect payment error is a retryable decline, i.e. the payment provider
+	 * declined the payment but the customer can pay with a different payment method.
+	 *
+	 * @param array $error The last payment/setup error of the intent.
+	 *
+	 * @return bool
+	 */
+	protected function is_retryable_decline( array $error ): bool {
+		$code         = $error['code'] ?? '';
+		$decline_code = $error['decline_code'] ?? '';
+
+		return isset( self::RETRYABLE_DECLINE_CODES[ $code ] )
+			&& in_array( $decline_code, self::RETRYABLE_DECLINE_CODES[ $code ], true );
 	}
 
 	/**
@@ -2582,7 +2931,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
 		// If $gateway_id is `woocommerce_payments`, this must be the CC gateway.
-		// We only need to return single `card` payment method, adding `link` since Stripe Link is also supported.
+		// We only need to return single `card` payment method, adding `link` since Link is also supported.
 		$payment_methods = [ Payment_Method::CARD ];
 		if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
 			$payment_methods[] = Payment_Method::LINK;
@@ -2727,7 +3076,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// this will ensure that the refunds are handled by the correct split gateway class.
 		$order->set_payment_method( $payment_gateway );
 
-		if ( $express_checkout_type ) {
+		// Link is never an Express Checkout Element button; a `card.wallet.type = link` charge comes from the card
+		// form, so it keeps the regular, account-country-aware title (e.g. "Onelink" for GB). The express meta
+		// above is still stored, as the order-received page uses it to render the logo. WOOPMNT-6538.
+		if ( $express_checkout_type && Payment_Method::LINK !== $express_checkout_type ) {
 			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
 			$title          = $express_method ? $express_method->get_title() : 'Payment Request';
 			/**
@@ -3232,7 +3584,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
 	 */
 	protected function get_capture_type() {
-		return 'yes' === $this->get_option( 'manual_capture' ) ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
+		return $this->is_manual_capture_enabled() ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
+	}
+
+	/**
+	 * Checks whether payments are authorized at checkout and captured later.
+	 *
+	 * The setting applies to the whole store, but only the card gateway saves it. Every other
+	 * payment method's gateway has its own settings row, so they all read it from the card gateway.
+	 *
+	 * @return bool
+	 */
+	private function is_manual_capture_enabled(): bool {
+		return 'yes' === WC_Payments::get_gateway()->get_option( 'manual_capture' );
 	}
 
 	/**
@@ -3749,7 +4113,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$error_code = $e->get_error_code() ?? null;
-		$error_type = $e->get_error_type() ?? null;
+		$error_type = $e->get_error_type();
 
 		$blocked_by_fraud_rule = 'wcpay_blocked_by_fraud_rule' === $error_code;
 
@@ -3973,7 +4337,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
-		$http_code                = null;
 		$error_code               = null;
 
 		try {
@@ -4027,7 +4390,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} catch ( API_Exception $ge ) {
 				// Ignore any errors during the intent retrieval, and add the failed capture note below with the
 				// original error message.
-				$status        = null;
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
 				$error_code    = $e->get_error_code();
@@ -4097,7 +4459,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} catch ( API_Exception $ge ) {
 				// Ignore any errors during the intent retrieval, and add the failed cancellation note below with the
 				// original error message.
-				$status        = null;
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
 			}
@@ -4168,6 +4529,48 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Builds the nonce action for the UPE redirect return.
+	 *
+	 * @param int $order_id The order ID.
+	 * @return string The nonce action.
+	 */
+	private function get_process_redirect_nonce_action( int $order_id ): string {
+		return 'wcpay_process_redirect_order_nonce_' . $order_id;
+	}
+
+	/**
+	 * Rejects an intent created for a different order.
+	 *
+	 * An order can end up storing another order's intent (e.g. copied by Subscriptions),
+	 * so the intent's own metadata decides which order it pays. See WOOPMNT-5356.
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent The intent fetched for the order.
+	 * @param WC_Order                           $order  The order being updated.
+	 *
+	 * @throws Intent_Authentication_Exception When the intent was created for another order.
+	 */
+	private function ensure_intent_belongs_to_order( $intent, WC_Order $order ): void {
+		$metadata = $intent->get_metadata();
+
+		$intent_order_id = is_numeric( $metadata['order_id'] ?? '' ) ? (int) $metadata['order_id'] : 0;
+		if ( $order->get_id() === $intent_order_id ) {
+			return;
+		}
+
+		// WooPay intents identify the store order by its number.
+		$paid_on_woopay      = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		$intent_order_number = is_numeric( $metadata['order_number'] ?? '' ) ? (int) $metadata['order_number'] : 0;
+		if ( $paid_on_woopay && $order->get_id() === $intent_order_number ) {
+			return;
+		}
+
+		throw new Intent_Authentication_Exception(
+			__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+			'intent_id_mismatch'
+		);
+	}
+
+	/**
 	 * Handle AJAX request after authenticating payment at checkout.
 	 *
 	 * This function is used to update the order status after the user has
@@ -4235,13 +4638,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$is_changing_payment                   = isset( $_POST['is_changing_payment'] )
 				? filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN )
 				: null;
-			$is_subscription_payment_method_change = $this->is_changing_payment_method_for_subscription_from_request( $is_changing_payment );
+			$is_subscription_payment_method_change = $this->is_changing_payment_method_for_subscription_from_request( $is_changing_payment, $order );
 
 			if ( $amount > 0 && ! $is_subscription_payment_method_change ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
 				$intent = $request->send();
+				$this->ensure_intent_belongs_to_order( $intent, $order );
 
 				$status    = $intent->get_status();
 				$charge    = $intent->get_charge();
@@ -4263,6 +4667,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
+				$this->ensure_intent_belongs_to_order( $intent, $order );
 				$status = $intent->get_status();
 
 				// For $0 orders (free trials), directly complete the order when SetupIntent succeeds.
@@ -4348,21 +4753,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Set the branded payment method title + card meta from the charge details BEFORE the status
 			// update. update_order_status_from_intent() -> payment_complete() fires the customer order/renewal
 			// email synchronously, and that email renders get_payment_method_title(); the title must already
-			// reflect the real card or the email falls back to a generic "Card". $token is non-null only when
-			// the intent is authorized and the payment method was saved (see the token-attach guard above).
-			// See WOOPMNT-2882.
-			if ( ! empty( $token ) ) {
-				$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
+			// reflect the real card or the email falls back to a generic "Card". Unauthorized intents are
+			// skipped: after a decline, the charge details belong to the card that failed. See WOOPMNT-2882.
+			if ( $intent->is_authorized() && ( ! empty( $token ) || $payment_method_details ) ) {
+				$payment_method_type = ! empty( $token )
+					? $this->get_payment_method_type_for_setup_intent( $intent, $token )
+					: $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 			}
 
+			// A card change only saves the card: completing the subscription would pay its last unpaid renewal.
 			if ( $is_subscription_payment_method_change ) {
-				$this->with_stock_reduction_disabled(
-					function () use ( $order, $intent ) {
-						$this->order_service->update_order_status_from_intent( $order, $intent );
-					}
-				);
+				// The cancel/capture handlers read a non-terminal status as an open authorization.
+				$this->order_service->set_intention_status_for_order( $order, $status );
 			} else {
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 			}
@@ -4470,6 +4874,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Add_Payment_Method_Exception(
 					__( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ),
 					'invalid_response_status'
+				);
+			}
+
+			// The form posts the setup intent ID, so only accept an intent created for this user's customer.
+			if ( $customer_id !== $setup_intent->get_customer_id() ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ),
+					'invalid_setup_intent_customer'
 				);
 			}
 
@@ -4598,15 +5010,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			if ( WC()->session ) {
-				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
-					throw new Fraud_Prevention_Enabled_Exception(
-						__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
-						'fraud_prevention_enabled'
-					);
-				}
+			if ( ! $this->is_enabled() ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later.", 'woocommerce-payments' ),
+					'gateway_disabled'
+				);
+			}
+
+			if ( ! $this->is_saved_cards_enabled() ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later.", 'woocommerce-payments' ),
+					'saved_cards_disabled'
+				);
+			}
+
+			// The fraud prevention token lives in the session, which isn't loaded for every admin-ajax request.
+			WC()->initialize_session();
+
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
+				throw new Fraud_Prevention_Enabled_Exception(
+					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'fraud_prevention_enabled'
+				);
 			}
 
 			if ( WC_Rate_Limiter::retried_too_soon( 'add_payment_method_' . get_current_user_id() ) ) {
@@ -4782,12 +5209,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_upe_enabled_payment_method_ids_based_on_manual_capture() {
-		$automatic_capture = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
-		if ( $automatic_capture ) {
+		if ( ! $this->is_manual_capture_enabled() ) {
 			return $this->get_upe_enabled_payment_method_ids();
 		}
 
-		return array_intersect( $this->get_upe_enabled_payment_method_ids(), [ Payment_Method::CARD, Payment_Method::LINK ] );
+		return array_filter(
+			$this->get_upe_enabled_payment_method_ids(),
+			function ( $payment_method_id ) {
+				// Link follows the card's capture behavior.
+				if ( Payment_Method::LINK === $payment_method_id ) {
+					return true;
+				}
+
+				$payment_method = $this->payment_methods[ $payment_method_id ] ?? null;
+				return null !== $payment_method && $payment_method->allows_manual_capture();
+			}
+		);
 	}
 
 	/**
@@ -5442,7 +5879,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $request->send();
 		} catch ( API_Exception $e ) {
-			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
+			if ( ! $this->is_missing_customer_error( $e ) ) {
 				throw $e;
 			}
 
@@ -5477,6 +5914,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether an API error reports the Stripe customer itself as missing.
+	 *
+	 * `resource_missing` also covers other objects, so only the object named after "No such" counts.
+	 *
+	 * @param API_Exception $e The exception thrown by the intent request.
+	 *
+	 * @return bool True when the missing resource is the customer.
+	 */
+	private function is_missing_customer_error( API_Exception $e ): bool {
+		if ( 'resource_missing' !== $e->get_error_code() ) {
+			return false;
+		}
+
+		return 1 === preg_match( '/No such (\w+)/', $e->getMessage(), $missing ) && 'customer' === strtolower( $missing[1] );
+	}
+
+	/**
 	 * Modifies the create intent parameters when processing a payment.
 	 *
 	 * If the selected Stripe payment type is AFTERPAY, it updates the shipping data in the request.
@@ -5501,42 +5955,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * POST flag that reflects the intent of the client request. When that flag is present
 	 * we trust it; otherwise we fall back to the trait's live `$_GET`-based detection.
 	 *
-	 * @param bool|null $is_changing_payment Explicit flag from the current request, or null to rely on the trait.
+	 * @param bool|null     $is_changing_payment Explicit flag from the current request, or null to rely on the trait.
+	 * @param WC_Order|null $order               Optional. The order being processed; a subscription is always a card change.
 	 * @return bool
 	 */
-	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null ): bool {
+	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null, $order = null ): bool {
+		// A subscription is always a payment method change, whatever the request flag says.
+		if ( null !== $order && $this->is_changing_payment_method_for_subscription( $order ) ) {
+			return true;
+		}
 		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
-	}
-
-	/**
-	 * Runs a callback with the `woocommerce_payment_complete_reduce_order_stock` filter forced to false.
-	 *
-	 * Payment-method-change flows must never decrement stock: the order was already paid once
-	 * and the customer is only updating the stored payment credential. The status transition
-	 * inside WooCommerce core would otherwise trigger `wc_maybe_reduce_stock_levels()` via
-	 * `woocommerce_payment_complete` and `woocommerce_order_status_*` hooks.
-	 *
-	 * The filter is added at `PHP_INT_MAX - 1` so it wins over any upstream filter that
-	 * might re-enable reduction, and we guard against double-adding to stay reentrant.
-	 *
-	 * @param callable $callback Callback to execute with stock reduction suppressed.
-	 * @return mixed The callback's return value.
-	 */
-	private function with_stock_reduction_disabled( callable $callback ) {
-		$filter           = 'woocommerce_payment_complete_reduce_order_stock';
-		$priority         = PHP_INT_MAX - 1;
-		$already_filtered = false !== has_filter( $filter, '__return_false' );
-
-		if ( ! $already_filtered ) {
-			add_filter( $filter, '__return_false', $priority );
-		}
-
-		try {
-			return $callback();
-		} finally {
-			if ( ! $already_filtered ) {
-				remove_filter( $filter, '__return_false', $priority );
-			}
-		}
 	}
 }

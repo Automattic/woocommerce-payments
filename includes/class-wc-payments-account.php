@@ -47,8 +47,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 	const STORE_SETUP_SYNC_ACTION = 'wcpay_store_setup_sync';
 
+	/**
+	 * Historic reminder timestamp.
+	 *
+	 * @deprecated 11.3.0 No longer written.
+	 */
 	const KYC_COMPLETION_DATE_OPTION = 'wcpay_kyc_completion_date';
 
+	/**
+	 * Historic reminder timestamp.
+	 *
+	 * @deprecated 11.3.0 No longer written.
+	 */
 	const KYC_SUBMITTED_DATE_OPTION = 'wcpay_kyc_submitted_date';
 
 	/**
@@ -140,13 +150,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'jetpack_site_disconnected', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
+		// If the fetch fails, the store keeps its saved account data and stays connected.
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'refresh_cache' ] );
 		// Hook into the recurring store setup sync action and do the store setup sync.
 		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
 		// Also do a store setup sync when the client is updated to a new version.
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'store_setup_sync' ] );
-
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_record_kyc_completion_date' ] );
 	}
 
 	/**
@@ -154,6 +163,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	public function clear_cache() {
 		$this->database_cache->delete( Database_Cache::ACCOUNT_KEY );
+	}
+
+	/**
+	 * Re-fetches the account data from WP.com, keeping the saved data if the fetch fails.
+	 */
+	public function refresh_cache(): void {
+		$this->refresh_account_data();
 	}
 
 	/**
@@ -2236,7 +2252,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		if ( get_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) ) {
 			$gateway = WC_Payments::get_gateway();
 
-			// WooPay and Link by Stripe are mutually exclusive. When a merchant already opted into Link
+			// WooPay and Link are mutually exclusive. When a merchant already opted into Link
 			// (e.g. in sandbox before going live), Link wins: the enable-by-default activation keeps WooPay
 			// off rather than overriding that choice. See #9404.
 			$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $gateway->get_upe_enabled_payment_method_ids(), true );
@@ -2312,12 +2328,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
-
-		// Mark this as a fresh KYC submission so the post-KYC nudge clock can use a real approval timestamp.
-		// Only set on live finalisations and never overwrite — this option distinguishes post-launch merchants from pre-existing ones.
-		if ( 'live' === $mode && ! get_option( self::KYC_SUBMITTED_DATE_OPTION ) ) {
-			update_option( self::KYC_SUBMITTED_DATE_OPTION, time(), false );
-		}
 
 		// Track account connection finish.
 		$event_properties = [
@@ -2395,12 +2405,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
-
-		// Mark this as a fresh KYC submission so the post-KYC nudge clock can use a real approval timestamp.
-		// Only set on live finalisations and never overwrite — this option distinguishes post-launch merchants from pre-existing ones.
-		if ( 'live' === $mode && ! get_option( self::KYC_SUBMITTED_DATE_OPTION ) ) {
-			update_option( self::KYC_SUBMITTED_DATE_OPTION, time(), false );
-		}
 
 		// Track account connection finish.
 		$incentive_id = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
@@ -2668,46 +2672,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Records the date a merchant's account first becomes KYC-approved and payments-enabled on live mode.
-	 * Stored once and never overwritten so the Post-KYC activation nudge clock starts from the real approval date.
+	 * Compatibility callback for the retired activation reminder clock.
 	 *
-	 * For post-launch merchants we have a `wcpay_kyc_submitted_date` set at finalize_*_connection,
-	 * which means the current observation is a fresh KYC and `time()` is accurate.
-	 * For pre-existing merchants we fall back to `account['created']` (Stripe's account creation timestamp)
-	 * so the nudge clock reflects roughly when KYC happened — imprecise but the best signal we have.
-	 *
-	 * @param array|bool $account The account data passed by woocommerce_payments_account_refreshed.
-	 *
+	 * @deprecated 11.3.0 KYC reminder timestamps are no longer recorded.
+	 * @param array|bool $account Legacy account data.
 	 * @return void
 	 */
-	public function maybe_record_kyc_completion_date( $account ): void {
-		if ( empty( $account ) || ! is_array( $account ) ) {
-			return;
-		}
-
-		if ( empty( $account['payments_enabled'] ) || empty( $account['is_live'] ) || ! empty( $account['is_test_drive'] ) ) {
-			return;
-		}
-
-		// Preserve the original date — do not overwrite on subsequent refreshes.
-		if ( get_option( self::KYC_COMPLETION_DATE_OPTION ) ) {
-			return;
-		}
-
-		$kyc_submitted_date = (int) get_option( self::KYC_SUBMITTED_DATE_OPTION, 0 );
-		$account_created    = (int) ( $account['created'] ?? 0 );
-
-		if ( $kyc_submitted_date ) {
-			// Post-launch merchant — use the moment we observe payments_enabled flipping true.
-			$completion_date = time();
-		} elseif ( $account_created ) {
-			// Pre-existing merchant — fall back to the Stripe account creation timestamp.
-			$completion_date = $account_created;
-		} else {
-			return;
-		}
-
-		update_option( self::KYC_COMPLETION_DATE_OPTION, $completion_date, false );
+	public function maybe_record_kyc_completion_date( $account ): void { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve the legacy parameter name.
+		wc_deprecated_function( __METHOD__, '11.3.0' );
 	}
 
 

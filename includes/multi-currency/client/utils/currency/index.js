@@ -53,7 +53,7 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 			const baseCurrency = baseCurrencyCode
 				? find( currencyData, {
 						code: baseCurrencyCode.toUpperCase(),
-				  } )
+					} )
 				: currencyData[ country ];
 
 			if ( baseCurrency ) {

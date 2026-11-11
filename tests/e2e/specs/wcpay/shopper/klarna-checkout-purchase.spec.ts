@@ -20,9 +20,8 @@ test.describe( 'Klarna Checkout', () => {
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await merchant.isMulticurrencyEnabled(
-			merchantPage
-		);
+		wasMulticurrencyEnabled =
+			await merchant.isMulticurrencyEnabled( merchantPage );
 		if ( wasMulticurrencyEnabled ) {
 			await merchant.deactivateMulticurrency( merchantPage );
 		}
@@ -78,8 +77,11 @@ test.describe( 'Klarna Checkout', () => {
 
 			// Since we don't have control over the html in the Klarna playground page,
 			// verifying the redirect is all we can do consistently without introducing a
-			// flaky test.
-			await expect( shopperPage ).toHaveURL( /.*klarna\.com/ );
+			// flaky test. Wait for the page to load, though: navigating away while it is
+			// still loading aborts the cleanup's navigation to the cart.
+			await shopperPage.waitForURL( /.*klarna\.com/, {
+				waitUntil: 'load',
+			} );
 		}
 	);
 } );

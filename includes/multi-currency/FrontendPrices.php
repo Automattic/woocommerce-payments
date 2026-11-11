@@ -31,6 +31,45 @@ class FrontendPrices {
 	protected $multi_currency;
 
 	/**
+	 * The shipping method whose last cost formula we converted to the store currency, so that only its
+	 * fees round to the store currency's decimals rather than the selected one's. Null when the last
+	 * formula through our filter was left in the selected currency.
+	 *
+	 * @var WC_Shipping_Method|null
+	 */
+	private $shipping_method_with_converted_cost = null;
+
+	/**
+	 * The shipping method whose `[fee]` shortcode is rendering, or null outside one. The store-currency
+	 * decimals and decimal separator apply only inside it, where WC_Shipping_Flat_Rate::fee() rounds and
+	 * parses the fee.
+	 *
+	 * @var WC_Shipping_Method|null
+	 */
+	private $shipping_method_rendering_fee = null;
+
+	/**
+	 * The coupon WooCommerce is re-applying to an existing order, if any.
+	 *
+	 * @var \WC_Coupon|false|null
+	 */
+	protected $order_coupon;
+
+	/**
+	 * The currency of the order that coupon is being re-applied to.
+	 *
+	 * @var Currency|null
+	 */
+	protected $order_coupon_currency;
+
+	/**
+	 * Whether the coupon being re-applied holds a store-currency amount that still needs converting.
+	 *
+	 * @var bool
+	 */
+	protected $order_coupon_needs_conversion = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
@@ -67,12 +106,22 @@ class FrontendPrices {
 
 		// Shipping methods hooks.
 		add_filter( 'woocommerce_shipping_zone_shipping_methods', [ $this, 'convert_free_shipping_method_min_amount' ], 99 );
+		add_filter( 'woocommerce_evaluate_shipping_cost_args', [ $this, 'convert_shipping_cost_args_to_store_currency' ], 99, 3 );
+		add_filter( 'wc_get_price_decimals', [ $this, 'use_store_currency_decimals_during_shipping_fee' ], 990 );
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'use_store_decimal_separator_during_shipping_fee' ], 990 );
+		add_filter( 'shortcode_atts_fee', [ $this, 'start_shipping_fee_rendering' ] );
+		add_filter( 'do_shortcode_tag', [ $this, 'end_shipping_fee_rendering' ], PHP_INT_MIN, 2 );
+		// PHP_INT_MIN so it runs before plugins that set item prices on the same action.
+		add_action( 'woocommerce_before_calculate_totals', [ $this, 'reset_shipping_fee_rendering' ], PHP_INT_MIN );
 		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 99, 2 );
+		// PHP_INT_MAX so the marker is stamped last and survives a plugin that rebuilds the packages array on this filter.
+		add_filter( 'woocommerce_cart_shipping_packages', [ $this, 'add_currency_to_shipping_packages' ], PHP_INT_MAX );
 
 		// Coupon hooks.
 		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 99, 2 );
-		add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
-		add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
+		add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 99, 2 );
+		add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 99, 2 );
+		add_filter( 'woocommerce_order_recalculate_coupons_coupon_object', [ $this, 'set_order_coupon' ], 99, 4 );
 
 		// Order hooks.
 		add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 99, 2 );
@@ -271,6 +320,145 @@ class FrontendPrices {
 	}
 
 	/**
+	 * Converts a flat-rate formula's `cost` back to the store currency before evaluation, so the
+	 * cart-derived part (already in the selected currency) is not converted twice.
+	 *
+	 * @param array                   $args        The `qty`/`cost` the formula is evaluated with.
+	 * @param string                  $_unused_sum The formula.
+	 * @param WC_Shipping_Method|null $method      The shipping method evaluating the formula.
+	 *
+	 * @return array
+	 */
+	public function convert_shipping_cost_args_to_store_currency( $args, $_unused_sum, $method = null ) {
+		$this->shipping_method_with_converted_cost = null;
+
+		if ( empty( $args['cost'] ) ) {
+			return $args;
+		}
+
+		if ( ! $this->compatibility->should_convert_shipping_amount( $method ) ) {
+			return $args;
+		}
+
+		$selected_currency = $this->multi_currency->get_selected_currency();
+
+		if ( $this->multi_currency->get_default_currency()->get_code() === $selected_currency->get_code() ) {
+			return $args;
+		}
+
+		$selected_rate = $selected_currency->get_rate();
+
+		if ( 0 >= $selected_rate ) {
+			return $args;
+		}
+
+		// Reverses get_price(), which later converts the evaluated rate by multiplying it by the selected rate.
+		$args['cost'] = (float) $args['cost'] / $selected_rate;
+
+		// The formula now runs in the store currency, so its fees must round to the store currency's decimals.
+		$this->shipping_method_with_converted_cost = $method;
+
+		return $args;
+	}
+
+	/**
+	 * Rounds a converted formula's fees to the store currency's decimals. WC_Shipping_Flat_Rate::fee()
+	 * rounds to wc_get_price_decimals(), which we otherwise filter to the selected currency and would
+	 * truncate the store-currency fee.
+	 *
+	 * @param int $decimals The decimals WooCommerce would use.
+	 *
+	 * @return int
+	 */
+	public function use_store_currency_decimals_during_shipping_fee( $decimals ): int {
+		if ( null === $this->shipping_method_rendering_fee ) {
+			return $decimals;
+		}
+
+		// A method that renders [fee] without our cost filter, such as one overriding evaluate_cost(), kept its cost in the selected currency.
+		if ( $this->shipping_method_rendering_fee !== $this->shipping_method_with_converted_cost ) {
+			return $decimals;
+		}
+
+		return absint( get_option( 'woocommerce_price_num_decimals', 2 ) );
+	}
+
+	/**
+	 * Reads a `[fee]` shortcode's `percent`, `min_fee` and `max_fee` with the store's decimal separator.
+	 * The merchant types them in the store's number format, and WC_Shipping_Flat_Rate::fee() (WC 11.3+)
+	 * parses them with wc_get_price_decimal_separator(), which we otherwise switch to the selected currency.
+	 *
+	 * @param string $separator The decimal separator WooCommerce would use.
+	 *
+	 * @return string
+	 */
+	public function use_store_decimal_separator_during_shipping_fee( $separator ) {
+		if ( null === $this->shipping_method_rendering_fee ) {
+			return $separator;
+		}
+
+		if ( $this->multi_currency->get_default_currency()->get_code() === $this->multi_currency->get_selected_currency()->get_code() ) {
+			return $separator;
+		}
+
+		// wc_get_price_decimal_separator() falls back to a dot when the option is empty.
+		return (string) get_option( 'woocommerce_price_decimal_sep' );
+	}
+
+	/**
+	 * Marks the start of a shipping method's `[fee]` shortcode. WC_Shipping_Flat_Rate::fee() reads its
+	 * attributes with shortcode_atts() first, so this runs only once the fee is actually being worked out,
+	 * never for a shortcode that another callback short-circuits.
+	 *
+	 * A fee() override that does not call shortcode_atts( ..., 'fee' ) keeps the selected currency's
+	 * format. One that throws keeps the store's format on until another `[fee]` shortcode finishes or the
+	 * next cart calculation starts (see reset_shipping_fee_rendering()).
+	 *
+	 * @param array $atts The `[fee]` attributes, returned unchanged.
+	 *
+	 * @return array
+	 */
+	public function start_shipping_fee_rendering( $atts ) {
+		global $shortcode_tags;
+
+		$callback = $shortcode_tags['fee'] ?? null;
+
+		if ( is_array( $callback ) && ( $callback[0] ?? null ) instanceof WC_Shipping_Method ) {
+			$this->shipping_method_rendering_fee = $callback[0];
+		}
+
+		return $atts;
+	}
+
+	/**
+	 * Marks the end of a shipping method's `[fee]` shortcode.
+	 *
+	 * @param string $output The shortcode output, returned unchanged.
+	 * @param string $tag    The shortcode tag.
+	 *
+	 * @return string
+	 */
+	public function end_shipping_fee_rendering( $output, $tag ) {
+		if ( 'fee' === $tag ) {
+			$this->shipping_method_rendering_fee = null;
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Clears the `[fee]` state before a cart calculation. A fee() override that throws skips the end of its
+	 * shortcode, and if its caller catches the exception, the store currency's decimals would otherwise stay
+	 * on while the item totals are taken.
+	 *
+	 * @return void
+	 */
+	public function reset_shipping_fee_rendering() {
+		$this->shipping_method_rendering_fee       = null;
+		$this->shipping_method_with_converted_cost = null;
+	}
+
+	/**
 	 * Returns the shipping add rate args with cost converted.
 	 *
 	 * @param array              $args   Shipping rate args.
@@ -317,24 +505,125 @@ class FrontendPrices {
 			return $amount;
 		}
 
+		// A coupon re-applied to an existing order is converted to the order's currency,
+		// no matter which currency the shopper has selected since the order was placed.
+		if ( $coupon === $this->order_coupon ) {
+			// set_order_coupon() works out whether the amount is still in the store currency.
+			return $this->order_coupon_needs_conversion
+				? $this->multi_currency->get_price( $amount, 'coupon', $this->order_coupon_currency )
+				: $amount;
+		}
+
 		return $this->multi_currency->get_price( $amount, 'coupon' );
+	}
+
+	/**
+	 * Remembers the coupon WC_Abstract_Order::recalculate_coupons() is about to re-apply to an order,
+	 * so that its amount is converted to the currency of the order instead of the selected currency.
+	 *
+	 * @param \WC_Coupon|false      $coupon       The coupon about to be re-applied.
+	 * @param string                $_unused_code The coupon code.
+	 * @param \WC_Order_Item_Coupon $coupon_item  The order's coupon line item.
+	 * @param WC_Order              $order        The order the coupon is re-applied to.
+	 *
+	 * @return \WC_Coupon|false The unmodified coupon.
+	 */
+	public function set_order_coupon( $coupon, $_unused_code, $coupon_item, $order ) {
+		// Runs on any frontend request except standard REST order writes, which already force the store currency:
+		// the Store API pay-for-order route, and frontend calls such as `$order->apply_coupon()`.
+		if ( WC()->is_rest_api_request() && ! Utils::is_store_api_request() && ! Utils::is_store_batch_request() ) {
+			$this->order_coupon = null;
+			return $coupon;
+		}
+
+		$this->order_coupon = $coupon;
+		// The enabled currency carries the merchant's manual rate, as at checkout. The available one, which
+		// only has the automatic rate, covers a currency the merchant disabled since checkout.
+		$order_currency              = $order->get_currency();
+		$this->order_coupon_currency = $this->multi_currency->get_enabled_currencies()[ $order_currency ]
+			?? $this->multi_currency->get_available_currencies()[ $order_currency ]
+			?? $this->multi_currency->get_default_currency();
+
+		// Decide whether the amount read back for this coupon is in the store currency and so needs
+		// converting. A live coupon's amount is the store-currency value. A deleted coupon is rebuilt by
+		// recalculate_coupons() from the order line: `coupon_info` (WC >= 8.7) holds the amount already
+		// converted at checkout, while legacy `coupon_data` holds the raw store-currency amount, which must
+		// still be converted. A coupon rebuilt with no stored amount takes its value from the order line,
+		// already in the order's currency, so it is left as is.
+		// Known gap: WooCommerce's coupon data conversion tool (WC >= 8.7) rebuilt `coupon_info` from
+		// `coupon_data` without Multi-Currency, so on those orders a deleted coupon's amount is still in the
+		// store currency but is treated as converted.
+		// Cast like WC_Abstract_Order::get_temporary_coupon(), which also accepts object-valued meta.
+		$legacy_data                         = (array) $coupon_item->get_meta( 'coupon_data', true );
+		$legacy_amount                       = (float) ( $legacy_data['amount'] ?? 0 );
+		$has_coupon_info                     = (bool) $coupon_item->get_meta( 'coupon_info', true );
+		$this->order_coupon_needs_conversion = $coupon instanceof \WC_Coupon && (
+			! $coupon->get_virtual()
+			|| ( ! $has_coupon_info && $legacy_amount > 0 )
+		);
+
+		return $coupon;
 	}
 
 	/**
 	 * Returns the min or max amount for a coupon.
 	 *
-	 * @param mixed $amount The coupon's min or max amount.
+	 * @param mixed  $amount The coupon's min or max amount.
+	 * @param object $coupon The coupon object.
 	 *
 	 * @return mixed The converted coupon's min or max amount.
 	 */
-	public function get_coupon_min_max_amount( $amount ) {
-		if ( ! $amount ) {
+	public function get_coupon_min_max_amount( $amount, $coupon = null ) {
+		if ( ! $amount || ! $this->compatibility->should_convert_coupon_min_max_amount( $coupon ) ) {
 			return $amount;
 		}
 
 		// Coupon mix/max prices are treated as products to avoid inconsistencies with charm pricing
 		// making a coupon invalid when the coupon min/max amount is the same as the product's price.
 		return $this->multi_currency->get_price( $amount, 'product' );
+	}
+
+	/**
+	 * Adds the selected currency to each shipping package so WooCommerce's package hash changes on a
+	 * currency switch and cached shipping rates are rebuilt. WC's hash omits the currency, and the rate
+	 * is converted once at build time, so without this the stale rate is reused.
+	 *
+	 * @param mixed $packages The shipping packages (may be a non-array if a prior filter misbehaved).
+	 *
+	 * @return mixed The packages, with the selected currency marker added to each non-empty array package unless the
+	 *               store currency is selected.
+	 */
+	public function add_currency_to_shipping_packages( $packages ) {
+		if ( ! is_array( $packages ) ) {
+			return $packages;
+		}
+
+		$currency = $this->multi_currency->get_selected_currency();
+
+		// Store-currency packages stay unmarked so they hash the same as where this filter doesn't run, and the two don't
+		// invalidate each other's cached rates.
+		if ( $currency->get_code() === $this->multi_currency->get_default_currency()->get_code() ) {
+			return $packages;
+		}
+
+		$marker = implode(
+			':',
+			[
+				$currency->get_code(),
+				$currency->get_rate(),
+				$currency->get_rounding(),
+				$currency->get_charm(),
+				$this->multi_currency->get_apply_charm_only_to_products() ? '1' : '0',
+			]
+		);
+
+		foreach ( array_keys( $packages ) as $key ) {
+			if ( is_array( $packages[ $key ] ) && ! empty( $packages[ $key ] ) ) {
+				$packages[ $key ]['wcpay_multi_currency'] = $marker;
+			}
+		}
+
+		return $packages;
 	}
 
 	/**

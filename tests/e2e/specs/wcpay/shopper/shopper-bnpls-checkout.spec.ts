@@ -15,7 +15,7 @@ import * as navigation from '../../../utils/shopper-navigation';
 import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
 
 const cardTestingProtectionStates = [ false, true ];
-const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
+const bnplProviders = [ 'Affirm', 'Afterpay' ];
 
 // using multiple products to prevent the "order duplication service" to be triggered.
 const products = [ 'belt', 'sunglasses' ];
@@ -61,9 +61,8 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await merchant.isMulticurrencyEnabled(
-			merchantPage
-		);
+		wasMulticurrencyEnabled =
+			await merchant.isMulticurrencyEnabled( merchantPage );
 
 		await merchant.enablePaymentMethods( merchantPage, bnplProviders );
 		if ( wasMulticurrencyEnabled ) {

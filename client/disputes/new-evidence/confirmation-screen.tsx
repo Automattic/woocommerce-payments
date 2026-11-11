@@ -59,11 +59,11 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 							? __(
 									'Your response has been submitted under Visa’s compliance process.',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									"Your evidence has been sent to the cardholder's bank for review.",
 									'woocommerce-payments'
-							  ) }
+								) }
 					</p>
 
 					{ /* What's next section */ }
@@ -77,11 +77,11 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 									? __(
 											'Visa will review your submission under its network rules and determine the outcome of the dispute.',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'The cardholder’s bank will review your response. Please be patient — this usually takes a few weeks, but in some cases it can take up to 3 months.',
 											'woocommerce-payments'
-									  ) }
+										) }
 							</li>
 							{ isVisaComplianceDispute && (
 								<li>
@@ -176,7 +176,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 									{
 										strong: <strong />,
 									}
-							  )
+								)
 							: createInterpolateElement(
 									bankName
 										? sprintf(
@@ -185,15 +185,15 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 													'woocommerce-payments'
 												),
 												bankName
-										  )
+											)
 										: __(
 												"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 												'woocommerce-payments'
-										  ),
+											),
 									{
 										strong: <strong />,
 									}
-							  ) }
+								) }
 					</InlineNotice>
 
 					{ /* Action buttons */ }

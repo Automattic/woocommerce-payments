@@ -12,12 +12,16 @@ import moment from 'moment';
 import { getTasks, taskSort } from '../tasks';
 import { getDisputeResolutionTask } from '../tasks/dispute-task';
 import { getAdminUrl } from 'wcpay/utils';
+import { recordEvent } from 'tracks';
 
 const mockHistoryPush = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
 	getHistory: () => ( {
 		push: mockHistoryPush,
 	} ),
+} ) );
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
 } ) );
 
 const mockActiveDisputes = [
@@ -768,6 +772,180 @@ describe( 'taskSort()', () => {
 				completed: false,
 				level: 1,
 			} )
+		);
+	} );
+
+	it( 'should not include the early fraud warning task without active warnings', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [],
+		} );
+
+		expect( actual ).toEqual( [] );
+	} );
+
+	it( 'should include the early fraud warning task with a single warning', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+			],
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'early-fraud-warning-task-ch_efw_1',
+					completed: false,
+					level: 2,
+					title: 'Review order #12 flagged for potential fraud',
+					content: 'Refunding it now can prevent a dispute.',
+					actionLabel: 'Review payment',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should include one early fraud warning task per warning', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+				{
+					order_id: 13,
+					order_number: 'INV-13',
+					charge_id: 'ch_efw_2',
+					created: 1719900000,
+				},
+			],
+		} );
+
+		const earlyFraudWarningTasks = actual.filter( ( task ) =>
+			task.key.startsWith( 'early-fraud-warning-task-' )
+		);
+
+		expect( earlyFraudWarningTasks ).toEqual( [
+			expect.objectContaining( {
+				key: 'early-fraud-warning-task-ch_efw_1',
+				title: 'Review order #12 flagged for potential fraud',
+				content: 'Refunding it now can prevent a dispute.',
+				actionLabel: 'Review payment',
+			} ),
+			expect.objectContaining( {
+				key: 'early-fraud-warning-task-ch_efw_2',
+				title: 'Review order #INV-13 flagged for potential fraud',
+				content: 'Refunding it now can prevent a dispute.',
+				actionLabel: 'Review payment',
+			} ),
+		] );
+	} );
+
+	it( 'early fraud warning task action opens the payment for a single warning and records the event', () => {
+		mockHistoryPush.mockClear();
+
+		const [ task ] = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+			],
+		} );
+		task.action();
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_overview_task_click',
+			{
+				task: 'early-fraud-warning-task',
+				active_early_fraud_warning_count: 1,
+			}
+		);
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining(
+				'path=%2Fpayments%2Ftransactions%2Fdetails'
+			)
+		);
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining( 'id=ch_efw_1' )
+		);
+	} );
+
+	it( 'should make the early fraud warning task dismissable', () => {
+		const [ task ] = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+			],
+		} );
+
+		expect( task.isDismissable ).toBe( true );
+	} );
+
+	it( 'each early fraud warning task action opens that payment and records the active count', () => {
+		mockHistoryPush.mockClear();
+
+		const tasks = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+				{
+					order_id: 13,
+					order_number: '13',
+					charge_id: 'ch_efw_2',
+					created: 1719900000,
+				},
+			],
+		} );
+
+		tasks[ 1 ].action();
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_overview_task_click',
+			{
+				task: 'early-fraud-warning-task',
+				active_early_fraud_warning_count: 2,
+			}
+		);
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining(
+				'path=%2Fpayments%2Ftransactions%2Fdetails'
+			)
+		);
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining( 'id=ch_efw_2' )
+		);
+	} );
+
+	it( 'falls back to the order id when the display number is missing', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+			],
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					title: 'Review order #12 flagged for potential fraud',
+				} ),
+			] )
 		);
 	} );
 } );

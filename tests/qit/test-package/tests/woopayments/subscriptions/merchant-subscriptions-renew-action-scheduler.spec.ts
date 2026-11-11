@@ -59,7 +59,8 @@ test.describe(
 			const runAction = adminPage
 				.getByRole( 'link', { name: 'Run' } )
 				.first();
-			await runAction.focus();
+			// WP keeps row actions off-screen until the row is hovered.
+			await adminPage.locator( 'tr', { has: runAction } ).first().hover();
 			await runAction.click();
 
 			await expect(

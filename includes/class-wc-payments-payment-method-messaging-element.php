@@ -60,7 +60,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 
 		if ( $product ) {
 			$get_price_fn = function ( $product ) {
-				return $product->get_price();
+				return (float) $product->get_price();
 			};
 			if ( wc_tax_enabled() && $product->is_taxable() ) {
 				if (

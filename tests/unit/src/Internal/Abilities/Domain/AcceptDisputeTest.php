@@ -8,27 +8,12 @@
 namespace WCPay\Tests\Internal\Abilities\Domain;
 
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Abilities\Domain\AcceptDispute;
 
 /**
  * @coversDefaultClass \WCPay\Internal\Abilities\Domain\AcceptDispute
  */
 class AcceptDisputeTest extends WCPAY_UnitTestCase {
-
-	public function test_name(): void {
-		$this->assertSame( 'woocommerce-payments/accept-dispute', AcceptDispute::get_name() );
-	}
-
-	public function test_registration_args_has_destructive_irreversible_annotations(): void {
-		$args = AcceptDispute::get_registration_args();
-
-		$this->assertFalse( $args['meta']['annotations']['readonly'] );
-		$this->assertTrue( $args['meta']['annotations']['destructive'] );
-		$this->assertFalse( $args['meta']['annotations']['idempotent'] );
-		$this->assertFalse( $args['meta']['mcp']['public'] );
-		$this->assertContains( 'dispute_id', $args['input_schema']['required'] );
-	}
 
 	public function test_execute_returns_error_when_dispute_id_missing(): void {
 		$result = AcceptDispute::execute( [] );

@@ -154,6 +154,32 @@ describe( 'Transactions selectors', () => {
 		},
 	};
 
+	test( 'Returns the same empty values on repeated calls', () => {
+		const selectors = [
+			getTransactions,
+			getTransactionsError,
+			getTransactionsSummary,
+			getTransactionsSummaryError,
+		];
+		selectors.forEach( ( selector ) => {
+			expect( selector( emptyState, mockQuery ) ).toBe(
+				selector( emptyState, mockQuery )
+			);
+		} );
+
+		const fraudSelectors = [
+			getFraudOutcomeTransactions,
+			getFraudOutcomeTransactionsError,
+			getFraudOutcomeTransactionsSummary,
+			getFraudOutcomeTransactionsSummaryError,
+		];
+		fraudSelectors.forEach( ( selector ) => {
+			expect( selector( emptyState, 'review', mockQuery ) ).toBe(
+				selector( emptyState, 'review', mockQuery )
+			);
+		} );
+	} );
+
 	test( 'Returns empty transactions list when transactions list is empty', () => {
 		expect( getTransactions( emptyState, mockQuery ) ).toStrictEqual( [] );
 	} );

@@ -20,10 +20,24 @@ use WCPay\Logger;
  */
 class WC_Payments_Onboarding_Service {
 
-	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
+	const TEST_MODE_OPTION = 'wcpay_onboarding_test_mode';
+	/**
+	 * Historic reminder timestamp.
+	 *
+	 * @deprecated 11.3.0 No longer written.
+	 */
 	const TEST_MODE_ENABLED_DATE_OPTION              = 'wcpay_test_mode_enabled_date';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
+
+	/**
+	 * The WooCommerce core options that store whether the store had WooPayments in use,
+	 * for incentive eligibility.
+	 *
+	 * @see \Automattic\WooCommerce\Internal\Admin\Suggestions\Incentives\WooPayments
+	 */
+	private const STORE_HAD_WOOPAYMENTS_OPTION         = 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments';
+	private const STORE_HAD_WOOPAYMENTS_VERSION_OPTION = 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
@@ -118,12 +132,6 @@ class WC_Payments_Onboarding_Service {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'add_woocommerce_store_id_to_request' ] );
-		add_action(
-			'update_option_woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings',
-			[ $this, 'maybe_handle_gateway_test_mode_toggle' ],
-			10,
-			2
-		);
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cached_onboarding_fields_data' ] );
 	}
 
@@ -311,7 +319,9 @@ class WC_Payments_Onboarding_Service {
 	 *                                  indicating whether the capability should be requested when the account is created
 	 *                                  and enabled in the settings.
 	 * @param string|null $explicit_mode Optional. The user's explicit mode selection ('live' or 'test').
-	 *                                   When provided, overrides the auto-detected mode (unless dev mode is active).
+	 *                                   Used only before an account is connected, where it overrides the
+	 *                                   environment auto-detection (except in dev mode). Ignored in dev mode or
+	 *                                   once an account is connected, where the store keeps its onboarded mode.
 	 *
 	 * @return array Session data.
 	 *
@@ -331,9 +341,12 @@ class WC_Payments_Onboarding_Service {
 
 		$this->set_onboarding_init_in_progress();
 
-		// Determine setup mode: dev mode always forces test; explicit user selection overrides auto-detection.
+		// Determine the setup mode. Dev mode forces test. A connected store keeps the mode it was onboarded in;
+		// the requested mode and environment auto-detection apply only before an account is connected.
 		if ( WC_Payments::mode()->is_dev() ) {
 			$setup_mode = 'test';
+		} elseif ( WC_Payments::get_account_service()->is_stripe_connected() ) {
+			$setup_mode = self::is_test_mode_enabled() ? 'test' : 'live';
 		} elseif ( null !== $explicit_mode && in_array( strtolower( $explicit_mode ), [ 'live', 'test' ], true ) ) {
 			$setup_mode = $explicit_mode;
 		} else {
@@ -713,6 +726,11 @@ class WC_Payments_Onboarding_Service {
 			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
 		}
 
+		// A connected store must reset onboarding before starting a test-drive account.
+		if ( WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new Exception( __( 'An account is already set up. Please reset the onboarding first.', 'woocommerce-payments' ) );
+		}
+
 		// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
@@ -934,13 +952,10 @@ class WC_Payments_Onboarding_Service {
 		update_option( self::TEST_MODE_OPTION, 'no' );
 		self::clear_account_options();
 
-		// Clear the stored flag for whether the store had WooPayments in use,
+		// Clear WooCommerce core's stored flag for whether the store had WooPayments in use,
 		// so incentive eligibility is re-determined for the fresh onboarding.
-		// Deleting is safe even though WooCommerce core shares these options: if an
-		// older core copy re-freezes a stale positive from test-mode usage, the logic
-		// version marker gets it re-determined on the next evaluation. See WOOPMNT-6320.
-		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_OPTION_NAME );
-		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME );
+		delete_option( self::STORE_HAD_WOOPAYMENTS_OPTION );
+		delete_option( self::STORE_HAD_WOOPAYMENTS_VERSION_OPTION );
 
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
@@ -951,9 +966,6 @@ class WC_Payments_Onboarding_Service {
 		// Clear the entire database cache since everything hinges on the account.
 		// If the account is gone, everything else is too.
 		$this->database_cache->delete_all();
-
-		// Clean up the test-to-live notice state.
-		self::sync_notice_state( false );
 	}
 
 	/**
@@ -1090,28 +1102,18 @@ class WC_Payments_Onboarding_Service {
 		} else {
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
-
-		self::sync_notice_state( $test_mode );
 	}
 
 	/**
-	 * Hook handler for `update_option_woocommerce_<gateway_id>_settings`. Keeps
-	 * the test-to-live nudge's bookkeeping in sync when the gateway's
-	 * `test_mode` value flips.
+	 * Compatibility callback for the retired test-to-live notice timer.
 	 *
-	 * @param mixed $old_value Previous gateway settings array, or '' on first save.
-	 * @param mixed $new_value New gateway settings array.
+	 * @deprecated 11.3.0 Notice bookkeeping is no longer maintained.
+	 * @param mixed $old_value Previous gateway settings.
+	 * @param mixed $new_value New gateway settings.
 	 * @return void
 	 */
-	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void {
-		$old_test_mode = is_array( $old_value ) ? ( $old_value['test_mode'] ?? 'no' ) : 'no';
-		$new_test_mode = is_array( $new_value ) ? ( $new_value['test_mode'] ?? 'no' ) : 'no';
-
-		if ( $old_test_mode === $new_test_mode ) {
-			return;
-		}
-
-		self::sync_notice_state( 'yes' === $new_test_mode );
+	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve legacy parameters.
+		wc_deprecated_function( __METHOD__, '11.3.0' );
 	}
 
 	/**
@@ -1393,7 +1395,8 @@ class WC_Payments_Onboarding_Service {
 			)
 		) ) {
 			// Discriminate between the settings page and the NOX in-context onboarding.
-			if ( ! empty( $referer_params['path'] ) &&
+			// is_string() guards against an array `path` (a `path[]=` referer) that would make strpos() throw.
+			if ( ! empty( $referer_params['path'] ) && is_string( $referer_params['path'] ) &&
 				0 === strpos( $referer_params['path'], '/woopayments/onboarding' ) ) {
 				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
 			}
@@ -1537,7 +1540,7 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// WooPay and Link by Stripe are mutually exclusive, so an account that can auto-enable WooPay
+		// WooPay and Link are mutually exclusive, so an account that can auto-enable WooPay
 		// must not do so while Link is enabled: that would leave both active with neither toggle
 		// editable, and silently discard a payment method the merchant deliberately turned on. Link is
 		// read from the merged list because it can be enabled either from existing settings or from this
@@ -1660,28 +1663,5 @@ class WC_Payments_Onboarding_Service {
 		wc_admin_record_tracks_event( $name, $properties );
 
 		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
-	}
-
-	/**
-	 * Maintains notice state that depends on test mode: sets/clears
-	 * TEST_MODE_ENABLED_DATE_OPTION (test-to-live nudge clock) and drops the
-	 * test-to-live and post-KYC eligibility transients.
-	 *
-	 * @param bool $test_mode True if test mode is being enabled, false if disabled.
-	 * @return void
-	 */
-	private static function sync_notice_state( bool $test_mode ): void {
-		if ( $test_mode ) {
-			// Preserve the original enable date on subsequent calls.
-			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
-				update_option( self::TEST_MODE_ENABLED_DATE_OPTION, time(), false );
-			}
-		} else {
-			// Cleared on disable so re-entering test mode restarts the nudge clock.
-			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
-		}
-
-		delete_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE );
-		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 }

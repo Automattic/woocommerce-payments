@@ -1,10 +1,10 @@
 === WooPayments: Integrated WooCommerce Payments ===
 Contributors: woocommerce, automattic
-Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
+Tags: woocommerce payments, apple pay, credit card, google pay, payment gateway
 Requires at least: 6.0
 Tested up to: 7.1
-Requires PHP: 7.3
-Stable tag: 11.2.1
+Requires PHP: 7.4
+Stable tag: 11.3.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -94,6 +94,133 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 11.3.0 - 2026-11-11 =
+* Add - Add a Payments Overview task for payments flagged by an early fraud warning
+* Add - Log which filter to use when the server rejects an express checkout payment because its confirmation token and the payment disagree about saving the card.
+* Fix - Always attempt WordPress.com registration when a merchant clicks Connect, even after a recent failed attempt.
+* Fix - Check that the intent on a redirect return belongs to the order for zero-amount orders too, including setup intents.
+* Fix - Convert a fixed-amount coupon that WooCommerce re-applies to an existing order with the order's currency, not the shopper's selected currency.
+* Fix - Correctly distinguish manual deposits from instant payouts by checking for non-zero service fees.
+* Fix - fix: Make Level 3 data add up to the order total, or skip it, so Apple Pay, Google Pay and Amazon Pay payments no longer fail on rounding.
+* Fix - Fix a PHP error when a payout export download is requested with an ID containing a % character.
+* Fix - Fix a subscription's failed renewal order being marked as paid, without a charge, when the customer changes the payment method to a card that needs 3D Secure.
+* Fix - Fix classic checkout staying blocked when the cart updates while the Google Pay window is open.
+* Fix - Fixed a client error on the add payment method page that replaced the Stripe card error message with a 'Cannot destructure property' error when the card data was rejected.
+* Fix - Fixed Apple Pay and Google Pay on classic variable product pages sometimes showing an outdated price after a variation is selected.
+* Fix - Fixed missing live shipping rates in the Apple Pay and Google Pay sheets for Canadian and UK addresses, by filling the redacted postcode in a valid format.
+* Fix - Fixed saved card payments on classic checkout and order-pay when card testing protection is enabled
+* Fix - Fixed the Currency Switcher block's currency list being unreadable on Windows and Linux when the block uses light text on its default transparent background.
+* Fix - Fix orders being marked as failed when a Klarna or other BNPL payment is declined: the order now stays pending so the customer can retry with a different payment method, and a detailed order note records the payment provider's error. Abandoned BNPL payments, such as an expired payment session, are now also recorded in an order note.
+* Fix - Fix payments and subscriptions failing with a division by zero error when an order item has a quantity of 0.
+* Fix - Fix text overflow in Active loan overview table on mobile viewports.
+* Fix - Fix the buy now, pay later message overlapping the Proceed to checkout button on the classic cart page.
+* Fix - Fix the _load_textdomain_just_in_time notice on fresh installs by deferring gateway settings-field translations
+* Fix - Harden customer and payment details kept in checkout sessions.
+* Fix - Honor the manual capture setting for every payment method, not only cards.
+* Fix - Improve how WooPay checkout handles session and preflight requests.
+* Fix - Improve order status handling after payments and subscription renewals.
+* Fix - Improve subscription handling during payment method changes.
+* Fix - Improve the accuracy of Multi-Currency cart, order and renewal totals.
+* Fix - Keep a connected store in its current test or live mode during onboarding.
+* Fix - Keep a manual capture authorization from an earlier attempt from replacing the payment an order is waiting on.
+* Fix - Keep Apple Pay and Google Pay working on product pages served from a full-page cache after their nonces expired, and after a new account was created but the payment failed.
+* Fix - Keep Google Pay and Apple Pay showing on the Cart and Checkout blocks after the cart switches to a currency Amazon Pay doesn't support.
+* Fix - Keep manual capture orders paid with 3DS from being cancelled when the shopper leaves before checkout finishes.
+* Fix - Keep text typed into the dispute challenge form from being replaced by saved values while the page finishes loading.
+* Fix - Keep the dispute cover letter empty when a merchant clears it, and add a button to restore the generated letter.
+* Fix - Keep the saved account details when they can't be refreshed after a plugin update.
+* Fix - Load right-to-left styles for lazy-loaded admin pages on right-to-left sites.
+* Fix - Make capital loan table columns configurable via column visibility menu
+* Fix - Make sure the WooCommerce session is loaded when a shopper adds a payment method from My Account.
+* Fix - Multi-Currency: convert coupons re-applied to an existing order with the merchant's manual exchange rate, not the automatic rate.
+* Fix - Only accept a saved payment method at checkout when it belongs to the logged-in customer paying with it.
+* Fix - Only add payment methods from My Account while WooPayments and saved cards are enabled.
+* Fix - Only save a card from My Account when it was set up for the signed-in customer.
+* Fix - Only use the order from a Pay for order link to pick payment methods when the link is valid.
+* Fix - Prevented payment method errors from splitting log entries or causing checkout errors.
+* Fix - Put a failed order on hold when a retried manual capture payment is authorized after 3DS and the shopper leaves before checkout finishes.
+* Fix - Recognize returning Link customers from the checkout email field.
+* Fix - Record only shopper events from the browser's Tracks requests, and stop a batch of events once the Tracks service is unavailable.
+* Fix - Recreate the customer during a payment only when the error names the customer itself as the missing object.
+* Fix - Remove WooPayments payment details from orders paid with another payment method.
+* Fix - Rename the Link payment method display title from "Stripe Link" to "Link" to align with current branding.
+* Fix - Restore vertical spacing in Payments Overview task list rows.
+* Fix - Send Level 3 data when marking an authorized order completed captures it, so a total edited after authorization can still be captured.
+* Fix - Send shopper Tracks events in a single request per page to reduce server load.
+* Fix - Show Amazon Pay on the Cart and Checkout blocks when the shopper switches to a currency it supports, without a page reload.
+* Fix - Show Apple Pay, Google Pay, and Amazon Pay on the block cart and checkout when the first product is added to an empty cart, without a page reload.
+* Fix - Show Link as the payment method on the order success page and in the order title for one-off Link and 3DS card payments.
+* Fix - Show Onelink branding for UK accounts in the transaction list logo and the Link and WooPay settings notices.
+* Fix - Show Onelink consistently as the Link payment method name on UK accounts, and use Link elsewhere.
+* Fix - Show the local currency notice to shoppers on cached pages when Multi-Currency is optimized for caching.
+* Fix - Show the real error message when saving or submitting dispute evidence fails.
+* Fix - Skip the Name Your Price multi-currency compatibility shim on Name Your Price 4.0.0+.
+* Fix - Stop a subscription renewal from being marked paid with a payment that belongs to another order.
+* Fix - Stop express checkout buttons on product pages from giving shoppers a session cookie, which kept them off cached pages.
+* Fix - Stop extra re-renders on the Payments Overview, payouts, disputes and payment details pages.
+* Fix - Stop requiring auto-generated usernames and passwords for Express Checkout
+* Fix - Stop rounding an order's total to the selected currency's decimals on the order received, view order and pay for order pages, which also made paying for an order charge the rounded amount
+* Fix - Stop the block checkout from spinning forever when a shopper places an order before the payment details finish loading.
+* Fix - Translate strings in lazy-loaded admin pages, such as Overview, Payouts, Reports and Disputes, and in multi-currency scripts on non-English sites.
+* Fix - Update helper text for Stripe Billing fee setting.
+* Fix - Update how the nonce on a redirect payment's return URL is built.
+* Fix - Update validation rules for transaction, dispute and card reader IDs used in admin REST requests.
+* Fix - Use the order quantity for fraud prevention checks when paying an existing order.
+* Fix - Validate order IP addresses before prefilling dispute evidence.
+* Update - Include less request and customer detail in WooPayments logs.
+* Update - Remove the fraud protection welcome tour from the WooPayments settings page.
+* Update - Retire post-KYC first-sale reminder emails.
+* Update - Retire the post-KYC and test-to-live global notices.
+* Update - Show Afterpay instead of Cash App Afterpay for US stores at checkout and in settings.
+* Update - Show one development mode notice that names what turned development mode on across the Payments Overview, Connect, Settings, onboarding, transactions, payouts, disputes, documents and loans pages, and stop showing an empty notice on Overview for live accounts in development mode.
+* Update - Stop rebuilding the Express Checkout block button's Stripe options on renders that don't change them.
+* Update - Update the Jetpack Connection package to 9.13.0, which lets the connection owner hand it to another administrator from Settings > Connectors on WordPress 7.0 or later.
+* Update - Update the Klarna logo and clarify the available ways to pay in the payment method description.
+* Dev - Add a browse command for checking changes by hand in a browser on the local dev site.
+* Dev - Bump Jetpack Connection to 9.11.0 and Jetpack Sync to 5.4.1.
+* Dev - Bump PHPStan to 2.3.1.
+* Dev - Bump stylelint to 13.13.1.
+* Dev - Bump the Jetpack Autoloader package to 6.0.2.
+* Dev - Bump the Jetpack Config package to 4.0.1.
+* Dev - Bump WC tested up to version to 11.3.0
+* Dev - Bump `sirbrillig/phpcs-variable-analysis` to version 3.0.0.
+* Dev - Check every ability's registration settings in one data-driven test.
+* Dev - Check that ordinary account reads use the cache instead of forcing a refresh.
+* Dev - chore: keep CI tests compatible with Ubuntu 26.04.
+* Dev - Declare react-day-picker as a dependency of @wordpress/dataviews so builds don't rely on pnpm hoisting.
+* Dev - Deploy the release zip that QIT tested to WordPress.org instead of building it again.
+* Dev - Describe the deploy workflow's single build in the test matrix.
+* Dev - Document compact PHPStan and PHPCS commands for AI agents in the agent development reference.
+* Dev - Fix disputes and documents filter tests that fail when only some of their tests run.
+* Dev - Fix E2E test filters and the snapshot update script, which were ignored when run through pnpm 11.
+* Dev - Fix gateway, payment and subscription unit tests that could not fail, and remove duplicate tests.
+* Dev - Fix PHPStan 2.2.16 errors ahead of the dependency bump.
+* Dev - Fix PHP unit tests that depend on state from other tests or pin the order of internal calls.
+* Dev - Fix service, admin, WooPay and other unit tests that could not fail, and remove duplicate and unhelpful tests.
+* Dev - Fix the dispute challenge page crashing after submitting an edited cover letter on WooCommerce versions before 9.5.
+* Dev - Focus E2E verification guidance on affected flows and preserve existing environments.
+* Dev - Make subscriptions disabler tests fail instead of skipping when the WC_Subscription test helper is missing.
+* Dev - Make zero-call request mocks in unit tests fail when the request is sent.
+* Dev - Modernize PHPStan configuration with WordPress-aware analysis and a scoped baseline
+* Dev - Move the local and E2E Docker images to PHP 8.4 to match the Transact server, pull a fresh base image on each build, and run each E2E job on the PHP version it names.
+* Dev - Name the security contact address in SECURITY.md.
+* Dev - Pin Plugin Check to 2.1.0 in CI by installing its release zip, because wp-env dropped the version flag.
+* Dev - Point the E2E phpMyAdmin image at the official `phpmyadmin` image instead of the deprecated `phpmyadmin/phpmyadmin` one.
+* Dev - Prepare React mounts and ref callbacks for React 19.
+* Dev - Remove the connect incentive from the Connect page, which merchants no longer reach from the admin.
+* Dev - Remove the unused direct react-day-picker dependency.
+* Dev - Remove unreachable subscriptions empty-state screen code.
+* Dev - Replace the deprecated WooCommerce List component in HorizontalList.
+* Dev - Reuse the local PHP unit test environment between runs, print its WordPress, WooCommerce and Gutenberg versions, and detect setup problems before running tests.
+* Dev - Run unit tests that were never collected or always skipped, and remove dead test code.
+* Dev - Run WordPress.org Plugin Check on pull requests, and fix the readme PHP requirement it flagged.
+* Dev - Split agent guidance into task-specific references.
+* Dev - Stop unit tests leaking shared state into later tests.
+* Dev - Style WooPayments admin cards through our own class names instead of the internal @wordpress/components ones.
+* Dev - Update Jetpack Changelogger to 7.0.5.
+* Dev - Upgrade wp-prettier to 3.9.6 and eslint-plugin-prettier to 5.5.6, and reformat the codebase.
+* Dev - Wait for the Klarna page to load in the Klarna E2E spec so its cleanup no longer fails on Atomic.
 
 = 11.2.1 - 2026-11-03 =
 * Update - Security update.

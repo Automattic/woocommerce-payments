@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use Automattic\WooCommerce\Blocks\Package;
-use Automattic\WooCommerce\Blocks\RestApi;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Compatibility_Service;
 use WCPay\Constants\Country_Code;
@@ -127,6 +125,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		$this->reset_payment_method_registry();
+
 		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
 
 		self::$settings_route = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/settings';
@@ -245,12 +245,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 		WC_Payments::set_database_cache( $this->_cache );
 		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
-
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -1081,21 +1075,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 			return $allcaps;
 		};
-	}
-
-	/**
-	 * Deregister WooCommerce Blocks REST routes to prevent _doing_it_wrong() notices
-	 * after calls to rest_do_request().
-	 */
-	public function deregister_wc_blocks_rest_api() {
-		try {
-			/* For WooCommerce Blocks >= 2.6.0: */
-			$wc_blocks_rest_api = Package::container()->get( RestApi::class );
-			remove_action( 'rest_api_init', [ $wc_blocks_rest_api, 'register_rest_routes' ] );
-		} catch ( Exception $e ) {
-			/* For WooCommerce Blocks < 2.6.0: */
-			remove_action( 'rest_api_init', [ RestApi::class, 'register_rest_routes' ] );
-		}
 	}
 
 	public function test_get_settings_card_eligible_flag(): void {

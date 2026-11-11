@@ -21,6 +21,7 @@ import {
 	useWooPayLocations,
 	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data/settings';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 
 jest.mock( 'wcpay/data/settings', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
@@ -196,7 +197,7 @@ describe( 'WooPaySettings', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'disables the enable checkbox and shows warning when Stripe Link is enabled', () => {
+	it( 'disables the enable checkbox and shows warning when Link is enabled', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', 'link' ],
 			jest.fn(),
@@ -213,12 +214,12 @@ describe( 'WooPaySettings', () => {
 		// Use getAllByText since a11y regions may duplicate the text
 		expect(
 			screen.getAllByText(
-				'To enable WooPay, you must first disable Link by Stripe.'
+				'To enable WooPay, you must first disable Link.'
 			)[ 0 ]
 		).toBeInTheDocument();
 	} );
 
-	it( 'allows disabling WooPay when both WooPay and Stripe Link are enabled', async () => {
+	it( 'allows disabling WooPay when both WooPay and Link are enabled', async () => {
 		const updateIsWooPayEnabledHandler = jest.fn();
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', 'link' ],
@@ -234,12 +235,12 @@ describe( 'WooPaySettings', () => {
 		expect( enableCheckbox ).not.toBeDisabled();
 		expect(
 			screen.getAllByText(
-				"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them."
+				"Link and WooPay can't be enabled at the same time. Disable one of them."
 			)[ 0 ]
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText(
-				'To enable WooPay, you must first disable Link by Stripe.'
+				'To enable WooPay, you must first disable Link.'
 			)
 		).not.toBeInTheDocument();
 
@@ -247,7 +248,7 @@ describe( 'WooPaySettings', () => {
 		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith( false );
 	} );
 
-	it( 'does not block WooPay on a Stripe Link setting hidden because card is disabled', () => {
+	it( 'does not block WooPay on a Link setting hidden because card is disabled', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ], jest.fn() ] );
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, jest.fn() )
@@ -258,12 +259,12 @@ describe( 'WooPaySettings', () => {
 		expect( screen.getByLabelText( /Enable WooPay/ ) ).not.toBeDisabled();
 		expect(
 			screen.queryByText(
-				'To enable WooPay, you must first disable Link by Stripe.'
+				'To enable WooPay, you must first disable Link.'
 			)
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'hides incompatibility notice when Stripe Link is enabled', () => {
+	it( 'hides incompatibility notice when Link is enabled', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', 'link' ],
 			jest.fn(),
@@ -284,12 +285,12 @@ describe( 'WooPaySettings', () => {
 		// Use getAllByText since a11y regions may duplicate the text
 		expect(
 			screen.getAllByText(
-				'To enable WooPay, you must first disable Link by Stripe.'
+				'To enable WooPay, you must first disable Link.'
 			)[ 0 ]
 		).toBeInTheDocument();
 	} );
 
-	it( 'does not show notices when Stripe Link is not enabled', () => {
+	it( 'does not show notices when Link is not enabled', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 
 		const { container } = render( <WooPaySettings section="enable" /> );
@@ -301,5 +302,65 @@ describe( 'WooPaySettings', () => {
 		expect(
 			container.querySelector( '.wcpay-inline-notice' )
 		).not.toBeInTheDocument();
+	} );
+
+	describe( 'for UK accounts', () => {
+		const UK_COUNTRY = 'GB';
+		const originalLinkLabel = methodsConfiguration.link.label;
+
+		beforeEach( () => {
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				accountStatus: { country: UK_COUNTRY },
+			};
+			methodsConfiguration.link.label = 'Onelink';
+		} );
+
+		afterEach( () => {
+			methodsConfiguration.link.label = originalLinkLabel;
+		} );
+
+		it( 'names Onelink when it blocks enabling WooPay', () => {
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				jest.fn(),
+			] );
+			useWooPayEnabledSettings.mockReturnValue(
+				getMockWooPayEnabledSettings( false, jest.fn() )
+			);
+
+			render( <WooPaySettings section="enable" /> );
+
+			expect(
+				screen.getAllByText(
+					'To enable WooPay, you must first disable Onelink.'
+				)[ 0 ]
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					'To enable WooPay, you must first disable Link.'
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'names Onelink in the conflict notice', () => {
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				jest.fn(),
+			] );
+
+			render( <WooPaySettings section="enable" /> );
+
+			expect(
+				screen.getAllByText(
+					"Onelink and WooPay can't be enabled at the same time. Disable one of them."
+				)[ 0 ]
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					"Link and WooPay can't be enabled at the same time. Disable one of them."
+				)
+			).not.toBeInTheDocument();
+		} );
 	} );
 } );

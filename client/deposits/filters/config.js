@@ -103,11 +103,11 @@ export const advancedFilters = {
 						? __(
 								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Date</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a payout date', 'woocommerce-payments' ),
 			},
 			rules: [
@@ -145,11 +145,11 @@ export const advancedFilters = {
 						? __(
 								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Status</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a payout status', 'woocommerce-payments' ),
 			},
 			rules: [

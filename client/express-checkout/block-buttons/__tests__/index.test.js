@@ -65,6 +65,50 @@ describe( 'Express checkout blocks registration', () => {
 			} );
 		} );
 
+		describe( 'when the first product is added to an empty block cart', () => {
+			beforeEach( () => {
+				// Localized on the empty-cart render, so it's already defined.
+				global.wcpayExpressCheckoutParams = {
+					enabled_methods: [ 'payment_request' ],
+					methods_enabled_at_location: [ 'payment_request' ],
+				};
+			} );
+
+			it( 're-evaluates availability against the updated cart', async () => {
+				const emptyCart = {
+					cartTotals: { total_price: '0', currency_code: 'EUR' },
+					extensions: {
+						wcpay: {
+							express_checkout_methods: [ 'payment_request' ],
+						},
+					},
+				};
+				const filledCart = {
+					...emptyCart,
+					cartTotals: { total_price: '28000', currency_code: 'EUR' },
+				};
+				checkPaymentMethodIsAvailable
+					.mockResolvedValueOnce( false )
+					.mockResolvedValueOnce( true );
+				const applePay = expressCheckoutElementApplePay( mockApi );
+
+				const emptyCartResult = await applePay.canMakePayment( {
+					cart: emptyCart,
+				} );
+				const filledCartResult = await applePay.canMakePayment( {
+					cart: filledCart,
+				} );
+
+				expect( emptyCartResult ).toBe( false );
+				expect( filledCartResult ).toBe( true );
+				expect(
+					checkPaymentMethodIsAvailable
+				).toHaveBeenLastCalledWith( 'applePay', filledCart, mockApi, [
+					'payment_request',
+				] );
+			} );
+		} );
+
 		describe( 'when payment_request is NOT in enabled_methods', () => {
 			beforeEach( () => {
 				global.wcpayExpressCheckoutParams = {
@@ -120,7 +164,8 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
 					'applePay',
 					mockCart,
-					mockApi
+					mockApi,
+					[ 'payment_request' ]
 				);
 			} );
 
@@ -131,7 +176,8 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
 					'googlePay',
 					mockCart,
-					mockApi
+					mockApi,
+					[ 'payment_request' ]
 				);
 			} );
 		} );
@@ -151,7 +197,8 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
 					'amazonPay',
 					mockCart,
-					mockApi
+					mockApi,
+					[ 'amazon_pay' ]
 				);
 			} );
 		} );
@@ -221,6 +268,8 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
 			} );
 
+			// The probe fails for every wallet when it asks Stripe about a method
+			// the cart's currency doesn't support, so it must get the cart's list.
 			it( 'still allows apple/google pay when the cart extension keeps payment_request', () => {
 				expressCheckoutElementApplePay( mockApi ).canMakePayment( {
 					cart: cartWithMethods( [ 'payment_request' ] ),
@@ -229,7 +278,8 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
 					'applePay',
 					expect.any( Object ),
-					mockApi
+					mockApi,
+					[ 'payment_request' ]
 				);
 			} );
 
@@ -244,7 +294,8 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
 					'amazonPay',
 					expect.any( Object ),
-					mockApi
+					mockApi,
+					[ 'payment_request', 'amazon_pay' ]
 				);
 			} );
 
@@ -287,7 +338,8 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
 					'amazonPay',
 					expect.any( Object ),
-					mockApi
+					mockApi,
+					[ 'payment_request', 'amazon_pay' ]
 				);
 			} );
 		} );

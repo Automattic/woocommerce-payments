@@ -51,10 +51,10 @@ const LocalSkeleton = ( {
 				? {
 						'aria-live': 'polite' as const,
 						'aria-label': ariaMessage,
-				  }
+					}
 				: {
 						'aria-hidden': 'true' as const,
-				  } ) }
+					} ) }
 			style={ {
 				width,
 				height,

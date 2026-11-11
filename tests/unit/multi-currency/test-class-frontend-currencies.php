@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use WCPay\Constants\Currency_Code;
 use WCPay\MultiCurrency\Currency;
 use WCPay\MultiCurrency\Compatibility;
@@ -60,8 +62,25 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	 */
 	private $frontend_currencies;
 
+	/**
+	 * The global query vars before each test, restored in tear_down().
+	 *
+	 * @var array
+	 */
+	private $original_query_vars;
+
+	/**
+	 * The filter use_hpos_or_skip() adds to turn on HPOS, removed in tear_down().
+	 *
+	 * @var callable|null
+	 */
+	private $use_hpos;
+
 	public function set_up() {
 		parent::set_up();
+
+		global $wp;
+		$this->original_query_vars = $wp->query_vars;
 
 		$this->localization_service = new WC_Payments_Localization_Service();
 		$this->mock_compatibility   = $this->createMock( Compatibility::class );
@@ -80,6 +99,14 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_currency_settings' );
 
+		if ( null !== $this->use_hpos ) {
+			remove_filter( 'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, $this->use_hpos );
+			$this->use_hpos = null;
+		}
+
+		global $wp;
+		$wp->query_vars = $this->original_query_vars;
+
 		parent::tear_down();
 	}
 
@@ -92,6 +119,38 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 			has_filter( $filter, [ $this->frontend_currencies, $function_name ] ),
 			"Filter '$filter' was not registered with '$function_name' with a priority higher than the default"
 		);
+	}
+
+	/**
+	 * @dataProvider cart_action_provider
+	 */
+	public function test_discards_the_cached_currency_on_cart_actions( $action ) {
+		$this->assertSame(
+			0,
+			has_action( $action, [ $this->frontend_currencies, 'selected_currency_changed' ] ),
+			"Action '$action' does not discard the cached currency before other callbacks run"
+		);
+	}
+
+	public function cart_action_provider() {
+		return [
+			[ 'woocommerce_cart_loaded_from_session' ],
+			[ 'woocommerce_cart_updated' ],
+		];
+	}
+
+	public function test_get_woocommerce_currency_re_resolves_after_the_cart_is_updated() {
+		$this->mock_multi_currency
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_explicit_selected_currency' )
+			->willReturnOnConsecutiveCalls( new Currency( $this->localization_service, Currency_Code::JAPANESE_YEN ), null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'JPY', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
+
+		do_action( 'woocommerce_cart_updated' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+
+		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
 	}
 
 	public function woocommerce_filter_provider() {
@@ -190,6 +249,53 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$this->assertSame( 'GBP', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
 	}
 
+	public function test_get_woocommerce_currency_re_resolves_after_the_current_user_is_replaced() {
+		$this->mock_multi_currency
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_explicit_selected_currency' )
+			->willReturnOnConsecutiveCalls( new Currency( $this->localization_service, Currency_Code::JAPANESE_YEN ), null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		wp_set_current_user( self::factory()->user->create() );
+		$this->assertSame( 'JPY', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
+
+		wp_set_current_user( 0 );
+		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
+	}
+
+	public function test_get_woocommerce_currency_re_resolves_after_the_session_is_replaced() {
+		$this->mock_multi_currency
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_explicit_selected_currency' )
+			->willReturnOnConsecutiveCalls( new Currency( $this->localization_service, Currency_Code::JAPANESE_YEN ), null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'JPY', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
+
+		$original_session = WC()->session;
+		WC()->session     = clone $original_session;
+		$currency         = $this->frontend_currencies->get_woocommerce_currency( 'USD' );
+		WC()->session     = $original_session;
+
+		$this->assertSame( 'USD', $currency );
+	}
+
+	public function test_get_price_decimals_re_resolves_after_the_current_user_is_replaced() {
+		$this->mock_multi_currency
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_selected_currency' )
+			->willReturnOnConsecutiveCalls(
+				new Currency( $this->localization_service, Currency_Code::JAPANESE_YEN ),
+				new Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR )
+			);
+
+		wp_set_current_user( self::factory()->user->create() );
+		$this->assertSame( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+
+		wp_set_current_user( 0 );
+		$this->assertSame( 2, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
 	public function test_get_price_decimals_returns_num_decimals() {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'BHD' ) );
 
@@ -215,6 +321,675 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		// We expect 3 decimal points here because BHD uses 3 decimal points, see
 		// i18n/locale-info.php (or plugins/woocommerce/i18n/locale-info.php in WC Core).
 		$this->assertEquals( 3, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * Block-based order confirmation pages render the order total without the shortcode classes, so
+	 * the order currency is still used there. Loading the order from the data store is covered
+	 * separately (see the load tests below). See WOOPMNT-3978.
+	 */
+	public function test_single_order_pages_use_order_currency_while_rendering_blocks() {
+		global $wp;
+		$wp->query_vars['order-received'] = $this->mock_order->get_id();
+
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with(
+				$this->callback(
+					function ( $calls ) {
+						return in_array( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock->render', $calls, true )
+							&& in_array( 'WC_Shortcode_Checkout::order_received', $calls, true )
+							&& ! in_array( 'WC_Order_Factory::get_order', $calls, true );
+					}
+				)
+			)
+			->willReturn( true );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->mock_order->set_currency( 'USD' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
+
+		// USD has 2 decimals; the selected ISK has none.
+		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * The WooCommerce methods above are matched by name in the backtrace, so a WooCommerce change to
+	 * them would silently stop the match. This fails instead.
+	 */
+	public function test_matched_woocommerce_methods_keep_their_backtrace_names() {
+		// Static, so PHP reports it as WC_Order_Factory::get_order in the backtrace however it's called.
+		$this->assertTrue( ( new ReflectionMethod( 'WC_Order_Factory', 'get_order' ) )->isStatic() );
+		$this->assertTrue( ( new ReflectionMethod( 'WC_Order_Factory', 'get_orders' ) )->isStatic() );
+
+		// calculate_totals is inherited from WC_Abstract_Order, so PHP reports it as
+		// WC_Abstract_Order->calculate_totals in the backtrace for any order type.
+		$this->assertSame( 'WC_Abstract_Order', ( new ReflectionMethod( 'WC_Order', 'calculate_totals' ) )->getDeclaringClass()->getName() );
+
+		// The CI matrix still runs WooCommerce 7.6, which predates the order confirmation blocks.
+		if ( version_compare( WC_VERSION, '9.0.0', '<' ) ) {
+			$this->markTestSkipped( 'The order confirmation blocks are not in this WooCommerce version.' );
+		}
+
+		$this->assertTrue( method_exists( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock', 'render' ) );
+	}
+
+	/**
+	 * Prices on a single-order page that are not the order's, like the mini-cart, keep the
+	 * selected currency. See WOOPMNT-3978.
+	 */
+	public function test_other_prices_on_single_order_pages_keep_the_selected_currency() {
+		global $wp;
+		$wp->query_vars['view-order'] = $this->mock_order->get_id();
+
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->willReturn( false );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->mock_order->set_currency( 'USD' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
+
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * The orders list has no single order, so loading an order there must not switch to an order
+	 * currency.
+	 */
+	public function test_orders_list_page_does_not_use_order_currency_while_loading_orders() {
+		global $wp;
+		$wp->query_vars['orders'] = 1;
+
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with(
+				$this->callback(
+					function ( $calls ) {
+						return ! in_array( 'WC_Order_Factory::get_order', $calls, true );
+					}
+				)
+			)
+			->willReturn( false );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * While an order is read from the data store its own currency is not available here, so the
+	 * decimals must not fall below any enabled currency. A selected zero-decimal currency must not
+	 * reduce the precision a USD order needs.
+	 */
+	public function test_get_price_decimals_uses_max_enabled_decimals_while_loading_an_order() {
+		$this->mock_multi_currency
+			->method( 'get_enabled_currencies' )
+			->willReturn(
+				[
+					'USD' => new Currency( $this->localization_service, 'USD' ),
+					'JPY' => new Currency( $this->localization_service, 'JPY' ),
+				]
+			);
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->with( [ 'WC_Order_Factory::get_order', 'WC_Order_Factory::get_orders' ] )
+			->willReturn( true );
+
+		// WC_Order_Factory flags a load right before it reads the order.
+		$this->assertSame( 'WC_Order', $this->frontend_currencies->flag_order_loading( 'WC_Order' ) );
+
+		// The selected JPY would give 0; the load keeps the 2 that USD needs.
+		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals( 0 ) );
+	}
+
+	/**
+	 * A single-order page names the order through the URL, so a historical order in a currency with
+	 * more decimals than any enabled currency keeps its own precision while loading instead of being
+	 * rounded to the enabled maximum (for example after that currency is disabled).
+	 */
+	public function test_loading_a_single_order_page_keeps_the_order_currency_precision() {
+		global $wp;
+		$this->mock_order->set_currency( 'BHD' );
+		$this->mock_order->save();
+		$wp->query_vars['order-pay'] = $this->mock_order->get_id();
+
+		$this->mock_multi_currency
+			->method( 'get_enabled_currencies' )
+			->willReturn(
+				[
+					'USD' => new Currency( $this->localization_service, 'USD' ),
+					'JPY' => new Currency( $this->localization_service, 'JPY' ),
+				]
+			);
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+
+		// WC_Order_Factory flags a load right before it reads the order.
+		$this->frontend_currencies->flag_order_loading( 'WC_Order' );
+
+		// BHD has 3 decimals; the enabled USD/JPY top out at 2. The order's own currency must win, so a
+		// stored 10.499 is not rounded to 10.50 on load.
+		$this->assertEquals( 3, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * The load flag is cleared once the factory is no longer loading, so later prices on the same
+	 * request use the selected currency again.
+	 */
+	public function test_is_loading_order_only_applies_while_the_factory_is_loading() {
+		$this->mock_multi_currency
+			->method( 'get_enabled_currencies' )
+			->willReturn( [ 'USD' => new Currency( $this->localization_service, 'USD' ) ] );
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturn( new Currency( $this->localization_service, 'JPY' ) );
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( false );
+
+		// Drive the backtrace result by state, not by call count, so the test does not depend on how
+		// many times get_price_decimals() consults the backtrace.
+		$factory_in_backtrace = true;
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->willReturnCallback(
+				function () use ( &$factory_in_backtrace ) {
+					return $factory_in_backtrace;
+				}
+			);
+
+		$this->frontend_currencies->flag_order_loading( 'WC_Order' );
+
+		// During the load the USD store keeps 2 even though JPY is selected.
+		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals( 2 ) );
+
+		// Once the factory is no longer loading, the selected JPY applies again, so 0.
+		$factory_in_backtrace = false;
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * While an existing order recalculates its totals, amounts follow the order's own currency, not
+	 * the shopper's selected currency.
+	 */
+	public function test_get_price_decimals_uses_order_currency_during_calculate_totals_and_releases_on_clear() {
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->willReturn( true );
+		$this->mock_utils
+			->method( 'get_backtrace_call_count' )
+			->willReturn( 1 );
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( false );
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturn( new Currency( $this->localization_service, 'JPY' ) );
+
+		$this->mock_order->set_currency( 'BHD' );
+		$this->frontend_currencies->init_calculated_order_currency( true, $this->mock_order );
+
+		// During calculate_totals the order's BHD (3 decimals) applies, not the selected JPY.
+		$this->assertEquals( 3, $this->frontend_currencies->get_price_decimals( 2 ) );
+
+		// The after-calculate hook releases it, so the selected JPY (0 decimals) applies again.
+		$this->frontend_currencies->clear_calculated_order_currency();
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * If recalculation ends without the after hook running (for example it threw), the recorded order
+	 * currency is dropped on the next lookup instead of leaking into later prices on the request.
+	 */
+	public function test_calculated_order_currency_is_dropped_once_calculate_totals_is_not_running() {
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturn( new Currency( $this->localization_service, 'JPY' ) );
+		$this->mock_utils
+			->method( 'is_page_with_vars' )
+			->willReturn( false );
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->willReturn( false );
+		$this->mock_utils
+			->method( 'get_backtrace_call_count' )
+			->willReturn( 0 );
+
+		$this->mock_order->set_currency( 'BHD' );
+		$this->frontend_currencies->init_calculated_order_currency( true, $this->mock_order );
+
+		// calculate_totals is no longer on the stack, so the BHD pin is dropped and the selected JPY applies.
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+		// And it stays dropped.
+		$this->assertEquals( 0, $this->frontend_currencies->get_price_decimals( 2 ) );
+	}
+
+	/**
+	 * Replaces the set_up instance's currency hooks with a FrontendCurrencies built on a real Utils, so
+	 * is_call_in_backtrace() inspects the genuine call stack rather than a mock. Returns the instance.
+	 */
+	private function reinit_with_real_utils(): FrontendCurrencies {
+		$hooks = [
+			'woocommerce_currency',
+			'wc_get_price_decimals',
+			'wc_get_price_decimal_separator',
+			'wc_get_price_thousand_separator',
+			'woocommerce_price_format',
+			'option_woocommerce_currency_pos',
+			'woocommerce_order_get_total',
+			'woocommerce_get_formatted_order_total',
+			'woocommerce_order_class',
+			'woocommerce_order_before_calculate_totals',
+			'woocommerce_order_after_calculate_totals',
+		];
+		foreach ( $hooks as $hook ) {
+			remove_all_filters( $hook );
+		}
+
+		$this->mock_multi_currency
+			->method( 'get_enabled_currencies' )
+			->willReturn(
+				[
+					'USD' => new Currency( $this->localization_service, 'USD' ),
+					'JPY' => new Currency( $this->localization_service, 'JPY' ),
+				]
+			);
+
+		$frontend_currencies = new FrontendCurrencies( $this->mock_multi_currency, $this->localization_service, new Utils(), $this->mock_compatibility );
+		$frontend_currencies->init_hooks();
+		return $frontend_currencies;
+	}
+
+	/**
+	 * Turns on HPOS for the current test and skips the test when WooCommerce does not use it, so a test that
+	 * relies on it does not pass without exercising anything. Older WooCommerce (e.g. 7.6) uses HPOS, and so
+	 * the order cache, only once the feature is visible.
+	 */
+	private function use_hpos_or_skip() {
+		$this->use_hpos = function () {
+			return 'yes';
+		};
+		add_filter( 'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, $this->use_hpos );
+
+		if ( ! OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$this->markTestSkipped( 'WooCommerce is not using HPOS.' );
+		}
+	}
+
+	public function test_loading_a_real_order_keeps_its_currency_decimals() {
+		$frontend_currencies = $this->reinit_with_real_utils();
+
+		$selected = 'USD';
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturnCallback(
+				function () use ( &$selected ) {
+					return new Currency( $this->localization_service, $selected );
+				}
+			);
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( '10.49' );
+		$order->save();
+		$order_id = $order->get_id();
+
+		// Switch to a zero-decimal currency the way MultiCurrency does (it clears the cached selection).
+		$selected = 'JPY';
+		$frontend_currencies->selected_currency_changed();
+
+		// Hydrating the order must keep its own 2 decimals, not round to the selected JPY's 0.
+		wp_cache_flush();
+		$this->assertSame( '10.49', wc_get_order( $order_id )->get_total() );
+	}
+
+	/**
+	 * A persistent object cache serializes the order object and re-reads it from the data store when it
+	 * is unserialized (WC_Data::__wakeup() calls the constructor, which reads). That re-read does not go
+	 * through WC_Order_Factory, so it must still keep the order's own decimals rather than round the
+	 * total to the selected zero-decimal currency. Regression test for the cached pay-for-order display.
+	 */
+	public function test_waking_a_persisted_order_keeps_its_currency_decimals() {
+		$frontend_currencies = $this->reinit_with_real_utils();
+
+		$selected = 'USD';
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturnCallback(
+				function () use ( &$selected ) {
+					return new Currency( $this->localization_service, $selected );
+				}
+			);
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( '10.49' );
+		$order->save();
+		$order_id = $order->get_id();
+
+		$selected = 'JPY';
+		$frontend_currencies->selected_currency_changed();
+
+		// serialize()/unserialize() reproduces what a persistent object cache does on a hit: WC_Data only
+		// stores the id and re-reads on wakeup. The re-read total must keep its 2 decimals, not round to 0.
+		wp_cache_flush();
+		$woken = unserialize( serialize( wc_get_order( $order_id ) ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize, WordPress.PHP.DiscouragedPHPFunctions.serialize_unserialize
+
+		$this->assertSame( '10.49', $woken->get_total() );
+	}
+
+	public function test_loading_with_an_unresolvable_order_pay_var_keeps_the_order_decimals() {
+		$frontend_currencies = $this->reinit_with_real_utils();
+
+		$selected = 'USD';
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturnCallback(
+				function () use ( &$selected ) {
+					return new Currency( $this->localization_service, $selected );
+				}
+			);
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( '10.49' );
+		$order->save();
+		$order_id = $order->get_id();
+
+		$selected = 'JPY';
+		$frontend_currencies->selected_currency_changed();
+
+		global $wp;
+		$wp->query_vars['order-pay'] = 'x';
+
+		wp_cache_flush();
+		$this->assertSame( '10.49', wc_get_order( $order_id )->get_total() );
+	}
+
+	/**
+	 * A single-order query var pointing at a different order's id (order-received=<another order's id>)
+	 * must not pull that order's currency into the load, even with the store currency selected.
+	 */
+	public function test_loading_with_an_order_received_var_for_another_order_keeps_the_order_decimals() {
+		// Registers the currency hooks on a real Utils; the selection stays the store currency here, so the
+		// returned instance needs no further setup.
+		$this->reinit_with_real_utils();
+
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturn( new Currency( $this->localization_service, 'USD' ) );
+
+		$other_order = WC_Helper_Order::create_order();
+		$other_order->set_currency( 'JPY' );
+		$other_order->save();
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( '10.49' );
+		$order->save();
+		$order_id = $order->get_id();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $other_order->get_id();
+
+		wp_cache_flush();
+		$this->assertSame( '10.49', wc_get_order( $order_id )->get_total() );
+	}
+
+	/**
+	 * With HPOS, WC_Order_Factory caches every order it reads. While one order loads, the order named by a
+	 * single-order query var is read to learn its currency; that read must keep the named order's precision,
+	 * or the cached copy hands a rounded total to every later wc_get_order() call in the request. The store
+	 * is set to zero decimals, so a read at the store's decimals would turn 10.49 into 10.
+	 */
+	public function test_reading_the_query_var_order_while_another_order_loads_caches_it_at_full_precision() {
+		$this->use_hpos_or_skip();
+		$zero_decimal_store = function () {
+			return 0;
+		};
+
+		try {
+			$this->reinit_with_real_utils();
+			$this->mock_multi_currency
+				->method( 'get_selected_currency' )
+				->willReturn( new Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR ) );
+
+			// Created at the default 2 decimals, before the store switches to zero decimals below.
+			$named_order = WC_Helper_Order::create_order();
+			$named_order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+			$named_order->set_total( '10.49' );
+			$named_order->save();
+			$loaded_order = WC_Helper_Order::create_order();
+
+			add_filter( 'pre_option_woocommerce_price_num_decimals', $zero_decimal_store );
+
+			global $wp;
+			$wp->query_vars['order-received'] = $named_order->get_id();
+
+			wp_cache_flush();
+			wc_get_order( $loaded_order->get_id() );
+
+			$this->assertSame( '10.49', wc_get_order( $named_order->get_id() )->get_total() );
+		} finally {
+			remove_filter( 'pre_option_woocommerce_price_num_decimals', $zero_decimal_store );
+		}
+	}
+
+	/**
+	 * init_order_currency() removes the formatting filters for its order read and must put them back even
+	 * when the read throws, or every later price on the page loses the currency's formatting.
+	 */
+	public function test_init_order_currency_restores_its_filters_when_the_order_read_throws() {
+		$throw_on_read = function () {
+			throw new Exception( 'Order read failed.' );
+		};
+		add_filter( 'woocommerce_order_class', $throw_on_read, 1 );
+
+		try {
+			$this->frontend_currencies->init_order_currency( $this->mock_order->get_id() );
+			$this->fail( 'The order read was expected to throw.' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 'Order read failed.', $e->getMessage() );
+		} finally {
+			remove_filter( 'woocommerce_order_class', $throw_on_read, 1 );
+		}
+
+		$this->assertSame( 900, has_filter( 'wc_get_price_decimal_separator', [ $this->frontend_currencies, 'get_price_decimal_separator' ] ) );
+		$this->assertSame( 900, has_filter( 'wc_get_price_thousand_separator', [ $this->frontend_currencies, 'get_price_thousand_separator' ] ) );
+		$this->assertSame( 900, has_filter( 'woocommerce_price_format', [ $this->frontend_currencies, 'get_woocommerce_price_format' ] ) );
+
+		// The nested-read guard is released too, so the next call reads the order and records its currency.
+		$this->mock_order->set_currency( Currency_Code::EURO );
+		$this->mock_order->save();
+		$this->frontend_currencies->init_order_currency( $this->mock_order->get_id() );
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_order_currency() );
+	}
+
+	public function test_calculate_totals_on_a_real_order_keeps_its_currency_decimals() {
+		$frontend_currencies = $this->reinit_with_real_utils();
+
+		$selected = 'USD';
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturnCallback(
+				function () use ( &$selected ) {
+					return new Currency( $this->localization_service, $selected );
+				}
+			);
+
+		$order = new WC_Order();
+		$order->set_currency( 'USD' );
+		foreach ( [ '1.49', '1.49', '1.45' ] as $price ) {
+			$product = new WC_Product_Simple();
+			$product->set_regular_price( $price );
+			$product->set_price( $price );
+			$product->save();
+			$order->add_product( $product, 1 );
+		}
+		$order->calculate_totals();
+		$order->save();
+		$this->assertSame( '4.43', $order->get_total() );
+
+		// Recalculate with a zero-decimal currency selected; the total must stay at the order's precision.
+		$selected = 'JPY';
+		$frontend_currencies->selected_currency_changed();
+		$order->calculate_totals();
+		$this->assertSame( '4.43', $order->get_total() );
+	}
+
+	/**
+	 * A nested calculate_totals() whose inner order throws before its after hook must not leave the inner
+	 * currency applied to the outer order's own recalculation. Drives the real before/after hooks and a
+	 * genuine inner failure through the live call stack.
+	 */
+	public function test_nested_calculate_totals_releases_the_inner_currency_after_an_inner_exception() {
+		$frontend_currencies = $this->reinit_with_real_utils();
+
+		$selected = 'JPY';
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturnCallback(
+				function () use ( &$selected ) {
+					return new Currency( $this->localization_service, $selected );
+				}
+			);
+		$frontend_currencies->selected_currency_changed();
+
+		// A zero-decimal inner order whose recalculation throws after our before hook pushed its currency
+		// but before its after hook pops it, as an exception inside calculate_totals() would.
+		$inner_order = new WC_Order();
+		$inner_order->set_currency( 'JPY' );
+
+		// Keep the callback in a variable and remove it in finally, so it does not survive into later tests
+		// (tear_down() does not strip arbitrary woocommerce_order_before_calculate_totals callbacks).
+		$throw_on_inner = function ( $_and_taxes, $order ) use ( $inner_order ) {
+			if ( 'JPY' === $order->get_currency() ) {
+				throw new \Exception( 'inner calculation failed' );
+			}
+			// Outer order: nest the inner recalculation and swallow its failure, as a plugin might.
+			try {
+				$inner_order->calculate_totals();
+			} catch ( \Exception $e ) {
+				unset( $e );
+			}
+		};
+		add_action( 'woocommerce_order_before_calculate_totals', $throw_on_inner, 20, 2 );
+
+		try {
+			// Outer order in the store currency (2 decimals), three lines summing to 4.43.
+			$outer_order = new WC_Order();
+			$outer_order->set_currency( 'USD' );
+			foreach ( [ '1.49', '1.49', '1.45' ] as $price ) {
+				$product = new WC_Product_Simple();
+				$product->set_regular_price( $price );
+				$product->set_price( $price );
+				$product->save();
+				$outer_order->add_product( $product, 1 );
+			}
+
+			$outer_order->calculate_totals();
+
+			// After the inner JPY failure the outer USD order must keep its own 2 decimals, so its total
+			// stays 4.43 rather than being rounded to the stale inner JPY precision.
+			$this->assertSame( '4.43', $outer_order->get_total() );
+		} finally {
+			remove_action( 'woocommerce_order_before_calculate_totals', $throw_on_inner, 20 );
+		}
+	}
+
+	/**
+	 * A calculate_totals() that throws and unwinds leaves its order's currency on the stack. A later,
+	 * unrelated recalculation must still use its own order's currency, not the stale one left at the
+	 * bottom of the stack. Drives the real before/after hooks and a genuine failure, so the
+	 * stale-at-bottom case is caught where the read-time reconciliation (which slices from the front)
+	 * would keep the stale entry.
+	 */
+	public function test_calculate_totals_after_an_unrelated_failed_calculation_uses_the_new_order_currency() {
+		$frontend_currencies = $this->reinit_with_real_utils();
+
+		$selected = 'USD';
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturnCallback(
+				function () use ( &$selected ) {
+					return new Currency( $this->localization_service, $selected );
+				}
+			);
+
+		// Build the USD order (2 decimals, three lines summing to 4.43) while USD is selected, so its line
+		// totals are not pre-rounded.
+		$order = new WC_Order();
+		$order->set_currency( 'USD' );
+		foreach ( [ '1.49', '1.49', '1.45' ] as $price ) {
+			$product = new WC_Product_Simple();
+			$product->set_regular_price( $price );
+			$product->set_price( $price );
+			$product->save();
+			$order->add_product( $product, 1 );
+		}
+
+		// Switch to a zero-decimal currency the way MultiCurrency does.
+		$selected = 'JPY';
+		$frontend_currencies->selected_currency_changed();
+
+		// A recalculation that throws after our before hook pushed its currency (JPY) but before its after
+		// hook pops it, leaving a stale JPY entry at the bottom of the stack.
+		$fail_on_jpy = function ( $_and_taxes, $failing_order ) {
+			if ( 'JPY' === $failing_order->get_currency() ) {
+				throw new \Exception( 'calculation failed' );
+			}
+		};
+		add_action( 'woocommerce_order_before_calculate_totals', $fail_on_jpy, 20, 2 );
+
+		try {
+			$failed_order = new WC_Order();
+			$failed_order->set_currency( 'JPY' );
+			try {
+				$failed_order->calculate_totals();
+			} catch ( \Exception $e ) {
+				unset( $e );
+			}
+
+			// Recalculated back to back, with nothing reading the decimals in between to clear the stale
+			// entry: the USD order's own 2 decimals must keep its total at 4.43, not round to JPY's 0 (4).
+			$order->calculate_totals();
+			$this->assertSame( '4.43', $order->get_total() );
+		} finally {
+			remove_action( 'woocommerce_order_before_calculate_totals', $fail_on_jpy, 20 );
+		}
+	}
+
+	public function test_order_pay_query_var_resolves_the_order_currency() {
+		global $wp;
+		$this->mock_order->set_currency( 'EUR' );
+		$this->mock_order->save();
+		$wp->query_vars['order-pay'] = $this->mock_order->get_id() . 'x';
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'JPY' ) );
+
+		$this->frontend_currencies->init_order_currency_from_query_vars();
+
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_order_currency() );
+	}
+
+	public function test_registers_order_load_and_calculate_hooks() {
+		// The order currency is pushed before calculate_totals() reads the decimals (priority 10) and
+		// cleared after everything else has read them (priority 900); the design relies on this ordering.
+		$this->assertSame( 900, has_filter( 'woocommerce_order_class', [ $this->frontend_currencies, 'flag_order_loading' ] ) );
+		$this->assertSame( 10, has_action( 'woocommerce_order_before_calculate_totals', [ $this->frontend_currencies, 'init_calculated_order_currency' ] ) );
+		$this->assertSame( 900, has_action( 'woocommerce_order_after_calculate_totals', [ $this->frontend_currencies, 'clear_calculated_order_currency' ] ) );
 	}
 
 	public function test_get_price_decimals_returns_original_when_the_currency_is_same() {

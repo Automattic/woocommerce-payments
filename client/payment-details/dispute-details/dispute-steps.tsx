@@ -178,11 +178,11 @@ export const DisputeSteps: React.FC< Props > = ( {
 														'woocommerce-payments'
 													),
 													bankName
-											  )
+												)
 											: __(
 													"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 													'woocommerce-payments'
-											  ),
+												),
 										{
 											strong: <strong />,
 										}
@@ -383,11 +383,11 @@ export const InquirySteps: React.FC< Props > = ( {
 														'woocommerce-payments'
 													),
 													bankName
-											  )
+												)
 											: __(
 													"<strong>The outcome of this inquiry will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 													'woocommerce-payments'
-											  ),
+												),
 										{
 											strong: <strong />,
 										}
@@ -471,11 +471,11 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 											? __(
 													"Reach out to the customer to check if they're returning the item(s).",
 													'woocommerce-payments'
-											  )
+												)
 											: __(
 													'Identify the issue and work towards a resolution where possible.',
 													'woocommerce-payments'
-											  )
+												)
 									}
 									action={
 										customer?.email ? (
@@ -504,11 +504,11 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 											? __(
 													"Once you've received the item(s), refund the customer before the deadline to prevent this escalating to a dispute.",
 													'woocommerce-payments'
-											  )
+												)
 											: __(
 													'If appropriate, issue a refund to resolve the inquiry before the deadline.',
 													'woocommerce-payments'
-											  )
+												)
 									}
 								/>
 								{ isReturn && (

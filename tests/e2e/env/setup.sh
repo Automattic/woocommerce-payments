@@ -717,6 +717,7 @@ section "WooPayments"
 
 if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
 	info "Installing from build artifact..."
+	unzip -q "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments.zip -d "$WCPAY_ARTIFACT_DIRECTORY" && rm "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments.zip
 	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
     cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
 	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
@@ -796,7 +797,6 @@ cli wp option set woocommerce_orders_report_date_tour_shown yes
 mkdir -p $WCP_ROOT/screenshots
 handle_permissions $WCP_ROOT/screenshots
 cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
-cli wp option set wcpay_fraud_protection_welcome_tour_dismissed 1
 
 info "Setting up test coupon..."
 cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m.post_id WHERE p.post_type = 'shop_coupon'"

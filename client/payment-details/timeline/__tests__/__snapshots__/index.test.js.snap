@@ -98,7 +98,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -106,14 +106,14 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+        class="components-flex components-card__header components-card-header wcpay-card__header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1467,7 +1467,7 @@ exports[`PaymentDetailsTimeline renders error 1`] = `
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -1475,14 +1475,14 @@ exports[`PaymentDetailsTimeline renders error 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+        class="components-flex components-card__header components-card-header wcpay-card__header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1603,7 +1603,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -1611,7 +1611,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+        class="components-flex components-card__header components-card-header wcpay-card__header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
@@ -1623,7 +1623,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
       </div>
       <div
-        class="components-card__body components-card-body emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1787,7 +1787,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -1795,14 +1795,14 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+        class="components-flex components-card__header components-card-header wcpay-card__header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body emotion-6 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >

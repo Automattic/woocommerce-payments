@@ -59,7 +59,7 @@ describe( 'useReportsBalanceSummary', () => {
 							getReportsBalanceSummary,
 							getReportsBalanceSummaryError,
 							isResolving,
-					  }
+						}
 					: {}
 			)
 		);

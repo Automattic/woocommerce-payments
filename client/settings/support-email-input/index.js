@@ -37,7 +37,7 @@ const SupportEmailInput = ( { setInputValid } ) => {
 			? __(
 					'Please enter a valid email address.',
 					'woocommerce-payments'
-			  )
+				)
 			: null;
 
 	// Server error takes precedence over client validation error

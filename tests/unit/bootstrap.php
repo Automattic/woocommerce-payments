@@ -86,8 +86,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-settings.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-abstract-admin-notice.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-one-and-done-notice.php';
-	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
-	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
@@ -144,6 +142,11 @@ tests_add_filter( 'setup_theme', 'wcpay_install_woocommerce_roles' );
 
 // Need those polyfills to run tests in CI.
 require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
+
+// WP 7.2+ deletes its own test uploads dir after plugins load (Trac #63532), so keep the classic one.
+if ( ! defined( 'UPLOADS' ) ) {
+	define( 'UPLOADS', 'wp-content/uploads' );
+}
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';

@@ -7,9 +7,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import CardBody from '../card-body';
 import {
-	Card,
 	CheckboxControl,
 	BaseControl,
 	RadioControl,
@@ -152,9 +152,9 @@ const AmazonPaySettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? false
 												: isAmazonPayEnabled &&
-												  amazonPayLocations.includes(
+													amazonPayLocations.includes(
 														'product'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'product'
@@ -176,9 +176,9 @@ const AmazonPaySettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? false
 												: isAmazonPayEnabled &&
-												  amazonPayLocations.includes(
+													amazonPayLocations.includes(
 														'cart'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'cart'
@@ -200,9 +200,9 @@ const AmazonPaySettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? true
 												: isAmazonPayEnabled &&
-												  amazonPayLocations.includes(
+													amazonPayLocations.includes(
 														'checkout'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'checkout'

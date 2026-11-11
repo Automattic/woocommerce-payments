@@ -30,7 +30,7 @@ class WC_Payments_Dependency_Service {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_filter( 'admin_notices', [ $this, 'display_admin_notices' ] );
+		add_action( 'admin_notices', [ $this, 'display_admin_notices' ] );
 	}
 
 	/**

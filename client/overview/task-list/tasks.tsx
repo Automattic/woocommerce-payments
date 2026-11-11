@@ -9,6 +9,8 @@
  */
 import strings from './strings';
 import { getDisputeResolutionTask } from './tasks/dispute-task';
+import { getEarlyFraudWarningTasks } from './tasks/early-fraud-warning-task';
+import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/types';
 import { getReconnectWpcomTask } from './tasks/reconnect-task';
 import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-task';
 import { CachedDispute, DisputesSummaryData } from 'wcpay/types/disputes';
@@ -25,6 +27,7 @@ interface TaskListProps {
 	activeDispute?: CachedDispute;
 	activeDisputesSummary?: DisputesSummaryData;
 	activeDisputeTaskIsLoading?: boolean;
+	activeEarlyFraudWarnings?: ActiveEarlyFraudWarning[];
 	showGoLiveTask: boolean;
 }
 
@@ -34,6 +37,7 @@ export const getTasks = ( {
 	activeDispute,
 	activeDisputesSummary,
 	activeDisputeTaskIsLoading = false,
+	activeEarlyFraudWarnings = [],
 	showGoLiveTask = false,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
@@ -90,6 +94,7 @@ export const getTasks = ( {
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		disputeResolutionTask,
+		...getEarlyFraudWarningTasks( activeEarlyFraudWarnings ),
 		isGoLiveTaskVisible && getGoLiveTask(),
 	]
 		.filter( Boolean )

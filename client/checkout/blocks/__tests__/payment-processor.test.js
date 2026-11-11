@@ -38,7 +38,13 @@ describe( 'PaymentProcessor', () => {
 	let mockCreatePaymentMethod;
 	beforeEach( () => {
 		global.wcpay_upe_config = { paymentMethodsConfig: {} };
-		PaymentElement.mockImplementation( () => null );
+		PaymentElement.mockImplementation( ( { onReady } ) => {
+			useEffect( () => {
+				onReady();
+			}, [ onReady ] );
+
+			return null;
+		} );
 		mockCreatePaymentMethod = jest
 			.fn()
 			.mockResolvedValue( { paymentMethod: {} } );
@@ -265,6 +271,71 @@ describe( 'PaymentProcessor', () => {
 		);
 	} );
 
+	describe( 'when the Payment Element is not ready yet', () => {
+		let triggerReady;
+		let onPaymentSetupCallback;
+
+		beforeEach( () => {
+			PaymentElement.mockImplementation( ( { onReady } ) => {
+				triggerReady = onReady;
+				return null;
+			} );
+			mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
+				paymentMethod: { id: 'paymentMethodId' },
+			} );
+
+			render(
+				<PaymentProcessor
+					activePaymentMethod="woocommerce_payments"
+					api={ mockApi }
+					paymentMethodId="alipay"
+					emitResponse={ {} }
+					eventRegistration={ {
+						onPaymentSetup: ( callback ) =>
+							( onPaymentSetupCallback = callback ),
+					} }
+					fingerprint=""
+					shouldSavePayment={ false }
+					upeMethods={ {
+						alipay: { gatewayId: 'woocommerce_payments' },
+					} }
+				/>
+			);
+		} );
+
+		afterEach( () => {
+			jest.useRealTimers();
+		} );
+
+		it( 'waits for it before creating the payment method', async () => {
+			const result = onPaymentSetupCallback();
+			await act( async () => {} );
+
+			expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+
+			act( () => triggerReady() );
+
+			expect( await result ).toEqual(
+				expect.objectContaining( { type: 'success' } )
+			);
+			expect( mockCreatePaymentMethod ).toHaveBeenCalled();
+		} );
+
+		it( 'returns an error if it does not get ready in time', async () => {
+			jest.useFakeTimers();
+
+			const result = onPaymentSetupCallback();
+			jest.advanceTimersByTime( 10000 );
+
+			expect( await result ).toEqual( {
+				type: 'error',
+				message:
+					'The payment details are still loading. Please try again in a moment.',
+			} );
+			expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+		} );
+	} );
+
 	it( 'should return success when there are no failures', async () => {
 		let onPaymentSetupCallback;
 		mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
@@ -306,5 +377,84 @@ describe( 'PaymentProcessor', () => {
 			},
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
+	} );
+
+	describe( 'Link email', () => {
+		const { useCustomerData, getStripeElementOptions } =
+			jest.requireMock( '../utils' );
+
+		const buildProcessor = ( paymentMethodId = 'card' ) => (
+			<PaymentProcessor
+				activePaymentMethod="woocommerce_payments"
+				api={ mockApi }
+				paymentMethodId={ paymentMethodId }
+				emitResponse={ {} }
+				eventRegistration={ { onPaymentSetup: () => undefined } }
+				fingerprint=""
+				shouldSavePayment={ false }
+				upeMethods={ {
+					[ paymentMethodId ]: { gatewayId: 'woocommerce_payments' },
+				} }
+			/>
+		);
+
+		const getLastLinkEmail = () =>
+			getStripeElementOptions.mock.calls.at( -1 )[ 2 ];
+
+		beforeEach( () => {
+			jest.useFakeTimers();
+			getStripeElementOptions.mockClear();
+		} );
+
+		afterEach( () => {
+			jest.useRealTimers();
+			useCustomerData.mockReturnValue( {} );
+		} );
+
+		it( 'should pass the email on the first render', () => {
+			useCustomerData.mockReturnValue( {
+				email: 'shopper@example.com',
+			} );
+
+			render( buildProcessor() );
+
+			expect( getStripeElementOptions ).toHaveBeenCalledWith(
+				false,
+				{},
+				'shopper@example.com'
+			);
+		} );
+
+		it( 'should pass a new email only once the shopper stops typing', () => {
+			useCustomerData.mockReturnValue( {} );
+			const { rerender } = render( buildProcessor() );
+
+			useCustomerData.mockReturnValue( {
+				email: 'shopper@example.com',
+			} );
+			rerender( buildProcessor() );
+
+			expect( getLastLinkEmail() ).toBeUndefined();
+
+			act( () => {
+				jest.advanceTimersByTime( 1000 );
+			} );
+
+			expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+		} );
+
+		it( 'should not pass the email for non-card payment methods', () => {
+			useCustomerData.mockReturnValue( {
+				email: 'shopper@example.com',
+			} );
+
+			render( buildProcessor( 'bancontact' ) );
+
+			act( () => {
+				jest.advanceTimersByTime( 1000 );
+			} );
+
+			expect( getLastLinkEmail() ).toBeUndefined();
+		} );
 	} );
 } );

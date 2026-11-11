@@ -125,7 +125,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						woopay_user_phone_field: {
 							full: phoneNumber,
 						},
-				  };
+					};
 
 			request(
 				buildAjaxURL(
@@ -133,7 +133,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					'set_woopay_phone_number'
 				),
 				{
-					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+					_ajax_nonce: getConfig( 'woopaySaveUserNonce' ),
 					...data,
 				}
 			).then( () => {
