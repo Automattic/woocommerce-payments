@@ -15,6 +15,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
+use WCPay\Exceptions\Rate_Limiter_Enabled_Exception;
 use WCPay\Internal\Logger as InternalLogger;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Method;
@@ -833,6 +834,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function test_failed_transaction_rate_limiter_is_limited() {
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'acquire_order_lock' )
+			->with( $this->callback( $this->is_order( $order->get_id() ) ) );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release_order_lock' )
+			->with( $this->callback( $this->is_order( $order->get_id() ) ) );
 
 		// Arrange: Rate limiter is limited.
 		$this->mock_rate_limiter
@@ -853,6 +862,23 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
 		$this->assertStringContainsString( 'A payment of &#36;50.00 failed to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.', strip_tags( $notes[0]->content, '' ) );
+	}
+
+	public function test_parallel_payment_does_not_fail_the_order() {
+		$order = WC_Helper_Order::create_order();
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'acquire_order_lock' )
+			->with( $this->callback( $this->is_order( $order->get_id() ) ) )
+			->willThrowException( new Rate_Limiter_Enabled_Exception( 'Another payment is being processed.', 'rate_limiter_order_busy' ) );
+		$this->mock_rate_limiter->expects( $this->never() )->method( 'is_limited' );
+		$this->mock_rate_limiter->expects( $this->never() )->method( 'release_order_lock' );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'failure', $result['result'] );
+		$this->assertSame( 'Another payment is being processed.', $result['message'] );
+		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
 	}
 
 	/**
