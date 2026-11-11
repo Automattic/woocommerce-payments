@@ -29,7 +29,6 @@ add_filter( 'jetpack_sync_modules', '__return_empty_array', 999 );
  */
 add_filter( 'jetpack_should_handle_idc', '__return_false', 999 );
 
-
 // Sandbox connections only: this keeps WooPayments in test mode whatever account is behind the connection.
 add_filter( 'wcpay_dev_mode', '__return_true' );
 
