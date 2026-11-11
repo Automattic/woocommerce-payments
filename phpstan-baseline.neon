@@ -175,12 +175,6 @@ parameters:
 			path: includes/class-duplicate-payment-prevention-service.php
 
 		-
-			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
-			identifier: property.notFound
-			count: 1
-			path: includes/class-duplicates-detection-service.php
-
-		-
 			rawMessage: Cannot access property $id on class-string|object.
 			identifier: property.nonObject
 			count: 1
@@ -475,20 +469,8 @@ parameters:
 			path: includes/class-wc-payments-account.php
 
 		-
-			rawMessage: Result of || is always false.
-			identifier: booleanOr.alwaysFalse
-			count: 1
-			path: includes/class-wc-payments-account.php
-
-		-
 			rawMessage: 'Strict comparison using === between null and array|bool|string will always evaluate to false.'
 			identifier: identical.alwaysFalse
-			count: 1
-			path: includes/class-wc-payments-account.php
-
-		-
-			rawMessage: 'Variable $gateway in empty() always exists and is not falsy.'
-			identifier: empty.variable
 			count: 1
 			path: includes/class-wc-payments-account.php
 
@@ -571,12 +553,6 @@ parameters:
 			path: includes/class-wc-payments-customer-service.php
 
 		-
-			rawMessage: 'Variable $orders in empty() always exists and is not falsy.'
-			identifier: empty.variable
-			count: 1
-			path: includes/class-wc-payments-db.php
-
-		-
 			rawMessage: 'Call to function is_countable() with array<WC_Subscription> will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -585,12 +561,6 @@ parameters:
 		-
 			rawMessage: 'Call to function is_callable() with ''\\Automattic…'' will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: includes/class-wc-payments-fraud-service.php
-
-		-
-			rawMessage: 'Found usage of constant DOING_AJAX. Use wp_doing_ajax() instead.'
-			identifier: phpstanWP.wpConstant.fetch
 			count: 1
 			path: includes/class-wc-payments-fraud-service.php
 
@@ -673,12 +643,6 @@ parameters:
 			path: includes/class-wc-payments-order-service.php
 
 		-
-			rawMessage: Result of || is always false.
-			identifier: booleanOr.alwaysFalse
-			count: 2
-			path: includes/class-wc-payments-order-service.php
-
-		-
 			rawMessage: 'Strict comparison using !== between null and WC_Order will always evaluate to true.'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -691,32 +655,8 @@ parameters:
 			path: includes/class-wc-payments-order-service.php
 
 		-
-			rawMessage: 'Strict comparison using === between null and string will always evaluate to false.'
-			identifier: identical.alwaysFalse
-			count: 2
-			path: includes/class-wc-payments-order-service.php
-
-		-
 			rawMessage: Ternary operator condition is always true.
 			identifier: ternary.alwaysTrue
-			count: 1
-			path: includes/class-wc-payments-order-service.php
-
-		-
-			rawMessage: Variable $intent_id on left side of ?? always exists and is not nullable.
-			identifier: nullCoalesce.variable
-			count: 1
-			path: includes/class-wc-payments-order-service.php
-
-		-
-			rawMessage: 'Variable $payment_transaction_id in isset() always exists and is not nullable.'
-			identifier: isset.variable
-			count: 1
-			path: includes/class-wc-payments-order-service.php
-
-		-
-			rawMessage: 'Variable $risk_level in isset() always exists and is not nullable.'
-			identifier: isset.variable
 			count: 1
 			path: includes/class-wc-payments-order-service.php
 
@@ -835,12 +775,6 @@ parameters:
 			path: includes/class-wc-payments-styles-cache.php
 
 		-
-			rawMessage: 'Variable $path in empty() always exists and is not falsy.'
-			identifier: empty.variable
-			count: 1
-			path: includes/class-wc-payments-styles-cache.php
-
-		-
 			rawMessage: Negated boolean expression is always false.
 			identifier: booleanNot.alwaysFalse
 			count: 1
@@ -919,12 +853,6 @@ parameters:
 			path: includes/class-wc-payments-webhook-processing-service.php
 
 		-
-			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
-			identifier: property.notFound
-			count: 1
-			path: includes/class-wc-payments-woopay-button-handler.php
-
-		-
 			rawMessage: 'Call to function method_exists() with ''WC_Pre_Orders…'' and ''product_is_charged…'' will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -962,18 +890,6 @@ parameters:
 
 		-
 			rawMessage: Access to an undefined property WC_Cart::$total.
-			identifier: property.notFound
-			count: 1
-			path: includes/class-wc-payments.php
-
-		-
-			rawMessage: Access to an undefined property WooCommerce::$checkout.
-			identifier: property.notFound
-			count: 1
-			path: includes/class-wc-payments.php
-
-		-
-			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
 			identifier: property.notFound
 			count: 1
 			path: includes/class-wc-payments.php
@@ -1219,12 +1135,6 @@ parameters:
 			path: includes/emails/class-wc-payments-email-ipp-receipt.php
 
 		-
-			rawMessage: Access to an undefined property WooCommerce::$shipping.
-			identifier: property.notFound
-			count: 1
-			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
-
-		-
 			rawMessage: 'Call to an undefined method WC_Data_Store::find_matching_product_variation().'
 			identifier: method.notFound
 			count: 1
@@ -1241,12 +1151,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/express-checkout/class-wc-payments-express-checkout-button-display-handler.php
-
-		-
-			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
-			identifier: property.notFound
-			count: 1
-			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
 
 		-
 			rawMessage: 'Call to an undefined method WC_Session::has_session().'
@@ -1361,24 +1265,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: includes/fraud-prevention/class-fraud-prevention-service.php
-
-		-
-			rawMessage: Variable $gateway on left side of ?? always exists and is always null.
-			identifier: nullCoalesce.variable
-			count: 1
-			path: includes/fraud-prevention/class-fraud-prevention-service.php
-
-		-
-			rawMessage: Variable $session on left side of ?? always exists and is always null.
-			identifier: nullCoalesce.variable
-			count: 1
-			path: includes/fraud-prevention/class-fraud-prevention-service.php
-
-		-
-			rawMessage: 'Variable $default_currency in empty() always exists and is not falsy.'
-			identifier: empty.variable
-			count: 1
-			path: includes/fraud-prevention/class-fraud-risk-tools.php
 
 		-
 			rawMessage: 'Offset ''efw_type'' on array{efw_id: string, efw_actionable: bool, efw_type: string, created: int} on left side of ?? always exists and is not nullable.'
@@ -1753,18 +1639,6 @@ parameters:
 			path: includes/wc-payment-api/class-wc-payments-api-client.php
 
 		-
-			rawMessage: 'Variable $address in isset() always exists and is not nullable.'
-			identifier: isset.variable
-			count: 1
-			path: includes/wc-payment-api/class-wc-payments-api-client.php
-
-		-
-			rawMessage: 'Variable $display_name in isset() always exists and is not nullable.'
-			identifier: isset.variable
-			count: 1
-			path: includes/wc-payment-api/class-wc-payments-api-client.php
-
-		-
 			rawMessage: 'Call to function is_array() with Automattic\Jetpack\Connection\_WP_Remote_Response_Array will always evaluate to false.'
 			identifier: function.impossibleType
 			count: 1
@@ -1787,12 +1661,6 @@ parameters:
 			identifier: deadCode.unreachable
 			count: 1
 			path: includes/wc-payment-api/class-wc-payments-http.php
-
-		-
-			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
-			identifier: property.notFound
-			count: 1
-			path: includes/woopay-user/class-woopay-save-user.php
 
 		-
 			rawMessage: 'Call to function method_exists() with ''AFWC_API'' and ''get_instance'' will always evaluate to false.'
@@ -1989,18 +1857,6 @@ parameters:
 		-
 			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: src/Internal/LoggerContext.php
-
-		-
-			rawMessage: 'Found usage of constant DOING_AJAX. Use wp_doing_ajax() instead.'
-			identifier: phpstanWP.wpConstant.fetch
-			count: 1
-			path: src/Internal/LoggerContext.php
-
-		-
-			rawMessage: 'Found usage of constant DOING_CRON. Use wp_doing_cron() instead.'
-			identifier: phpstanWP.wpConstant.fetch
 			count: 1
 			path: src/Internal/LoggerContext.php
 

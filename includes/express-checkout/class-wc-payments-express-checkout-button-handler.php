@@ -318,7 +318,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$gateways = WC()->payment_gateways()->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {
 			WC_Payments::get_wc_payments_checkout()->register_scripts();
 		}

@@ -223,7 +223,7 @@ class Duplicates_Detection_Service {
 	 */
 	private function get_registered_gateways() {
 		if ( null === $this->registered_gateways ) {
-			$this->registered_gateways = WC()->payment_gateways->payment_gateways();
+			$this->registered_gateways = WC()->payment_gateways()->payment_gateways();
 		}
 		return $this->registered_gateways;
 	}
