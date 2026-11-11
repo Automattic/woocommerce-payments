@@ -1,6 +1,6 @@
 # Development and delivery
 
-**Last updated:** 2026-10-24
+**Last updated:** 2026-11-11
 
 Read the sections relevant to the current task. Paths and commands in this reference are relative to the repository root unless stated otherwise.
 
@@ -165,6 +165,25 @@ git -C /path/to/main/repo merge worktree-feat/branch-name
 - When testing local frontend/admin UI changes, run `pnpm run watch` so built assets are regenerated.
 - Xdebug ready (requires IDE path mapping)
 - Local WP admin credentials are `admin` / `admin`. Do **not** change the local admin password with `wp user update admin --user_pass=...` unless explicitly requested. If browser/MCP login fails, ask before resetting credentials.
+
+
+## Disk usage and cleanup
+
+Clean up only resources created in the current session (temporary containers, background processes, generated files). Keep persistent data and anything needed for the requested handoff. Pre-existing resources stay untouched unless a human separately and explicitly authorizes removing them.
+
+When disk space is low, or a command fails with `ENOSPC`, diagnose with these read-only commands before retrying:
+
+```bash
+df -h .              # filesystem capacity
+du -sh node_modules  # dependencies of the current checkout
+git worktree list    # other checkouts to inspect
+docker system df     # images, containers, volumes and build cache
+docker ps -a         # running and stopped containers
+```
+
+- Report the cleanup candidates and ask before touching anything outside the current session. If you cannot establish that you created a resource, treat it as pre-existing.
+- Docker resources that look unused can still belong to another project or hold valuable data.
+- Do not run blanket cleanup such as `docker system prune -a --volumes`, and do not delete `node_modules` automatically. Remove only explicitly identified, session-owned resources.
 
 
 ## Jurassic Tube (SSH Tunnels)
