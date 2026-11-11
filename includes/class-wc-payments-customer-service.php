@@ -48,6 +48,16 @@ class WC_Payments_Customer_Service {
 	const CUSTOMER_ID_SESSION_OWNER_KEY = 'wcpay_customer_id_session';
 
 	/**
+	 * The longest phone Stripe accepts on a customer. A payment method's billing phone has no such limit.
+	 */
+	private const STRIPE_CUSTOMER_PHONE_MAX_LENGTH = 20;
+
+	/**
+	 * Order meta set once the order has a note saying its billing phone was left off the Stripe customer.
+	 */
+	private const PHONE_LEFT_OUT_NOTE_META_KEY = '_wcpay_phone_left_out_of_customer_note';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -315,11 +325,12 @@ class WC_Payments_Customer_Service {
 			$description = sprintf( __( 'Name: %1$s, Guest', 'woocommerce-payments' ), $name );
 		}
 
-		$data = [
+		$phone = self::fit_phone_to_stripe_customer_limit( (string) $object_to_parse->get_billing_phone() );
+		$data  = [
 			'name'        => $name,
 			'description' => $description,
 			'email'       => $object_to_parse->get_billing_email(),
-			'phone'       => $object_to_parse->get_billing_phone(),
+			'phone'       => $phone,
 			'address'     => [
 				'line1'       => $object_to_parse->get_billing_address_1(),
 				'line2'       => $object_to_parse->get_billing_address_2(),
@@ -329,6 +340,14 @@ class WC_Payments_Customer_Service {
 				'country'     => $object_to_parse->get_billing_country(),
 			],
 		];
+
+		if ( null === $phone ) {
+			// Stripe rejects the whole customer request over a phone that doesn't fit, so leave the phone out instead.
+			unset( $data['phone'] );
+			if ( null !== $wc_order ) {
+				self::add_phone_left_out_order_note( $wc_order );
+			}
+		}
 
 		if ( ! empty( $object_to_parse->get_shipping_postcode() ) ) {
 			$data['shipping'] = [
@@ -345,6 +364,49 @@ class WC_Payments_Customer_Service {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Returns the phone in a form Stripe accepts on a customer, or null when it can't fit.
+	 *
+	 * A phone over the limit is retried without spaces, dashes, dots and brackets, which Stripe doesn't need.
+	 *
+	 * @param string $phone The billing phone.
+	 *
+	 * @return string|null The phone to send, or null to leave it out.
+	 */
+	private static function fit_phone_to_stripe_customer_limit( string $phone ): ?string {
+		if ( mb_strlen( $phone ) <= self::STRIPE_CUSTOMER_PHONE_MAX_LENGTH ) {
+			return $phone;
+		}
+
+		$compact_phone = preg_replace( '/[\s\p{Pd}.()]+/u', '', $phone );
+		if ( null !== $compact_phone && mb_strlen( $compact_phone ) <= self::STRIPE_CUSTOMER_PHONE_MAX_LENGTH ) {
+			return $compact_phone;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Tells the merchant, once per order, that the billing phone was too long to save on the Stripe customer.
+	 *
+	 * @param WC_Order $order The order whose phone was left out.
+	 */
+	private static function add_phone_left_out_order_note( WC_Order $order ) {
+		if ( $order->get_meta( self::PHONE_LEFT_OUT_NOTE_META_KEY ) ) {
+			return;
+		}
+
+		$order->add_order_note(
+			sprintf(
+				// translators: %d: the maximum number of characters Stripe allows in a customer's phone.
+				__( 'The billing phone is longer than the %d characters Stripe allows, so it was not saved to the customer in Stripe. The payment is not affected. To keep the phone in Stripe, edit it to a single phone number.', 'woocommerce-payments' ),
+				self::STRIPE_CUSTOMER_PHONE_MAX_LENGTH
+			)
+		);
+		$order->update_meta_data( self::PHONE_LEFT_OUT_NOTE_META_KEY, '1' );
+		$order->save_meta_data();
 	}
 
 	/**

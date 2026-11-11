@@ -711,6 +711,68 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $customer_data );
 	}
 
+	/**
+	 * @dataProvider provider_map_customer_data_phone_that_fits
+	 */
+	public function test_map_customer_data_sends_a_phone_that_fits_the_stripe_customer_limit( $billing_phone, $expected_phone ) {
+		$mock_order = $this->get_mock_wc_object_for_customer_data( WC_Order::class, [ 'get_billing_phone' => $billing_phone ] );
+
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $mock_order );
+
+		$this->assertSame( $expected_phone, $customer_data['phone'] );
+	}
+
+	public function provider_map_customer_data_phone_that_fits(): array {
+		return [
+			'empty'                                => [ '', '' ],
+			'exactly 20 characters'                => [ '555-555-5555 x 12345', '555-555-5555 x 12345' ],
+			'20 characters but more than 20 bytes' => [ "+1 555\u{2011}555\u{2011}5555 x 12", "+1 555\u{2011}555\u{2011}5555 x 12" ],
+			'21 characters, fits once compacted'   => [ '+1 (555) 555-5555 #12', '+15555555555#12' ],
+			'unicode dash, fits once compacted'    => [ "+1 (555) 555\u{2011}5555 #12", '+15555555555#12' ],
+		];
+	}
+
+	public function test_map_customer_data_leaves_out_a_phone_that_does_not_fit_the_stripe_customer_limit() {
+		$mock_order = $this->get_mock_wc_object_for_customer_data( WC_Order::class, [ 'get_billing_phone' => '555-555-5555 or 555-555-5566' ] );
+
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $mock_order );
+
+		$this->assertArrayNotHasKey( 'phone', $customer_data );
+	}
+
+	public function test_map_customer_data_adds_one_private_order_note_when_the_phone_is_left_out() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '555-555-5555 or 555-555-5566' );
+		$order->save();
+
+		// A retried payment maps the same order again.
+		WC_Payments_Customer_Service::map_customer_data( $order );
+		WC_Payments_Customer_Service::map_customer_data( wc_get_order( $order->get_id() ) );
+
+		$notes = $this->get_order_notes_mentioning_the_phone( $order->get_id() );
+		$this->assertCount( 1, $notes );
+		$this->assertFalse( reset( $notes )->customer_note );
+	}
+
+	public function test_map_customer_data_adds_no_order_note_when_the_phone_fits() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '+1 (555) 555-5555 #12' );
+		$order->save();
+
+		WC_Payments_Customer_Service::map_customer_data( $order );
+
+		$this->assertCount( 0, $this->get_order_notes_mentioning_the_phone( $order->get_id() ) );
+	}
+
+	private function get_order_notes_mentioning_the_phone( int $order_id ): array {
+		return array_filter(
+			wc_get_order_notes( [ 'order_id' => $order_id ] ),
+			function ( $note ) {
+				return false !== stripos( $note->content, 'phone' );
+			}
+		);
+	}
+
 	private function get_mock_wc_object_for_customer_data( $object_class, $mock_return_overrides = [] ) {
 		$mock_object = $this->getMockBuilder( $object_class )
 			->disableOriginalConstructor()

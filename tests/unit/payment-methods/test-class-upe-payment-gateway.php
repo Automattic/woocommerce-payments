@@ -889,18 +889,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $mock_token, $this->mock_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
-	public function test_failure_result_returned_if_phone_number_is_invalid() {
-		$order = WC_Helper_Order::create_order();
-		$order->set_billing_phone( '+1123456789123456789123' );
-		$order->save();
-		$result = $this->mock_gateway->process_payment( $order->get_id() );
-		$this->assertEquals( 'fail', $result['result'] );
-		$error_notices = WC()->session->get( 'wc_notices' );
-		$this->assertNotEmpty( $error_notices );
-		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
-		WC()->session->set( 'wc_notices', [] );
-	}
-
 	public function test_remove_link_payment_method_if_card_disabled() {
 		$this->mock_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];
 
