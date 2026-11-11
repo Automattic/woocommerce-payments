@@ -11,12 +11,12 @@ import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
 	hasPaymentMethodCountryRestrictions,
-	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
 	isBillingInformationMissing,
 } from './upe-utils';
 import {
 	processPayment,
+	processPaymentIfNotUsingSavedMethod,
 	mountStripePaymentElement,
 	renderTerms,
 	updateLinkEmail,
@@ -97,7 +97,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		return processPaymentIfNotUsingSavedMethod( $( this ) );
+		return processPaymentIfNotUsingSavedMethod( api, $( this ) );
 	} );
 
 	$checkoutForm.on( 'click', '#place_order', function () {
@@ -165,7 +165,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		return processPaymentIfNotUsingSavedMethod( $payForOrderForm );
+		return processPaymentIfNotUsingSavedMethod( api, $payForOrderForm );
 	} );
 
 	if (
@@ -409,13 +409,6 @@ jQuery( function ( $ ) {
 					} );
 			}
 		} );
-	}
-
-	function processPaymentIfNotUsingSavedMethod( $form ) {
-		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
-		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
-			return processPayment( api, $form, paymentMethodType );
-		}
 	}
 
 	async function maybeMountStripePaymentElement( elementsLocation ) {

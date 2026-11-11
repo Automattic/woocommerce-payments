@@ -270,6 +270,51 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( null );
 	}
 
+	/**
+	 * @dataProvider provider_is_enabled_at_checkout_on_renewal_order_pay
+	 *
+	 * @param string $order_key_mode Whether the request carries the order's 'valid' key or a 'wrong' one.
+	 * @param bool   $expected       Whether the non-reusable method should be enabled.
+	 */
+	public function test_is_enabled_at_checkout_on_renewal_order_pay( string $order_key_mode, bool $expected ) {
+		global $wp;
+
+		$ideal_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->onlyMethods( [ 'is_reusable', 'is_subscription_item_in_cart' ] )
+			->disableOriginalConstructor()
+			->getMock();
+		$ideal_method->method( 'is_reusable' )->willReturn( false );
+		$ideal_method->method( 'is_subscription_item_in_cart' )->willReturn( false );
+
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
+			function () {
+				return false;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$order = WC_Helper_Order::create_order();
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+		$_GET['key'] = 'valid' === $order_key_mode ? $order->get_order_key() : 'wc_order_wrongkey';
+		wp_set_current_user( $order->get_user_id() );
+
+		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS, true );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_is_enabled_at_checkout_on_renewal_order_pay(): array {
+		return [
+			'renewal order from its payment link' => [ 'valid', false ],
+			'renewal order with a wrong key'      => [ 'wrong', true ],
+		];
+	}
+
 	public function test_get_title_returns_dynamic_title_from_charge_details() {
 		$payment_method = new UPE_Payment_Method( $this->mock_token_service, MockPaymentMethodDefinition::class );
 

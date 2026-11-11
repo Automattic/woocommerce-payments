@@ -278,13 +278,6 @@ class WC_Payments {
 	private static $duplicate_payment_prevention_service;
 
 	/**
-	 * Instance of WC_Payments_Incentives_Service, created in init function.
-	 *
-	 * @var WC_Payments_Incentives_Service
-	 */
-	private static $incentives_service;
-
-	/**
 	 * Instance of WC_Payments_PM_Promotions_Service, created in init function.
 	 *
 	 * @var WC_Payments_PM_Promotions_Service
@@ -532,7 +525,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-amazon-pay.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
-		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 		include_once __DIR__ . '/class-wc-payments-pm-promotions-service.php';
 		include_once __DIR__ . '/class-compatibility-service.php';
 		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
@@ -576,7 +568,6 @@ class WC_Payments {
 		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
 		self::$woopay_util                          = new WooPay_Utilities();
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
-		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
 		self::$pm_promotions_service                = new WC_Payments_PM_Promotions_Service( null, self::$account );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
@@ -585,6 +576,7 @@ class WC_Payments {
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$session_service->init_hooks();
 		self::$woopay_tracker->init_hooks();
 		self::$order_service->init_hooks();
 		self::$order_success_page->init_hooks();
@@ -592,7 +584,6 @@ class WC_Payments {
 		self::$account->init_hooks();
 		self::$fraud_service->init_hooks();
 		self::$onboarding_service->init_hooks();
-		self::$incentives_service->init_hooks();
 		self::$pm_promotions_service->init_hooks();
 		self::$compatibility_service->init_hooks();
 		self::$customer_service->init_hooks();
@@ -746,10 +737,10 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
 		require_once __DIR__ . '/migrations/class-retire-post-kyc-activation-emails.php';
+		require_once __DIR__ . '/migrations/class-invalidate-cached-shipping-rates.php';
 		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Qualitative_Feedback_Admin_Note_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
@@ -772,6 +763,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Retire_Post_Kyc_Activation_Emails(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Invalidate_Cached_Shipping_Rates(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -806,7 +798,6 @@ class WC_Payments {
 				self::$account,
 				self::$onboarding_service,
 				self::$order_service,
-				self::$incentives_service,
 				self::$pm_promotions_service,
 				self::$fraud_service,
 				self::$database_cache
@@ -1074,6 +1065,7 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
+				'wc_payments_capital_loans_hidden_columns',
 				// Reports DataViews per-tab persisted view. Expected shape:
 				// { fields: string[], perPage?: number, layout?: object }.
 				// Stored verbatim via WC Admin's user-data-fields filter, so

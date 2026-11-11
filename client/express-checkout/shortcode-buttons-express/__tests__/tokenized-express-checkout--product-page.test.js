@@ -801,7 +801,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		} );
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 
-		// Two variation changes in a row: `woocommerce_variation_has_changed` is
+		// Two variation changes in a row: `show_variation` is
 		// not debounced, so both refetches are in flight at the same time.
 		doAction( 'wcpay.express-checkout.update-button-data' );
 		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 1 ) );
@@ -888,5 +888,57 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		} );
 		expect( afterFailureRejectMock ).toHaveBeenCalledTimes( 1 );
 		expect( afterFailureResolveMock ).not.toHaveBeenCalled();
+	} );
+	it( 'should replay a variation change made while the express checkout was still loading', async () => {
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( cartWithItemsMock ),
+				headers: new Map(),
+			} )
+		);
+		// Listeners from earlier module instances would react to the events too.
+		$( document.body ).off();
+
+		// Hold init on the currency resolver, as an async currency plugin does.
+		let releaseCurrency;
+		await jest.isolateModulesAsync( async () => {
+			const { addFilter } = await import( '@wordpress/hooks' );
+			addFilter(
+				'wcpay.express-checkout.resolved-currency',
+				'test',
+				() =>
+					new Promise( ( resolve ) => {
+						releaseCurrency = () => resolve( 'usd' );
+					} )
+			);
+			await import( '..' );
+		} );
+
+		// The shopper picks a variation before init registers the handler.
+		$( document.body ).trigger( 'woocommerce_variation_has_changed' );
+		$( document.body ).trigger( 'show_variation' );
+		await act( async () => {
+			await Promise.resolve();
+		} );
+		expect( apiFetch ).not.toHaveBeenCalled();
+
+		releaseCurrency();
+
+		await waitFor( () =>
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					path: expect.stringContaining(
+						'/wc/store/v1/cart/add-item'
+					),
+				} )
+			)
+		);
+		await waitFor( () =>
+			expect(
+				$( '#wcpay-express-checkout-element' ).data(
+					'blockUI.isBlocked'
+				)
+			).toBeFalsy()
+		);
 	} );
 } );

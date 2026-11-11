@@ -235,12 +235,6 @@ parameters:
 			path: includes/class-payment-information.php
 
 		-
-			rawMessage: 'Parameter #2 $value of method WC_Data::add_meta_data() expects array|string, true given.'
-			identifier: argument.type
-			count: 1
-			path: includes/class-payment-information.php
-
-		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
 			count: 2
@@ -316,12 +310,6 @@ parameters:
 			rawMessage: Expression on left side of ?? is not nullable.
 			identifier: nullCoalesce.expr
 			count: 2
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: If condition is always true.
-			identifier: if.alwaysTrue
-			count: 1
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
@@ -579,7 +567,7 @@ parameters:
 		-
 			rawMessage: Ternary operator condition is always true.
 			identifier: ternary.alwaysTrue
-			count: 2
+			count: 1
 			path: includes/class-wc-payments-customer-service.php
 
 		-
@@ -693,7 +681,7 @@ parameters:
 		-
 			rawMessage: 'Strict comparison using !== between null and WC_Order will always evaluate to true.'
 			identifier: notIdentical.alwaysTrue
-			count: 2
+			count: 1
 			path: includes/class-wc-payments-order-service.php
 
 		-
@@ -937,14 +925,14 @@ parameters:
 			path: includes/class-wc-payments-woopay-button-handler.php
 
 		-
-			rawMessage: 'Call to function method_exists() with ''WC_Pre_Orders…'' and ''product_is_charged…'' will always evaluate to false.'
-			identifier: function.impossibleType
+			rawMessage: 'Call to function method_exists() with ''WC_Pre_Orders…'' and ''product_is_charged…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/class-wc-payments-woopay-button-handler.php
 
 		-
-			rawMessage: 'Call to method get_requires_confirmation() on an unknown class WC_Product_Booking.'
-			identifier: class.notFound
+			rawMessage: 'Call to function method_exists() with WC_Product_Booking and ''get_requires…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/class-wc-payments-woopay-button-handler.php
 
@@ -1093,26 +1081,8 @@ parameters:
 			path: includes/compat/blocks/class-blocks-data-extractor.php
 
 		-
-			rawMessage: 'Call to static method getInstance() on an unknown class MailPoet\DI\ContainerWrapper.'
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: 'Call to static method getInstance() on an unknown class MailPoet\Settings\SettingsController.'
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: Class MailPoet\WooCommerce\Subscription not found.
-			identifier: class.notFound
-			count: 1
-			path: includes/compat/blocks/class-blocks-data-extractor.php
-
-		-
-			rawMessage: Instantiated class Automatewoo\Blocks\Marketing_Optin_Block not found.
-			identifier: class.notFound
+			rawMessage: 'Call to an undefined method MailPoet\WooCommerce\Subscription::isCurrentUserSubscribed().'
+			identifier: method.notFound
 			count: 1
 			path: includes/compat/blocks/class-blocks-data-extractor.php
 
@@ -1381,12 +1351,6 @@ parameters:
 			path: includes/fraud-prevention/class-buyer-fingerprinting-service.php
 
 		-
-			rawMessage: Ternary operator condition is always true.
-			identifier: ternary.alwaysTrue
-			count: 1
-			path: includes/fraud-prevention/class-buyer-fingerprinting-service.php
-
-		-
 			rawMessage: Negated boolean expression is always false.
 			identifier: booleanNot.alwaysFalse
 			count: 1
@@ -1483,12 +1447,6 @@ parameters:
 			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
 
 		-
-			rawMessage: If condition is always false.
-			identifier: if.alwaysFalse
-			count: 1
-			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
-
-		-
 			rawMessage: Offset 0 on non-empty-list<string> on left side of ?? always exists and is not nullable.
 			identifier: nullCoalesce.offset
 			count: 1
@@ -1551,7 +1509,7 @@ parameters:
 		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
-			count: 1
+			count: 4
 			path: includes/multi-currency/Compatibility/WooCommerceSubscriptions.php
 
 		-
@@ -1671,7 +1629,7 @@ parameters:
 		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
-			count: 2
+			count: 5
 			path: includes/multi-currency/MultiCurrency.php
 
 		-
@@ -1756,12 +1714,6 @@ parameters:
 			rawMessage: 'Call to function is_wp_error() with array will always evaluate to false.'
 			identifier: function.impossibleType
 			count: 5
-			path: includes/wc-payment-api/class-wc-payments-api-client.php
-
-		-
-			rawMessage: 'Method WC_Payments_API_Client::get_fingerprint_metadata() is unused.'
-			identifier: method.unused
-			count: 1
 			path: includes/wc-payment-api/class-wc-payments-api-client.php
 
 		-
@@ -1861,8 +1813,8 @@ parameters:
 			path: includes/woopay/class-woopay-adapted-extensions.php
 
 		-
-			rawMessage: 'Call to function method_exists() with ''WC_Points_Rewards…'' and ''get_users_points'' will always evaluate to false.'
-			identifier: function.impossibleType
+			rawMessage: 'Call to function method_exists() with ''WC_Points_Rewards…'' and ''get_users_points'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/woopay/class-woopay-adapted-extensions.php
 
@@ -1880,12 +1832,6 @@ parameters:
 
 		-
 			rawMessage: 'Call to an undefined method WC_Session::has_session().'
-			identifier: method.notFound
-			count: 1
-			path: includes/woopay/class-woopay-session.php
-
-		-
-			rawMessage: 'Call to an undefined method WC_Session::set_customer_session_cookie().'
 			identifier: method.notFound
 			count: 1
 			path: includes/woopay/class-woopay-session.php

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Bump `sass-loader` to 17.1.0 and `sass` to 1.107.1, and switch the build to Sass `loadPaths`.

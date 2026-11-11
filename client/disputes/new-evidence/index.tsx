@@ -27,6 +27,7 @@ import { HorizontalList } from 'components/horizontal-list';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getBankName } from 'utils/charge';
+import { encodePathSegment } from 'utils/path-segment';
 import {
 	generateCoverLetter,
 	getBusinessDetails,
@@ -96,9 +97,12 @@ const steps = [
 	},
 ];
 
+const getDisputePath = ( id: string ) =>
+	`/wc/v3/payments/disputes/${ encodePathSegment( id ) }`;
+
 // --- Main Component ---
 export default ( { query }: { query: { id: string } } ) => {
-	const path = `/wc/v3/payments/disputes/${ query.id }`;
+	const disputeId = query.id;
 	const [ dispute, setDispute ] = useState< any >();
 	const [ evidence, setEvidence ] = useState< EvidenceState >( {} );
 	const [ productType, setProductType ] = useState< string >( '' );
@@ -156,7 +160,9 @@ export default ( { query }: { query: { id: string } } ) => {
 		const fetchDispute = async () => {
 			try {
 				setIsInitialLoading( true );
-				const d: any = await apiFetch( { path } );
+				const d: any = await apiFetch( {
+					path: getDisputePath( disputeId ),
+				} );
 				setDispute( d );
 				const fetchedBankName = d.charge
 					? getBankName( d.charge )
@@ -301,7 +307,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		// settings or the status selections change would wipe what the merchant has typed. The
 		// evidence update effect regenerates the cover letter when those values change.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ path ] );
+	}, [ disputeId ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -315,43 +321,51 @@ export default ( { query }: { query: { id: string } } ) => {
 			if ( fileKeys.length === 0 ) return;
 			// If we already loaded the file details, return.
 			if ( Object.keys( uploadedFiles ).length > 0 ) return;
-			// Build the URLS to bulk fetch the file details.
-			const fileDetails = await Promise.all(
-				fileKeys.map( async ( fileKey ) => {
-					const fileId = dispute?.evidence?.[ fileKey ];
-					if ( ! fileId ) return null;
-					const file: any = await apiFetch( {
-						path: `/wc/v3/payments/file/${ fileId }/details`,
-					} );
-					return {
-						fileKey: fileKey,
-						filename: file.filename,
-						size: file.size,
-					};
-				} )
-			);
-			const filteredFileDetails = fileDetails.filter(
-				( fileDetail ) => fileDetail !== null
-			);
-			setUploadedFiles( ( prev ) => ( {
-				...prev,
-				...Object.fromEntries(
-					filteredFileDetails.map( ( fileDetail ) => [
-						fileDetail?.fileKey,
-						fileDetail?.filename,
-					] )
-				),
-			} ) );
-			// Also set the file sizes
-			setFileSizes( ( prev ) => ( {
-				...prev,
-				...Object.fromEntries(
-					filteredFileDetails.map( ( fileDetail ) => [
-						fileDetail?.fileKey,
-						fileDetail?.size,
-					] )
-				),
-			} ) );
+			try {
+				// Build the URLS to bulk fetch the file details.
+				const fileDetails = await Promise.all(
+					fileKeys.map( async ( fileKey ) => {
+						const fileId = dispute?.evidence?.[ fileKey ];
+						if ( ! fileId ) return null;
+						const file: any = await apiFetch( {
+							path: `/wc/v3/payments/file/${ encodePathSegment(
+								fileId
+							) }/details`,
+						} );
+						return {
+							fileKey: fileKey,
+							filename: file.filename,
+							size: file.size,
+						};
+					} )
+				);
+				const filteredFileDetails = fileDetails.filter(
+					( fileDetail ) => fileDetail !== null
+				);
+				setUploadedFiles( ( prev ) => ( {
+					...prev,
+					...Object.fromEntries(
+						filteredFileDetails.map( ( fileDetail ) => [
+							fileDetail?.fileKey,
+							fileDetail?.filename,
+						] )
+					),
+				} ) );
+				// Also set the file sizes
+				setFileSizes( ( prev ) => ( {
+					...prev,
+					...Object.fromEntries(
+						filteredFileDetails.map( ( fileDetail ) => [
+							fileDetail?.fileKey,
+							fileDetail?.size,
+						] )
+					),
+				} ) );
+			} catch ( error ) {
+				createErrorNotice(
+					__( 'Error retrieving file.', 'woocommerce-payments' )
+				);
+			}
 		};
 		fetchFile();
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- We only want to fetch the file details when uploadedFiles changes.
@@ -652,8 +666,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				__product_type: productType,
 			};
 
+			// Save to the dispute the server returned, not the ID from the page URL.
 			const updatedDispute = await apiFetch( {
-				path,
+				path: getDisputePath( dispute.id ),
 				method: 'post',
 				data: {
 					evidence: evidenceToSend,
@@ -1259,26 +1274,22 @@ export default ( { query }: { query: { id: string } } ) => {
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
 						{ steps[ 2 ].subheading }
 					</p>
-					{ isCoverLetterManuallyEdited && (
+					{ /* Unmount the notice rather than drop its action: Notice runs its children's hooks to build the screen reader text, so losing the button mid-life crashes it. */ }
+					{ isCoverLetterManuallyEdited && ! readOnly && (
 						<InlineNotice
 							icon
 							isDismissible={ false }
 							status="warning"
 							className="wcpay-dispute-evidence-new__cover-letter-warning"
-							actions={
-								readOnly
-									? undefined
-									: [
-											{
-												label: __(
-													'Restore generated letter',
-													'woocommerce-payments'
-												),
-												onClick:
-													handleRestoreCoverLetter,
-											},
-										]
-							}
+							actions={ [
+								{
+									label: __(
+										'Restore generated letter',
+										'woocommerce-payments'
+									),
+									onClick: handleRestoreCoverLetter,
+								},
+							] }
 						>
 							{ __(
 								"You've made some manual edits to your cover letter. If you update your evidence again, those changes won't be reflected here automatically — but you can always make further edits yourself.",
@@ -1590,7 +1601,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					{ /* Section 2: Visa Compliance, Stepper, or Confirmation */ }
 					{ showConfirmation ? (
 						<ConfirmationScreen
-							disputeId={ query.id }
+							disputeId={ disputeId }
 							bankName={ bankName }
 							isVisaComplianceDispute={ isVisaCompliance }
 						/>

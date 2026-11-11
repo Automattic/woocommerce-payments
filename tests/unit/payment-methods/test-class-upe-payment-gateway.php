@@ -735,8 +735,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $affirm_method->is_reusable() );
 
 		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
-		$this->assertSame( 'Cash App Afterpay', $afterpay_method->get_title( 'US' ) );
-		$this->assertSame( 'Cash App Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US' ) );
+		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
+		$this->assertSame( 'Allow customers to pay over time with Afterpay.', $afterpay_method->get_description( 'US' ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
 		$this->assertSame( 'Clearpay', $afterpay_method->get_title( 'GB' ) );
@@ -844,6 +845,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id       = $order->get_id();
 		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$_GET['key'] = $order->get_order_key();
+		wp_set_current_user( $order->get_user_id() );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );

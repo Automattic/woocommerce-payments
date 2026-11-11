@@ -14,7 +14,6 @@ use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -65,6 +64,79 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->mock_http_client,
 			$this->mock_db_wrapper
 		);
+	}
+
+	/**
+	 * @dataProvider order_ip_addresses_provider
+	 *
+	 * @param string $stored_ip_address Stored order IP address.
+	 * @param string $expected_ip_address IP address exposed to clients.
+	 */
+	public function test_build_order_info_validates_ip_address( $stored_ip_address, $expected_ip_address ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( $stored_ip_address );
+		$order->save();
+
+		$result = $this->payments_api_client->build_order_info( $order );
+
+		$this->assertSame( $expected_ip_address, $result['ip_address'] );
+		$this->assertSame( $stored_ip_address, wc_get_order( $order->get_id() )->get_customer_ip_address() );
+	}
+
+	/**
+	 * @return array Accepted and rejected order IP addresses.
+	 */
+	public function order_ip_addresses_provider() {
+		return [
+			'ipv4'           => [ '203.0.113.5', '203.0.113.5' ],
+			'private_ipv4'   => [ '192.168.1.1', '192.168.1.1' ],
+			'loopback_ipv4'  => [ '127.0.0.1', '127.0.0.1' ],
+			'zero_ipv4'      => [ '0.0.0.0', '0.0.0.0' ],
+			'ipv6'           => [ '2001:db8::1', '2001:db8::1' ],
+			'full_ipv6'      => [ '2001:0db8:0000:0000:0000:0000:0000:0001', '2001:0db8:0000:0000:0000:0000:0000:0001' ],
+			'loopback_ipv6'  => [ '::1', '::1' ],
+			'mapped_ipv6'    => [ '::ffff:192.0.2.1', '::ffff:192.0.2.1' ],
+			'empty'          => [ '', '' ],
+			'malformed_text' => [ 'not an IP address', '' ],
+			'invalid_octets' => [ '999.2.3.4', '' ],
+			'proxy_list'     => [ '203.0.113.5, 192.0.2.1', '' ],
+			'ipv4_with_port' => [ '203.0.113.5:443', '' ],
+			'bracketed_ipv6' => [ '[2001:db8::1]', '' ],
+			'ipv6_with_port' => [ '[2001:db8::1]:443', '' ],
+			'whitespace'     => [ ' 203.0.113.5 ', '' ],
+		];
+	}
+
+	public function test_dispute_and_charge_responses_keep_invalid_order_ip_empty() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( 'not an IP address' );
+		$order->save();
+		$this->mock_db_wrapper->method( 'order_from_charge_id' )->with( 'ch_test123' )->willReturn( $order );
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'       => 'dp_test123',
+				'charge'   => 'ch_test123',
+				'reason'   => 'fraudulent',
+				'evidence' => [ 'customer_purchase_ip' => '203.0.113.9' ],
+			]
+		);
+		$mock_cache = $this->createMock( \WCPay\Database_Cache::class );
+		wcpay_get_test_container()->replace( \WCPay\Database_Cache::class, $mock_cache );
+
+		try {
+			$dispute = $this->payments_api_client->get_dispute( 'dp_test123' );
+			$updated = $this->payments_api_client->update_dispute( 'dp_test123', [ 'receipt' => 'file_receipt' ], false, [] );
+			$charge  = $this->payments_api_client->add_additional_info_to_charge( [ 'id' => 'ch_test123' ] );
+
+			$this->assertSame( '', $dispute['order']['ip_address'] );
+			$this->assertSame( '', $updated['order']['ip_address'] );
+			$this->assertSame( '', $charge['order']['ip_address'] );
+			$this->assertSame( '203.0.113.9', $dispute['evidence']['customer_purchase_ip'] );
+			$this->assertSame( '203.0.113.9', $updated['evidence']['customer_purchase_ip'] );
+		} finally {
+			wcpay_get_test_container()->reset_all_replacements();
+		}
 	}
 
 	/**
@@ -772,6 +844,74 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
 				2,
 			],
+		];
+	}
+
+	/**
+	 * Test that sensitive keys are redacted from the logged request and response bodies.
+	 *
+	 * @dataProvider redacting_body_keys_data
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_redacting_request_and_response_bodies( array $payload ) {
+		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
+			->setMethods( [ 'log' ] )
+			->getMock();
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode() );
+		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
+
+		WC_Payments::mode()->dev();
+
+		$logged_entries = [];
+		$mock_logger
+			->expects( $this->exactly( 2 ) )
+			->method( 'log' )
+			->willReturnCallback(
+				function ( $level, $message, $context ) use ( &$logged_entries ) {
+					$logged_entries[] = $message . ' ' . wp_json_encode( $context );
+				}
+			);
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode( $payload ),
+					]
+				)
+			);
+
+		$reflection     = new ReflectionClass( $this->payments_api_client );
+		$request_method = $reflection->getMethod( 'request' );
+		$request_method->setAccessible( true );
+		$request_method->invokeArgs( $this->payments_api_client, [ $payload, 'abc', 'POST' ] );
+		$request_method->setAccessible( false );
+
+		foreach ( $logged_entries as $entry ) {
+			$this->assertStringContainsString( '(redacted)', $entry );
+			$this->assertStringNotContainsString( 'some-secret', $entry );
+		}
+
+		// clean up.
+		WC_Payments::mode()->live();
+		wcpay_get_test_container()->reset_all_replacements();
+	}
+
+	/**
+	 * Data provider for test_redacting_request_and_response_bodies
+	 */
+	public function redacting_body_keys_data() {
+		return [
+			'WooPay webhook secret'     => [ [ 'webhook_secret' => 'some-secret' ] ],
+			'Terminal connection token' => [ [ 'secret' => 'some-secret' ] ],
+			'customer description'      => [ [ 'description' => 'Name: some-secret, Guest' ] ],
+			'order key in metadata'     => [ [ 'metadata' => [ 'order_key' => 'some-secret' ] ] ],
 		];
 	}
 

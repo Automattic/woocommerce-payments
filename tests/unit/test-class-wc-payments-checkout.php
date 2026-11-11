@@ -171,6 +171,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		wp_dequeue_script( 'wcpay-upe-checkout' );
 		// Deregister too, so localized wcpay_upe_config data does not leak into later tests.
 		wp_deregister_script( 'wcpay-upe-checkout' );
+		wp_deregister_script( 'stripe' );
+		delete_option( WC_Payments_Features::STRIPE_JS_DAHLIA_FLAG_NAME );
 
 		global $wp, $wp_query;
 		if ( isset( $wp ) ) {
@@ -784,7 +786,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'isReusable'             => true,
 					'isBnpl'                 => false,
 					'isExpressCheckout'      => false,
-					'title'                  => 'Stripe Link',
+					'title'                  => 'Link',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
@@ -1358,5 +1360,39 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'isExpressCheckout', $js_config['paymentMethodsConfig']['card'] );
 		$this->assertFalse( $js_config['paymentMethodsConfig']['card']['isExpressCheckout'] );
+	}
+
+	/**
+	 * @dataProvider stripe_js_flag_provider
+	 */
+	public function test_register_scripts_registers_stripe_js_for_flag( string $flag_value, string $expected_src, $expected_ver ) {
+		update_option( WC_Payments_Features::STRIPE_JS_DAHLIA_FLAG_NAME, $flag_value );
+		wp_deregister_script( 'stripe' );
+
+		$this->system_under_test->register_scripts();
+
+		$this->assertSame( $expected_src, wp_scripts()->registered['stripe']->src );
+		$this->assertSame( $expected_ver, wp_scripts()->registered['stripe']->ver );
+	}
+
+	/**
+	 * @dataProvider stripe_js_flag_provider
+	 */
+	public function test_payment_fields_js_config_includes_stripe_js_url_for_flag( string $flag_value, string $expected_src ) {
+		update_option( WC_Payments_Features::STRIPE_JS_DAHLIA_FLAG_NAME, $flag_value );
+		$this->mock_wcpay_gateway
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertSame( $expected_src, $js_config['stripeJsUrl'] );
+	}
+
+	public function stripe_js_flag_provider(): array {
+		return [
+			'flag off' => [ '0', 'https://js.stripe.com/v3/', '3.0' ],
+			'flag on'  => [ '1', 'https://js.stripe.com/dahlia/stripe.js', null ],
+		];
 	}
 }

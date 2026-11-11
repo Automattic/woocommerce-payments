@@ -1673,9 +1673,52 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$query = $this->wcpay_gateway->update_renewal_meta_data( 'WHERE post_id = 1', null, null );
 
 		$this->assertSame(
-			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net')",
+			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net', '_wcpay_payment_details_removed', '_wcpay_superseded_intent_ids', '_wcpay_superseded_payment_succeeded')",
 			$query
 		);
+	}
+
+	/**
+	 * A card left attached by an earlier WooPayments attempt isn't copied back onto an order paid with another
+	 * gateway, so the takeover cleanup sticks.
+	 */
+	public function test_subscription_order_tracking_leaves_an_order_paid_with_another_gateway_alone() {
+		$order = $this->create_order_with_attached_card( 'cod' );
+
+		$this->wcpay_gateway->maybe_schedule_subscription_order_tracking( $order->get_id(), $order );
+
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_meta( '_payment_method_id' ) );
+	}
+
+	/**
+	 * A WooPayments order still gets its attached card as the payment method, for its subscription's renewals.
+	 */
+	public function test_subscription_order_tracking_records_the_attached_card_of_a_woopayments_order() {
+		$order = $this->create_order_with_attached_card( 'woocommerce_payments' );
+
+		$this->wcpay_gateway->maybe_schedule_subscription_order_tracking( $order->get_id(), $order );
+
+		$this->assertSame( 'pm_mock', wc_get_order( $order->get_id() )->get_meta( '_payment_method_id' ) );
+	}
+
+	/**
+	 * Creates an order with a WooPayments card attached and no payment method ID recorded.
+	 *
+	 * @param string $gateway_id The gateway that pays the order.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_with_attached_card( string $gateway_id ): WC_Order {
+		$order = WC_Helper_Order::create_order( self::USER_ID );
+		$order->set_payment_method( $gateway_id );
+		$order->add_payment_token( WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID ) );
+		$order->delete_meta_data( '_payment_method_id' );
+		$order->save();
+		// The save above may have run the tracking already; start each test from no payment method ID.
+		$order->delete_meta_data( '_payment_method_id' );
+		$order->save_meta_data();
+
+		return $order;
 	}
 
 	public function test_init_hooks_registers_single_payment_meta_filters() {
@@ -1799,5 +1842,34 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		);
 
 		return $notes[0]->content;
+	}
+
+	public function test_process_payment_refuses_a_subscription_outside_the_change_payment_method_flow() {
+		// A subscription paid without change_payment_method is refused.
+		$_GET  = [];
+		$token = WC_Helper_Token::create_token( 'pm_mock', self::USER_ID );
+
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$_POST        = [
+			'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => $token->get_id(),
+		];
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) use ( $subscription ) {
+				return $order instanceof WC_Order && $order->get_id() === $subscription->get_id();
+			}
+		);
+
+		// No PaymentIntent is ever created: the subscription is refused before any server request.
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0 );
+
+		$result = $this->wcpay_gateway->process_payment( $subscription->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
+		// Left untouched (not charged, completed, or moved to failed).
+		$this->assertSame( 'pending', wc_get_order( $subscription->get_id() )->get_status() );
+
+		WC_Subscriptions::set_wcs_is_subscription( null );
 	}
 }

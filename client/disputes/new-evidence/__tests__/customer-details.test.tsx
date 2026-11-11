@@ -38,6 +38,28 @@ describe( 'CustomerDetails', () => {
 		).toBeInTheDocument();
 	} );
 
+	it.each( [
+		[ '', '-' ],
+		[ '2001:db8::1', '2001:db8::1' ],
+	] )( 'renders the order IP %s as %s', ( ipAddress, expected ) => {
+		const { container } = render(
+			<CustomerDetails
+				dispute={
+					{
+						...baseDispute,
+						order: { ip_address: ipAddress },
+					} as any
+				}
+			/>
+		);
+
+		expect(
+			container.querySelector(
+				'.wcpay-dispute-evidence-customer-details__ip-address'
+			)?.textContent
+		).toBe( expected );
+	} );
+
 	it( 'renders dash when formatted address is missing', () => {
 		const dispute = {
 			charge: {

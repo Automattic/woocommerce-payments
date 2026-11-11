@@ -5,7 +5,12 @@
 import { __ } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { debounce } from 'lodash';
-import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
+import {
+	addAction,
+	removeAction,
+	applyFilters,
+	doAction,
+} from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -152,6 +157,7 @@ const getOnClickOptions = () => {
 };
 
 let elements;
+let destroyMountedElement = null;
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -249,6 +255,7 @@ jQuery( ( $ ) => {
 			const { isSuperseded = () => false } = creationOptions;
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
+			let isWalletOpen = false;
 			const stripe = await api.getStripe();
 
 			if ( isSuperseded() ) {
@@ -274,6 +281,8 @@ jQuery( ( $ ) => {
 				enabledMethods.includes( 'payment_request' ) && 'card',
 				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
 			].filter( Boolean );
+
+			destroyMountedElement?.();
 
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
@@ -405,6 +414,7 @@ jQuery( ( $ ) => {
 						: options.shippingRates;
 
 				onClickHandler( event );
+				isWalletOpen = true;
 				event.resolve( {
 					// `options.displayItems`, `options.shippingAddressRequired`, `options.requestPhone`, `options.shippingRates`,
 					// are all coming from prior of the initialization.
@@ -452,6 +462,8 @@ jQuery( ( $ ) => {
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {
+				isWalletOpen = false;
+
 				if ( addToCartErrorMessage ) {
 					// the message should have already been displayed earlier, but this will also remove any additional overlays.
 					wcpayECE.abortPayment( addToCartErrorMessage );
@@ -469,7 +481,9 @@ jQuery( ( $ ) => {
 				);
 			} );
 
-			eceButton.on( 'cancel', () => {
+			const handleWalletCancel = () => {
+				isWalletOpen = false;
+
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
@@ -483,7 +497,26 @@ jQuery( ( $ ) => {
 				}
 
 				onCancelHandler();
-			} );
+			};
+
+			eceButton.on( 'cancel', handleWalletCancel );
+
+			// Mounting another Element over this one would close its open wallet
+			// sheet but leave Stripe's page overlay behind. Destroying it removes
+			// the overlay, but Stripe sends no `cancel`, so cancel ourselves.
+			destroyMountedElement = () => {
+				destroyMountedElement = null;
+
+				try {
+					eceButton.destroy();
+				} catch ( e ) {
+					// Stripe destroys the Element itself after `loaderror`.
+				}
+
+				if ( isWalletOpen ) {
+					handleWalletCancel();
+				}
+			};
 
 			eceButton.on( 'ready', ( onReadyParams ) => {
 				onReadyHandler( onReadyParams );
@@ -752,6 +785,16 @@ jQuery( ( $ ) => {
 					}
 				}
 			);
+
+			// A variation or quantity change during init blocked the button and
+			// dispatched to no handler, so replay it now that one is registered.
+			if (
+				isProductContext &&
+				! isForcedRefresh &&
+				expressCheckoutButtonUi.isBlocked()
+			) {
+				doAction( 'wcpay.express-checkout.update-button-data' );
+			}
 		},
 	};
 

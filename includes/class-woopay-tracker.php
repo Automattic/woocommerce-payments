@@ -49,6 +49,13 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	private static $pixel_base_url = 'https://pixel.wp.com/g.gif';
 
+	/**
+	 * Maximum number of events recorded from a single batched `platform_tracks` request.
+	 * Keep in sync with `maxBatchedShopperEvents` in `client/tracks/index.ts`.
+	 *
+	 * @var int
+	 */
+	const MAX_BATCHED_EVENTS = 20;
 
 	/**
 	 * Constructor.
@@ -102,6 +109,40 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			);
 		}
 
+		// Batched events, sent as a JSON-encoded array of `{ name, properties }` objects.
+		if ( isset( $_REQUEST['tracksEvents'] ) ) {
+			// Cleaned before decoding, the same way as the single-event `tracksEventProp` below.
+			$events = json_decode( wc_clean( wp_unslash( $_REQUEST['tracksEvents'] ) ), true );
+			if ( ! is_array( $events ) ) {
+				wp_send_json_error(
+					__( 'No valid event name or type.', 'woocommerce-payments' ),
+					400
+				);
+			}
+
+			foreach ( array_slice( $events, 0, self::MAX_BATCHED_EVENTS ) as $event ) {
+				if ( ! is_array( $event ) || empty( $event['name'] ) || ! is_string( $event['name'] ) ) {
+					continue;
+				}
+
+				$properties = isset( $event['properties'] ) && is_array( $event['properties'] ) ? $event['properties'] : [];
+				$result     = $this->record_event_from_browser( sanitize_text_field( $event['name'] ), $properties );
+
+				// Each event is a blocking request to the Tracks pixel. Once the pixel is unreachable or failing
+				// server-side, the rest would fail the same way, each holding this request for up to its timeout.
+				// A 4xx answers one event only, so the others are still sent.
+				if ( is_wp_error( $result ) ) {
+					$error_code = $result->get_error_code();
+					if ( 'http_request_failed' === $error_code || ( 'request_failed' === $error_code && (int) $result->get_error_data() >= 500 ) ) {
+						break;
+					}
+				}
+			}
+
+			wp_send_json_success();
+		}
+
+		// Single event. Still sent by pages cached before batching was added.
 		if ( ! isset( $_REQUEST['tracksEventName'] ) ) {
 			wp_send_json_error(
 				__( 'No valid event name or type.', 'woocommerce-payments' ),
@@ -117,9 +158,36 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 				$tracks_data = $event_prop;
 			}
 		}
-		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
+		$this->record_event_from_browser( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * Records an event sent by a shopper's browser, without the controls only the server may set.
+	 *
+	 * @param string $event      Name of the event, without the `wcpay_` prefix.
+	 * @param array  $properties Event properties.
+	 *
+	 * @return bool|\WP_Error
+	 */
+	private function record_event_from_browser( string $event, array $properties ) {
+		// `_aliasUser` links two Tracks identities. No browser event uses it.
+		if ( '_aliasUser' === $event ) {
+			return false;
+		}
+
+		// Shopper events the server queues for the browser carry `track_on_all_stores`, so that one stays.
+		// None is an admin event, which would skip the checks that keep admins and WooPay-off stores out.
+		if ( isset( $properties['record_event_data'] ) ) {
+			if ( is_array( $properties['record_event_data'] ) ) {
+				unset( $properties['record_event_data']['is_admin_event'] );
+			} else {
+				unset( $properties['record_event_data'] );
+			}
+		}
+
+		return $this->maybe_record_event( $event, $properties );
 	}
 
 	/**

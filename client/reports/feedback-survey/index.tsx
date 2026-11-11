@@ -39,7 +39,7 @@ const isReportsAreaEnabled = () =>
 	Boolean( wcpaySettings?.featureFlags?.reportsArea );
 
 interface ReportFeedbackSurveyProps {
-	focusAfterCloseRef?: React.RefObject< HTMLElement >;
+	focusAfterCloseRef?: React.RefObject< HTMLElement | null >;
 }
 
 const ReportFeedbackSurveyContent = ( {
