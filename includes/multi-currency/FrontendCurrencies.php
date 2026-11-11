@@ -122,8 +122,6 @@ class FrontendCurrencies {
 			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900, 2 );
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900, 2 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900, 3 );
-			add_filter( 'wc_get_currency_position', [ $this, 'get_price_position' ], 900, 2 );
-			// Kept on this path too: the Cart and Checkout Blocks read the option without passing a currency.
 			add_filter( 'option_woocommerce_currency_pos', [ $this, 'get_woocommerce_currency_pos' ], 900 );
 
 			// A cart that changes under the same user and session can change the currency selection (e.g. subscription renewals).
@@ -306,23 +304,7 @@ class FrontendCurrencies {
 	}
 
 	/**
-	 * Returns the currency symbol position for the active currency, as the `wc_get_currency_position` filter passes it.
-	 *
-	 * @param string      $position The original currency position.
-	 * @param string|null $currency The active currency WooCommerce formats for, when it sets one.
-	 *
-	 * @return string The currency position.
-	 */
-	public function get_price_position( $position, $currency = null ) {
-		$currency_code = $this->get_currency_code( $currency );
-		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
-			return $this->localization_service->get_currency_format( $currency_code )['currency_pos'];
-		}
-		return $position;
-	}
-
-	/**
-	 * Returns the currency symbol position option for the shopper's currency.
+	 * Returns the currency symbol position for the currently selected currency.
 	 *
 	 * The Cart and Checkout Blocks read the `woocommerce_currency_pos` option (via the Store API
 	 * CurrencyFormatter) rather than the `woocommerce_price_format` filter the shortcode uses. Without
@@ -335,7 +317,11 @@ class FrontendCurrencies {
 	 * @return string The currency position for the selected currency.
 	 */
 	public function get_woocommerce_currency_pos( $position ): string {
-		return $this->get_price_position( $position );
+		$currency_code = $this->get_currency_code();
+		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
+			return $this->localization_service->get_currency_format( $currency_code )['currency_pos'];
+		}
+		return $position;
 	}
 
 	/**
