@@ -86,7 +86,7 @@ Nothing in this directory ships in the plugin zip.
 
 ## Changing the fixtures
 
-When a pull request changes what a screen reads from the server, update the matching fixture in the same pull request: the preview loads the fixtures from the pull request's own build.
+When a pull request changes what a screen reads from the server, update the matching fixture in the same pull request: the preview loads the fixtures from the pull request's own build. `tests/unit/dev/test-class-wcpay-playground-demo-http.php` requests every fixture in this directory, so one that is not valid JSON fails CI.
 
 To try changes locally, run Playground with this directory mounted. It needs Node.js and nothing else:
 
