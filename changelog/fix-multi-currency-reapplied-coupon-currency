@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Convert a fixed-amount coupon that WooCommerce re-applies to an existing order with the order's currency, not the shopper's selected currency.

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Show Amazon Pay on the Cart and Checkout blocks when the shopper switches to a currency it supports, without a page reload.

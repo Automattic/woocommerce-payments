@@ -1742,7 +1742,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			$token
 		);
 
-		$this->assertSame( 'Stripe Link email', $result['method']['brand'] );
+		$this->assertSame( 'Link email', $result['method']['brand'] );
 		$this->assertSame( '***uyer@link.com', $result['method']['last4'] );
 	}
 
@@ -1764,12 +1764,12 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'Onelink email', $result['method']['brand'] );
 	}
 
-	public function test_link_token_display_name_uses_stripe_link_for_us_account() {
+	public function test_link_token_display_name_uses_link_for_us_account() {
 		$this->set_mock_gateway_account_country( \WCPay\Constants\Country_Code::UNITED_STATES );
 
 		$token = WC_Helper_Token::create_link_token( 'pm_link_1', 1, 'buyer@link.com' );
 
-		$this->assertSame( 'Stripe Link email ending in ***uyer@link.com', $token->get_display_name() );
+		$this->assertSame( 'Link email ending in ***uyer@link.com', $token->get_display_name() );
 	}
 
 	public function test_link_token_display_name_uses_onelink_for_gb_account() {
@@ -1782,7 +1782,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_normalize_stripe_link_label_handles_onelink() {
 		$this->assertSame( 'Onelink email', $this->token_service->normalize_stripe_link_label( 'onelink email' ) );
-		$this->assertSame( 'Stripe Link email', $this->token_service->normalize_stripe_link_label( 'stripe link email' ) );
+		$this->assertSame( 'Link email', $this->token_service->normalize_stripe_link_label( 'stripe link email' ) );
+		$this->assertSame( 'Link email', $this->token_service->normalize_stripe_link_label( 'link email' ) );
 		$this->assertSame( 'anything else', $this->token_service->normalize_stripe_link_label( 'anything else' ) );
 	}
 

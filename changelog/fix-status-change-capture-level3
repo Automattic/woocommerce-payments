@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Send Level 3 data when marking an authorized order completed captures it, so a total edited after authorization can still be captured.

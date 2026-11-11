@@ -381,7 +381,7 @@ class WC_Payments_Token_Service {
 				continue;
 			}
 
-			// Stripe Link is part of the card gateway, so we need to check separately if Link is enabled.
+			// Link is part of the card gateway, so we need to check separately if Link is enabled.
 			if ( Payment_Method::LINK === $payment_method && ! $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
 				continue;
 			}
@@ -549,7 +549,7 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
-	 * Controls the output for Stripe Link on the My account page.
+	 * Controls the output for Link on the My account page.
 	 *
 	 * @param  array                                        $item          Individual list item from woocommerce_saved_payment_methods_list.
 	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Link $payment_token The payment token associated with this method entry.
@@ -560,7 +560,7 @@ class WC_Payments_Token_Service {
 			$account_country         = WC_Payments::get_gateway()->get_account_country();
 			$item['method']['last4'] = $payment_token->get_redacted_email();
 			$item['method']['brand'] = sprintf(
-				/* translators: %s: Link brand name (Stripe Link or Onelink). */
+				/* translators: %s: Link brand name (Link or Onelink). */
 				esc_html__( '%s email', 'woocommerce-payments' ),
 				LinkDefinition::get_title( $account_country )
 			);
@@ -633,17 +633,18 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
-	 * Normalizes the Stripe Link label on My Account page.
+	 * Normalizes the Link label on My Account page.
 	 *
 	 * @param string $label Token label.
-	 * @return string $label Capitalized  Link/Onelink label.
+	 * @return string $label Capitalized Link/Onelink label.
 	 */
 	public function normalize_stripe_link_label( $label ) {
-		if ( 'stripe link email' === strtolower( $label ) ) {
-			return 'Stripe Link email';
+		$lowered = strtolower( $label );
+		if ( 'link email' === $lowered || 'stripe link email' === $lowered ) {
+			return 'Link email';
 		}
 
-		if ( 'onelink email' === strtolower( $label ) ) {
+		if ( 'onelink email' === $lowered ) {
 			return 'Onelink email';
 		}
 
