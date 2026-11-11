@@ -132,18 +132,26 @@ Worktrees provide isolated working directories for parallel feature work. Each w
 
 **CRITICAL: Never remove a worktree that is your current working directory.** Removing the CWD makes ALL subsequent commands fail irrecoverably — no `cd`, no subshell can fix it.
 
-**Safe cleanup sequence (always from the main repo):**
+If an agent starts a worktree's dev site, run `pnpm run worktree:cleanup` in that worktree as soon as the site is no longer needed, before handing work back or returning from a subagent. This stops and removes that worktree's WordPress container, drops its test database, and removes its `.env`; it leaves shared infrastructure and volumes alone. It does not remove the worktree's Docker image.
+
+**Safe cleanup sequence:**
 ```bash
-# 1. Switch to main repo FIRST
+# 1. In the worktree, clean up its dev environment once it is no longer needed
+cd /path/to/worktree
+pnpm run worktree:cleanup
+
+# 2. Switch to main repo before removing the worktree
 cd /path/to/main/repo
 
-# 2. Now safe to remove
+# 3. Now safe to remove
 git worktree remove /path/to/worktree
 
-# 3. Clean up
+# 4. Prune and remove the branch if no longer needed
 git worktree prune
 git branch -d worktree-feat/branch-name
 ```
+
+`worktree:cleanup` leaves the worktree's Docker image behind. Remove an image only if you have confirmed it is no longer needed and is owned by the current session. If the worktree has already been removed, `pnpm run worktree:status` flags containers with no matching worktree; that orphan status alone does not establish ownership, so do not remove a container unless its ownership is clear.
 
 **Merging worktree work:** `git checkout main` fails inside a worktree when main is checked out elsewhere. Use `git -C` from the main repo:
 ```bash
@@ -175,10 +183,11 @@ When disk space is low, or a command fails with `ENOSPC`, diagnose with these re
 
 ```bash
 df -h .              # filesystem capacity
-du -sh node_modules  # dependencies of the current checkout
+du -sh node_modules  # apparent size; pnpm hard links may make reclaimable space much smaller
 git worktree list    # other checkouts to inspect
 docker system df     # images, containers, volumes and build cache
 docker ps -a         # running and stopped containers
+pnpm run worktree:status  # per-worktree containers; flags containers with no matching worktree
 ```
 
 - Report the cleanup candidates and ask before touching anything outside the current session. If you cannot establish that you created a resource, treat it as pre-existing.

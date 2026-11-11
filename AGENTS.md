@@ -46,8 +46,6 @@ For feature-specific investigations, the architecture reference indexes payment 
 - Check `.env` for the WordPress port. Preserve existing data, unrelated containers and user processes. Do not reset the local admin password unless explicitly requested; the default development login is `admin` / `admin`.
 - Never remove a worktree that is the current working directory; perform any authorised cleanup from the main clone.
 - Track temporary containers, background processes and generated resources created during the current session, and clean up only those when no longer needed. Preserve persistent data and anything needed for the requested handoff.
-- Do not delete or stop pre-existing resources, including dependency directories, containers, images, caches or volumes. If disk space is low (or a command fails with `ENOSPC`), inspect usage with the read-only diagnostics in [Disk usage and cleanup](.claude/docs/agent-development.md#disk-usage-and-cleanup), report cleanup candidates and ask before touching anything outside the current session.
-- Avoid blanket Docker prune commands: they can remove resources belonging to other sessions or projects.
 
 ## Git and delivery
 
