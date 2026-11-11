@@ -46,7 +46,7 @@ const renderSurvey = () => render( <ReportFeedbackSurvey /> );
 const renderSurveyWithFocusTarget = () => {
 	const ReportFeedbackSurveyWithFocusTarget =
 		ReportFeedbackSurvey as React.ComponentType< {
-			focusAfterCloseRef: React.RefObject< HTMLElement >;
+			focusAfterCloseRef: React.RefObject< HTMLElement | null >;
 		} >;
 
 	const SurveyWithFocusTarget = () => {

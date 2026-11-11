@@ -1,7 +1,7 @@
 /** @format */
 
 import React from 'react';
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 
 const mockUpdateQueryString = jest.fn();
 const mockGetQuery = jest.fn( () => ( {} ) );

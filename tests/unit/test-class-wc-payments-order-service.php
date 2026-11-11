@@ -1831,6 +1831,213 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a declined payment fails the order and records the provider's decline details.
+	 */
+	public function test_mark_payment_declined() {
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$error  = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $intent->get_charge()->get_id(), $error );
+
+		$this->assertSame( 'failed', $this->order->get_status() );
+		$this->assertEquals( 'requires_payment_method', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $notes[0]->content );
+		$this->assertStringContainsString( 'With the following message: <code>The customer has terminated the authorization flow.</code>. Decline code: <code>generic_decline</code>.', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests that a declined payment still fails the order when the same failure note was
+	 * already added, e.g. by the BNPL webhook, without duplicating the note.
+	 */
+	public function test_mark_payment_declined_with_existing_note_fails_order_without_duplicate_note() {
+		$intent    = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$charge_id = $intent->get_charge()->get_id();
+		$error     = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+		$this->order->add_order_note(
+			$this->order_service->get_payment_failure_note( $this->order, $intent->get_id(), $charge_id, $this->order_service->get_provider_decline_message( $error ) )
+		);
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $charge_id, $error );
+
+		$this->assertSame( 'failed', $this->order->get_status() );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'Pending payment to Failed', $notes[0]->content );
+		$this->assertStringContainsString( 'Decline code: <code>generic_decline</code>', $notes[1]->content );
+	}
+
+	/**
+	 * Tests that a declined payment does not change an order that another process is updating.
+	 */
+	public function test_mark_payment_declined_exits_if_order_locked() {
+		$intent         = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$transient_name = 'wcpay_processing_intent_' . $this->order->get_id();
+		set_transient( $transient_name, $intent->get_id(), 5 * MINUTE_IN_SECONDS );
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), '', [ 'message' => 'Declined.' ] );
+
+		$this->assertSame( 'pending', $this->order->get_status() );
+		$this->assertEquals( '', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+		$this->assertSame( $intent->get_id(), get_transient( $transient_name ) );
+	}
+
+	/**
+	 * Tests that a second request for the same declined payment, which loaded the order before
+	 * the first one failed it, does not fail the order again.
+	 */
+	public function test_mark_payment_declined_does_not_fail_a_stale_order_again() {
+		$intent      = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$error       = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+		$stale_order = wc_get_order( $this->order->get_id() );
+		// Another request fails the order in the database, leaving this request's caches untouched.
+		$this->set_stored_order_status_without_clearing_caches( $this->order->get_id(), 'wc-failed' );
+
+		$this->order_service->mark_payment_declined( $stale_order, $intent->get_id(), $intent->get_status(), '', $error );
+
+		$this->assertSame( 'failed', $this->get_stored_order_status( $this->order->get_id() ) );
+		$this->assertSame( [], wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Changes an order's status directly in the database, as another request would.
+	 *
+	 * @param int    $order_id The order ID.
+	 * @param string $status   The stored status, including the `wc-` prefix.
+	 */
+	private function set_stored_order_status_without_clearing_caches( int $order_id, string $status ): void {
+		global $wpdb;
+
+		$wpdb->update( $wpdb->posts, [ 'post_status' => $status ], [ 'ID' => $order_id ] );
+		if ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$wpdb->update( $this->get_orders_table(), [ 'status' => $status ], [ 'id' => $order_id ] );
+		}
+	}
+
+	/**
+	 * Reads an order's status from the database, bypassing the caches.
+	 *
+	 * @param int $order_id The order ID.
+	 *
+	 * @return string The status without the `wc-` prefix.
+	 */
+	private function get_stored_order_status( int $order_id ): string {
+		global $wpdb;
+
+		if ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$table  = $this->get_orders_table();
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$table} WHERE id = %d", $order_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		} else {
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT post_status FROM {$wpdb->posts} WHERE ID = %d", $order_id ) );
+		}
+
+		return str_replace( 'wc-', '', (string) $status );
+	}
+
+	/**
+	 * Gets the HPOS orders table name.
+	 *
+	 * @return string The table name.
+	 */
+	private function get_orders_table(): string {
+		global $wpdb;
+
+		// get_table_for_orders() only exists from WooCommerce 7.9, and the plugin supports 7.6.
+		return method_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class, 'get_table_for_orders' )
+			? \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders()
+			: $wpdb->prefix . 'wc_orders';
+	}
+
+	/**
+	 * Data provider for provider errors without a message.
+	 *
+	 * @return array[] Test cases with the provider error and the expected decline message.
+	 */
+	public function provider_errors_without_message_provider(): array {
+		return [
+			'error code only'         => [
+				[ 'code' => 'payment_intent_payment_attempt_failed' ],
+				'With the following message: <code>payment_intent_payment_attempt_failed</code>',
+			],
+			'no message and no code'  => [
+				[ 'decline_code' => 'generic_decline' ],
+				'With the following message: <code>We&#039;re not able to process this payment. Please try again later.</code>. Decline code: <code>generic_decline</code>.',
+			],
+			'empty message with code' => [
+				[
+					'code'    => 'card_declined',
+					'message' => '',
+				],
+				'With the following message: <code>card_declined</code>',
+			],
+		];
+	}
+
+	/**
+	 * Tests that a decline message is never empty when the provider error has no message.
+	 *
+	 * @dataProvider provider_errors_without_message_provider
+	 *
+	 * @param array  $error            The payment provider's error.
+	 * @param string $expected_message The expected decline message.
+	 */
+	public function test_get_provider_decline_message_without_provider_message( array $error, string $expected_message ) {
+		$this->assertSame( $expected_message, $this->order_service->get_provider_decline_message( $error ) );
+	}
+
+	/**
+	 * Tests that an overlong provider message is shortened so the failure note can be saved.
+	 */
+	public function test_get_provider_decline_message_shortens_long_provider_message() {
+		$long_message = str_repeat( 'a', 70000 );
+
+		$message = $this->order_service->get_provider_decline_message( [ 'message' => $long_message ] );
+
+		$this->assertSame( 'With the following message: <code>' . str_repeat( 'a', 1000 ) . '…</code>', $message );
+	}
+
+	/**
+	 * Tests that a provider message at the length limit is kept whole.
+	 */
+	public function test_get_provider_decline_message_keeps_message_at_length_limit() {
+		$message_at_limit = str_repeat( 'a', 1000 );
+
+		$message = $this->order_service->get_provider_decline_message( [ 'message' => $message_at_limit ] );
+
+		$this->assertSame( 'With the following message: <code>' . str_repeat( 'a', 1000 ) . '</code>', $message );
+	}
+
+	/**
+	 * Tests that a declined payment does not change an order that is already failed.
+	 */
+	public function test_mark_payment_declined_exits_on_existing_order_status_failed() {
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::FAILED );
+		$this->order->save();
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), '', [ 'message' => 'Declined.' ] );
+
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
 	 * Tests if the payment capture was noted failed.
 	 *
 	 * @dataProvider mark_payment_capture_failed_provider
