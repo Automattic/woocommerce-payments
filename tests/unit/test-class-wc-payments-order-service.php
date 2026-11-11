@@ -10,6 +10,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Mode;
 use WCPay\Constants\Payment_Method;
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
@@ -1441,6 +1442,40 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::ALLOW,
 			],
+		];
+	}
+
+	/**
+	 * A later payment that succeeds without a fraud outcome, like a scheduled renewal retry,
+	 * must not leave the order showing as blocked.
+	 *
+	 * @dataProvider clears_fraud_block_provider
+	 */
+	public function test_payment_without_fraud_outcome_clears_fraud_block( $intent_status ) {
+		$this->order_service->mark_order_blocked_for_fraud(
+			$this->order,
+			'pi_blocked',
+			Intent_Status::CANCELED,
+			[ Fraud_Risk_Tools::RULE_AVS_VERIFICATION => Rule::FRAUD_OUTCOME_BLOCK ]
+		);
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'status'                 => $intent_status,
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( '', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( '', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertSame( [], $this->order_service->get_fraud_ruleset_results_for_order( $this->order ) );
+	}
+
+	public function clears_fraud_block_provider() {
+		return [
+			'payment_completed'  => [ Intent_Status::SUCCEEDED ],
+			'payment_authorized' => [ Intent_Status::REQUIRES_CAPTURE ],
 		];
 	}
 

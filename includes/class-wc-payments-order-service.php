@@ -2090,6 +2090,8 @@ class WC_Payments_Order_Service {
 			$fraud_meta_box_type = Order_Status::ON_HOLD === $order->get_status() ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
 			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
+		} else {
+			$this->clear_fraud_block_for_order( $order );
 		}
 
 		if ( ! $this->intent_has_card_payment_type( $intent_data ) ) {
@@ -2099,6 +2101,27 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Removes the fraud data of an earlier blocked attempt from an order whose payment went through.
+	 *
+	 * A payment without a fraud outcome, like a scheduled renewal retry, writes no fraud data of its own,
+	 * so the paid order would still show as blocked and could be cancelled by mistake.
+	 *
+	 * @param WC_Order $order Order object.
+	 *
+	 * @return void
+	 */
+	private function clear_fraud_block_for_order( $order ) {
+		if ( Fraud_Meta_Box_Type::BLOCK !== $this->get_fraud_meta_box_type_for_order( $order ) ) {
+			return;
+		}
+
+		$order->delete_meta_data( self::WCPAY_FRAUD_META_BOX_TYPE_META_KEY );
+		$order->delete_meta_data( self::WCPAY_FRAUD_OUTCOME_STATUS_META_KEY );
+		$order->delete_meta_data( self::WCPAY_FRAUD_RULESET_RESULTS_META_KEY );
+		$order->save_meta_data();
 	}
 
 	/**
@@ -2186,6 +2209,8 @@ class WC_Payments_Order_Service {
 		if ( Rule::FRAUD_OUTCOME_ALLOW === $intent_data['fraud_outcome'] ) {
 			$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_ALLOW );
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::ALLOW );
+		} else {
+			$this->clear_fraud_block_for_order( $order );
 		}
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
