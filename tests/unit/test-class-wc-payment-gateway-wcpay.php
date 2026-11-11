@@ -732,7 +732,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			],
 			'Link'                   => [
 				'payment_details'  => [ 'type' => 'link' ],
-				'expected_title'   => 'Stripe Link',
+				'expected_title'   => 'Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 			'Link (via card wallet)' => [
@@ -744,7 +744,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						],
 					],
 				],
-				'expected_title'   => 'Stripe Link',
+				'expected_title'   => 'Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 		];
@@ -804,7 +804,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'Link'       => [
 				'express_type'     => 'link',
 				'stripe_type'      => 'link',
-				'expected_title'   => 'Stripe Link',
+				'expected_title'   => 'Link',
 				'expected_gateway' => 'woocommerce_payments',
 				'payment_details'  => [
 					'type' => 'link',
@@ -1023,8 +1023,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return [
 			'GB, Link charge'      => [ 'GB', $link_charge, 'Onelink' ],
 			'GB, Link card wallet' => [ 'GB', $link_wallet_charge, 'Onelink' ],
-			'US, Link charge'      => [ 'US', $link_charge, 'Stripe Link' ],
-			'US, Link card wallet' => [ 'US', $link_wallet_charge, 'Stripe Link' ],
+			'US, Link charge'      => [ 'US', $link_charge, 'Link' ],
+			'US, Link card wallet' => [ 'US', $link_wallet_charge, 'Link' ],
 		];
 	}
 
@@ -1086,7 +1086,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->set_payment_method_title_for_order( $order, 'link', [ 'type' => 'link' ] );
 
 		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
-		$this->assertSame( 'Stripe Link', $order->get_payment_method_title() );
+		$this->assertSame( 'Link', $order->get_payment_method_title() );
 	}
 
 	/**
@@ -4469,12 +4469,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->never() )
 			->method( 'set_mandate_data' );
 
-		// Mandate data is required for SEPA and Stripe Link only, $this->card_gateway is created with card hence mandate data should not be added.
+		// Mandate data is required for SEPA and Link only, $this->card_gateway is created with card hence mandate data should not be added.
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
 	public function test_set_mandate_data_to_payment_intent_if_required() {
-		// Mandate data is required for SEPA and Stripe Link, hence creating the gateway with a SEPA payment method should add mandate data.
+		// Mandate data is required for SEPA and Link, hence creating the gateway with a SEPA payment method should add mandate data.
 		$gateway        = $this->get_gateway( Payment_Method::SEPA );
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
@@ -7810,7 +7810,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'type' => 'link',
 					'link' => [ 'country' => '' ],
 				],
-				'Stripe Link',
+				'Link',
 			],
 			'card with wallet' => [
 				[
@@ -7821,7 +7821,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						'wallet' => [ 'type' => 'link' ],
 					],
 				],
-				'Stripe Link',
+				'Link',
 			],
 		];
 	}

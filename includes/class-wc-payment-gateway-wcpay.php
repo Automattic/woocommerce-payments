@@ -2022,7 +2022,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $payment_token instanceof \WC_Payment_Token_WCPay_Link ) {
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1$s: Link brand name (Stripe Link or Onelink), %2$s: redacted email address for the Link payment method */
+							/* translators: %1$s: Link brand name (Link or Onelink), %2$s: redacted email address for the Link payment method */
 							__( 'Payment method is changed to: <strong>%1$s ending in %2$s</strong>.', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
@@ -2181,7 +2181,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
+				// For Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
 				if ( $this->should_send_mandate_data( $payment_information ) ) {
 					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
@@ -2925,7 +2925,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
 		// If $gateway_id is `woocommerce_payments`, this must be the CC gateway.
-		// We only need to return single `card` payment method, adding `link` since Stripe Link is also supported.
+		// We only need to return single `card` payment method, adding `link` since Link is also supported.
 		$payment_methods = [ Payment_Method::CARD ];
 		if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
 			$payment_methods[] = Payment_Method::LINK;

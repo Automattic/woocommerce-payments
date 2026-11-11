@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Rename the Link payment method display title from "Stripe Link" to "Link" to align with current branding.
