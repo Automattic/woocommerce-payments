@@ -193,7 +193,7 @@ function wcpay_playground_handle_disconnect() {
 }
 
 /**
- * Makes sure a user with the given ID exists, creating a placeholder administrator when it does not.
+ * Makes sure a user with the given ID exists, creating a placeholder with no role when it does not.
  *
  * @param int $user_id User ID the pasted user token belongs to.
  *
@@ -224,7 +224,6 @@ function wcpay_playground_ensure_user_exists( int $user_id ): bool {
 	}
 
 	clean_user_cache( $user_id );
-	( new WP_User( $user_id ) )->set_role( 'administrator' );
 
 	return true;
 }
