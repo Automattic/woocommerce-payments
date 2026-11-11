@@ -466,6 +466,44 @@ describe( 'PaymentProcessor', () => {
 				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
 			} );
 
+			it( 'should debounce edits made after the element is visible', () => {
+				useCustomerData.mockReturnValue( {
+					email: 'shopper@example.com',
+				} );
+				const { rerender } = render( buildProcessor() );
+				act( () => observers[ 0 ].trigger( true ) );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+
+				useCustomerData.mockReturnValue( {
+					email: 'other@example.com',
+				} );
+				rerender( buildProcessor() );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBe( 'other@example.com' );
+			} );
+
+			it( 'should debounce a valid email typed after an invalid one at intersection', () => {
+				useCustomerData.mockReturnValue( { email: 'invalid' } );
+				const { rerender } = render( buildProcessor() );
+				act( () => observers[ 0 ].trigger( true ) );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				useCustomerData.mockReturnValue( {
+					email: 'shopper@example.com',
+				} );
+				rerender( buildProcessor() );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
 			it( 'should disconnect the observer on unmount', () => {
 				const { unmount } = render( buildProcessor() );
 				unmount();

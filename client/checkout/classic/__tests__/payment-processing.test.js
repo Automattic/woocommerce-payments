@@ -515,6 +515,45 @@ describe( 'Stripe Payment Element mounting', () => {
 				} );
 			} );
 
+			test( 'delivers the email when the element is already visible at mount', async () => {
+				window.IntersectionObserver = jest.fn( ( callback ) => ( {
+					observe: jest.fn( () =>
+						callback( [ { isIntersecting: true } ] )
+					),
+					disconnect: jest.fn(),
+				} ) );
+				__resetGatewayUPEComponentsElement( 'card' );
+				setCheckoutEmail( 'visible@example.com' );
+				await mountStripePaymentElement(
+					apiMock,
+					mockDomElement,
+					'shortcode_checkout'
+				);
+				await Promise.resolve();
+
+				expect( mockUpdateFunction ).toHaveBeenCalledWith( {
+					defaultValues: {
+						billingDetails: { email: 'visible@example.com' },
+					},
+				} );
+			} );
+
+			test( 'does not observe non-card payment methods', async () => {
+				const countBefore = window.IntersectionObserver.mock.calls.length;
+				__resetGatewayUPEComponentsElement( 'bancontact' );
+				mockDomElement.dataset.paymentMethodType = 'bancontact';
+				await mountStripePaymentElement(
+					apiMock,
+					mockDomElement,
+					'shortcode_checkout'
+				);
+				mockDomElement.dataset.paymentMethodType = 'card';
+
+				expect( window.IntersectionObserver.mock.calls ).toHaveLength(
+					countBefore
+				);
+			} );
+
 			test( 'disconnects the previous observer when the element is recreated', async () => {
 				const first = observers[ observers.length - 1 ];
 				__resetGatewayUPEComponentsElement( 'card' );

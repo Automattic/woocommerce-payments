@@ -340,16 +340,17 @@ function watchLinkEmailVisibility( paymentMethodType, domElement ) {
 		return;
 	}
 
-	components.disconnectVisibility = observeElementVisibility(
-		domElement,
-		() => {
-			components.isVisible = true;
-			delete components.disconnectVisibility;
-			updateLinkEmail(
-				document.querySelector( '#billing_email' )?.value ?? ''
-			);
-		}
-	);
+	const disconnect = observeElementVisibility( domElement, () => {
+		components.isVisible = true;
+		delete components.disconnectVisibility;
+		updateLinkEmail(
+			document.querySelector( '#billing_email' )?.value ?? ''
+		);
+	} );
+	// The callback may already have fired synchronously.
+	if ( ! components.isVisible ) {
+		components.disconnectVisibility = disconnect;
+	}
 }
 
 /**

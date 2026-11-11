@@ -159,29 +159,27 @@ const PaymentProcessor = ( {
 			? getLinkEmail( billingData.email )
 			: undefined;
 	const [ linkEmail, setLinkEmail ] = useState( undefined );
-	const linkEmailRef = useRef( undefined );
+	const wasVisibleRef = useRef( false );
 
 	// The store updates on every keystroke, and each Payment Element update
 	// re-renders the Link section, so wait until the shopper stops typing.
 	useEffect( () => {
+		const justBecameVisible = isElementVisible && ! wasVisibleRef.current;
+		wasVisibleRef.current = isElementVisible;
 		if ( ! checkoutLinkEmail ) {
 			return;
 		}
-		// Deliver the current email right away on first view; debounce later edits.
-		if ( linkEmailRef.current === undefined ) {
-			linkEmailRef.current = checkoutLinkEmail;
+		// Deliver the current email right away when the element first comes
+		// into view; debounce every other change.
+		if ( justBecameVisible ) {
 			setLinkEmail( checkoutLinkEmail );
 			return;
 		}
-		const timeout = setTimeout(
-			() => {
-				linkEmailRef.current = checkoutLinkEmail;
-				setLinkEmail( checkoutLinkEmail );
-			},
-			LINK_EMAIL_DEBOUNCE_MS
-		);
+		const timeout = setTimeout( () => {
+			setLinkEmail( checkoutLinkEmail );
+		}, LINK_EMAIL_DEBOUNCE_MS );
 		return () => clearTimeout( timeout );
-	}, [ checkoutLinkEmail ] );
+	}, [ checkoutLinkEmail, isElementVisible ] );
 
 	useEffect(
 		() =>
