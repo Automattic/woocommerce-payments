@@ -193,7 +193,7 @@ describe( 'ExpressCheckoutSettings', () => {
 		);
 
 		expect(
-			screen.queryByRole( 'heading', {
+			screen.queryByRole( 'combobox', {
 				name: 'Call to action',
 			} )
 		).not.toBeInTheDocument();
