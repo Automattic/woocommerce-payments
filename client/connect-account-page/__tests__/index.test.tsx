@@ -23,6 +23,7 @@ declare const global: {
 		onBoardingDisabled?: boolean;
 		isWooPayStoreCountryAvailable?: boolean;
 		isJetpackConnected: boolean;
+		autoStartTestDriveOnboarding?: boolean;
 		isAccountConnected?: boolean;
 		isAccountValid?: boolean;
 		accountStatus?: {
@@ -185,5 +186,41 @@ describe( 'ConnectAccountPage', () => {
 			// eslint-disable-next-line max-len
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
 		);
+	} );
+
+	describe( 'test-drive auto-start', () => {
+		afterEach( () => {
+			window.history.pushState( {}, '', '/' );
+		} );
+
+		test( 'does not auto-start from the URL parameter without the server flag', () => {
+			window.history.pushState(
+				{},
+				'',
+				'?auto_start_test_drive_onboarding=true'
+			);
+			window.fetch = jest
+				.fn()
+				.mockResolvedValue( { json: () => Promise.resolve( {} ) } );
+			global.wcpaySettings.autoStartTestDriveOnboarding = false;
+
+			render( <ConnectAccountPage /> );
+
+			expect( window.fetch ).not.toHaveBeenCalled();
+		} );
+
+		test( 'auto-starts when the server sets the flag', () => {
+			window.fetch = jest
+				.fn()
+				.mockResolvedValue( { json: () => Promise.resolve( {} ) } );
+			global.wcpaySettings.autoStartTestDriveOnboarding = true;
+
+			render( <ConnectAccountPage /> );
+
+			expect( window.fetch ).toHaveBeenCalledWith(
+				expect.stringContaining( 'test_drive=true' ),
+				expect.any( Object )
+			);
+		} );
 	} );
 } );

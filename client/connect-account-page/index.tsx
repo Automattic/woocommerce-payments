@@ -320,11 +320,11 @@ const ConnectAccountPage: React.FC = () => {
 	};
 
 	const autoStartTestDriveOnboarding = () => {
-		// If Jetpack is connected and the parameter is present in the URL,
-		// we should start onboarding Test Drive account automatically.
+		// Auto-start only when the server issued a validated token for this
+		// page load to resume test-drive setup.
 		if (
 			wcpaySettings.isJetpackConnected &&
-			urlParams.get( 'auto_start_test_drive_onboarding' )
+			wcpaySettings.autoStartTestDriveOnboarding
 		) {
 			handleSetupTestDriveMode();
 		}
@@ -337,12 +337,9 @@ const ConnectAccountPage: React.FC = () => {
 			source: determineTrackingSource(),
 		} );
 
-		// URL-parameter-triggered mount workflow: when the page loads with
-		// `?auto_start_test_drive_onboarding=…`, kick off the same async
-		// workflow as the sandbox CTA. It ultimately calls setState (via
-		// handleSetupTestDriveMode) before starting a fetch and navigating,
-		// so the rule fires even though this is a legitimate URL-triggered
-		// mount side effect with no cleaner React 18.3 primitive.
+		// handleSetupTestDriveMode calls setState during mount, which trips
+		// this rule; the flag-gated auto-start is a legitimate mount side
+		// effect with no cleaner React 18.3 primitive.
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		autoStartTestDriveOnboarding();
 

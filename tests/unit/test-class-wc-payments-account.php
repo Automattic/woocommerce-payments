@@ -110,6 +110,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		delete_transient( WC_Payments_Account::ONBOARDING_DISABLED_TRANSIENT );
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT );
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 		unset( $_GET );
 		unset( $_REQUEST );
@@ -121,6 +122,71 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_onboarding_experiment( $this->onboarding_experiment_backup );
 
 		parent::tear_down();
+	}
+
+	public function test_consume_test_drive_auto_start_token_requires_valid_one_time_token() {
+		// No flag at all: never auto-starts.
+		$this->assertFalse( $this->wcpay_account->consume_test_drive_auto_start_token() );
+
+		// The flag alone, without a server-issued token, does not auto-start.
+		$_GET['auto_start_test_drive_onboarding'] = 'true';
+		$this->assertFalse( $this->wcpay_account->consume_test_drive_auto_start_token() );
+
+		// A token that does not match the stored one does not auto-start.
+		$server_token = 'server-token';
+		set_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT, $server_token, 100 );
+		$_GET['test_drive_token'] = 'other-token';
+		$this->assertFalse( $this->wcpay_account->consume_test_drive_auto_start_token() );
+
+		// The matching token allows the auto-start, and is consumed so it only works once.
+		$_GET['test_drive_token'] = $server_token;
+		$this->assertTrue( $this->wcpay_account->consume_test_drive_auto_start_token() );
+		$this->assertFalse( $this->wcpay_account->consume_test_drive_auto_start_token() );
+	}
+
+	public function test_maybe_handle_onboarding_test_drive_auto_start_redirect_carries_matching_token() {
+		$this->set_is_admin( true );
+		wp_set_current_user( 1 );
+
+		$mock_redirect_service = $this->getMockBuilder( WC_Payments_Redirect_Service::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'redirect_to' ] )
+			->getMock();
+		$wcpay_account         = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_onboarding_service, $mock_redirect_service );
+
+		$_GET['wcpay-connect']                    = 'connect-from';
+		$_REQUEST['_wpnonce']                     = wp_create_nonce( 'wcpay-connect' );
+		$_GET['page']                             = 'wc-admin';
+		$_GET['path']                             = '/payments/some-bogus-page';
+		$_GET['test_drive']                       = 'true';
+		$_GET['auto_start_test_drive_onboarding'] = 'true';
+
+		// Working Jetpack connection, no Stripe account: reaches the auto-start redirect back to the Connect page.
+		$this->mock_jetpack_connection( true );
+
+		$captured_url = null;
+		$mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with(
+				$this->callback(
+					function ( $url ) use ( &$captured_url ) {
+						$captured_url = $url;
+						return true;
+					}
+				)
+			);
+
+		$wcpay_account->maybe_handle_onboarding();
+
+		parse_str( (string) wp_parse_url( (string) $captured_url, PHP_URL_QUERY ), $query );
+		$this->assertSame( 'true', $query['auto_start_test_drive_onboarding'] ?? null );
+		$this->assertNotEmpty( $query['test_drive_token'] ?? '' );
+		// The redirect must carry the exact token the server stored, so the Connect page can validate it.
+		$this->assertSame(
+			$query['test_drive_token'],
+			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT )
+		);
 	}
 
 	public function test_filters_registered_properly() {

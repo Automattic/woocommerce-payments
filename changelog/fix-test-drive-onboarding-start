@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Only auto-start test-drive onboarding when resuming a setup already in progress.
