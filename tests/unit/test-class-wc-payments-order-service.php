@@ -1910,7 +1910,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$wpdb->update( $wpdb->posts, [ 'post_status' => $status ], [ 'ID' => $order_id ] );
 		if ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			$wpdb->update( \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders(), [ 'status' => $status ], [ 'id' => $order_id ] );
+			$wpdb->update( $this->get_orders_table(), [ 'status' => $status ], [ 'id' => $order_id ] );
 		}
 	}
 
@@ -1925,13 +1925,27 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		global $wpdb;
 
 		if ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			$table  = \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders();
+			$table  = $this->get_orders_table();
 			$status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$table} WHERE id = %d", $order_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		} else {
 			$status = $wpdb->get_var( $wpdb->prepare( "SELECT post_status FROM {$wpdb->posts} WHERE ID = %d", $order_id ) );
 		}
 
 		return str_replace( 'wc-', '', (string) $status );
+	}
+
+	/**
+	 * Gets the HPOS orders table name.
+	 *
+	 * @return string The table name.
+	 */
+	private function get_orders_table(): string {
+		global $wpdb;
+
+		// get_table_for_orders() only exists from WooCommerce 7.9, and the plugin supports 7.6.
+		return method_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class, 'get_table_for_orders' )
+			? \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders()
+			: $wpdb->prefix . 'wc_orders';
 	}
 
 	/**
