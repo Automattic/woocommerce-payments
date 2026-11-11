@@ -149,6 +149,17 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->rate_limiter->is_limited( $order ) );
 	}
 
+	public function test_order_registry_removes_expired_rows_below_the_threshold() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() - DAY_IN_SECONDS - MINUTE_IN_SECONDS );
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() - DAY_IN_SECONDS - MINUTE_IN_SECONDS );
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() );
+		$order->save();
+
+		$this->assertFalse( $this->rate_limiter->is_limited( $order ) );
+		$this->assertCount( 1, wc_get_order( $order->get_id() )->get_meta( '_wcpay_card_declined_registry', false ) );
+	}
+
 	public function test_order_lock_blocks_a_second_attempt_until_released() {
 		$order          = WC_Helper_Order::create_order();
 		$second_attempt = new Session_Rate_Limiter( $this->key, 2, 600 );

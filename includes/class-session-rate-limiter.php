@@ -262,11 +262,22 @@ class Session_Rate_Limiter {
 	private function get_order_registry( WC_Order $order ): array {
 		$expired_before = time() - self::ORDER_REGISTRY_EXPIRY;
 		$registry       = [];
+		$has_expired    = false;
 		foreach ( $order->get_meta( $this->get_order_meta_key(), false ) as $meta ) {
 			$timestamp = (int) $meta->value;
 			if ( $timestamp > $expired_before ) {
 				$registry[] = $timestamp;
+				continue;
 			}
+
+			if ( $meta->id ) {
+				$order->delete_meta_data_by_mid( $meta->id );
+				$has_expired = true;
+			}
+		}
+
+		if ( $has_expired ) {
+			$order->save_meta_data();
 		}
 
 		return $registry;
