@@ -307,6 +307,19 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $payment_information->get_error() );
 	}
 
+	public function test_from_payment_request_with_is_woopay_and_no_order() {
+		// The add-payment-method path builds the payment information without an order.
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
+				'is_woopay'                      => '1',
+			]
+		);
+
+		$this->assertNull( $payment_information->get_order() );
+		$this->assertEquals( self::PAYMENT_METHOD, $payment_information->get_payment_method() );
+	}
+
 	public function test_from_payment_request_with_error() {
 		$payment_information = Payment_Information::from_payment_request(
 			[

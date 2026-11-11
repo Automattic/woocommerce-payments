@@ -8,6 +8,8 @@
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Status;
 
 /**
  * WC_Payments_Order_Success_Page unit tests.
@@ -283,6 +285,75 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method, true );
 
 		$this->assertFalse( $result );
+	}
+
+	/**
+	 * Builds an order marked as paid through WooPay and opens its order received page with a valid key.
+	 *
+	 * @param string $status           The order status.
+	 * @param string $intention_status WooPayments' intent status for the order; empty for none.
+	 * @return WC_Order
+	 */
+	private function open_order_received_for_woopay_order( $status, $intention_status = Intent_Status::SUCCEEDED ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( $status );
+		$order->set_total( 50 );
+		$order->add_meta_data( 'is_woopay', '1', true );
+		if ( $intention_status ) {
+			$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, $intention_status );
+		}
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
+
+		return $order;
+	}
+
+	public function test_woopay_order_skips_login_check_after_payment() {
+		$this->open_order_received_for_woopay_order( 'processing' );
+
+		$this->assertFalse( $this->payments_order_success_page->determine_woopay_order_received_verify_known_shoppers( true ) );
+	}
+
+	public function test_woopay_order_skips_login_check_when_authorized_only() {
+		// Manual capture leaves a paid WooPay order on hold.
+		$this->open_order_received_for_woopay_order( 'on-hold', Intent_Status::REQUIRES_CAPTURE );
+
+		$this->assertFalse( $this->payments_order_success_page->determine_woopay_order_received_verify_known_shoppers( true ) );
+	}
+
+	/**
+	 * An order that still needs payment keeps the login check, whichever unpaid status it holds.
+	 * All three statuses reach the guard through the same needs_payment() clause.
+	 *
+	 * @dataProvider provider_unpaid_order_statuses
+	 */
+	public function test_woopay_order_keeps_login_check_while_unpaid( string $status ) {
+		$this->open_order_received_for_woopay_order( $status );
+
+		$this->assertTrue( $this->payments_order_success_page->determine_woopay_order_received_verify_known_shoppers( true ) );
+	}
+
+	public function provider_unpaid_order_statuses(): array {
+		return [
+			'pending'        => [ 'pending' ],
+			'failed'         => [ 'failed' ],
+			'checkout-draft' => [ 'checkout-draft' ],
+		];
+	}
+
+	public function test_woopay_order_keeps_login_check_when_paid_by_another_gateway() {
+		$this->open_order_received_for_woopay_order( Order_Status::PROCESSING, '' );
+
+		$this->assertTrue( $this->payments_order_success_page->determine_woopay_order_received_verify_known_shoppers( true ) );
+	}
+
+	public function test_woopay_order_keeps_login_check_when_cancelled_after_a_declined_payment() {
+		$this->open_order_received_for_woopay_order( Order_Status::CANCELLED, Intent_Status::REQUIRES_PAYMENT_METHOD );
+
+		$this->assertTrue( $this->payments_order_success_page->determine_woopay_order_received_verify_known_shoppers( true ) );
 	}
 
 	public function test_replace_order_received_text_for_failed_orders_with_failed_status() {
