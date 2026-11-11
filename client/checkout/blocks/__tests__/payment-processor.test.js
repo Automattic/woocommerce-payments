@@ -411,18 +411,81 @@ describe( 'PaymentProcessor', () => {
 			useCustomerData.mockReturnValue( {} );
 		} );
 
-		it( 'should pass the email on the first render', () => {
+		describe( 'with an IntersectionObserver', () => {
+			let observers;
+			const originalIO = window.IntersectionObserver;
+
+			beforeEach( () => {
+				observers = [];
+				window.IntersectionObserver = jest.fn( ( callback ) => {
+					const observer = {
+						observe: jest.fn(),
+						disconnect: jest.fn(),
+						trigger: ( isIntersecting ) =>
+							callback( [ { isIntersecting } ] ),
+					};
+					observers.push( observer );
+					return observer;
+				} );
+			} );
+
+			afterEach( () => {
+				window.IntersectionObserver = originalIO;
+			} );
+
+			it( 'should withhold the email until the element is visible', () => {
+				useCustomerData.mockReturnValue( {
+					email: 'shopper@example.com',
+				} );
+
+				render( buildProcessor() );
+
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				act( () => observers[ 0 ].trigger( false ) );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				act( () => observers[ 0 ].trigger( true ) );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
+			it( 'should supply the email entered while offscreen on intersection', () => {
+				useCustomerData.mockReturnValue( {} );
+				const { rerender } = render( buildProcessor() );
+
+				useCustomerData.mockReturnValue( {
+					email: 'shopper@example.com',
+				} );
+				rerender( buildProcessor() );
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				act( () => observers[ 0 ].trigger( true ) );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
+			it( 'should disconnect the observer on unmount', () => {
+				const { unmount } = render( buildProcessor() );
+				unmount();
+				expect( observers[ 0 ].disconnect ).toHaveBeenCalled();
+			} );
+
+			it( 'should not observe for non-card payment methods', () => {
+				render( buildProcessor( 'bancontact' ) );
+				expect( observers ).toHaveLength( 0 );
+			} );
+		} );
+
+		it( 'should pass the email when IntersectionObserver is unavailable', () => {
 			useCustomerData.mockReturnValue( {
 				email: 'shopper@example.com',
 			} );
 
 			render( buildProcessor() );
 
-			expect( getStripeElementOptions ).toHaveBeenCalledWith(
-				false,
-				{},
-				'shopper@example.com'
-			);
+			expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
 		} );
 
 		it( 'should pass a new email only once the shopper stops typing', () => {

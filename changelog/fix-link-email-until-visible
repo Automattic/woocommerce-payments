@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Defer providing the checkout email to Stripe Link until the payment element is visible.

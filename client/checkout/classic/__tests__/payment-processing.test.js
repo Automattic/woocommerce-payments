@@ -471,6 +471,58 @@ describe( 'Stripe Payment Element mounting', () => {
 			expect( mockUpdateFunction ).not.toHaveBeenCalled();
 		} );
 
+		describe( 'while the element is offscreen', () => {
+			const originalIO = window.IntersectionObserver;
+			let observers;
+
+			beforeEach( async () => {
+				observers = [];
+				window.IntersectionObserver = jest.fn( ( callback ) => {
+					const observer = {
+						observe: jest.fn(),
+						disconnect: jest.fn(),
+						show: () => callback( [ { isIntersecting: true } ] ),
+					};
+					observers.push( observer );
+					return observer;
+				} );
+				__resetGatewayUPEComponentsElement( 'card' );
+				await mountStripePaymentElement(
+					apiMock,
+					mockDomElement,
+					'shortcode_checkout'
+				);
+				mockUpdateFunction.mockClear();
+			} );
+
+			afterEach( () => {
+				window.IntersectionObserver = originalIO;
+			} );
+
+			test( 'withholds the email, then delivers the current one on intersection', async () => {
+				await updateLinkEmail( setCheckoutEmail( 'first@example.com' ) );
+				expect( mockUpdateFunction ).not.toHaveBeenCalled();
+
+				setCheckoutEmail( 'latest@example.com' );
+				observers[ observers.length - 1 ].show();
+				await Promise.resolve();
+
+				expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+				expect( mockUpdateFunction ).toHaveBeenCalledWith( {
+					defaultValues: {
+						billingDetails: { email: 'latest@example.com' },
+					},
+				} );
+			} );
+
+			test( 'disconnects the previous observer when the element is recreated', async () => {
+				const first = observers[ observers.length - 1 ];
+				__resetGatewayUPEComponentsElement( 'card' );
+
+				expect( first.disconnect ).toHaveBeenCalled();
+			} );
+		} );
+
 		test( 'does not update the element for an invalid email', async () => {
 			await updateLinkEmail( setCheckoutEmail( 'shopper' ) );
 

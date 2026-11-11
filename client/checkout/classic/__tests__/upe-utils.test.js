@@ -550,6 +550,24 @@ describe( 'Classic checkout UPE utils', () => {
 				} );
 			} );
 
+			it( 'should withhold the checkout and prefilled emails until visible', () => {
+				mockLinkEnabled( true );
+				window.wcpayCustomerData = {
+					name: 'Test Person',
+					email: 'old@example.com',
+					billing_country: 'US',
+				};
+
+				const upeSettings = getUpeSettings( 'card', false );
+
+				expect( upeSettings.defaultValues ).toEqual( {
+					billingDetails: {
+						name: 'Test Person',
+						address: { country: 'US' },
+					},
+				} );
+			} );
+
 			it( 'should keep wcpayCustomerData defaults and prefer the checkout email', () => {
 				mockLinkEnabled( true );
 				window.wcpayCustomerData = {

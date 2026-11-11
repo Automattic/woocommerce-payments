@@ -108,7 +108,10 @@ function shouldIncludeTerms( paymentMethodType ) {
  * @param {string} paymentMethodType The type of payment method being configured (e.g. card, bancontact)
  * @return {Object} Settings object for Payment Elements
  */
-export const getUpeSettings = ( paymentMethodType ) => {
+export const getUpeSettings = (
+	paymentMethodType,
+	isVisible = true
+) => {
 	const upeSettings = {};
 	const showTerms = shouldIncludeTerms( paymentMethodType )
 		? 'always'
@@ -144,9 +147,18 @@ export const getUpeSettings = ( paymentMethodType ) => {
 		};
 	}
 
-	const linkEmail =
+	const isLinkCard =
 		paymentMethodType === 'card' &&
-		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) );
+
+	// Withhold any email from the Link-capable element until it is in view,
+	// otherwise Link may prompt the shopper before they can see the form.
+	if ( isLinkCard && ! isVisible && upeSettings.defaultValues ) {
+		delete upeSettings.defaultValues.billingDetails.email;
+	}
+
+	const linkEmail =
+		isLinkCard && isVisible
 			? getLinkEmail( document.querySelector( '#billing_email' )?.value )
 			: undefined;
 

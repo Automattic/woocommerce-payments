@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { observeElementVisibility } from 'wcpay/checkout/utils/element-visibility';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 import {
@@ -284,7 +285,7 @@ async function createStripePaymentElement(
 	const stripe = await api.getStripeForUPE( paymentMethodType );
 
 	const elements = stripe.elements( options );
-	const upeSettings = getUpeSettings( paymentMethodType );
+	const upeSettings = getUpeSettings( paymentMethodType, false );
 	const createdStripePaymentElement = elements.create( 'payment', {
 		...upeSettings,
 		layout: 'tabs',
@@ -304,6 +305,7 @@ async function createStripePaymentElement(
 		createdStripePaymentElement;
 	gatewayUPEComponents[ paymentMethodType ].linkEmail =
 		upeSettings.defaultValues?.billingDetails?.email;
+	gatewayUPEComponents[ paymentMethodType ].isVisible = false;
 	return createdStripePaymentElement;
 }
 
@@ -321,6 +323,33 @@ function appendSetupIntentToForm( $form, confirmedIntent ) {
 	input.value = confirmedIntent.id;
 
 	$form.append( input );
+}
+
+/**
+ * Supplies the checkout email to the card element once it first comes into view.
+ *
+ * @param {string}      paymentMethodType The payment method type of the mounted element.
+ * @param {HTMLElement} domElement        The element the Payment Element is mounted to.
+ */
+function watchLinkEmailVisibility( paymentMethodType, domElement ) {
+	const components = gatewayUPEComponents[ paymentMethodType ];
+	components.disconnectVisibility?.();
+	delete components.disconnectVisibility;
+
+	if ( paymentMethodType !== 'card' || components.isVisible ) {
+		return;
+	}
+
+	components.disconnectVisibility = observeElementVisibility(
+		domElement,
+		() => {
+			components.isVisible = true;
+			delete components.disconnectVisibility;
+			updateLinkEmail(
+				document.querySelector( '#billing_email' )?.value ?? ''
+			);
+		}
+	);
 }
 
 /**
@@ -371,6 +400,7 @@ export async function mountStripePaymentElement(
 			elementsLocation
 		) );
 	upeElement.mount( domElement );
+	watchLinkEmailVisibility( paymentMethodType, domElement );
 	upeElement.on( 'loaderror', ( e ) => {
 		// setting the flag to true to prevent the form from being submitted.
 		gatewayUPEComponents[ paymentMethodType ].hasLoadError = true;
@@ -439,6 +469,8 @@ export async function updateLinkEmail( email ) {
 	const linkEmail = getLinkEmail( email );
 	if (
 		! cardComponents?.upeElement ||
+		// Until the element is in view, the email is read again on first intersection.
+		! cardComponents.isVisible ||
 		! linkEmail ||
 		linkEmail === cardComponents.linkEmail ||
 		! isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
@@ -448,7 +480,7 @@ export async function updateLinkEmail( email ) {
 
 	cardComponents.linkEmail = linkEmail;
 	await cardComponents.upeElement.update( {
-		defaultValues: getUpeSettings( 'card' ).defaultValues,
+		defaultValues: getUpeSettings( 'card', true ).defaultValues,
 	} );
 }
 
@@ -566,8 +598,11 @@ export function __resetHasCheckoutCompleted() {
  */
 export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
 	if ( gatewayUPEComponents[ paymentMethodType ]?.upeElement ) {
+		gatewayUPEComponents[ paymentMethodType ].disconnectVisibility?.();
+		delete gatewayUPEComponents[ paymentMethodType ].disconnectVisibility;
 		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
 		delete gatewayUPEComponents[ paymentMethodType ].linkEmail;
+		delete gatewayUPEComponents[ paymentMethodType ].isVisible;
 	}
 }
 
