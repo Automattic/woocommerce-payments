@@ -25,27 +25,48 @@ add_filter( 'jetpack_sync_modules', '__return_empty_array', 999 );
 // Sandbox connections only: this keeps WooPayments in test mode whatever account is behind the connection.
 add_filter( 'wcpay_dev_mode', '__return_true' );
 
-add_filter( 'http_request_args', 'wcpay_playground_drop_headers_browsers_cannot_send', 10, 2 );
+/*
+ * Two WooPayments request headers cannot be sent from a browser Playground. There, PHP's HTTP requests
+ * are made by the browser, and WordPress.com only allows a fixed list of request headers across origins.
+ * Neither is on it, so every request carrying one fails before it leaves the browser. The server works
+ * without them.
+ */
+add_filter( 'wcpay_api_request_headers', 'wcpay_playground_drop_idempotency_key' );
+add_filter( 'http_request_args', 'wcpay_playground_drop_request_initiated_header', 10, 2 );
 add_action( 'admin_menu', 'wcpay_playground_add_connect_page' );
 add_action( 'admin_bar_menu', 'wcpay_playground_add_connect_admin_bar_node', 100 );
 add_action( 'admin_post_wcpay_playground_connect', 'wcpay_playground_handle_connect' );
 add_action( 'admin_post_wcpay_playground_disconnect', 'wcpay_playground_handle_disconnect' );
 
 /**
- * Removes the two WooPayments request headers a browser Playground cannot send.
+ * Removes the idempotency key before the API client reads its own headers.
  *
- * There, PHP's HTTP requests are made by the browser, and WordPress.com only allows a fixed list of
- * request headers across origins. These two are not on it, so every request carrying them fails
- * before it leaves the browser. The server works without them.
+ * The client only retries a request it believes is idempotent, and it decides that from this header.
+ * Removing it here, and not at the HTTP layer, also turns those retries off.
+ *
+ * @param array $headers Request headers.
+ *
+ * @return array
+ */
+function wcpay_playground_drop_idempotency_key( $headers ) {
+	if ( is_array( $headers ) ) {
+		unset( $headers['Idempotency-Key'] );
+	}
+
+	return $headers;
+}
+
+/**
+ * Removes the request timing header, which the API client adds after its header filter has run.
  *
  * @param array  $args Request arguments.
  * @param string $url  Request URL.
  *
  * @return array
  */
-function wcpay_playground_drop_headers_browsers_cannot_send( $args, $url ) {
+function wcpay_playground_drop_request_initiated_header( $args, $url ) {
 	if ( 'public-api.wordpress.com' === wp_parse_url( $url, PHP_URL_HOST ) && is_array( $args['headers'] ?? null ) ) {
-		unset( $args['headers']['Idempotency-Key'], $args['headers']['X-Request-Initiated'] );
+		unset( $args['headers']['X-Request-Initiated'] );
 	}
 
 	return $args;

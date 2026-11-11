@@ -72,7 +72,7 @@ What it cannot do:
 Three things in the plugin make this work, and should stay:
 
 - **Jetpack sync is off.** The preview shares a blog ID with the sandbox site. If it synced, WordPress.com would see a second URL for that blog and could put the sandbox site into Jetpack safe mode.
-- **Two request headers are dropped**, `Idempotency-Key` and `X-Request-Initiated`. In a browser Playground the browser makes PHP's HTTP requests, and WordPress.com does not allow those two headers across origins, so every request carrying them would fail. The server works without them.
+- **Two request headers are dropped**, `Idempotency-Key` and `X-Request-Initiated`. In a browser Playground the browser makes PHP's HTTP requests, and WordPress.com does not allow those two headers across origins, so every request carrying them would fail. The server works without them. Without an idempotency key the API client does not retry, so a request that fails in the preview fails once.
 - **A placeholder user may be created.** Jetpack only accepts a user token for the user ID it was issued to, so if the sandbox site's connection owner is not user 1, the preview creates an administrator with that ID.
 
 **Only paste a connection into a preview of a pull request you trust, and only from a sandbox site.** The plugin code in the preview comes from the pull request, so it can read what you paste. For that reason the workflow leaves this link out on pull requests from forks. The connection stays in the browser's Playground storage until it is removed or the Playground site is deleted.
