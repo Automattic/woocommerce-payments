@@ -82,7 +82,21 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 
 		$this->rate_limiter->bump( $order );
 
-		$this->assertCount( 1, wc_get_order( $order->get_id() )->get_meta( '_wcpay_card_declined_registry' ) );
+		$this->assertCount( 1, wc_get_order( $order->get_id() )->get_meta( '_wcpay_card_declined_registry', false ) );
+	}
+
+	public function test_bump_keeps_declines_saved_by_a_parallel_attempt() {
+		$order_id       = WC_Helper_Order::create_order()->get_id();
+		$first_attempt  = wc_get_order( $order_id );
+		$second_attempt = wc_get_order( $order_id );
+		$this->rate_limiter->is_limited( $first_attempt );
+		$this->rate_limiter->is_limited( $second_attempt );
+
+		$this->rate_limiter->bump( $first_attempt );
+		$this->rate_limiter->bump( $second_attempt );
+		WC()->session->set( $this->key, [] );
+
+		$this->assertTrue( $this->rate_limiter->is_limited( wc_get_order( $order_id ) ) );
 	}
 
 	public function test_order_registry_limits_the_order_in_a_new_session() {
@@ -114,11 +128,24 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 
 	public function test_order_registry_is_cleared_after_the_delay() {
 		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_wcpay_card_declined_registry', [ time() - 5000, time() - 5000 ] );
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() - 5000 );
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() - 5000 );
 		$order->save();
 
 		$this->assertFalse( $this->rate_limiter->is_limited( $order ) );
 		$this->assertSame( '', wc_get_order( $order->get_id() )->get_meta( '_wcpay_card_declined_registry' ) );
+	}
+
+	public function test_order_registry_drops_declines_older_than_a_day() {
+		$order     = WC_Helper_Order::create_order();
+		$a_day_ago = time() - DAY_IN_SECONDS - MINUTE_IN_SECONDS;
+		$order->add_meta_data( '_wcpay_card_declined_registry', $a_day_ago );
+		$order->add_meta_data( '_wcpay_card_declined_registry', $a_day_ago );
+		$order->save();
+
+		$this->rate_limiter->bump( $order );
+
+		$this->assertFalse( $this->rate_limiter->is_limited( $order ) );
 	}
 
 	public function test_disabled_option_turns_off_the_order_registry() {

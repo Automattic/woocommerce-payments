@@ -16,6 +16,7 @@ use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
@@ -1238,6 +1239,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY,
 			WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY,
 			WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY,
+			// Declines count against the order they happened on. Copied, they would limit renewals after one decline.
+			Session_Rate_Limiter::ORDER_META_KEY_DECLINED_CARD_REGISTRY,
 		];
 	}
 

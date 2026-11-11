@@ -24,6 +24,23 @@ class Session_Rate_Limiter {
 	const SESSION_KEY_DECLINED_CARD_REGISTRY = 'wcpay_card_declined_registry';
 
 	/**
+	 * Order meta key holding the card declined registry of the order being paid.
+	 *
+	 * @type string
+	 */
+	const ORDER_META_KEY_DECLINED_CARD_REGISTRY = '_' . self::SESSION_KEY_DECLINED_CARD_REGISTRY;
+
+	/**
+	 * Seconds an event stays in an order's registry.
+	 *
+	 * A session forgets its events when it expires, after two days for a guest. An order has no such end,
+	 * so without this a shopper retrying an old order could be refused for declines from days before.
+	 *
+	 * @type int
+	 */
+	const ORDER_REGISTRY_EXPIRY = DAY_IN_SECONDS;
+
+	/**
 	 * Key used to store the registry in the session
 	 *
 	 * @var string
@@ -78,11 +95,9 @@ class Session_Rate_Limiter {
 			return;
 		}
 
-		// The order keeps its own count, so attempts to pay it are counted across sessions.
-		$registry   = $order->get_meta( $this->get_order_meta_key() );
-		$registry   = is_array( $registry ) ? $registry : [];
-		$registry[] = time();
-		$order->update_meta_data( $this->get_order_meta_key(), $registry );
+		// The order keeps its own count, so attempts to pay it are counted across sessions. Each decline gets
+		// a row of its own: parallel attempts each add a row, where rewriting one list would drop the others' declines.
+		$order->add_meta_data( $this->get_order_meta_key(), (string) time() );
 		$order->save();
 	}
 
@@ -140,7 +155,7 @@ class Session_Rate_Limiter {
 	 * @return bool
 	 */
 	private function is_order_limited( WC_Order $order ): bool {
-		$registry = $order->get_meta( $this->get_order_meta_key() );
+		$registry = $this->get_order_registry( $order );
 		if ( ! $this->has_reached_threshold( $registry ) ) {
 			return false;
 		}
@@ -152,6 +167,26 @@ class Session_Rate_Limiter {
 		$order->delete_meta_data( $this->get_order_meta_key() );
 		$order->save();
 		return false;
+	}
+
+	/**
+	 * The order's registry, without events older than the expiry.
+	 *
+	 * @param WC_Order $order The order being paid.
+	 *
+	 * @return int[]
+	 */
+	private function get_order_registry( WC_Order $order ): array {
+		$expired_before = time() - self::ORDER_REGISTRY_EXPIRY;
+		$registry       = [];
+		foreach ( $order->get_meta( $this->get_order_meta_key(), false ) as $meta ) {
+			$timestamp = (int) $meta->value;
+			if ( $timestamp > $expired_before ) {
+				$registry[] = $timestamp;
+			}
+		}
+
+		return $registry;
 	}
 
 	/**
