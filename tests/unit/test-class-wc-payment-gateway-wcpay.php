@@ -5920,6 +5920,93 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $guard_note, 'Guard diagnostic note must not appear on the failure path.' );
 	}
 
+	/**
+	 * A subscription keeps the succeeded intent of an earlier card change, and nothing clears it. A later
+	 * card change that is declined must still fail and bump the failed-transaction limiter, rather than reuse
+	 * that stale succeeded status and report success. A real decline throws before a new setup intent is
+	 * attached, so the stored intent id is unchanged from before the attempt.
+	 */
+	public function test_process_payment_fails_when_declined_card_change_follows_an_earlier_succeeded_intent() {
+		$order = WC_Helper_Order::create_order();
+
+		// Stored state left by an earlier successful card change on the subscription.
+		$this->order_service->set_intent_id_for_order( $order, 'seti_earlier_change' );
+		$this->order_service->set_intention_status_for_order( $order, Intent_Status::SUCCEEDED );
+
+		$_GET['change_payment_method'] = $order->get_id();
+		WC_Subscriptions::set_wcs_is_subscription( '__return_true' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new API_Exception( 'Your card was declined.', 'card_declined', 402, 'card_error' ) );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'bump' );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		unset( $_GET['change_payment_method'] );
+		WC_Subscriptions::set_wcs_is_subscription( null );
+
+		$this->assertSame( 'fail', $result['result'] );
+	}
+
+	/**
+	 * Counterpart: the guard must still protect a genuine post-success downstream error on a subscription
+	 * card change. When this attempt attaches a new setup intent and a later hook throws, the order status is
+	 * preserved and the checkout completes as success.
+	 */
+	public function test_process_payment_preserves_success_when_subscription_card_change_attaches_new_intent_then_downstream_throws() {
+		$order = WC_Helper_Order::create_order();
+
+		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		// The subscription carries an earlier change's intent before the attempt; this attempt then attaches
+		// a new one, so the id read in the catch differs from the one captured before the try.
+		$mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturnOnConsecutiveCalls( 'seti_earlier_change', 'seti_new_change' );
+
+		$mock_order_service
+			->method( 'get_intention_status_for_order' )
+			->willReturn( Intent_Status::SUCCEEDED );
+
+		$_GET['change_payment_method'] = $order->get_id();
+		WC_Subscriptions::set_wcs_is_subscription( '__return_true' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway(
+			[ 'prepare_payment_information', 'process_payment_for_order', 'get_return_url' ],
+			[ WC_Payments_Order_Service::class => $mock_order_service ]
+		);
+
+		$mock_wcpay_gateway
+			->method( 'get_return_url' )
+			->willReturn( 'https://example.com/return' );
+
+		// The card change succeeds (new intent attached above), then a downstream hook throws.
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new Exception( 'Downstream hook failed after the card change succeeded' ) );
+
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		unset( $_GET['change_payment_method'] );
+		WC_Subscriptions::set_wcs_is_subscription( null );
+
+		$this->assertSame( 'success', $result['result'] );
+	}
+
 	public function test_process_payment_continues_if_valid_fraud_prevention_token() {
 		$order = WC_Helper_Order::create_order();
 
