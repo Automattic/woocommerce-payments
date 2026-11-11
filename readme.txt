@@ -140,10 +140,11 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 * Fix - Only use the order from a Pay for order link to pick payment methods when the link is valid.
 * Fix - Prevented payment method errors from splitting log entries or causing checkout errors.
 * Fix - Put a failed order on hold when a retried manual capture payment is authorized after 3DS and the shopper leaves before checkout finishes.
-* Fix - Recognize returning Stripe Link customers from the checkout email field.
+* Fix - Recognize returning Link customers from the checkout email field.
 * Fix - Record only shopper events from the browser's Tracks requests, and stop a batch of events once the Tracks service is unavailable.
 * Fix - Recreate the customer during a payment only when the error names the customer itself as the missing object.
 * Fix - Remove WooPayments payment details from orders paid with another payment method.
+* Fix - Rename the Link payment method display title from "Stripe Link" to "Link" to align with current branding.
 * Fix - Restore vertical spacing in Payments Overview task list rows.
 * Fix - Send Level 3 data when marking an authorized order completed captures it, so a total edited after authorization can still be captured.
 * Fix - Send shopper Tracks events in a single request per page to reduce server load.
@@ -151,7 +152,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 * Fix - Show Apple Pay, Google Pay, and Amazon Pay on the block cart and checkout when the first product is added to an empty cart, without a page reload.
 * Fix - Show Link as the payment method on the order success page and in the order title for one-off Link and 3DS card payments.
 * Fix - Show Onelink branding for UK accounts in the transaction list logo and the Link and WooPay settings notices.
-* Fix - Show Onelink consistently as the Link payment method name on UK accounts, and use Stripe Link elsewhere.
+* Fix - Show Onelink consistently as the Link payment method name on UK accounts, and use Link elsewhere.
 * Fix - Show the local currency notice to shoppers on cached pages when Multi-Currency is optimized for caching.
 * Fix - Show the real error message when saving or submitting dispute evidence fails.
 * Fix - Skip the Name Your Price multi-currency compatibility shim on Name Your Price 4.0.0+.

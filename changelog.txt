@@ -49,6 +49,7 @@
 * Fix - Record only shopper events from the browser's Tracks requests, and stop a batch of events once the Tracks service is unavailable.
 * Fix - Recreate the customer during a payment only when the error names the customer itself as the missing object.
 * Fix - Remove WooPayments payment details from orders paid with another payment method.
+* Fix - Rename the Link payment method display title from "Stripe Link" to "Link" to align with current branding.
 * Fix - Restore vertical spacing in Payments Overview task list rows.
 * Fix - Send Level 3 data when marking an authorized order completed captures it, so a total edited after authorization can still be captured.
 * Fix - Send shopper Tracks events in a single request per page to reduce server load.
