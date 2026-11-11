@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Ship a QIT-only PHPStan config in the release zip and fix docblocks that QIT's PHPStan scan flags.
