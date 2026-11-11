@@ -187,7 +187,6 @@ du -sh node_modules  # apparent size; pnpm hard links may make reclaimable space
 git worktree list    # other checkouts to inspect
 docker system df     # images, containers, volumes and build cache
 docker ps -a         # running and stopped containers
-pnpm run worktree:status  # per-worktree containers, flags orphans
 pnpm run worktree:status  # per-worktree containers; flags containers with no matching worktree
 ```
 
