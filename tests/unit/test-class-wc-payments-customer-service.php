@@ -729,15 +729,26 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			'20 characters but more than 20 bytes' => [ "+1 555\u{2011}555\u{2011}5555 x 12", "+1 555\u{2011}555\u{2011}5555 x 12" ],
 			'21 characters, fits once compacted'   => [ '+1 (555) 555-5555 #12', '+15555555555#12' ],
 			'unicode dash, fits once compacted'    => [ "+1 (555) 555\u{2011}5555 #12", '+15555555555#12' ],
+			'ext extension, fits once compacted'   => [ '+1 (919) 553-1711 ext. 1234', '+19195531711ext1234' ],
 		];
 	}
 
-	public function test_map_customer_data_leaves_out_a_phone_that_does_not_fit_the_stripe_customer_limit() {
-		$mock_order = $this->get_mock_wc_object_for_customer_data( WC_Order::class, [ 'get_billing_phone' => '555-555-5555 or 555-555-5566' ] );
+	/**
+	 * @dataProvider provider_map_customer_data_phone_that_does_not_fit
+	 */
+	public function test_map_customer_data_leaves_out_a_phone_that_does_not_fit_the_stripe_customer_limit( $billing_phone ) {
+		$mock_order = $this->get_mock_wc_object_for_customer_data( WC_Order::class, [ 'get_billing_phone' => $billing_phone ] );
 
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $mock_order );
 
 		$this->assertArrayNotHasKey( 'phone', $customer_data );
+	}
+
+	public function provider_map_customer_data_phone_that_does_not_fit(): array {
+		return [
+			'too long even when compacted'            => [ '555-555-5555 or 555-555-5566' ],
+			'two numbers that would compact into one' => [ '(555) 5555 or (555) 5566' ],
+		];
 	}
 
 	public function test_map_customer_data_adds_one_private_order_note_when_the_phone_is_left_out() {

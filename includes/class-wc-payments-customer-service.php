@@ -370,6 +370,8 @@ class WC_Payments_Customer_Service {
 	 * Returns the phone in a form Stripe accepts on a customer, or null when it can't fit.
 	 *
 	 * A phone over the limit is retried without spaces, dashes, dots and brackets, which Stripe doesn't need.
+	 * The compacted form is only used when it is still a single number with an optional extension, so that
+	 * text such as two numbers joined by "or" isn't merged into one.
 	 *
 	 * @param string $phone The billing phone.
 	 *
@@ -381,7 +383,11 @@ class WC_Payments_Customer_Service {
 		}
 
 		$compact_phone = preg_replace( '/[\s\p{Pd}.()]+/u', '', $phone );
-		if ( null !== $compact_phone && mb_strlen( $compact_phone ) <= self::STRIPE_CUSTOMER_PHONE_MAX_LENGTH ) {
+		if (
+			null !== $compact_phone
+			&& mb_strlen( $compact_phone ) <= self::STRIPE_CUSTOMER_PHONE_MAX_LENGTH
+			&& preg_match( '/^\+?\d+(?:(?:ext|x|#)\d+)?$/i', $compact_phone )
+		) {
 			return $compact_phone;
 		}
 
