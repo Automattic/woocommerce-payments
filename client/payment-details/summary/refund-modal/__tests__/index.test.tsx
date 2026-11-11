@@ -100,8 +100,8 @@ describe( 'RefundModal', () => {
 		} );
 	} );
 
-	test( 'it renders correctly', () => {
-		const { container: modal } = render(
+	test( 'it renders the refund confirmation with the amount and reasons', () => {
+		render(
 			<RefundModal
 				charge={ getMockCharge() as Charge }
 				formattedAmount={ 'USD 15' }
@@ -109,7 +109,28 @@ describe( 'RefundModal', () => {
 			/>
 		);
 
-		expect( modal ).toMatchSnapshot();
+		const modal = screen.getByRole( 'dialog', {
+			name: 'Refund transaction',
+		} );
+		expect( modal ).toHaveTextContent(
+			'This will issue a full refund of USD 15 to the customer.'
+		);
+		expect(
+			screen
+				.getAllByRole( 'radio' )
+				.map( ( radio ) => radio.getAttribute( 'value' ) )
+		).toEqual( [
+			'duplicate',
+			'fraudulent',
+			'requested_by_customer',
+			'other',
+		] );
+		expect(
+			screen.getByRole( 'button', { name: 'Cancel' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Refund transaction' } )
+		).toBeEnabled();
 	} );
 
 	test( 'offers a link to the order when orderUrl is provided', () => {
