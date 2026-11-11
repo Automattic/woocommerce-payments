@@ -1541,6 +1541,28 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringNotContainsString( 'The order total', $note_text );
 	}
 
+	public function test_held_for_review_note_warns_when_authorized_amount_is_below_order_total() {
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'   => self::AUTHORIZED_AMOUNT,
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW,
+				],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 was held for review', $note_text );
+		$this->assertStringContainsString( 'The order total, $15.00, is higher than the authorized amount', $note_text );
+	}
+
 	/**
 	 * Tests if the order is marked with the payment authorized correctly.
 	 * Public method update_order_status_from_intent calls private method mark_order_held_for_review_for_fraud.

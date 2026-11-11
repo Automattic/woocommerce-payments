@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Show the amount actually authorized in the payment authorized order note, and warn when the order total is higher than that amount.
+Show the amount actually authorized in the payment authorized and held for review order notes, and warn when the order total is higher than that amount.
