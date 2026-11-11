@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Log which filter to use when the server rejects an express checkout payment because its confirmation token and the payment disagree about saving the card.

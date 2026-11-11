@@ -146,7 +146,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * For credit cards, returns "{title} ending in {last4}".
 	 * For Amazon Pay, returns "{title} ({redacted_email})".
-	 * For Stripe Link, returns "{title} ({redacted_email})".
+	 * For Link, returns "{title} ({redacted_email})".
 	 * For other tokens, returns the default title.
 	 *
 	 * @param WC_Payment_Token|null $token   The payment token.
@@ -185,8 +185,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			// Avoid duplication if the title already contains the email.
 			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
 				// Link uses the card gateway, so $default_title is "Card". Use the Link brand name instead,
-				// which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
-				// translators: 1: payment method (Stripe Link or Onelink), 2: redacted customer email.
+				// which is country-aware ("Onelink" for GB, "Link" elsewhere).
+				// translators: 1: payment method (Link or Onelink), 2: redacted customer email.
 				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), LinkDefinition::get_title( $this->get_account_country() ), $email );
 			}
 		}
@@ -774,8 +774,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Override the payment method display for Link subscriptions in all contexts.
 	 *
-	 * Stripe Link uses the card gateway (woocommerce_payments), so the gateway title is "Card".
-	 * This replaces it with the Link token's display name (e.g. "Stripe Link (r***@r***.com)").
+	 * Link uses the card gateway (woocommerce_payments), so the gateway title is "Card".
+	 * This replaces it with the Link token's display name (e.g. "Link (r***@r***.com)").
 	 *
 	 * @param string          $payment_method_to_display Default payment method to display.
 	 * @param WC_Subscription $subscription              Subscription object.
@@ -1090,8 +1090,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				}
 				if ( ! empty( $payment_method['link']['email'] ) ) {
 					// Link uses the card gateway, so $new_payment_method_title is "Card". Use the Link brand name
-					// instead, which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
-					// translators: 1: payment method (Stripe Link or Onelink), 2: customer email.
+					// instead, which is country-aware ("Onelink" for GB, "Link" elsewhere).
+					// translators: 1: payment method (Link or Onelink), 2: customer email.
 					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), LinkDefinition::get_title( $this->get_account_country() ), $payment_method['link']['email'] );
 				}
 			} catch ( Exception $e ) {
