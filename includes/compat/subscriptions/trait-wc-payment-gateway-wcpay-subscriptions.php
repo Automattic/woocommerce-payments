@@ -600,11 +600,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// The renewal just charged this token with this customer, so they belong together. Renewals
 		// inherit the subscription's customer, so keeping a stale one would fail every later renewal.
-		$renewal_customer_id = $renewal_order->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true );
+		$renewal_customer_id = $this->order_service->get_customer_id_for_order( $renewal_order );
 		if ( ! empty( $renewal_customer_id ) ) {
-			$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, $renewal_customer_id );
-			// Meta-only change — avoid firing `woocommerce_update_order` via full save().
-			$subscription->save_meta_data();
+			$this->order_service->set_customer_id_for_order( $subscription, $renewal_customer_id );
 		}
 	}
 
