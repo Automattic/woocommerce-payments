@@ -217,7 +217,7 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 			remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
 		}
 
-		$this->assertStringContainsString( 'alt="Stripe Link"', $result );
+		$this->assertStringContainsString( 'alt="Link"', $result );
 	}
 
 	public function test_show_lpm_payment_method_name() {
