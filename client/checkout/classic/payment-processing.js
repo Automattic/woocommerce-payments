@@ -262,7 +262,14 @@ async function createStripePaymentElement(
 	paymentMethodType,
 	elementsLocation
 ) {
-	const amount = Number( getUPEConfig( 'cartTotal' ) );
+	// The Add payment method page saves a card for later and charges nothing,
+	// so the cart total it is served along with every other page is not an
+	// amount this element should carry.
+	// https://github.com/Automattic/woocommerce-payments/issues/12358
+	const amount =
+		elementsLocation === 'add_payment_method'
+			? 0
+			: Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
 	const appearance = initializeAppearance( elementsLocation );
 	document
