@@ -162,6 +162,7 @@ describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', 
 describe( 'WooPay direct checkout cart item listeners', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 	} );
 
 	it( 'should not prefetch encrypted session data on add item if third-party cookies are not enabled', async () => {
