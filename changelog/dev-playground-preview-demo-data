@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add a demo-data option to the WordPress Playground PR preview, which shows a connected-looking store from fixture responses.

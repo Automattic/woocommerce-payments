@@ -1,0 +1,19 @@
+{
+	"count": 8,
+	"total": 30140,
+	"fees": 2760,
+	"net": 27380,
+	"currency": "usd",
+	"store_currencies": [
+		"usd"
+	],
+	"customer_currencies": [
+		"usd",
+		"eur"
+	],
+	"sources": [
+		"visa",
+		"mastercard",
+		"amex"
+	]
+}
