@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Fix small QIT PHPStan errors that do not change behavior.
+Comment: fix small QIT PHPStan errors that do not change behavior.
