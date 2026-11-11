@@ -2,11 +2,11 @@
  * Internal dependencies
  */
 import sift from './sift';
-import stripe from './stripe';
+import { ensureStripeJsScript } from 'wcpay/utils/stripe-js';
 
 const services = {
 	sift,
-	stripe,
+	stripe: ensureStripeJsScript,
 };
 
 export default ( config ) => {

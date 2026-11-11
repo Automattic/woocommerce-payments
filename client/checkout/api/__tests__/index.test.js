@@ -56,6 +56,62 @@ describe( 'WCPayAPI', () => {
 		} );
 	} );
 
+	describe( '__getStripe betas', () => {
+		const PUBLISHABLE_KEY = 'pk_test_123';
+
+		beforeEach( () => {
+			window.Stripe = jest.fn();
+			window.Stripe.version = 3;
+		} );
+
+		afterEach( () => {
+			window.Stripe = undefined;
+		} );
+
+		test( 'adds the Link autofill beta on v3', () => {
+			const api = new WCPayAPI(
+				{
+					publishableKey: PUBLISHABLE_KEY,
+					isStripeLinkEnabled: true,
+				},
+				request
+			);
+
+			api.__getStripe();
+
+			expect( window.Stripe ).toHaveBeenCalledWith( 'pk_test_123', {
+				locale: undefined,
+				developerTools: { assistant: { enabled: false } },
+				betas: [
+					'card_country_event_beta_1',
+					'link_autofill_modal_beta_1',
+				],
+			} );
+		} );
+
+		test.each( [ 'dahlia', 'clover' ] )(
+			'leaves out the Link autofill beta on %s',
+			( release ) => {
+				window.Stripe.version = release;
+				const api = new WCPayAPI(
+					{
+						publishableKey: PUBLISHABLE_KEY,
+						isStripeLinkEnabled: true,
+					},
+					request
+				);
+
+				api.__getStripe();
+
+				expect( window.Stripe ).toHaveBeenCalledWith( 'pk_test_123', {
+					locale: undefined,
+					developerTools: { assistant: { enabled: false } },
+					betas: [ 'card_country_event_beta_1' ],
+				} );
+			}
+		);
+	} );
+
 	describe( 'confirmIntent', () => {
 		const payForOrderUrls = [
 			'/checkout/order-pay/456/#wcpay-confirm-pi:123:secret:nonce',

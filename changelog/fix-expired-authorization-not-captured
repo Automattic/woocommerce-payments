@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fail manual capture orders when their authorization expires, even if the order is missing its charge ID, and add a note when completing an order captures nothing.

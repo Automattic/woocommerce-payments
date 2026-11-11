@@ -1645,7 +1645,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$query = $this->wcpay_gateway->update_renewal_meta_data( 'WHERE post_id = 1', null, null );
 
 		$this->assertSame(
-			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net', '_wcpay_payment_details_removed', '_wcpay_superseded_intent_ids')",
+			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net', '_wcpay_payment_details_removed', '_wcpay_superseded_intent_ids', '_wcpay_superseded_payment_succeeded')",
 			$query
 		);
 	}

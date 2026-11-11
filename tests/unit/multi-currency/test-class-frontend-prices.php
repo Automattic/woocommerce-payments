@@ -686,6 +686,49 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * The enabled currency carries the merchant's manual rate, while the available one only has the
+	 * automatic rate. A coupon re-applied to an order must convert at the rate the shopper paid with.
+	 */
+	public function test_get_coupon_amount_converts_coupon_reapplied_to_order_with_the_manual_rate() {
+		$usd            = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR );
+		$automatic_eur  = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::EURO, 0.88 );
+		$manual_eur     = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::EURO, 0.9 );
+		$coupon_amount  = '1.37';
+		$order_currency = Currency_Code::EURO;
+
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $usd );
+		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn(
+			[
+				'USD' => $usd,
+				'EUR' => $automatic_eur,
+			]
+		);
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn(
+			[
+				'USD' => $usd,
+				'EUR' => $manual_eur,
+			]
+		);
+		$this->mock_multi_currency->method( 'get_price' )->willReturnCallback(
+			function ( $price, $type, $currency = null ) {
+				return round( (float) $price * $currency->get_rate(), 2 );
+			}
+		);
+		$this->mock_compatibility->method( 'should_convert_coupon_amount' )->willReturn( true );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( $order_currency );
+
+		$coupon = new WC_Coupon();
+		$coupon->set_discount_type( 'fixed_cart' );
+
+		$this->frontend_prices->set_order_coupon( $coupon, 'code', new WC_Order_Item_Coupon(), $order );
+
+		// 1.37 USD at the manual 0.9 is 1.23 EUR; the automatic 0.88 would give 1.21 EUR.
+		$this->assertSame( 1.23, $this->frontend_prices->get_coupon_amount( $coupon_amount, $coupon ) );
+	}
+
 	public function test_get_coupon_amount_does_not_convert_coupon_rebuilt_from_the_order() {
 		$this->mock_multi_currency->method( 'get_available_currencies' )->willReturn( [ 'JPY' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'JPY', 150 ) ] );
 		$this->mock_multi_currency->expects( $this->never() )->method( 'get_price' );

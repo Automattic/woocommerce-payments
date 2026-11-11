@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Only add payment methods from My Account while WooPayments and saved cards are enabled.
