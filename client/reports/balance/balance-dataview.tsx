@@ -84,7 +84,7 @@ interface BalanceDataViewProps {
 		next: DateFilterValue | undefined,
 		referenceDate?: Date
 	) => void;
-	focusTargetRef?: React.RefObject< HTMLDivElement >;
+	focusTargetRef?: React.RefObject< HTMLDivElement | null >;
 	dateFilterNow?: Date;
 	// Render as a non-interactive preview (the loading skeleton): hide the
 	// native date Filters and mark the whole view aria-hidden so the blurred

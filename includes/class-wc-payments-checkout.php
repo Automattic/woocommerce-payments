@@ -117,19 +117,7 @@ class WC_Payments_Checkout {
 		if ( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
 			return;
 		}
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
+		WC_Payments_Utils::register_stripe_js();
 
 		$script_dependencies = [ 'stripe', 'wc-checkout', 'wp-i18n' ];
 
@@ -249,6 +237,7 @@ class WC_Payments_Checkout {
 			'initWooPayNonce'                   => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
 			'genericErrorMessage'               => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'                     => $this->fraud_service->get_fraud_services_config(),
+			'stripeJsUrl'                       => WC_Payments_Utils::get_stripe_js_url(),
 			'features'                          => $this->gateway->supports,
 			'forceNetworkSavedCards'            => WC_Payments::is_network_saved_cards_enabled() || $gateway->should_use_stripe_platform_on_checkout_page(),
 			'locale'                            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
@@ -376,7 +365,7 @@ class WC_Payments_Checkout {
 		}
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
-			// Link by Stripe should be validated with available fees.
+			// Link should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {
 				if ( ! in_array( Payment_Method::LINK, array_keys( $this->account->get_fees() ), true ) ) {
 					continue;

@@ -281,18 +281,18 @@ class Payment_Information {
 		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
 		$fingerprint      = self::get_fingerprint_from_request( $request );
 
-		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
-			$order->add_meta_data( 'is_woopay', true, true );
-			$order->save_meta_data();
-		}
 		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
 
 		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {
-			$error_message = empty( $request['wcpay-payment-method-error-message'] )
-				? __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' )
-				: $request['wcpay-payment-method-error-message'];
-			$error_code    = empty( $request['wcpay-payment-method-error-code'] ) ? 'unknown-error' : $request['wcpay-payment-method-error-code'];
-			$error         = new \WP_Error( $error_code, $error_message );
+			$error_message = wc_clean( $request['wcpay-payment-method-error-message'] ?? '' );
+			if ( empty( $error_message ) || ! is_string( $error_message ) ) {
+				$error_message = __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
+			}
+			$error_code = wc_clean( $request['wcpay-payment-method-error-code'] ?? '' );
+			if ( empty( $error_code ) || ! is_string( $error_code ) ) {
+				$error_code = 'unknown-error';
+			}
+			$error = new \WP_Error( $error_code, $error_message );
 			$payment_information->set_error( $error );
 		}
 

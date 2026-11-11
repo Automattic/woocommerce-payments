@@ -150,7 +150,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'jetpack_site_disconnected', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
+		// If the fetch fails, the store keeps its saved account data and stays connected.
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'refresh_cache' ] );
 		// Hook into the recurring store setup sync action and do the store setup sync.
 		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
 		// Also do a store setup sync when the client is updated to a new version.
@@ -162,6 +163,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	public function clear_cache() {
 		$this->database_cache->delete( Database_Cache::ACCOUNT_KEY );
+	}
+
+	/**
+	 * Re-fetches the account data from WP.com, keeping the saved data if the fetch fails.
+	 */
+	public function refresh_cache(): void {
+		$this->refresh_account_data();
 	}
 
 	/**
@@ -2244,7 +2252,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		if ( get_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) ) {
 			$gateway = WC_Payments::get_gateway();
 
-			// WooPay and Link by Stripe are mutually exclusive. When a merchant already opted into Link
+			// WooPay and Link are mutually exclusive. When a merchant already opted into Link
 			// (e.g. in sandbox before going live), Link wins: the enable-by-default activation keeps WooPay
 			// off rather than overriding that choice. See #9404.
 			$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $gateway->get_upe_enabled_payment_method_ids(), true );

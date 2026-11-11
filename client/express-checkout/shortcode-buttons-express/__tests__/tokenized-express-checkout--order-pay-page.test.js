@@ -34,7 +34,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 						status: 'pending',
 						items: [
 							{
-								key: 'wc_order_fAk3nUmB3R',
+								key: 'wc_order_fAk3nUmB3R', // gitleaks:allow
 								id: 1,
 								quantity: 2,
 								name: 'Cap',
@@ -73,7 +73,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 								},
 							},
 							{
-								key: 'wc_order_fAk3nUmB3R',
+								key: 'wc_order_fAk3nUmB3R', // gitleaks:allow
 								id: 2,
 								quantity: 1,
 								name: 'T-Shirt',
@@ -200,7 +200,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 
 		global.wcpayConfig = {
 			order_id: 999,
-			key: 'wc_order_fAk3nUmB3R',
+			key: 'wc_order_fAk3nUmB3R', // gitleaks:allow
 			billing_email: 'cheese@toast.com',
 		};
 		global.wcpayExpressCheckoutParams = {};

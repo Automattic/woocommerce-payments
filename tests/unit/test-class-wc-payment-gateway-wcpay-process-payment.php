@@ -231,6 +231,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 		WC()->session->set( 'wc_notices', [] );
 		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY, null );
 		wcpay_get_test_container()->reset_all_replacements();
 		WC_Payments::mode()->live();
 
@@ -359,6 +360,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Assert: The paid intent id is remembered in the session for the order confirmation page.
 		$this->assertSame( 'pi_mock', WC()->session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY ) );
+		$this->assertSame( WC()->session->get_customer_id(), WC()->session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY ) );
 	}
 
 	/**
@@ -1691,7 +1693,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function zero_amount_saved_link_title_provider() {
 		return [
 			'GB account' => [ 'GB', 'Onelink' ],
-			'US account' => [ 'US', 'Stripe Link' ],
+			'US account' => [ 'US', 'Link' ],
 		];
 	}
 
@@ -2162,86 +2164,68 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'success', $result['result'] );
 	}
 
-	public function test_process_payment_from_woopay_adds_meta_to_oder() {
-		// Arrange: Set request value to mimic a payment through WooPay.
-		$_POST['is_woopay'] = true;
-
-		// Arrange: Create an order to test with.
-		$mock_order = $this->createMock( 'WC_Order' );
-
-		// Arrange: Set a good return value for the order's data store.
-		$mock_order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
-
-		// Arrange: Set a good return value for order ID.
-		$mock_order
-			->method( 'get_id' )
-			->willReturn( 123 );
-
-		// Arrange: Set a good return value for order total.
-		$mock_order
-			->method( 'get_total' )
-			->willReturn( 100 );
-
-		// Arrange: Set a WP_User object as a return value of order's get_user.
-		$mock_order
-			->method( 'get_user' )
-			->willReturn( wp_get_current_user() );
-
-		$mock_order
-			->method( 'get_order_number' )
-			->willReturn( 'order_number_1' );
-
-		// Arrange: Create a mock cart.
-		$mock_cart = $this->createMock( 'WC_Cart' );
-
-		// Assert: Order gets the 'is_woopay' meta data added.
-		$mock_order
-			->expects( $this->any() )
-			->method( 'add_meta_data' )
-			->with( 'is_woopay', true );
-
-		// Arrange: Return a successful response from create_and_confirm_intention().
-		$intent = WC_Helper_Intention::create_intention();
-
+	/**
+	 * Arranges the next payment attempt to return a successful intent.
+	 */
+	private function mock_successful_card_payment(): void {
 		$this->mock_customer_service
-			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->will( $this->returnValue( 'cus_12345' ) );
-		// Assert: API is called with additional flag.
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $intent );
+			->willReturn( WC_Helper_Intention::create_intention() );
+	}
 
-		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+	public function test_process_payment_marks_order_as_woopay_when_woopay_signed_the_request() {
+		// Arrange: WooPay signed the request and flagged it as its own.
+		$this->simulate_request_signed_by_woopay();
+		$_POST['is_woopay'] = '1';
+		$order              = WC_Helper_Order::create_order();
+		$this->mock_successful_card_payment();
 
-		$charge_request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( [ 'id' => 'ch_mock' ] );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// Act.
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 
-		// Act: process a successful payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		// Assert.
+		$this->assertSame( '1', wc_get_order( $order->get_id() )->get_meta( 'is_woopay' ) );
+	}
 
-		// Assert: Returning correct array.
-		$this->assertEquals( 'success', $result['result'] );
+	public function test_process_payment_ignores_is_woopay_without_proof_from_woopay() {
+		// Arrange: the field is present but the request carries no WooPay proof.
+		$_POST['is_woopay'] = '1';
+		$order              = WC_Helper_Order::create_order();
+		$this->mock_successful_card_payment();
+
+		// Act.
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Assert.
+		$this->assertFalse( wc_get_order( $order->get_id() )->meta_exists( 'is_woopay' ) );
+	}
+
+	public function test_process_payment_clears_is_woopay_on_an_attempt_not_made_through_woopay() {
+		// Arrange: An earlier attempt left the flag on an order that is still unpaid.
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( 'is_woopay', '1', true );
+		$order->save();
+		$this->mock_successful_card_payment();
+
+		// Act: Pay it by card.
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Assert.
+		$this->assertFalse( wc_get_order( $order->get_id() )->meta_exists( 'is_woopay' ) );
 	}
 
 	public function test_process_payment_for_subscription_from_woopay_does_not_save_token_if_exists() {
 		$subscription_payment_method_id = 'pm_subscription_mock';
 
-		// Arrange: Set request value to mimic a payment through WooPay.
-		$_POST['is_woopay'] = true;
-
-		// Arrange: Create an order to test with.
+		// Arrange: these call process_payment_for_order() directly, so set the WooPay flag the gateway would have set.
 		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( 'is_woopay', '1', true );
+		$order->save();
 
 		// Arrange: Make the order contain a subscription.
 		$this->mock_wcs_order_contains_subscription( true );
@@ -2284,11 +2268,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_process_payment_for_subscription_from_woopay_save_token_if_does_not_exist() {
-		// Arrange: Set request value to mimic a payment through WooPay.
-		$_POST['is_woopay'] = true;
-
-		// Arrange: Create an order to test with.
+		// Arrange: these call process_payment_for_order() directly, so set the WooPay flag the gateway would have set.
 		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( 'is_woopay', '1', true );
+		$order->save();
 
 		// Arrange: Make the order contain a subscription.
 		$this->mock_wcs_order_contains_subscription( true );

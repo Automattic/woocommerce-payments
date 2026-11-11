@@ -235,12 +235,6 @@ parameters:
 			path: includes/class-payment-information.php
 
 		-
-			rawMessage: 'Parameter #2 $value of method WC_Data::add_meta_data() expects array|string, true given.'
-			identifier: argument.type
-			count: 1
-			path: includes/class-payment-information.php
-
-		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
 			count: 2
@@ -316,12 +310,6 @@ parameters:
 			rawMessage: Expression on left side of ?? is not nullable.
 			identifier: nullCoalesce.expr
 			count: 2
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: If condition is always true.
-			identifier: if.alwaysTrue
-			count: 1
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
@@ -579,7 +567,7 @@ parameters:
 		-
 			rawMessage: Ternary operator condition is always true.
 			identifier: ternary.alwaysTrue
-			count: 2
+			count: 1
 			path: includes/class-wc-payments-customer-service.php
 
 		-
@@ -693,7 +681,7 @@ parameters:
 		-
 			rawMessage: 'Strict comparison using !== between null and WC_Order will always evaluate to true.'
 			identifier: notIdentical.alwaysTrue
-			count: 2
+			count: 1
 			path: includes/class-wc-payments-order-service.php
 
 		-
@@ -1521,7 +1509,7 @@ parameters:
 		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
-			count: 1
+			count: 4
 			path: includes/multi-currency/Compatibility/WooCommerceSubscriptions.php
 
 		-
@@ -1641,7 +1629,7 @@ parameters:
 		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
-			count: 2
+			count: 5
 			path: includes/multi-currency/MultiCurrency.php
 
 		-

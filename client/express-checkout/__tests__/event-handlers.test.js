@@ -821,7 +821,7 @@ describe( 'Express checkout event handlers', () => {
 					Promise.resolve( {
 						order_id: 1111111,
 						status: 'failed',
-						order_key: 'wc_order_f41lur3',
+						order_key: 'wc_order_f41lur3', // gitleaks:allow
 						order_number: '1111111',
 						customer_note: '',
 						customer_id: 1,

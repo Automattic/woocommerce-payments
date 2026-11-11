@@ -181,6 +181,123 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 		( global.confirm as jest.Mock ).mockReturnValue( true );
 	} );
 
+	describe( 'purchase IP evidence', () => {
+		it.each( [ '203.0.113.5', '2001:db8::1' ] )(
+			'includes the order IP %s on save and submit',
+			async ( ipAddress ) => {
+				const updateDispute = jest.fn();
+				mockUseDisputeEvidence.mockReturnValue( { updateDispute } );
+				mockApiFetch.mockResolvedValue( {
+					...baseDispute,
+					order: { ...baseDispute.order, ip_address: ipAddress },
+				} );
+				render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
+
+				fireEvent.click(
+					await screen.findByRole( 'button', {
+						name: 'Save for later',
+					} )
+				);
+				await waitFor( () =>
+					expect( updateDispute ).toHaveBeenCalledTimes( 1 )
+				);
+				fireEvent.click(
+					screen.getByRole( 'button', { name: 'Submit' } )
+				);
+				await waitFor( () =>
+					expect( updateDispute ).toHaveBeenCalledTimes( 2 )
+				);
+
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							submit: false,
+							evidence: expect.objectContaining( {
+								customer_purchase_ip: ipAddress,
+							} ),
+						} ),
+					} )
+				);
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							submit: true,
+							evidence: expect.objectContaining( {
+								customer_purchase_ip: ipAddress,
+							} ),
+						} ),
+					} )
+				);
+			}
+		);
+
+		it.each( [
+			[
+				'empty order IP',
+				{ ...baseDispute.order, ip_address: '' },
+				undefined,
+			],
+			[ 'missing order', undefined, undefined ],
+			[
+				'saved valid evidence',
+				{ ...baseDispute.order, ip_address: '' },
+				'203.0.113.9',
+			],
+			[
+				'saved malformed evidence',
+				{ ...baseDispute.order, ip_address: '' },
+				'not an IP address',
+			],
+		] )(
+			'omits the automatic IP for %s on save and submit',
+			async ( label, order, savedIP ) => {
+				const updateDispute = jest.fn();
+				mockUseDisputeEvidence.mockReturnValue( { updateDispute } );
+				mockApiFetch.mockResolvedValue( {
+					...baseDispute,
+					order,
+					evidence: {
+						receipt: 'file_receipt',
+						customer_purchase_ip: savedIP,
+					},
+				} );
+				render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
+
+				fireEvent.click(
+					await screen.findByRole( 'button', {
+						name: 'Save for later',
+					} )
+				);
+				await waitFor( () =>
+					expect( updateDispute ).toHaveBeenCalledTimes( 1 )
+				);
+				fireEvent.click(
+					screen.getByRole( 'button', { name: 'Submit' } )
+				);
+				await waitFor( () =>
+					expect( updateDispute ).toHaveBeenCalledTimes( 2 )
+				);
+
+				const posts = mockApiFetch.mock.calls.filter(
+					( [ request ] ) => request.method === 'post'
+				);
+				expect( posts ).toHaveLength( 2 );
+				expect( posts[ 0 ][ 0 ].data.submit ).toBe( false );
+				expect( posts[ 1 ][ 0 ].data.submit ).toBe( true );
+				for ( const [ request ] of posts ) {
+					expect( request.data.evidence ).not.toHaveProperty(
+						'customer_purchase_ip'
+					);
+					expect( request.data.evidence.receipt ).toBe(
+						'file_receipt'
+					);
+				}
+			}
+		);
+	} );
+
 	describe( 'Visa Compliance dispute detection', () => {
 		it( 'should detect Visa Compliance dispute by noncompliant reason', () => {
 			const dispute = {
