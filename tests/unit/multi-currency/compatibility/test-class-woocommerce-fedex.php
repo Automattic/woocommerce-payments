@@ -9,6 +9,14 @@ use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
+// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound -- The carrier stub below.
+// phpcs:disable Squiz.Commenting.ClassComment
+if ( ! class_exists( 'WC_Shipping_Fedex' ) ) {
+	// The FedEx shipping extension is not loaded in unit tests; this stub is the subject FedEx passes to shipping.rates.
+	class WC_Shipping_Fedex {}
+}
+// phpcs:enable Squiz.Commenting.ClassComment
+
 /**
  * WCPay\MultiCurrency\Compatibility\WooCommerceFedEx unit tests.
  */
@@ -36,20 +44,6 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 	private $woocommerce_fedex;
 
 	/**
-	 * Calls to check in the backtrace.
-	 *
-	 * @var array
-	 */
-	private $woocommerce_fedex_calls = [
-		'WC_Shipping_Fedex->set_settings',
-		'WC_Shipping_Fedex->per_item_shipping',
-		'WC_Shipping_Fedex->box_shipping',
-		'WC_Shipping_Fedex->get_fedex_api_request',
-		'WC_Shipping_Fedex->get_fedex_requests',
-		'WC_Shipping_Fedex->process_result',
-	];
-
-	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -62,7 +56,7 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 
 	// If true is passed, it should automatically return true.
 	public function test_should_return_store_currency_returns_true_if_true_passed() {
-		$this->mock_utils->expects( $this->exactly( 0 ) )->method( 'is_call_in_backtrace' );
+		$this->mock_utils->expects( $this->exactly( 0 ) )->method( 'is_in_shipping_method_rates' );
 		$this->assertTrue( $this->woocommerce_fedex->should_return_store_currency( true ) );
 	}
 
@@ -70,8 +64,8 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 	public function test_should_return_store_currency_returns_true_if_calls_found() {
 		$this->mock_utils
 			->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with( $this->woocommerce_fedex_calls )
+			->method( 'is_in_shipping_method_rates' )
+			->with( 'WC_Shipping_Fedex' )
 			->willReturn( true );
 
 		$this->assertTrue( $this->woocommerce_fedex->should_return_store_currency( false ) );
@@ -81,8 +75,8 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 	public function test_should_return_store_currency_returns_false_if_no_calls_found() {
 		$this->mock_utils
 			->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with( $this->woocommerce_fedex_calls )
+			->method( 'is_in_shipping_method_rates' )
+			->with( 'WC_Shipping_Fedex' )
 			->willReturn( false );
 
 		$this->assertFalse( $this->woocommerce_fedex->should_return_store_currency( false ) );
@@ -92,8 +86,8 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 	public function test_should_convert_product_price_returns_true_if_true_passed_and_no_calls_found() {
 		$this->mock_utils
 			->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with( $this->woocommerce_fedex_calls )
+			->method( 'is_in_shipping_method_rates' )
+			->with( 'WC_Shipping_Fedex' )
 			->willReturn( false );
 
 		$this->assertTrue( $this->woocommerce_fedex->should_convert_product_price( true ) );
@@ -103,10 +97,41 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 	public function test_should_convert_product_price_returns_false_if_calls_found() {
 		$this->mock_utils
 			->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with( $this->woocommerce_fedex_calls )
+			->method( 'is_in_shipping_method_rates' )
+			->with( 'WC_Shipping_Fedex' )
 			->willReturn( true );
 
 		$this->assertFalse( $this->woocommerce_fedex->should_convert_product_price( true ) );
+	}
+
+	/**
+	 * FedEx's store-currency rule applies only to FedEx rate calculation, not to other rates or operations.
+	 *
+	 * @dataProvider fedex_operation_provider
+	 */
+	public function test_fedex_rules_apply_only_to_fedex_rate_calculation( $operation, $subject, $is_fedex_rates ) {
+		$woocommerce_fedex = new WooCommerceFedEx( $this->mock_multi_currency, new Utils() );
+
+		[ $store_currency, $convert ] = \Automattic\WooCommerce\Currency\ActiveCurrency::run(
+			'',
+			fn() => [
+				$woocommerce_fedex->should_return_store_currency( false ),
+				$woocommerce_fedex->should_convert_product_price( true ),
+			],
+			$operation,
+			$subject
+		);
+
+		$this->assertSame( $is_fedex_rates, $store_currency );
+		$this->assertSame( ! $is_fedex_rates, $convert );
+	}
+
+	public function fedex_operation_provider() {
+		return [
+			'fedex rates'                => [ 'shipping.rates', new WC_Shipping_Fedex(), true ],
+			'rates of another method'    => [ 'shipping.rates', new \stdClass(), false ],
+			'fedex in another operation' => [ 'cart.calculate_totals', new WC_Shipping_Fedex(), false ],
+			'no operation'               => [ null, new WC_Shipping_Fedex(), false ],
+		];
 	}
 }

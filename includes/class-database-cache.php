@@ -472,7 +472,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				}
 				break;
 			case self::CURRENCIES_KEY:
-				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
+				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_rest_request() ) {
 					// Fetches triggered from the admin panel should be more frequent.
 					if ( $errored ) {
 						// Progressive backoff on repeated errors (2/5/10/15 min).

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use Automattic\WooCommerce\Currency\ActiveCurrency;
 use WCPay\Constants\Order_Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -16,6 +17,11 @@ use WCPay\Logger;
  * Subscriptions logic for WCPay Subscriptions
  */
 class WC_Payments_Subscription_Service {
+	/**
+	 * Operation announced while the recurring item data of a subscription is built.
+	 */
+	const OPERATION_RECURRING_ITEM_DATA = 'woocommerce-payments.recurring_item_data';
+
 
 	use WC_Payments_Subscriptions_Utilities;
 
@@ -875,6 +881,11 @@ class WC_Payments_Subscription_Service {
 	 * @return array WCPay recurring item data.
 	 */
 	public function get_recurring_item_data_for_subscription( WC_Subscription $subscription ): array {
+		// Announces the operation, so Multi-Currency can tell these reads apart from cart prices. The scope ends with the method.
+		$currency_scope = class_exists( ActiveCurrency::class ) // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Held until the method returns. && method_exists( ActiveCurrency::class, 'scope' )
+			? ActiveCurrency::scope( '', self::OPERATION_RECURRING_ITEM_DATA, $subscription )
+			: null;
+
 		$data = [];
 
 		foreach ( $subscription->get_items() as $item ) {

@@ -7,16 +7,23 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
+use Automattic\WooCommerce\Currency\ActiveCurrency;
 use WC_Order;
 use WC_Subscription;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Subscriptions Plugin and WCPay Subscriptions.
  */
 class WooCommerceSubscriptions extends BaseCompatibility {
+	/**
+	 * Operation WooPayments announces while it builds the recurring item data of a subscription.
+	 */
+	const OPERATION_RECURRING_ITEM_DATA = 'woocommerce-payments.recurring_item_data';
+
 
 	/**
 	 * Subscription cart item types whose currency comes from the subscription in the cart item's `subscription_id`.
@@ -84,7 +91,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	public function init() {
 		// Add needed actions and filters if WC Subscriptions or WCPay Subscriptions are active.
 		if ( class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Payments_Subscriptions' ) ) {
-			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+			if ( \WCPay\MultiCurrency\Utils::is_non_admin_request() ) {
 				$this->frontend_currencies = $this->multi_currency->get_frontend_currencies();
 
 				add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
@@ -156,7 +163,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 				// Check to see if it's currently determining prorated prices.
 				if ( $this->utils->is_call_in_backtrace( [ 'WC_Subscriptions_Product::get_sign_up_fee' ] )
-					&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
+					&& ActiveCurrency::is_in_operation( 'cart.calculate_totals' )
 					&& $item['key'] === $switch_cart_item
 					&& ! $this->utils->is_call_in_backtrace( [ 'WCS_Switch_Totals_Calculator->apportion_sign_up_fees' ] ) ) {
 						return $price;
@@ -250,13 +257,6 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $should_convert;
 		}
 
-		$calls = [
-			'WC_Cart_Totals->calculate_item_totals',
-			'WC_Cart->get_product_subtotal',
-			'wc_get_price_excluding_tax',
-			'wc_get_price_including_tax',
-		];
-
 		// Check for renewal. Only the renewal's own product has its price set from the order; any other product in the cart still needs to be converted.
 		if ( $this->get_subscription_type_from_cart( 'renewal', $product ) ) {
 			// When WCPay Subs programmatically sets up the cart, we need to return the
@@ -265,24 +265,33 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				return $should_convert;
 			}
 
-			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
+			if ( $this->is_pricing_cart_product() ) {
 				return false;
 			}
 		}
 
 		// Check for resubscribe. As with renewals, only the resubscribe item's own product keeps its unconverted price.
 		if ( $this->get_subscription_type_from_cart( 'resubscribe', $product )
-			&& $this->utils->is_call_in_backtrace( $calls ) ) {
+			&& $this->is_pricing_cart_product() ) {
 			return false;
 		}
 
 		// WCPay Subs does a check against the product price and the total, we need to return the actual product price for this check.
-		if ( $this->utils->is_call_in_backtrace( [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] )
-			&& $this->utils->is_call_in_backtrace( [ 'WC_Product->get_price' ] ) ) {
+		// Inside the operation, any price read is one of these checks.
+		if ( ActiveCurrency::is_in_operation( self::OPERATION_RECURRING_ITEM_DATA ) ) {
 			return false;
 		}
 
 		return $should_convert;
+	}
+
+	/**
+	 * Whether the cart is pricing a product: WooCommerce's cart totals or its cart price display, as announced by core operations.
+	 */
+	private function is_pricing_cart_product(): bool {
+		return ActiveCurrency::is_in_operation( 'cart.calculate_totals' )
+			|| ActiveCurrency::is_in_operation( 'cart.product_subtotal' )
+			|| ActiveCurrency::is_in_operation( 'product.price_for_display' );
 	}
 
 	/**
@@ -388,7 +397,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * Maybe sets the current_my_account_subscription var and clears the FrontendCurrencies cache.
 	 *
 	 * The my-subscriptions.php template file calls $subscription->get_formatted_order_total(), which then calls $subscription->get_price_string_details().
-	 * At that point in time, if we have certain calls in the backtrace, we need to add the subscription into $current_my_account_subscription so that we
+	 * At that point in time, if WooCommerce is running the my-subscriptions operation, we need to add the subscription into $current_my_account_subscription so that we
 	 * are able to use it later on in the maybe_get_explicit_format_for_subscription_total filter.
 	 *
 	 * @param array           $subscription_details The details related to the subscription.
@@ -397,12 +406,13 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return array The unmodified subscription details.
 	 */
 	public function maybe_set_current_my_account_subscription( $subscription_details, $subscription ): array {
-		$calls = [
-			'WCS_Template_Loader::get_my_subscriptions ',
-			'WC_Subscription->get_formatted_order_total',
-		];
-		if ( $this->utils->is_call_in_backtrace( $calls ) ) {
-			// If we have our calls in the backtrace, we set our cached sub and clear the FrontendCurrencies cache.
+		if ( $this->utils->is_call_in_backtrace(
+			[
+				'WCS_Template_Loader::get_my_subscriptions ',
+				'WC_Subscription->get_formatted_order_total',
+			]
+		) ) {
+			// During the my-subscriptions operation, we set our cached sub and clear the FrontendCurrencies cache.
 			$this->current_my_account_subscription = $subscription;
 			$this->frontend_currencies->selected_currency_changed();
 		}
@@ -640,7 +650,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 */
 	private function is_coupon_being_stored_in_session(): bool {
 		// Coupons are only copied while one of these carts is set up (early renewal fires the renewal action),
-		// so the backtrace is not inspected on every other coupon read.
+		// so the operation is not checked on every other coupon read.
 		if ( ! doing_action( 'woocommerce_setup_cart_for_subscription_renewal' )
 			&& ! doing_action( 'woocommerce_setup_cart_for_subscription_initial_payment' ) ) {
 			return false;

@@ -3647,7 +3647,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( 'CHF12,345.67', html_entity_decode( $note->get_content() ) );
+		$this->assertStringContainsString( "CHF\u{00A0}12'345.67", html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_get_tracking_info() {

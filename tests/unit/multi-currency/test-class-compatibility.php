@@ -11,6 +11,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
+
 /**
  * WCPay\MultiCurrency\Compatibility unit tests.
  */
@@ -114,125 +115,6 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->compatibility->should_convert_shipping_amount( null ) );
 	}
 
-	public function test_filter_woocommerce_order_query_with_call_not_in_backtrace() {
-		$order = wc_create_order();
-		$order->set_total( 1000 );
-		$order->set_currency( 'GBP' );
-
-		$this->mock_utils->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with(
-				[
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
-				]
-			)->willReturn( false );
-
-		$this->assertEquals( [ $order ], $this->compatibility->convert_order_prices( [ $order ], [] ) );
-	}
-
-	public function test_filter_woocommerce_order_query_with_order_in_default_currency() {
-		$order = wc_create_order();
-		$order->set_total( 1000 );
-		$order->set_currency( 'USD' );
-
-		// Even if these keys are set, the order currency matches the store currency.
-		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', 1.0 );
-		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'GBP' );
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-
-		$this->mock_utils->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with(
-				[
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
-				]
-			)->willReturn( true );
-
-		$this->assertEquals( [ $order ], $this->compatibility->convert_order_prices( [ $order ], [] ) );
-	}
-
-	public function test_filter_woocommerce_order_query_with_order_with_no_exchange_rate_meta() {
-		$order = wc_create_order();
-		$order->set_total( 1000 );
-		$order->set_currency( 'GBP' );
-
-		// If the exchange rate meta isn't set, nothing should be done.
-		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-
-		$this->mock_utils->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with(
-				[
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
-				]
-			)->willReturn( true );
-
-		$this->assertEquals( [ $order ], $this->compatibility->convert_order_prices( [ $order ], [] ) );
-	}
-
-	public function test_filter_woocommerce_order_query_with_no_meta() {
-		$order = wc_create_order();
-		$order->set_total( 1000 );
-		$order->set_currency( 'USD' );
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-
-		$this->mock_utils->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with(
-				[
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
-				]
-			)->willReturn( true );
-
-		$this->assertEquals( [ $order ], $this->compatibility->convert_order_prices( [ $order ], [] ) );
-	}
-
-	public function test_filter_woocommerce_order_query() {
-		$order = wc_create_order();
-		$order->set_total( 1000 );
-		$order->set_currency( 'GBP' );
-		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', 0.5 );
-		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
-		$order->save();
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-
-		$this->mock_utils->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with(
-				[
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
-					'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
-				]
-			)->willReturn( true );
-
-		/**
-		 * @var WC_Order $result
-		 */
-		$result = $this->compatibility->convert_order_prices( [ $order ], [] )[0];
-		$this->assertEquals( 2000, $result->get_total() );
-
-		// Assert the actual order wasn't changed (only modified for returning from the filter).
-		$order = wc_get_order( $result->get_id() );
-		$this->assertEquals( 1000, $order->get_total() );
-	}
-
 	public function test_filter_woocommerce_order_query_with_object_not_array() {
 		$order = wc_create_order();
 		$order->set_total( 1000 );
@@ -253,10 +135,12 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 	// If on the pay_for_order page, then should_disable_currency_switching should return true.
 	public function test_should_disable_currency_switching_return_true_on_pay_for_order() {
 		// Arrange: Blatantly hack mock request params for the test.
-		$_GET['pay_for_order'] = true;
+		$GLOBALS['wp']->query_vars['order-pay'] = 1;
 
-		// Act/Assert: Confirm true is returned if on the pay_for_order page.
+		// Act/Assert: Confirm true is returned if on the Order Pay endpoint.
 		$this->assertTrue( $this->compatibility->should_disable_currency_switching() );
+
+		unset( $GLOBALS['wp']->query_vars['order-pay'] );
 	}
 
 	// If filtered to true, then should_disable_currency_switching should return true.
@@ -269,5 +153,46 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		// Arrange: Remove our filter.
 		remove_all_filters( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching' );
+	}
+
+	/**
+	 * Converts order totals to the store currency only while WooCommerce runs the new sales record operation.
+	 */
+	public function test_convert_order_prices_converts_only_in_new_sales_record_operation() {
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new Currency( $this->mock_localization_service, 'USD' ) );
+
+		$outside_order = $this->create_eur_order_mock();
+		$outside_order->expects( $this->never() )->method( 'set_total' );
+		$this->compatibility->convert_order_prices( [ $outside_order ] );
+
+		$inside_order = $this->create_eur_order_mock();
+		$inside_order->expects( $this->once() )->method( 'set_total' )->with( '80.00' );
+		\Automattic\WooCommerce\Currency\ActiveCurrency::run(
+			'',
+			fn() => $this->compatibility->convert_order_prices( [ $inside_order ] ),
+			'admin.new_sales_record'
+		);
+	}
+
+	/**
+	 * An EUR order of 100 that was recorded at a rate of 1.25 against the USD store currency.
+	 *
+	 * @return \WC_Order|\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function create_eur_order_mock() {
+		$order = $this->createMock( \WC_Order::class );
+		$order->method( 'get_currency' )->willReturn( 'EUR' );
+		$order->method( 'get_total' )->willReturn( 100 );
+		$meta = [
+			'_wcpay_multi_currency_order_exchange_rate'    => 1.25,
+			'_wcpay_multi_currency_order_default_currency' => 'USD',
+		];
+		$order->method( 'get_meta' )->willReturnCallback(
+			function ( $key ) use ( $meta ) {
+				return $meta[ $key ] ?? '';
+			}
+		);
+
+		return $order;
 	}
 }

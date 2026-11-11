@@ -106,22 +106,19 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 	}
 
 	public function test_maybe_convert_product_prices_for_deposits() {
-		$this->mock_utils->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with( [ 'WC_Cart->calculate_totals' ] )
-			->willReturn( true );
-
 		$product = WC_Helper_Product::create_simple_product();
 		$product->add_meta_data( '_wc_deposit_enabled', 'optional' );
 		$product->add_meta_data( '_wc_deposit_type', 'plan' );
 		$product->save();
 
-		$this->assertEquals( false, $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ) );
+		// WooCommerce announces the cart totals calculation, so plan deposits are not converted during it.
+		$this->assertFalse( \Automattic\WooCommerce\Currency\ActiveCurrency::run( '', fn() => $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ), 'cart.calculate_totals' ) );
+		$this->assertTrue( $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ) );
 
 		$product->update_meta_data( '_wc_deposit_type', 'percent' );
 		$product->save();
 
-		$this->assertEquals( true, $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ) );
+		$this->assertTrue( \Automattic\WooCommerce\Currency\ActiveCurrency::run( '', fn() => $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ), 'cart.calculate_totals' ) );
 	}
 
 	public function test_should_modify_order_currency() {

@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use Automattic\WooCommerce\Currency\ActiveCurrency;
+
 use WC_Order;
 use WC_Order_Refund;
 use WCPay\MultiCurrency\Compatibility\BaseCompatibility;
@@ -28,6 +30,11 @@ defined( 'ABSPATH' ) || exit;
 class Compatibility extends BaseCompatibility {
 
 	/**
+	 * Operation WooCommerce runs while the Best Sales Day inbox note sums sales for a date.
+	 */
+	const OPERATION_NEW_SALES_RECORD = 'admin.new_sales_record';
+
+	/**
 	 * Compatibility classes.
 	 *
 	 * @var array
@@ -42,7 +49,19 @@ class Compatibility extends BaseCompatibility {
 	public function init() {
 		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
 
-		if ( defined( 'DOING_CRON' ) ) {
+		add_action( 'woocommerce_request_context', [ $this, 'maybe_attach_order_modifier' ] );
+		$this->maybe_attach_order_modifier();
+	}
+
+	/**
+	 * Attaches the order modifier to the sales record milestone on cron requests.
+	 *
+	 * @param string|null $type Request context from `woocommerce_request_context`, or null before it is known.
+	 *
+	 * @return void
+	 */
+	public function maybe_attach_order_modifier( ?string $type = null ) {
+		if ( \WCPay\MultiCurrency\Utils::is_cron_request( $type ) ) {
 			add_filter( 'woocommerce_admin_sales_record_milestone_enabled', [ $this, 'attach_order_modifier' ] );
 		}
 	}
@@ -110,13 +129,13 @@ class Compatibility extends BaseCompatibility {
 		$return = false;
 
 		/**
-		 * If the pay_for_order parameter is set, we disable currency switching.
+		 * If the Order Pay endpoint is requested, we disable currency switching.
 		 *
 		 * WooCommerce itself handles all the heavy lifting and verification on the Order Pay page, we just need to
 		 * make sure the currency switchers are not displayed. This is due to once the order is created, the currency
 		 * itself should remain static.
 		 */
-		if ( isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			$return = true;
 		}
 
@@ -284,13 +303,8 @@ class Compatibility extends BaseCompatibility {
 	 * @return array|object of WC_Order objects
 	 */
 	public function convert_order_prices( $results ) {
-		$backtrace_calls = [
-			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::sum_sales_for_date',
-			'Automattic\WooCommerce\Admin\Notes\NewSalesRecord::possibly_add_note',
-		];
-
-		// If the results are not an array, or if the call we're expecting isn't in the backtrace, then just do nothing and return the results.
-		if ( ! is_array( $results ) || ! $this->utils->is_call_in_backtrace( $backtrace_calls ) ) {
+		// If the results are not an array, or if WooCommerce is not running the new sales record operation, do nothing and return the results.
+		if ( ! is_array( $results ) || ! ActiveCurrency::is_in_operation( self::OPERATION_NEW_SALES_RECORD ) ) {
 			return $results;
 		}
 
