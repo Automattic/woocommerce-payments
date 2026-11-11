@@ -184,9 +184,12 @@ describe( 'Deposits', () => {
 		);
 
 		expect(
-			screen.queryByText( /Your first payout will be held for/, {
-				ignore: '.a11y-speak-region',
-			} )
+			screen.queryByText(
+				/Payout scheduling becomes available after the standard 7-day waiting period/,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
 		).toBeFalsy();
 	} );
 
