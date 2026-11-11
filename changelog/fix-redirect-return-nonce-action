@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Update how the nonce on a redirect payment's return URL is built.

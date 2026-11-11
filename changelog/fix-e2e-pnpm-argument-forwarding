@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix E2E test filters and the snapshot update script, which were ignored when run through pnpm 11.
