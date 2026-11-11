@@ -211,10 +211,10 @@ function wcpay_playground_ensure_user_exists( int $user_id ): bool {
 		$wpdb->users,
 		[
 			'ID'              => $user_id,
-			'user_login'      => 'sandbox-connection-owner',
+			'user_login'      => 'sandbox-connection-owner-' . $user_id,
 			'user_pass'       => wp_hash_password( wp_generate_password( 64 ) ),
-			'user_nicename'   => 'sandbox-connection-owner',
-			'user_email'      => 'sandbox-connection-owner@example.com',
+			'user_nicename'   => 'sandbox-connection-owner-' . $user_id,
+			'user_email'      => 'sandbox-connection-owner-' . $user_id . '@example.com',
 			'user_registered' => gmdate( 'Y-m-d H:i:s' ),
 			'display_name'    => 'Sandbox connection owner',
 		]
