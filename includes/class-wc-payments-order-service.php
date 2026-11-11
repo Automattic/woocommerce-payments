@@ -2358,8 +2358,8 @@ class WC_Payments_Order_Service {
 	 * @param int $order_id - Order ID.
 	 */
 	public function cancel_authorizations_on_order_status_change( $order_id ) {
-		$order = new WC_Order( $order_id );
-		if ( null !== $order ) {
+		$order = wc_get_order( $order_id );
+		if ( $order instanceof WC_Order ) {
 			$intent_id = $this->get_intent_id_for_order( $order );
 			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
