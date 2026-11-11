@@ -604,6 +604,13 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( Payment_Method::CARD_PRESENT === $payment_method_type ) {
 			$this->order_service->mark_terminal_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
 		} else {
+			// An order on hold waits on the payment it names: an authorization to capture, a bank debit to
+			// clear, a dispute. A retry with the same saved card passes the payment method check above, so the
+			// failure of the earlier attempt, arriving late, would otherwise fail the order the retry put on hold.
+			if ( $order->has_status( Order_Status::ON_HOLD ) && $this->order_service->get_intent_id_for_order( $order ) !== $intent_id ) {
+				return;
+			}
+
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
 		}
 	}

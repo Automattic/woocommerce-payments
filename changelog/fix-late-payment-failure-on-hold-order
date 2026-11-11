@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep an order on hold when the failure of an earlier payment attempt for it arrives late.
