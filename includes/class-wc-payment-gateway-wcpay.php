@@ -2673,7 +2673,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( ! empty( $error ) ) {
-				Logger::log( 'Error when processing payment: ' . $error['message'] );
+				Logger::log( 'Error when processing payment: ' . ( $error['message'] ?? $error['code'] ?? '' ) );
 				$error_code = $this->is_retryable_decline( $error )
 					? self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE
 					: 'upe_payment_intent_error';
@@ -2757,9 +2757,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status    = $status ?? null;
 				$charge_id = $charge_id ?? null;
 
-				/* translators: localized exception message */
-				$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
-				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+				if ( ! empty( $error ) ) {
+					// Record the provider's decline details, matching the note the webhook adds for BNPL methods,
+					// so a failure reported by both flows results in a single note.
+					$this->order_service->mark_payment_declined( $order, $intent_id, $status, $charge_id, $error );
+				} else {
+					/* translators: localized exception message */
+					$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
+					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+				}
 			}
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
