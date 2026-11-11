@@ -142,22 +142,25 @@ const PaymentProcessor = ( {
 	const gatewayConfig = getPaymentMethods()[ gatewayId ];
 	const billingData = useCustomerData();
 
-	// Withhold the email from the Payment Element until it has been in view,
+	// Withhold the email from the Payment Element while it is out of view,
 	// otherwise Link may prompt the shopper before they can see the form.
 	const [ isElementVisible, setIsElementVisible ] = useState( false );
+	// Read by the debounce callback, which may fire before the effect that
+	// would cancel it runs.
+	const isElementVisibleRef = useRef( false );
 	useEffect( () => {
-		if ( ! isCardMethod || isElementVisible || ! wrapperRef.current ) {
+		if ( ! isCardMethod || ! wrapperRef.current ) {
 			return;
 		}
-		return observeElementVisibility( wrapperRef.current, () =>
-			setIsElementVisible( true )
-		);
-	}, [ isCardMethod, isElementVisible ] );
+		return observeElementVisibility( wrapperRef.current, ( isVisible ) => {
+			isElementVisibleRef.current = isVisible;
+			setIsElementVisible( isVisible );
+		} );
+	}, [ isCardMethod ] );
 
-	const checkoutLinkEmail =
-		isCardMethod && isElementVisible
-			? getLinkEmail( billingData.email )
-			: undefined;
+	const checkoutLinkEmail = isCardMethod
+		? getLinkEmail( billingData.email )
+		: undefined;
 	const [ linkEmail, setLinkEmail ] = useState( undefined );
 	const wasVisibleRef = useRef( false );
 
@@ -166,17 +169,19 @@ const PaymentProcessor = ( {
 	useEffect( () => {
 		const justBecameVisible = isElementVisible && ! wasVisibleRef.current;
 		wasVisibleRef.current = isElementVisible;
-		if ( ! checkoutLinkEmail ) {
+		if ( ! isElementVisible || ! checkoutLinkEmail ) {
 			return;
 		}
-		// Deliver the current email right away when the element first comes
-		// into view; debounce every other change.
+		// Deliver the current email right away when the element comes into
+		// view; debounce every other change.
 		if ( justBecameVisible ) {
 			setLinkEmail( checkoutLinkEmail );
 			return;
 		}
 		const timeout = setTimeout( () => {
-			setLinkEmail( checkoutLinkEmail );
+			if ( isElementVisibleRef.current ) {
+				setLinkEmail( checkoutLinkEmail );
+			}
 		}, LINK_EMAIL_DEBOUNCE_MS );
 		return () => clearTimeout( timeout );
 	}, [ checkoutLinkEmail, isElementVisible ] );

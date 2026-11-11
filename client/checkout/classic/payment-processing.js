@@ -31,6 +31,7 @@ import {
 	appendFraudPreventionTokenInputToForm,
 	appendPaymentMethodIdToForm,
 	appendPaymentMethodErrorDataToForm,
+	getPageLinkEmail,
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
 	isUsingSavedPaymentMethod,
@@ -305,7 +306,6 @@ async function createStripePaymentElement(
 		createdStripePaymentElement;
 	gatewayUPEComponents[ paymentMethodType ].linkEmail =
 		upeSettings.defaultValues?.billingDetails?.email;
-	gatewayUPEComponents[ paymentMethodType ].isVisible = false;
 	return createdStripePaymentElement;
 }
 
@@ -326,7 +326,8 @@ function appendSetupIntentToForm( $form, confirmedIntent ) {
 }
 
 /**
- * Supplies the checkout email to the card element once it first comes into view.
+ * Tracks whether the card element is in view, and supplies the page's email
+ * to it each time it comes into view.
  *
  * @param {string}      paymentMethodType The payment method type of the mounted element.
  * @param {HTMLElement} domElement        The element the Payment Element is mounted to.
@@ -335,22 +336,21 @@ function watchLinkEmailVisibility( paymentMethodType, domElement ) {
 	const components = gatewayUPEComponents[ paymentMethodType ];
 	components.disconnectVisibility?.();
 	delete components.disconnectVisibility;
+	components.isVisible = false;
 
-	if ( paymentMethodType !== 'card' || components.isVisible ) {
+	if ( paymentMethodType !== 'card' ) {
 		return;
 	}
 
-	const disconnect = observeElementVisibility( domElement, () => {
-		components.isVisible = true;
-		delete components.disconnectVisibility;
-		updateLinkEmail(
-			document.querySelector( '#billing_email' )?.value ?? ''
-		);
-	} );
-	// The callback may already have fired synchronously.
-	if ( ! components.isVisible ) {
-		components.disconnectVisibility = disconnect;
-	}
+	components.disconnectVisibility = observeElementVisibility(
+		domElement,
+		( isVisible ) => {
+			components.isVisible = isVisible;
+			if ( isVisible ) {
+				updateLinkEmail( getPageLinkEmail() );
+			}
+		}
+	);
 }
 
 /**
@@ -461,16 +461,16 @@ export async function renderTerms( event ) {
 }
 
 /**
- * Passes the checkout email to the card Payment Element so Link can recognize returning customers.
+ * Passes the page's email to the card Payment Element so Link can recognize returning customers.
  *
- * @param {string} email The email entered at checkout.
+ * @param {string} email The email entered at checkout, or the order's email on pay-for-order pages.
  */
 export async function updateLinkEmail( email ) {
 	const cardComponents = gatewayUPEComponents.card;
 	const linkEmail = getLinkEmail( email );
 	if (
 		! cardComponents?.upeElement ||
-		// Until the element is in view, the email is read again on first intersection.
+		// While the element is out of view, the email is read again once it's back.
 		! cardComponents.isVisible ||
 		! linkEmail ||
 		linkEmail === cardComponents.linkEmail ||

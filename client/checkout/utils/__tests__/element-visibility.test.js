@@ -20,18 +20,56 @@ describe( 'observeElementVisibility', () => {
 		window.IntersectionObserver = originalIO;
 	} );
 
-	it( 'calls back once the element intersects, then disconnects', () => {
-		const onVisible = jest.fn();
+	it( 'reports every visibility change without disconnecting', () => {
+		const onVisibilityChange = jest.fn();
 		const element = document.createElement( 'div' );
-		observeElementVisibility( element, onVisible );
+		observeElementVisibility( element, onVisibilityChange );
 
 		expect( observer.observe ).toHaveBeenCalledWith( element );
-		callback( [ { isIntersecting: false } ] );
-		expect( onVisible ).not.toHaveBeenCalled();
 
-		callback( [ { isIntersecting: true } ] );
-		expect( onVisible ).toHaveBeenCalledTimes( 1 );
-		expect( observer.disconnect ).toHaveBeenCalled();
+		callback( [ { isIntersecting: false, intersectionRatio: 0 } ] );
+		callback( [ { isIntersecting: true, intersectionRatio: 0.5 } ] );
+		callback( [ { isIntersecting: false, intersectionRatio: 0 } ] );
+		callback( [ { isIntersecting: true, intersectionRatio: 1 } ] );
+
+		expect( onVisibilityChange.mock.calls ).toEqual( [
+			[ false ],
+			[ true ],
+			[ false ],
+			[ true ],
+		] );
+		expect( observer.disconnect ).not.toHaveBeenCalled();
+	} );
+
+	it( 'treats an element below the threshold as hidden', () => {
+		const onVisibilityChange = jest.fn();
+		observeElementVisibility(
+			document.createElement( 'div' ),
+			onVisibilityChange
+		);
+
+		callback( [ { isIntersecting: true, intersectionRatio: 0.05 } ] );
+
+		expect( onVisibilityChange ).toHaveBeenCalledWith( false );
+		expect( window.IntersectionObserver ).toHaveBeenCalledWith(
+			expect.any( Function ),
+			{ threshold: 0.1 }
+		);
+	} );
+
+	it( 'reports the most recent entry when several are queued', () => {
+		const onVisibilityChange = jest.fn();
+		observeElementVisibility(
+			document.createElement( 'div' ),
+			onVisibilityChange
+		);
+
+		callback( [
+			{ isIntersecting: true, intersectionRatio: 1 },
+			{ isIntersecting: false, intersectionRatio: 0 },
+		] );
+
+		expect( onVisibilityChange.mock.calls ).toEqual( [ [ false ] ] );
 	} );
 
 	it( 'returns a function that disconnects the observer', () => {
@@ -45,8 +83,11 @@ describe( 'observeElementVisibility', () => {
 
 	it( 'treats the element as visible without IntersectionObserver', () => {
 		window.IntersectionObserver = undefined;
-		const onVisible = jest.fn();
-		observeElementVisibility( document.createElement( 'div' ), onVisible );
-		expect( onVisible ).toHaveBeenCalledTimes( 1 );
+		const onVisibilityChange = jest.fn();
+		observeElementVisibility(
+			document.createElement( 'div' ),
+			onVisibilityChange
+		);
+		expect( onVisibilityChange.mock.calls ).toEqual( [ [ true ] ] );
 	} );
 } );
