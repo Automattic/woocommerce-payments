@@ -1209,6 +1209,20 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assert_pay_for_order_session_links_back_to( $order );
 	}
 
+	public function test_get_init_session_request_returns_an_error_for_an_unauthorized_pay_for_order() {
+		$order = WC_Helper_Order::create_order( 0 );
+		$this->mock_customer_service->expects( $this->never() )->method( 'get_customer_id_by_user_id' );
+
+		// A caller outside AJAX keeps control and gets nothing printed.
+		$this->expectOutputString( '' );
+
+		$result = WooPay_Session::get_init_session_request( $order->get_id(), 'wc_order_not_the_real_key' );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'woopay_pay_for_order_not_authorized', $result->get_error_code() );
+		$this->assertSame( [ 'status' => 403 ], $result->get_error_data() );
+	}
+
 	public function test_ajax_get_woopay_session_refuses_a_pay_for_order_with_the_wrong_key() {
 		$order = WC_Helper_Order::create_order( 0 );
 

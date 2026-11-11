@@ -450,7 +450,8 @@ class WooPay_Session {
 	/**
 	 * Returns the encrypted session request for the frontend.
 	 *
-	 * @return array The encrypted session request or an empty array if the server is not eligible for encryption.
+	 * @return array|\WP_Error The encrypted session request, an empty array if the server is not eligible
+	 *                         for encryption, or the error from get_init_session_request().
 	 */
 	public static function get_frontend_init_session_request() {
 		if ( ! extension_loaded( 'openssl' ) || ! function_exists( 'openssl_encrypt' ) ) {
@@ -466,6 +467,10 @@ class WooPay_Session {
 		$appearance = ! empty( $_POST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_POST['appearance'] ) : null;
 
 		$session = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance );
+
+		if ( is_wp_error( $session ) ) {
+			return $session;
+		}
 
 		return WooPay_Utilities::encrypt_and_sign_data( $session, WooPay_Utilities::SESSION_KEY_PURPOSE );
 	}
@@ -594,8 +599,8 @@ class WooPay_Session {
 	/**
 	 * Returns the initial session request data.
 	 *
-	 * For a pay-for-order request, ends the request with a 403 when the caller is not
-	 * authorized to pay the given order.
+	 * For a pay-for-order request, returns an error when the caller is not authorized
+	 * to pay the given order.
 	 *
 	 * @param int|null             $order_id Pay-for-order order ID.
 	 * @param string|null          $key Pay-for-order key.
@@ -603,7 +608,8 @@ class WooPay_Session {
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 * @param array|null           $appearance Merchant appearance, or null to use server-stored fallback.
 	 * @param array                $font_rules Font CDN stylesheet URLs.
-	 * @return array The initial session request data without email and user_session.
+	 * @return array|\WP_Error The initial session request data without email and user_session,
+	 *                         or a 403 error when the caller may not pay the given order.
 	 */
 	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null, $font_rules = [] ) {
 		// Fall back to server-stored appearance when no appearance was provided,
@@ -627,9 +633,10 @@ class WooPay_Session {
 			$order = \WC_Payments_Utils::get_authorized_pay_for_order( $order_id, $key );
 
 			if ( null === $order ) {
-				wp_send_json_error(
+				return new \WP_Error(
+					'woopay_pay_for_order_not_authorized',
 					__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
-					403
+					[ 'status' => 403 ]
 				);
 			}
 		}
@@ -966,7 +973,12 @@ class WooPay_Session {
 		$appearance    = ! empty( $_POST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_POST['appearance'] ) : null; // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, Generic.Arrays.DisallowLongArraySyntax.Found
 		$font_rules    = ! empty( $_POST['font_rules'] ) ? self::sanitize_font_rules( wp_unslash( $_POST['font_rules'] ) ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by sanitize_font_rules.
 
-		$body                 = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance, $font_rules );
+		$body = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance, $font_rules );
+
+		if ( is_wp_error( $body ) ) {
+			wp_send_json_error( $body->get_error_message(), 403 );
+		}
+
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
 
 		$args = [
@@ -1018,7 +1030,13 @@ class WooPay_Session {
 			);
 		}
 
-		wp_send_json( self::get_frontend_init_session_request() );
+		$session = self::get_frontend_init_session_request();
+
+		if ( is_wp_error( $session ) ) {
+			wp_send_json_error( $session->get_error_message(), 403 );
+		}
+
+		wp_send_json( $session );
 	}
 
 	/**
