@@ -22,8 +22,12 @@ update_option( 'woocommerce_default_country', 'US:CA' );
 update_option( 'woocommerce_currency', 'USD' );
 
 // A blueprint-installed WooCommerce starts on the legacy order storage. Stores run on HPOS by default.
-wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class )->create_database_tables();
-update_option( 'woocommerce_custom_orders_table_enabled', 'yes' );
+// The class that creates the HPOS tables is internal to WooCommerce, so if it moves the preview stays on the legacy storage.
+$wcpay_playground_hpos_tables = '\Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer';
+if ( class_exists( $wcpay_playground_hpos_tables ) && method_exists( $wcpay_playground_hpos_tables, 'create_database_tables' ) ) {
+	wc_get_container()->get( $wcpay_playground_hpos_tables )->create_database_tables();
+	update_option( 'woocommerce_custom_orders_table_enabled', 'yes' );
+}
 
 $wcpay_playground_gateway_settings            = get_option( 'woocommerce_woocommerce_payments_settings', [] );
 $wcpay_playground_gateway_settings['enabled'] = 'yes';
