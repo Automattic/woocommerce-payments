@@ -77,10 +77,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: plugins # Hard-coded value for Jetpack Beta Builder.
+          name: plugins # Hard-coded value for Jetpack Beta Builder. The Playground link below fetches it by this name too.
           path: release
-          # Only need to retain for a day since the Jetpack Beta Builder slurps it up to distribute.
-          retention-days: 1
+          # The Jetpack Beta Builder slurps it up within minutes, but the Playground link in the PR comment
+          # downloads this artifact on every click, so it only works for as long as the artifact is retained.
+          retention-days: 14
 
       - name: "Get plugin data for Jetpack Beta Builder"
         id: get-plugin-data
@@ -106,9 +107,42 @@ jobs:
             --form-string "plugins=$PLUGIN_DATA" \
             --form-string "secret=$SECRET"
 
+      # WordPress Playground runs in the visitor's browser and can only fetch public URLs.
+      # Its artifact proxy serves this workflow's latest `plugins` artifact for the PR, looked up by
+      # workflow name - hence GITHUB_WORKFLOW rather than a literal that a rename would silently break.
+      # The artifact wraps the plugin zip, so the Blueprint unzips it before installing.
+      - name: "Build the WordPress Playground preview link"
+        id: playground
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          ARTIFACT_URL=$( jq -rn \
+            --arg org "$GITHUB_REPOSITORY_OWNER" \
+            --arg repo "${GITHUB_REPOSITORY#*/}" \
+            --arg workflow "$GITHUB_WORKFLOW" \
+            --arg pr "$PR_NUMBER" \
+            '"https://playground.wordpress.net/plugin-proxy.php?org=\($org|@uri)&repo=\($repo|@uri)&workflow=\($workflow|@uri)&artifact=plugins&pr=\($pr|@uri)"' )
+
+          BLUEPRINT=$( jq -cn --arg artifact_url "$ARTIFACT_URL" '{
+            "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+            landingPage: "/wp-admin/admin.php?page=wc-admin&path=/payments/connect",
+            preferredVersions: { php: "8.3", wp: "latest" },
+            features: { networking: true },
+            steps: [
+              { step: "login", username: "admin" },
+              { step: "installPlugin", pluginData: { resource: "wordpress.org/plugins", slug: "woocommerce" }, options: { activate: true } },
+              { step: "runPHP", code: "<?php require \"/wordpress/wp-load.php\"; delete_transient( \"_wc_activation_redirect\" ); update_option( \"woocommerce_onboarding_profile\", array( \"skipped\" => true ) );" },
+              { step: "unzip", zipFile: { resource: "url", url: $artifact_url, caption: "Downloading the WooPayments build for this PR" }, extractToPath: "/tmp/pr" },
+              { step: "installPlugin", pluginData: { resource: "vfs", path: "/tmp/pr/woocommerce-payments-dev.zip" }, options: { activate: true } }
+            ]
+          }' )
+
+          echo "url=https://playground.wordpress.net/#$( jq -rn --arg blueprint "$BLUEPRINT" '$blueprint|@uri' )" >> "$GITHUB_OUTPUT"
+
       - name: "Add/update the information as a comment in the PR"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLAYGROUND_URL: ${{ steps.playground.outputs.url }}
           PR_NUMBER: ${{ github.event.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_HEAD_REF: ${{ github.head_ref }}
@@ -134,7 +168,13 @@ jobs:
           :rocket: [Launch a JN site with this branch and sample products](https://jurassic.ninja/create/?jetpack-beta&nojetpack&woocommerce&woocommerce-import-sample-data&woocommerce-payments-dev-tools&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
           :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
-          
+
+          #### Option 3. WordPress Playground - no account needed
+
+          :test_tube: [Open this build in WordPress Playground](${PLAYGROUND_URL}) :test_tube:
+
+          :information_source: The site runs in your browser and is not connected to a WooPayments account, so it cannot onboard or take payments. Use it to check that the plugin activates and to look at screens that work without an account. The link stops working 14 days after the last build.
+
           ---
 
           Build info: 
