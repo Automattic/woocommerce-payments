@@ -668,6 +668,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 			// Don't track WooPay orders. They will be tracked on WooPay side with more details.
 			if ( ! $is_woopay_order ) {
+				if ( $this->should_enable_tracking( false, true ) ) {
+					// A guest's identity cookie must be set before shutdown sends the response.
+					$this->tracks_get_identity();
+				}
+
 				$this->record_after_response(
 					function () use ( $properties ) {
 						$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties, false );
