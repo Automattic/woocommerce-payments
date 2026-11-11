@@ -295,7 +295,7 @@ function wcpay_playground_render_connected_state( bool $refresh ) {
 			esc_url( admin_url( 'admin.php?page=wc-admin&path=/payments/overview' ) )
 		);
 	} else {
-		echo '<div class="notice notice-error inline"><p>The WooPayments server did not return an account for this connection. The tokens may be wrong or out of date, or the sandbox site may not have finished onboarding. Remove the connection and paste a fresh one.</p></div>';
+		echo '<div class="notice notice-error inline"><p>The WooPayments server did not return an account for this connection. Either the request did not get through, the tokens are wrong or out of date, or the sandbox site has not finished onboarding. Remove the connection and paste a fresh one. If that fails as well, look for blocked requests in the browser console.</p></div>';
 	}
 
 	echo '<p>Webhooks cannot reach this site, so anything that depends on them, such as dispute updates, will not arrive.</p>';
