@@ -1,6 +1,6 @@
 <?php
 /**
- * One-time store setup for the Playground demo preview. The preview Blueprint runs this once,
+ * One-time store setup for the Playground previews. The preview Blueprint runs this once,
  * after WooCommerce and WooPayments are installed.
  *
  * @package WooCommerce\Payments
@@ -17,7 +17,7 @@ delete_transient( '_wc_activation_redirect' );
 update_option( 'woocommerce_onboarding_profile', [ 'skipped' => true ] );
 update_option( 'woocommerce_coming_soon', 'no' );
 
-// Match the fixture account, which is a US one settling in USD.
+// The demo fixture account is a US one settling in USD; a sensible default for a sandbox connection too.
 update_option( 'woocommerce_default_country', 'US:CA' );
 update_option( 'woocommerce_currency', 'USD' );
 

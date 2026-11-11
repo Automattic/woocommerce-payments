@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WooPayments Playground preview
- * Description: Lets WooPayments run in a WordPress Playground preview of a pull request on fixture data, without a connection.
+ * Description: Lets WooPayments run in a WordPress Playground preview of a pull request, either on fixture data or on a sandbox connection pasted in by the visitor.
  *
  * @package WooCommerce\Payments
  */
@@ -13,6 +13,8 @@ $wcpay_playground_preview_mode = defined( 'WCPAY_PLAYGROUND_PREVIEW' ) ? WCPAY_P
 
 if ( 'demo' === $wcpay_playground_preview_mode ) {
 	require __DIR__ . '/wcpay-playground-preview/demo.php';
+} elseif ( 'connect' === $wcpay_playground_preview_mode ) {
+	require __DIR__ . '/wcpay-playground-preview/connect.php';
 }
 
 unset( $wcpay_playground_preview_mode );

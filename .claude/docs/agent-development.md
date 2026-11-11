@@ -104,7 +104,7 @@ pnpm run i18n:pot                    # Generate translations
 
 ### Playground PR previews
 
-Each PR's "Test the build" comment links to two WordPress Playground previews: an unconnected store, and one that looks connected by answering server requests from fixture files. When a change alters what an admin screen reads from the server, update the matching fixture in the same PR. See [dev/playground/README.md](../../dev/playground/README.md) for how requests map to fixtures, what the preview cannot do, and the local command.
+Each PR's "Test the build" comment links to WordPress Playground previews: an unconnected store, one that looks connected by answering server requests from fixture files, and one that reuses a pasted sandbox connection. When a change alters what an admin screen reads from the server, update the matching fixture in the same PR. See [dev/playground/README.md](../../dev/playground/README.md) for how requests map to fixtures, what each preview cannot do, and the local command.
 
 
 ## Git Workflow

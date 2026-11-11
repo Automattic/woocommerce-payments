@@ -1,19 +1,27 @@
 # WordPress Playground previews
 
-Every pull request gets two [WordPress Playground](https://wordpress.org/playground/) links in its "Test the build" comment. Playground runs WordPress in the visitor's browser, so the links need no site and no account.
+Every pull request gets [WordPress Playground](https://wordpress.org/playground/) links in its "Test the build" comment. Playground runs WordPress in the visitor's browser, so the links need no site of your own.
 
-- **Open with demo data** starts a store that looks connected. This directory is what makes that work.
+- **Open with demo data** starts a store that looks connected and reads everything from fixture files.
 - **Open unconnected** starts a fresh store on the WooPayments Connect screen.
+- **Open and connect a sandbox** starts a store that asks for the connection of a sandbox site you already have, then talks to the real server.
+
+The first and third are what this directory provides.
 
 The links are built in `.github/workflows/pr-build-live-branch.yml`.
 
-## Why demo data
+## Why the previews need help
 
 A site in a browser Playground has no public address, so WordPress.com cannot register it with Jetpack: "Connect your store" fails. A public link cannot carry a Jetpack token either. Without a connection WooPayments shows little beyond the Connect screen.
 
-The preview plugin in `mu-plugins/` replaces the HTTP client WooPayments uses to reach its server (through the `wc_payments_http` filter) with one that reports a connection and answers from JSON files. No request leaves the site.
+The preview plugin in `mu-plugins/` gets around this in two ways, chosen by the `WCPAY_PLAYGROUND_PREVIEW` constant the Blueprint defines:
 
-## What works and what does not
+| Value | What the plugin does |
+|---|---|
+| `demo` | Replaces the HTTP client WooPayments uses to reach its server (through the `wc_payments_http` filter) with one that reports a connection and answers from JSON files. No request leaves the site. |
+| `connect` | Adds a "Sandbox connection" page where the visitor pastes an existing connection. WooPayments then talks to the real server as that sandbox site. |
+
+## Demo data: what works and what does not
 
 Works: Payments → Overview, Payouts, Transactions and Disputes lists, and the WooPayments settings screens.
 
@@ -50,9 +58,28 @@ Dates can be relative, so the data never looks stale:
 
 Anything PHP's `strtotime()` accepts works after the colon.
 
+## Connecting a sandbox
+
+The "Sandbox connection" page shows a WP-CLI command to run on a sandbox site that is already connected to WooPayments. It prints one line of JSON with that site's blog ID and Jetpack tokens; paste it into the page and the preview uses that connection. A "Remove the connection" button takes it out again.
+
+With a connection, the preview shows the sandbox account's real data and can take test payments at checkout. WooPayments is kept in test mode whatever account is behind the connection.
+
+What it cannot do:
+
+- **Receive webhooks.** Nothing can reach a site in a browser tab, so anything that arrives by webhook, such as dispute updates, never shows up.
+- **Onboard a new account.** It reuses a connection; it cannot create one.
+
+Three things in the plugin make this work, and should stay:
+
+- **Jetpack sync is off.** The preview shares a blog ID with the sandbox site. If it synced, WordPress.com would see a second URL for that blog and could put the sandbox site into Jetpack safe mode.
+- **Two request headers are dropped**, `Idempotency-Key` and `X-Request-Initiated`. In a browser Playground the browser makes PHP's HTTP requests, and WordPress.com does not allow those two headers across origins, so every request carrying them would fail. The server works without them.
+- **A placeholder user may be created.** Jetpack only accepts a user token for the user ID it was issued to, so if the sandbox site's connection owner is not user 1, the preview creates an administrator with that ID.
+
+**Only paste a connection into a preview of a pull request you trust, and only from a sandbox site.** The plugin code in the preview comes from the pull request, so it can read what you paste. For that reason the workflow leaves this link out on pull requests from forks. The connection stays in the browser's Playground storage until it is removed or the Playground site is deleted.
+
 ## Safety
 
-The plugin does nothing unless the `WCPAY_PLAYGROUND_PREVIEW` constant is defined as `demo`; only the preview Blueprint defines it. It also stays out of the way on a site that has a Jetpack blog token, so fixtures cannot stand in for a real connection.
+The plugin does nothing unless `WCPAY_PLAYGROUND_PREVIEW` is defined as `demo` or `connect`; only the preview Blueprints define it. In demo mode it also stays out of the way on a site that has a Jetpack blog token, so fixtures cannot stand in for a real connection.
 
 Nothing in this directory ships in the plugin zip.
 
@@ -66,4 +93,4 @@ To try changes locally, run Playground with this directory mounted. It needs Nod
 npx @wp-playground/cli@3.1.64 server --login --blueprint=dev/playground/blueprint-local.json --mount-dir dev/playground/mu-plugins /wordpress/wp-content/mu-plugins
 ```
 
-This installs WooCommerce and the latest `develop` build of WooPayments, and serves the site at <http://127.0.0.1:9400> (log in as `admin` / `password` if asked). Fixture edits apply on the next page load; account data is cached, so after changing `GET/accounts.json` run "Clear WooPayments account cache" under WooCommerce → Status → Tools. Missing fixtures are listed in `wp-content/debug.log`.
+This installs WooCommerce and the latest `develop` build of WooPayments, and serves the site at <http://127.0.0.1:9400> (log in as `admin` / `password` if asked). To try the sandbox connection page instead, change `WCPAY_PLAYGROUND_PREVIEW` in `blueprint-local.json` to `connect`. Fixture edits apply on the next page load; account data is cached, so after changing `GET/accounts.json` run "Clear WooPayments account cache" under WooCommerce → Status → Tools. Missing fixtures are listed in `wp-content/debug.log`.

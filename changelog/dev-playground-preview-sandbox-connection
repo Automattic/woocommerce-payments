@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add a sandbox-connection option to the WordPress Playground PR preview, which reuses the connection of an existing sandbox site.
