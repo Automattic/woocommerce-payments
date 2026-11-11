@@ -4542,6 +4542,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_cancel_authorizations_on_order_status_change_ignores_a_missing_order() {
 		$missing_order_id = PHP_INT_MAX;
 		$this->assertFalse( wc_get_order( $missing_order_id ), 'Precondition: the order id must not exist.' );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
 
 		$this->order_service->cancel_authorizations_on_order_status_change( $missing_order_id );
 	}
