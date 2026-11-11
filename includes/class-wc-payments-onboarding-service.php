@@ -1540,7 +1540,7 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// WooPay and Link by Stripe are mutually exclusive, so an account that can auto-enable WooPay
+		// WooPay and Link are mutually exclusive, so an account that can auto-enable WooPay
 		// must not do so while Link is enabled: that would leave both active with neither toggle
 		// editable, and silently discard a payment method the merchant deliberately turned on. Link is
 		// read from the merged list because it can be enabled either from existing settings or from this

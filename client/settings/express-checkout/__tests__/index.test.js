@@ -137,7 +137,7 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		expect( screen.queryByText( 'Link by Stripe' ) ).toBeNull();
+		expect( screen.queryByText( 'Link' ) ).toBeNull();
 	} );
 
 	it( 'show link payment if card payment method is active', async () => {
@@ -151,7 +151,7 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link' ) ).toBeInTheDocument();
 	} );
 
 	it( 'test stripe link checkbox checked', async () => {
@@ -164,7 +164,7 @@ describe( 'ExpressCheckout', () => {
 				<ExpressCheckout />
 			</WCPaySettingsContext.Provider>
 		);
-		const linkCheckbox = container.getByLabelText( 'Link by Stripe' );
+		const linkCheckbox = container.getByLabelText( 'Link' );
 		expect( linkCheckbox ).toBeChecked();
 	} );
 
@@ -178,7 +178,7 @@ describe( 'ExpressCheckout', () => {
 				<ExpressCheckout />
 			</WCPaySettingsContext.Provider>
 		);
-		const linkCheckbox = container.getByLabelText( 'Link by Stripe' );
+		const linkCheckbox = container.getByLabelText( 'Link' );
 		expect( linkCheckbox ).not.toBeChecked();
 	} );
 
@@ -199,7 +199,7 @@ describe( 'ExpressCheckout', () => {
 
 		expect(
 			screen.queryByText(
-				'To enable WooPay, you must first disable Link by Stripe.',
+				'To enable WooPay, you must first disable Link.',
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -207,13 +207,13 @@ describe( 'ExpressCheckout', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText(
-				'To enable Link by Stripe, you must first disable WooPay.',
+				'To enable Link, you must first disable WooPay.',
 				{
 					ignore: '.a11y-speak-region',
 				}
 			)
 		).not.toBeInTheDocument();
-		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Link' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'WooPay' ) ).toBeDisabled();
 	} );
 
@@ -231,11 +231,11 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeDisabled();
+		expect( screen.getByLabelText( 'Link' ) ).toBeDisabled();
 		expect( screen.getByLabelText( 'WooPay' ) ).not.toBeDisabled();
 		expect(
 			screen.queryByText(
-				'To enable Link by Stripe, you must first disable WooPay.',
+				'To enable Link, you must first disable WooPay.',
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -278,7 +278,7 @@ describe( 'ExpressCheckout', () => {
 		} );
 
 		it( 'allows disabling Link', async () => {
-			const linkCheckbox = screen.getByLabelText( 'Link by Stripe' );
+			const linkCheckbox = screen.getByLabelText( 'Link' );
 			expect( linkCheckbox ).toBeChecked();
 			expect( linkCheckbox ).not.toBeDisabled();
 
@@ -304,19 +304,19 @@ describe( 'ExpressCheckout', () => {
 		it( 'explains the conflict instead of the enable-first warnings', () => {
 			expect(
 				screen.getAllByText(
-					"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
+					"Link and WooPay can't be enabled at the same time. Disable one of them.",
 					{ ignore: '.a11y-speak-region' }
 				)
 			).toHaveLength( 2 );
 			expect(
 				screen.queryByText(
-					'To enable WooPay, you must first disable Link by Stripe.',
+					'To enable WooPay, you must first disable Link.',
 					{ ignore: '.a11y-speak-region' }
 				)
 			).not.toBeInTheDocument();
 			expect(
 				screen.queryByText(
-					'To enable Link by Stripe, you must first disable WooPay.',
+					'To enable Link, you must first disable WooPay.',
 					{ ignore: '.a11y-speak-region' }
 				)
 			).not.toBeInTheDocument();
@@ -334,11 +334,11 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		expect( screen.queryByLabelText( 'Link by Stripe' ) ).toBeNull();
+		expect( screen.queryByLabelText( 'Link' ) ).toBeNull();
 		expect( screen.getByLabelText( 'WooPay' ) ).not.toBeDisabled();
 		expect(
 			screen.queryByText(
-				'To enable WooPay, you must first disable Link by Stripe.',
+				'To enable WooPay, you must first disable Link.',
 				{ ignore: '.a11y-speak-region' }
 			)
 		).not.toBeInTheDocument();
@@ -388,7 +388,7 @@ describe( 'ExpressCheckout', () => {
 
 		expect( screen.getByLabelText( 'Amazon Pay' ) ).toBeInTheDocument();
 		expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
-		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link' ) ).toBeInTheDocument();
 	} );
 
 	it( 'should not render Amazon Pay by default', () => {
@@ -409,7 +409,7 @@ describe( 'ExpressCheckout', () => {
 			screen.queryByLabelText( 'Amazon Pay' )
 		).not.toBeInTheDocument();
 		expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
-		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link' ) ).toBeInTheDocument();
 	} );
 
 	describe( 'for UK accounts', () => {
@@ -458,7 +458,7 @@ describe( 'ExpressCheckout', () => {
 				'https://link.com/terms'
 			);
 			expect(
-				screen.queryByRole( 'link', { name: 'Link by Stripe terms' } )
+				screen.queryByRole( 'link', { name: 'Link terms' } )
 			).not.toBeInTheDocument();
 		} );
 
@@ -481,7 +481,7 @@ describe( 'ExpressCheckout', () => {
 			).toBeInTheDocument();
 			expect(
 				screen.queryByText(
-					'To enable Link by Stripe, you must first disable WooPay.',
+					'To enable Link, you must first disable WooPay.',
 					{ ignore: '.a11y-speak-region' }
 				)
 			).not.toBeInTheDocument();
@@ -503,7 +503,7 @@ describe( 'ExpressCheckout', () => {
 			).toBeInTheDocument();
 			expect(
 				screen.queryByText(
-					'To enable WooPay, you must first disable Link by Stripe.',
+					'To enable WooPay, you must first disable Link.',
 					{ ignore: '.a11y-speak-region' }
 				)
 			).not.toBeInTheDocument();
@@ -528,7 +528,7 @@ describe( 'ExpressCheckout', () => {
 			).toHaveLength( 2 );
 			expect(
 				screen.queryByText(
-					"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
+					"Link and WooPay can't be enabled at the same time. Disable one of them.",
 					{ ignore: '.a11y-speak-region' }
 				)
 			).not.toBeInTheDocument();

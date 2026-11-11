@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Link_WooPay_Mutual_Exclusion_Handler
  *
- * In version 7.3.0, the logic responsible for disabling Stripe Link if WooPay is by default enabled, is moved from the gateways registration step to the migration.
+ * In version 7.3.0, the logic responsible for disabling Link if WooPay is by default enabled, is moved from the gateways registration step to the migration.
  *
  * @since 7.3.0
  */
@@ -58,7 +58,7 @@ class Link_WooPay_Mutual_Exclusion_Handler {
 	 * Does the actual migration as described in the class docblock.
 	 */
 	private function migrate() {
-		// check if both Stripe Link and WooPay are enabled and if so - disable Stripe Link.
+		// check if both Link and WooPay are enabled and if so - disable Link.
 		$enabled_payment_methods   = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 		$enabled_stripe_link_index = array_search( 'link', $enabled_payment_methods, true );
 
