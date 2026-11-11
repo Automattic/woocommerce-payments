@@ -99,18 +99,26 @@ class WooPay_Session {
 	private static $is_error_handler_registered = false;
 
 	/**
-	 * REST route prefix of the Store API, the routes WooPay uses besides its session route.
+	 * REST routes WooPay uses, matched against the route WordPress matched for the request.
 	 *
-	 * @var string
+	 * @var string[]
 	 */
-	const STORE_API_ROUTE_PREFIX = '/wc/store/';
-
-	/**
-	 * REST route WooPay uses to indirectly reach the Store API.
-	 *
-	 * @var string
-	 */
-	const WOOPAY_SESSION_ROUTE = '/payments/woopay/session';
+	const WOOPAY_ROUTE_PATTERNS = [
+		'@^/wc/store(/v[\d]+)?/cart$@',
+		'@^/wc/store(/v[\d]+)?/cart/add-item$@',
+		'@^/wc/store(/v[\d]+)?/cart/remove-item$@',
+		'@^/wc/store(/v[\d]+)?/cart/apply-coupon$@',
+		'@^/wc/store(/v[\d]+)?/cart/remove-coupon$@',
+		'@^/wc/store(/v[\d]+)?/cart/select-shipping-rate$@',
+		'@^/wc/store(/v[\d]+)?/cart/update-customer$@',
+		'@^/wc/store(/v[\d]+)?/cart/update-item$@',
+		'@^/wc/store(/v[\d]+)?/cart/extensions$@',
+		'@^/wc/store(/v[\d]+)?/checkout/(?P<id>[\d]+)@',
+		'@^/wc/store(/v[\d]+)?/checkout$@',
+		'@^/wc/store(/v[\d]+)?/order/(?P<id>[\d]+)@',
+		// Not a Store API route, but WooPay uses it to indirectly reach the Store API.
+		'@^/payments/woopay/session$@',
+	];
 
 	/**
 	 * The REST requests being dispatched that were accepted as authenticated WooPay requests,
@@ -181,7 +189,13 @@ class WooPay_Session {
 	 * @return bool
 	 */
 	private static function is_woopay_route( string $route ): bool {
-		return 0 === strpos( $route, self::STORE_API_ROUTE_PREFIX ) || self::WOOPAY_SESSION_ROUTE === $route;
+		foreach ( self::WOOPAY_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $route ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

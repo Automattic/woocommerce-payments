@@ -1575,35 +1575,4 @@ class WC_Payments_Utils {
 			$logger->$level( $message, [ 'source' => 'woopayments' ] );
 		}
 	}
-
-	/**
-	 * Extract the REST route from the current request URL.
-	 *
-	 * @return string The REST route, or empty string if not found.
-	 */
-	private static function extract_rest_route_from_url(): string {
-		// Extract the request path from the request URL.
-		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		if ( empty( $url_parts['path'] ) ) {
-			return '';
-		}
-
-		$request_path = rtrim( $url_parts['path'], '/' );
-		if ( empty( $request_path ) ) {
-			return '';
-		}
-
-		// Remove the REST API prefix from the request path to end up with the route.
-		$rest_prefix = trailingslashit( rest_get_url_prefix() );
-
-		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
-		// Look for the wp-json prefix in the path and extract everything after it.
-		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
-		if ( false !== $wp_json_pos ) {
-			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
-		}
-
-		// Fallback: simple prefix replacement for non-multisite cases.
-		return str_replace( $rest_prefix, '', $request_path );
-	}
 }

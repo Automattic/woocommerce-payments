@@ -112,8 +112,7 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 	public function test_fedex_rules_apply_only_to_fedex_rate_calculation( $operation, $subject, $is_fedex_rates ) {
 		$woocommerce_fedex = new WooCommerceFedEx( $this->mock_multi_currency, new Utils() );
 
-		[ $store_currency, $convert ] = \Automattic\WooCommerce\Currency\ActiveCurrency::run(
-			'',
+		[ $store_currency, $convert ] = $this->in_operation(
 			fn() => [
 				$woocommerce_fedex->should_return_store_currency( false ),
 				$woocommerce_fedex->should_convert_product_price( true ),
@@ -133,5 +132,23 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 			'fedex in another operation' => [ 'cart.calculate_totals', new WC_Shipping_Fedex(), false ],
 			'no operation'               => [ null, new WC_Shipping_Fedex(), false ],
 		];
+	}
+
+	/**
+	 * Call a function while an ActiveCurrency scope with the given operation and subject is held.
+	 *
+	 * @param callable    $callback  Function to call.
+	 * @param string|null $operation Operation name.
+	 * @param object|null $subject   Operation subject.
+	 * @return mixed What the callback returns.
+	 */
+	private function in_operation( callable $callback, ?string $operation = null, ?object $subject = null ) {
+		$scope = \Automattic\WooCommerce\Currency\ActiveCurrency::scope( '', $operation, $subject );
+
+		try {
+			return $callback();
+		} finally {
+			$scope->release();
+		}
 	}
 }

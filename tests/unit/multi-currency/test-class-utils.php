@@ -19,27 +19,18 @@ class WCPay_Multi_Currency_Utils_Tests extends WCPAY_UnitTestCase {
 	private $utils;
 
 	/**
-	 * $_SERVER values the is_admin_api_request() tests overwrite.
-	 *
-	 * @var array
-	 */
-	private $original_server;
-
-	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->utils           = new WCPay\MultiCurrency\Utils();
-		$this->original_server = $_SERVER;
+		$this->utils = new WCPay\MultiCurrency\Utils();
 	}
 
 	/**
-	 * Restores $_SERVER and the request context so later suites do not inherit them.
+	 * Restores the request context so later suites do not inherit it.
 	 */
 	public function tear_down() {
-		$_SERVER = $this->original_server;
 		WCPay_Test_Request_Context::reset();
 
 		parent::tear_down();
@@ -145,16 +136,6 @@ class WCPay_Multi_Currency_Utils_Tests extends WCPAY_UnitTestCase {
 		$this->assertTrue( \WCPay\MultiCurrency\Utils::is_cron_request( 'cron' ) );
 	}
 
-	public function test_is_in_order_operation_only_for_order_operations() {
-		$scope = ActiveCurrency::scope( '', 'order.calculate_totals' );
-		$this->assertTrue( \WCPay\MultiCurrency\Utils::is_in_order_operation() );
-		$scope->release();
-
-		$scope = ActiveCurrency::scope( '', 'cart.calculate_totals' );
-		$this->assertFalse( \WCPay\MultiCurrency\Utils::is_in_order_operation() );
-		$scope->release();
-	}
-
 	public function test_is_in_shipping_method_rates_needs_the_rates_operation_and_the_method() {
 		$subject = new \stdClass();
 
@@ -173,11 +154,11 @@ class WCPay_Multi_Currency_Utils_Tests extends WCPAY_UnitTestCase {
 
 		// phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Scope guards, held for their lifetime.
 		$rates = ActiveCurrency::scope( '', 'shipping.rates', $subject );
-		$order = ActiveCurrency::scope( '', 'order.apply_coupon' );
-		$help  = ActiveCurrency::scope( '', 'price.format' );
+		$order = ActiveCurrency::scope( '', 'order' );
+		$help  = ActiveCurrency::scope( '', 'my-plugin.helper' );
 
 		$this->assertTrue( $this->utils->is_in_shipping_method_rates( 'stdClass' ) );
-		$this->assertTrue( \WCPay\MultiCurrency\Utils::is_in_order_operation() );
+		$this->assertTrue( ActiveCurrency::is_in_operation( 'order' ) );
 
 		$help  = null;
 		$order = null;

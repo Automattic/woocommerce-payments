@@ -551,6 +551,29 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
 	}
 
+	public function test_authenticate_rest_request_passes_through_a_store_api_route_woopay_does_not_use() {
+		$request = new WP_REST_Request( 'GET', '/wc/store/v1/products' );
+
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
+	}
+
+	public function test_authenticate_rest_request_accepts_a_store_api_batch_sub_route() {
+		$woopay_user = self::factory()->user->create_and_get();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $woopay_user->ID );
+
+		$this->setup_session( $woopay_user->ID );
+
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/cart/add-item' );
+
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertTrue( WooPay_Session::is_inside_woopay_rest_route() );
+
+		WooPay_Session::end_woopay_rest_request( null, [], $request );
+	}
+
 	public function test_authenticate_rest_request_passes_through_an_existing_error() {
 		$error = new WP_Error( 'other', 'Other error' );
 

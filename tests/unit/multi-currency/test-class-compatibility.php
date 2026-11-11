@@ -167,11 +167,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$inside_order = $this->create_eur_order_mock();
 		$inside_order->expects( $this->once() )->method( 'set_total' )->with( '80.00' );
-		\Automattic\WooCommerce\Currency\ActiveCurrency::run(
-			'',
-			fn() => $this->compatibility->convert_order_prices( [ $inside_order ] ),
-			'admin.new_sales_record'
-		);
+		$this->in_operation( fn() => $this->compatibility->convert_order_prices( [ $inside_order ] ), 'admin.new_sales_record' );
 	}
 
 	/**
@@ -194,5 +190,23 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 		);
 
 		return $order;
+	}
+
+	/**
+	 * Call a function while an ActiveCurrency scope with the given operation and subject is held.
+	 *
+	 * @param callable    $callback  Function to call.
+	 * @param string|null $operation Operation name.
+	 * @param object|null $subject   Operation subject.
+	 * @return mixed What the callback returns.
+	 */
+	private function in_operation( callable $callback, ?string $operation = null, ?object $subject = null ) {
+		$scope = \Automattic\WooCommerce\Currency\ActiveCurrency::scope( '', $operation, $subject );
+
+		try {
+			return $callback();
+		} finally {
+			$scope->release();
+		}
 	}
 }

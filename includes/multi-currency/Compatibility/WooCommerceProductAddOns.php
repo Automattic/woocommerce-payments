@@ -26,7 +26,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	public function init() {
 		// Add needed actions and filters if Product Add Ons is active.
 		if ( class_exists( 'WC_Product_Addons' ) ) {
-			if ( \WCPay\MultiCurrency\Utils::is_non_admin_request() ) {
+			if ( Utils::is_non_admin_request() ) {
 				add_filter( 'woocommerce_product_addons_option_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 				add_filter( 'woocommerce_product_addons_price_raw', [ $this, 'get_addons_price' ], 50, 2 );
 				add_filter( 'woocommerce_product_addons_params', [ $this, 'product_addons_params' ], 50, 1 );

@@ -174,7 +174,7 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 
 		$this->assertSame(
 			12,
-			\Automattic\WooCommerce\Currency\ActiveCurrency::run( '', fn() => $this->woocommerce_bookings->adjust_amount_for_calculated_booking_cost( 12 ), 'cart.add_to_cart' )
+			$this->in_operation( fn() => $this->woocommerce_bookings->adjust_amount_for_calculated_booking_cost( 12 ), 'cart.add_to_cart' )
 		);
 	}
 
@@ -187,7 +187,7 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 
 		$this->assertSame(
 			12,
-			\Automattic\WooCommerce\Currency\ActiveCurrency::run( '', fn() => $this->woocommerce_bookings->get_price( 12 ), 'cart.add_to_cart' )
+			$this->in_operation( fn() => $this->woocommerce_bookings->get_price( 12 ), 'cart.add_to_cart' )
 		);
 	}
 
@@ -196,5 +196,23 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
 
 		$this->assertSame( 42.0, $this->woocommerce_bookings->get_price( 12 ) );
+	}
+
+	/**
+	 * Call a function while an ActiveCurrency scope with the given operation and subject is held.
+	 *
+	 * @param callable    $callback  Function to call.
+	 * @param string|null $operation Operation name.
+	 * @param object|null $subject   Operation subject.
+	 * @return mixed What the callback returns.
+	 */
+	private function in_operation( callable $callback, ?string $operation = null, ?object $subject = null ) {
+		$scope = \Automattic\WooCommerce\Currency\ActiveCurrency::scope( '', $operation, $subject );
+
+		try {
+			return $callback();
+		} finally {
+			$scope->release();
+		}
 	}
 }

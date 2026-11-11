@@ -384,7 +384,7 @@ class FrontendPrices {
 	 * @return Currency|null
 	 */
 	private function get_order_operation_currency(): ?Currency {
-		if ( ! Utils::is_in_order_operation() ) {
+		if ( ! \Automattic\WooCommerce\Currency\ActiveCurrency::is_in_operation( 'order' ) ) {
 			return null;
 		}
 

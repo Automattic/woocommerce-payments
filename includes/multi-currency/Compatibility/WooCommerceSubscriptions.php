@@ -20,12 +20,6 @@ use WCPay\MultiCurrency\Utils;
  */
 class WooCommerceSubscriptions extends BaseCompatibility {
 	/**
-	 * Operation WooPayments announces while it builds the recurring item data of a subscription.
-	 */
-	const OPERATION_RECURRING_ITEM_DATA = 'woocommerce-payments.recurring_item_data';
-
-
-	/**
 	 * Subscription cart item types whose currency comes from the subscription in the cart item's `subscription_id`.
 	 */
 	const SUBSCRIPTION_TYPES = [ 'renewal', 'resubscribe', 'switch' ];
@@ -91,7 +85,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	public function init() {
 		// Add needed actions and filters if WC Subscriptions or WCPay Subscriptions are active.
 		if ( class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Payments_Subscriptions' ) ) {
-			if ( \WCPay\MultiCurrency\Utils::is_non_admin_request() ) {
+			if ( Utils::is_non_admin_request() ) {
 				$this->frontend_currencies = $this->multi_currency->get_frontend_currencies();
 
 				add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
@@ -278,7 +272,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 		// WCPay Subs does a check against the product price and the total, we need to return the actual product price for this check.
 		// Inside the operation, any price read is one of these checks.
-		if ( ActiveCurrency::is_in_operation( self::OPERATION_RECURRING_ITEM_DATA ) ) {
+		if ( ActiveCurrency::is_in_operation( \WC_Payments_Subscription_Service::OPERATION_RECURRING_ITEM_DATA ) ) {
 			return false;
 		}
 
@@ -397,7 +391,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * Maybe sets the current_my_account_subscription var and clears the FrontendCurrencies cache.
 	 *
 	 * The my-subscriptions.php template file calls $subscription->get_formatted_order_total(), which then calls $subscription->get_price_string_details().
-	 * At that point in time, if WooCommerce is running the my-subscriptions operation, we need to add the subscription into $current_my_account_subscription so that we
+	 * At that point in time, if we have certain calls in the backtrace, we need to add the subscription into $current_my_account_subscription so that we
 	 * are able to use it later on in the maybe_get_explicit_format_for_subscription_total filter.
 	 *
 	 * @param array           $subscription_details The details related to the subscription.
@@ -406,13 +400,13 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @return array The unmodified subscription details.
 	 */
 	public function maybe_set_current_my_account_subscription( $subscription_details, $subscription ): array {
-		if ( $this->utils->is_call_in_backtrace(
-			[
-				'WCS_Template_Loader::get_my_subscriptions ',
-				'WC_Subscription->get_formatted_order_total',
-			]
-		) ) {
-			// During the my-subscriptions operation, we set our cached sub and clear the FrontendCurrencies cache.
+		$calls = [
+			'WCS_Template_Loader::get_my_subscriptions ',
+			'WC_Subscription->get_formatted_order_total',
+		];
+
+		if ( $this->utils->is_call_in_backtrace( $calls ) ) {
+			// If we have our calls in the backtrace, we set our cached sub and clear the FrontendCurrencies cache.
 			$this->current_my_account_subscription = $subscription;
 			$this->frontend_currencies->selected_currency_changed();
 		}
@@ -650,7 +644,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 */
 	private function is_coupon_being_stored_in_session(): bool {
 		// Coupons are only copied while one of these carts is set up (early renewal fires the renewal action),
-		// so the operation is not checked on every other coupon read.
+		// so the backtrace is not inspected on every other coupon read.
 		if ( ! doing_action( 'woocommerce_setup_cart_for_subscription_renewal' )
 			&& ! doing_action( 'woocommerce_setup_cart_for_subscription_initial_payment' ) ) {
 			return false;

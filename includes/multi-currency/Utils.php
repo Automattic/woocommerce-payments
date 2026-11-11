@@ -166,15 +166,6 @@ class Utils {
 	}
 
 	/**
-	 * Whether WooCommerce is operating on an order, such as re-applying a coupon to it.
-	 *
-	 * @return bool
-	 */
-	public static function is_in_order_operation(): bool {
-		return ActiveCurrency::is_in_operation_prefix( 'order.' );
-	}
-
-	/**
 	 * The currency a coupon's amount is held in, as WooCommerce reports it. Empty for the store currency.
 	 *
 	 * @param mixed $coupon The coupon object.

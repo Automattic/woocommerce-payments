@@ -168,7 +168,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		// Act/Assert: Confirm the result value is not converted while the recurring item data is built.
 		$this->assertSame(
 			10.0,
-			ActiveCurrency::run( '', fn() => $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product ), 'woocommerce-payments.recurring_item_data' )
+			$this->in_operation( fn() => $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product ), 'woocommerce-payments.recurring_item_data' )
 		);
 	}
 
@@ -239,7 +239,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		// Act/Assert: Confirm the result value is not converted while WooCommerce calculates the cart totals.
 		$this->assertSame(
 			10.0,
-			ActiveCurrency::run( '', fn() => $this->woocommerce_subscriptions->get_subscription_product_signup_fee( 10.0, $this->mock_product ), 'cart.calculate_totals' )
+			$this->in_operation( fn() => $this->woocommerce_subscriptions->get_subscription_product_signup_fee( 10.0, $this->mock_product ), 'cart.calculate_totals' )
 		);
 	}
 
@@ -665,11 +665,11 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$call = fn() => $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product );
 		if ( in_array( 'cart_totals', $matching_backtraces, true ) ) {
 			$inner = $call;
-			$call  = fn() => ActiveCurrency::run( '', $inner, 'cart.calculate_totals' );
+			$call  = fn() => $this->in_operation( $inner, 'cart.calculate_totals' );
 		}
 		if ( in_array( 'recurring_item_data', $matching_backtraces, true ) ) {
 			$inner = $call;
-			$call  = fn() => ActiveCurrency::run( '', $inner, 'woocommerce-payments.recurring_item_data' );
+			$call  = fn() => $this->in_operation( $inner, 'woocommerce-payments.recurring_item_data' );
 		}
 
 		$this->assertSame( $expected, $call() );
@@ -716,8 +716,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 
 		// Arrange: The cart totals are being calculated.
 		// Act/Assert: Only the subscription cart item's own product is left unconverted; the other product is converted.
-		ActiveCurrency::run(
-			'',
+		$this->in_operation(
 			function () use ( $other_product ) {
 				$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
 				$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $other_product ) );
@@ -745,7 +744,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$this->get_mock_subscription_and_session_cart_items( 'renewal' );
 
 		// Act/Assert: With a product given, the session-only renewal no longer blocks conversion.
-		$this->assertTrue( ActiveCurrency::run( '', fn() => $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ), 'cart.calculate_totals' ) );
+		$this->assertTrue( $this->in_operation( fn() => $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ), 'cart.calculate_totals' ) );
 	}
 
 	/**
@@ -759,7 +758,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		WC()->session->set( 'cart', [] );
 
 		// Act/Assert: Without a product, the cart-wide behaviour is preserved.
-		$this->assertFalse( ActiveCurrency::run( '', fn() => $this->woocommerce_subscriptions->should_convert_product_price( true, null ), 'cart.calculate_totals' ) );
+		$this->assertFalse( $this->in_operation( fn() => $this->woocommerce_subscriptions->should_convert_product_price( true, null ), 'cart.calculate_totals' ) );
 	}
 
 	/**
@@ -789,7 +788,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->willReturn( 3000.0 );
 
 		// Act/Assert: The other subscription product's price is converted.
-		$this->assertSame( 3000.0, ActiveCurrency::run( '', fn() => $this->woocommerce_subscriptions->get_subscription_product_price( 20, $other_product ), 'cart.calculate_totals' ) );
+		$this->assertSame( 3000.0, $this->in_operation( fn() => $this->woocommerce_subscriptions->get_subscription_product_price( 20, $other_product ), 'cart.calculate_totals' ) );
 	}
 
 	/**
@@ -806,7 +805,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->method( 'get_price' );
 
 		// Act/Assert: The resubscribe item's own price is returned unchanged.
-		$this->assertSame( 1500, ActiveCurrency::run( '', fn() => $this->woocommerce_subscriptions->get_subscription_product_price( 1500, $this->mock_product ), 'cart.calculate_totals' ) );
+		$this->assertSame( 1500, $this->in_operation( fn() => $this->woocommerce_subscriptions->get_subscription_product_price( 1500, $this->mock_product ), 'cart.calculate_totals' ) );
 	}
 
 	/**
@@ -1524,5 +1523,23 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			$mock_subscription,
 			$cart_items,
 		];
+	}
+
+	/**
+	 * Call a function while an ActiveCurrency scope with the given operation and subject is held.
+	 *
+	 * @param callable    $callback  Function to call.
+	 * @param string|null $operation Operation name.
+	 * @param object|null $subject   Operation subject.
+	 * @return mixed What the callback returns.
+	 */
+	private function in_operation( callable $callback, ?string $operation = null, ?object $subject = null ) {
+		$scope = \Automattic\WooCommerce\Currency\ActiveCurrency::scope( '', $operation, $subject );
+
+		try {
+			return $callback();
+		} finally {
+			$scope->release();
+		}
 	}
 }

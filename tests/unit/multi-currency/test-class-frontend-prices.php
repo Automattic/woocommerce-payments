@@ -823,7 +823,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Sets the currency WooCommerce reports while it operates on an order.
 	 */
-	private function simulate_order_operation( string $order_currency, string $operation = 'order.recalculate_coupons' ): void {
+	private function simulate_order_operation( string $order_currency, string $operation = 'order' ): void {
 		$this->active_scope = null;
 		$this->active_scope = ActiveCurrency::scope( $order_currency, $operation );
 	}

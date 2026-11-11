@@ -297,9 +297,6 @@ class MultiCurrency {
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
-		// With WooCommerce's active currency API, core persists and recalculates the cart currency itself, so the
-		// cart totals currency stamp and its load-time recalculation below are not registered.
-
 		add_action( 'woocommerce_request_context', [ $this, 'select_request_currency_mode' ], 10, 2 );
 		add_filter( 'rest_request_before_callbacks', [ $this, 'enter_rest_route' ], 1, 3 );
 		add_filter( 'rest_request_after_callbacks', [ $this, 'leave_rest_route' ], 9999, 3 );

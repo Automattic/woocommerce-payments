@@ -85,7 +85,7 @@ class Analytics {
 		// If we aren't making a REST request, or no multi currency orders exist in the merchant's store,
 		// return before adding these filters.
 
-		if ( 'rest' !== Utils::get_request_context() || ! $this->has_multi_currency_orders() ) {
+		if ( ! in_array( Utils::get_request_context(), [ 'rest', 'store_api' ], true ) || ! $this->has_multi_currency_orders() ) {
 			return;
 		}
 

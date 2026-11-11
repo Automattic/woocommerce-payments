@@ -90,7 +90,7 @@ class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WCPAY_UnitTestCase {
 
 		$this->assertSame(
 			$is_ups_rates,
-			\Automattic\WooCommerce\Currency\ActiveCurrency::run( '', fn() => $woocommerce_ups->should_return_store_currency( false ), $operation, $subject )
+			$this->in_operation( fn() => $woocommerce_ups->should_return_store_currency( false ), $operation, $subject )
 		);
 	}
 
@@ -101,5 +101,23 @@ class WCPay_Multi_Currency_WooCommerceUPS_Tests extends WCPAY_UnitTestCase {
 			'ups in another operation' => [ 'cart.calculate_totals', new WC_Shipping_UPS(), false ],
 			'no operation'             => [ null, new WC_Shipping_UPS(), false ],
 		];
+	}
+
+	/**
+	 * Call a function while an ActiveCurrency scope with the given operation and subject is held.
+	 *
+	 * @param callable    $callback  Function to call.
+	 * @param string|null $operation Operation name.
+	 * @param object|null $subject   Operation subject.
+	 * @return mixed What the callback returns.
+	 */
+	private function in_operation( callable $callback, ?string $operation = null, ?object $subject = null ) {
+		$scope = \Automattic\WooCommerce\Currency\ActiveCurrency::scope( '', $operation, $subject );
+
+		try {
+			return $callback();
+		} finally {
+			$scope->release();
+		}
 	}
 }

@@ -22,7 +22,6 @@ class WC_Payments_Subscription_Service {
 	 */
 	const OPERATION_RECURRING_ITEM_DATA = 'woocommerce-payments.recurring_item_data';
 
-
 	use WC_Payments_Subscriptions_Utilities;
 
 	/**
@@ -882,9 +881,8 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function get_recurring_item_data_for_subscription( WC_Subscription $subscription ): array {
 		// Announces the operation, so Multi-Currency can tell these reads apart from cart prices. The scope ends with the method.
-		$currency_scope = class_exists( ActiveCurrency::class ) // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Held until the method returns. && method_exists( ActiveCurrency::class, 'scope' )
-			? ActiveCurrency::scope( '', self::OPERATION_RECURRING_ITEM_DATA, $subscription )
-			: null;
+		// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Held until the method returns.
+		$currency_scope = ActiveCurrency::scope( '', self::OPERATION_RECURRING_ITEM_DATA, $subscription );
 
 		$data = [];
 
