@@ -22,6 +22,14 @@ if ( ! defined( 'JETPACK_SYNC_READ_ONLY' ) ) {
 }
 add_filter( 'jetpack_sync_modules', '__return_empty_array', 999 );
 
+/*
+ * For the same reason this preview's URL never matches the one WordPress.com has for the blog. With
+ * identity-crisis handling on, requests ask WordPress.com to compare the two, and the mismatch it
+ * reports back would put this preview into safe mode.
+ */
+add_filter( 'jetpack_should_handle_idc', '__return_false', 999 );
+
+
 // Sandbox connections only: this keeps WooPayments in test mode whatever account is behind the connection.
 add_filter( 'wcpay_dev_mode', '__return_true' );
 

@@ -69,9 +69,10 @@ What it cannot do:
 - **Receive webhooks.** Nothing can reach a site in a browser tab, so anything that arrives by webhook, such as dispute updates, never shows up.
 - **Onboard a new account.** It reuses a connection; it cannot create one.
 
-Three things in the plugin make this work, and should stay:
+Four things in the plugin make this work, and should stay:
 
 - **Jetpack sync is off.** The preview shares a blog ID with the sandbox site. If it synced, WordPress.com would see a second URL for that blog and could put the sandbox site into Jetpack safe mode.
+- **Jetpack identity-crisis handling is off.** The preview's URL never matches the one WordPress.com has for that blog, and the mismatch it would report back puts the preview itself into safe mode.
 - **Two request headers are dropped**, `Idempotency-Key` and `X-Request-Initiated`. In a browser Playground the browser makes PHP's HTTP requests, and WordPress.com does not allow those two headers across origins, so every request carrying them would fail. The server works without them. Without an idempotency key the API client does not retry, so a request that fails in the preview fails once.
 - **A placeholder user may be created.** Jetpack only accepts a user token for the user ID it was issued to, so if the sandbox site's connection owner is not user 1, the preview creates an administrator with that ID.
 
