@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Add a WordPress Playground link to the PR build comment so a PR build can be opened in the browser.
