@@ -1484,16 +1484,38 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function cancel_intent_of_earlier_attempt( WC_Order $order, string $intent_id ): void {
+		$this->cancel_intent_with_note(
+			$order,
+			$intent_id,
+			/* translators: %1: the ID of a WooPayments payment. */
+			__( 'The earlier WooPayments payment <code>%1$s</code> was cancelled because this order was paid with another payment method.', 'woocommerce-payments' ),
+			/* translators: %1: the ID of a WooPayments payment. */
+			__( 'The earlier WooPayments payment <code>%1$s</code> could not be cancelled when this order was paid with another payment method. Check that it was not charged.', 'woocommerce-payments' )
+		);
+	}
+
+	/**
+	 * Cancels an intent and notes on the order whether it worked. Neither a failed cancel nor a failed note
+	 * is thrown, so the caller carries on either way.
+	 *
+	 * @param WC_Order $order             The order to note on.
+	 * @param string   $intent_id         The intent to cancel.
+	 * @param string   $cancelled_message The note when the cancel worked, with the `<code>` tag around `%1$s`.
+	 * @param string   $failed_message    The note when it failed, in the same form.
+	 *
+	 * @return WC_Payments_API_Abstract_Intention|null The cancelled intent, or null when the cancel failed.
+	 */
+	private function cancel_intent_with_note( WC_Order $order, string $intent_id, string $cancelled_message, string $failed_message ) {
+		$cancelled_intent = null;
+
 		try {
 			$request = Cancel_Intention::create( $intent_id );
 			$request->set_hook_args( $order );
-			$request->send();
-			/* translators: %1: the ID of a WooPayments payment. */
-			$message = __( 'The earlier WooPayments payment <code>%1$s</code> was cancelled because this order was paid with another payment method.', 'woocommerce-payments' );
+			$cancelled_intent = $request->send();
+			$message          = $cancelled_message;
 		} catch ( \Throwable $e ) {
 			Logger::error( sprintf( 'Could not cancel intent %1$s of order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
-			/* translators: %1: the ID of a WooPayments payment. */
-			$message = __( 'The earlier WooPayments payment <code>%1$s</code> could not be cancelled when this order was paid with another payment method. Check that it was not charged.', 'woocommerce-payments' );
+			$message = $failed_message;
 		}
 
 		try {
@@ -1501,6 +1523,8 @@ class WC_Payments_Order_Service {
 		} catch ( \Throwable $e ) {
 			Logger::error( sprintf( 'Could not note the cancel of intent %1$s on order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
 		}
+
+		return $cancelled_intent;
 	}
 
 	/**
@@ -2429,23 +2453,16 @@ class WC_Payments_Order_Service {
 	 * @return WC_Payments_API_Abstract_Intention The cancelled intent, or the given one when the cancel failed.
 	 */
 	private function cancel_open_payment_of_cancelled_order( WC_Order $order, $intent ) {
-		$intent_id = $intent->get_id();
-
-		try {
-			$request = Cancel_Intention::create( $intent_id );
-			$request->set_hook_args( $order );
-			$intent = $request->send();
+		$cancelled_intent = $this->cancel_intent_with_note(
+			$order,
+			$intent->get_id(),
 			/* translators: %1: the ID of a WooPayments payment. */
-			$message = __( 'The WooPayments payment <code>%1$s</code> was still open, and was cancelled because the order was cancelled.', 'woocommerce-payments' );
-		} catch ( \Throwable $e ) {
-			Logger::error( sprintf( 'Could not cancel intent %1$s of cancelled order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
+			__( 'The WooPayments payment <code>%1$s</code> was still open, and was cancelled because the order was cancelled.', 'woocommerce-payments' ),
 			/* translators: %1: the ID of a WooPayments payment. */
-			$message = __( 'The WooPayments payment <code>%1$s</code> is still open and could not be cancelled with the order. If the shopper completes it, the order will be paid.', 'woocommerce-payments' );
-		}
+			__( 'The WooPayments payment <code>%1$s</code> is still open and could not be cancelled with the order. If the shopper completes it, the order will be paid.', 'woocommerce-payments' )
+		);
 
-		$this->add_note_naming_intent( $order, $message, $intent_id );
-
-		return $intent;
+		return $cancelled_intent ?? $intent;
 	}
 
 	/**
