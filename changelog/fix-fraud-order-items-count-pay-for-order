@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Use the order quantity for fraud prevention checks when paying an existing order.
