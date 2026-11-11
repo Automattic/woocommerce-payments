@@ -176,41 +176,47 @@ const ConnectAccountPage: React.FC = () => {
 		apiFetch( {
 			path: `/wc/v3/payments/accounts`,
 			method: 'GET',
-		} ).then( ( account ) => {
-			// Simulate the update of the loader progress bar, holding below 100% until the account is ready.
-			updateLoaderProgress( 95, 3 );
+		} )
+			// A failed poll counts as no status yet, so the loop keeps going until the timeout.
+			.catch( () => undefined )
+			.then( ( account ) => {
+				// Simulate the update of the loader progress bar, holding below 100% until the account is ready.
+				updateLoaderProgress( 95, 3 );
 
-			// If the account status is not a pending one, or we've exceeded the timeout,
-			// consider our work done and redirect the merchant.
-			// Otherwise, schedule another check after a 2.5 seconds wait.
-			if (
-				isTestDriveSetupDone(
-					( account as AccountData | undefined )?.status,
-					elapsed( testDriveSetupStartTimeRef.current )
-				)
-			) {
-				setTestDriveLoaderProgress( 100 );
-				const queryArgs = {
-					test_drive: 'true',
-					'wcpay-sandbox-success': 'true',
-					source: determineTrackingSource(),
-					from: 'WCPAY_CONNECT',
-					redirect_to_settings_page:
-						urlParams.get( 'redirect_to_settings_page' ) || '',
-				};
+				// If the account status is not a pending one, or we've exceeded the timeout,
+				// consider our work done and redirect the merchant.
+				// Otherwise, schedule another check after a 2.5 seconds wait.
+				if (
+					isTestDriveSetupDone(
+						( account as AccountData | undefined )?.status,
+						elapsed( testDriveSetupStartTimeRef.current )
+					)
+				) {
+					setTestDriveLoaderProgress( 100 );
+					const queryArgs = {
+						test_drive: 'true',
+						'wcpay-sandbox-success': 'true',
+						source: determineTrackingSource(),
+						from: 'WCPAY_CONNECT',
+						redirect_to_settings_page:
+							urlParams.get( 'redirect_to_settings_page' ) || '',
+					};
 
-				// Redirect to the Connect URL and let it figure it out where to point the merchant.
-				redirectTo(
-					addQueryArgs( connectUrl, {
-						...queryArgs,
-						...extraQueryArgs,
-					} )
-				);
-			} else {
-				// Schedule another check after 2.5 seconds.
-				setTimeout( () => checkAccountStatus( extraQueryArgs ), 2500 );
-			}
-		} );
+					// Redirect to the Connect URL and let it figure it out where to point the merchant.
+					redirectTo(
+						addQueryArgs( connectUrl, {
+							...queryArgs,
+							...extraQueryArgs,
+						} )
+					);
+				} else {
+					// Schedule another check after 2.5 seconds.
+					setTimeout(
+						() => checkAccountStatus( extraQueryArgs ),
+						2500
+					);
+				}
+			} );
 	};
 
 	const handleSetupTestDriveMode = async () => {

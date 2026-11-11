@@ -3,13 +3,15 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import ConnectAccountPage from '..';
+import { redirectTo } from 'wcpay/utils';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -185,5 +187,53 @@ describe( 'ConnectAccountPage', () => {
 			// eslint-disable-next-line max-len
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
 		);
+	} );
+
+	describe( 'test-drive account status polling', () => {
+		const originalFetch = window.fetch;
+
+		beforeEach( () => {
+			// The loader animates with a zero-delay setInterval, which fake timers would spin on.
+			jest.useFakeTimers( {
+				doNotFake: [ 'setInterval', 'clearInterval' ],
+			} );
+			window.history.pushState(
+				{},
+				'',
+				'?auto_start_test_drive_onboarding=true'
+			);
+			window.fetch = jest.fn().mockResolvedValue( {
+				json: () =>
+					Promise.resolve( {
+						success: true,
+						data: {
+							redirect_to:
+								'/wp-admin/admin.php?page=wc-admin&wcpay-connection-success=1',
+						},
+					} ),
+			} );
+		} );
+
+		afterEach( () => {
+			jest.useRealTimers();
+			window.history.pushState( {}, '', '/' );
+			window.fetch = originalFetch;
+		} );
+
+		test( 'keeps polling after a failed request and redirects once the account is complete', async () => {
+			( apiFetch as unknown as jest.Mock )
+				.mockRejectedValueOnce( new Error( 'Internal Server Error' ) )
+				.mockResolvedValueOnce( { status: 'complete' } );
+
+			render( <ConnectAccountPage /> );
+			await act( async () => {
+				await jest.advanceTimersByTimeAsync( 2500 );
+			} );
+
+			expect( apiFetch ).toHaveBeenCalledTimes( 2 );
+			expect( redirectTo ).toHaveBeenCalledWith(
+				expect.stringContaining( 'wcpay-sandbox-success=true' )
+			);
+		} );
 	} );
 } );
