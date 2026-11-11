@@ -10,7 +10,6 @@ namespace WCPay;
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 use WC_Order;
-use WCPay\Exceptions\Rate_Limiter_Enabled_Exception;
 
 /**
  * A wrapper class for keeping track of events in registries, and to trigger a rate limiter after a threshold.
@@ -42,13 +41,6 @@ class Session_Rate_Limiter {
 	const ORDER_REGISTRY_EXPIRY = DAY_IN_SECONDS;
 
 	/**
-	 * Maximum time an unfinished request can block another payment attempt.
-	 *
-	 * @type int
-	 */
-	const ORDER_LOCK_EXPIRY = 5 * MINUTE_IN_SECONDS;
-
-	/**
 	 * Key used to store the registry in the session
 	 *
 	 * @var string
@@ -68,13 +60,6 @@ class Session_Rate_Limiter {
 	 * @var int
 	 */
 	protected $delay;
-
-	/**
-	 * Lock values owned by this request, keyed by option name.
-	 *
-	 * @var string[]
-	 */
-	private $order_locks = [];
 
 	/**
 	 * Session_Rate_Limiter constructor.
@@ -114,72 +99,6 @@ class Session_Rate_Limiter {
 		// a row of its own: parallel attempts each add a row, where rewriting one list would drop the others' declines.
 		$order->add_meta_data( $this->get_order_meta_key(), (string) time() );
 		$order->save();
-	}
-
-	/**
-	 * Holds the order's payment path until the attempt has finished.
-	 *
-	 * @param WC_Order $order The order being paid.
-	 * @throws Rate_Limiter_Enabled_Exception When another attempt owns the order.
-	 */
-	public function acquire_order_lock( WC_Order $order ): void {
-		if ( 'yes' === get_option( 'wcpay_session_rate_limiter_disabled_' . $this->key ) ) {
-			return;
-		}
-
-		global $wpdb;
-
-		$option_name = $this->get_order_lock_option_name( $order );
-		$lock_value  = ( time() + self::ORDER_LOCK_EXPIRY ) . ':' . wp_generate_uuid4();
-		if ( $this->insert_order_lock( $option_name, $lock_value ) ) {
-			$this->order_locks[ $option_name ] = $lock_value;
-			return;
-		}
-
-		// An expired owner cannot release a replacement lock: deletion checks the stored expiry,
-		// and release_order_lock() checks the unique value written by this request.
-		$wpdb->query(
-			$wpdb->prepare(
-				"DELETE FROM `$wpdb->options` WHERE option_name = %s AND CAST(SUBSTRING_INDEX(option_value, ':', 1) AS UNSIGNED) < %d",
-				$option_name,
-				time()
-			)
-		);
-
-		$lock_value = ( time() + self::ORDER_LOCK_EXPIRY ) . ':' . wp_generate_uuid4();
-		if ( $this->insert_order_lock( $option_name, $lock_value ) ) {
-			$this->order_locks[ $option_name ] = $lock_value;
-			return;
-		}
-
-		throw new Rate_Limiter_Enabled_Exception(
-			__( 'Another payment is being processed for this order. Please wait and try again.', 'woocommerce-payments' ),
-			'rate_limiter_order_busy'
-		);
-	}
-
-	/**
-	 * Releases only the lock written by this request.
-	 *
-	 * @param WC_Order $order The order being paid.
-	 */
-	public function release_order_lock( WC_Order $order ): void {
-		$option_name = $this->get_order_lock_option_name( $order );
-		if ( ! isset( $this->order_locks[ $option_name ] ) ) {
-			return;
-		}
-
-		global $wpdb;
-
-		$lock_value = $this->order_locks[ $option_name ];
-		unset( $this->order_locks[ $option_name ] );
-		$wpdb->query(
-			$wpdb->prepare(
-				"DELETE FROM `$wpdb->options` WHERE option_name = %s AND option_value = %s",
-				$option_name,
-				$lock_value
-			)
-		);
 	}
 
 	/**
@@ -236,7 +155,7 @@ class Session_Rate_Limiter {
 	 * @return bool
 	 */
 	private function is_order_limited( WC_Order $order ): bool {
-		// The order may have been loaded before the previous attempt released its lock.
+		// Another attempt may have saved a decline since this order was loaded.
 		$order->read_meta_data( true );
 		$registry = $this->get_order_registry( $order );
 		if ( ! $this->has_reached_threshold( $registry ) ) {
@@ -281,36 +200,6 @@ class Session_Rate_Limiter {
 		}
 
 		return $registry;
-	}
-
-	/**
-	 * Inserts a lock without replacing one owned by another request.
-	 *
-	 * @param string $option_name The option name.
-	 * @param string $lock_value  Expiry and request token.
-	 * @return bool Whether this request acquired the lock.
-	 */
-	private function insert_order_lock( string $option_name, string $lock_value ): bool {
-		global $wpdb;
-
-		// add_option() updates an existing row when two requests race, so its return value cannot act as a lock.
-		return 1 === $wpdb->query(
-			$wpdb->prepare(
-				"INSERT IGNORE INTO `$wpdb->options` (option_name, option_value, autoload) VALUES (%s, %s, 'no')",
-				$option_name,
-				$lock_value
-			)
-		);
-	}
-
-	/**
-	 * Names the lock within this site's options table.
-	 *
-	 * @param WC_Order $order The order being paid.
-	 * @return string
-	 */
-	private function get_order_lock_option_name( WC_Order $order ): string {
-		return 'wcpay_rate_limiter_lock_' . md5( $this->key ) . '_' . $order->get_id();
 	}
 
 	/**

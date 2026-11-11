@@ -1468,19 +1468,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// A card change passes the subscription itself. It lasts for years, and reaching the limit would set it
 		// to failed in the catch below, so its declines count in the session only.
 		$rate_limited_order = function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ? null : $order;
-		if ( null !== $rate_limited_order ) {
-			try {
-				$this->failed_transaction_rate_limiter->acquire_order_lock( $rate_limited_order );
-			} catch ( Rate_Limiter_Enabled_Exception $e ) {
-				wc_add_notice( $e->getMessage(), 'error' );
-
-				return [
-					'result'   => 'failure',
-					'message'  => $e->getMessage(),
-					'redirect' => '',
-				];
-			}
-		}
 
 		try {
 			$is_request_composed_by_woopay = $this->is_request_composed_by_woopay();
@@ -1747,10 +1734,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'result'   => 'fail',
 				'redirect' => '',
 			];
-		} finally {
-			if ( null !== $rate_limited_order ) {
-				$this->failed_transaction_rate_limiter->release_order_lock( $rate_limited_order );
-			}
 		}
 	}
 

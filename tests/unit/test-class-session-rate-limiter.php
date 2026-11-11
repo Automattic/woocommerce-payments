@@ -7,7 +7,6 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Rate_Limiter_Enabled_Exception;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -160,66 +159,17 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 1, wc_get_order( $order->get_id() )->get_meta( '_wcpay_card_declined_registry', false ) );
 	}
 
-	public function test_order_lock_blocks_a_second_attempt_until_released() {
-		$order          = WC_Helper_Order::create_order();
-		$second_attempt = new Session_Rate_Limiter( $this->key, 2, 600 );
-		$this->rate_limiter->acquire_order_lock( $order );
-
-		try {
-			$second_attempt->acquire_order_lock( $order );
-			$this->fail( 'A second attempt acquired the same order lock.' );
-		} catch ( Rate_Limiter_Enabled_Exception $e ) {
-			$this->assertSame( 'rate_limiter_order_busy', $e->get_error_code() );
-		} finally {
-			$this->rate_limiter->release_order_lock( $order );
-		}
-
-		$second_attempt->acquire_order_lock( $order );
-		$second_attempt->release_order_lock( $order );
-	}
-
 	public function test_order_check_refreshes_meta_loaded_before_the_previous_attempt() {
 		$order_id       = WC_Helper_Order::create_order()->get_id();
 		$first_attempt  = wc_get_order( $order_id );
 		$second_attempt = wc_get_order( $order_id );
 		$second_attempt->get_meta( '_wcpay_card_declined_registry', false );
 
-		$this->rate_limiter->acquire_order_lock( $first_attempt );
 		$this->rate_limiter->bump( $first_attempt );
 		$this->rate_limiter->bump( $first_attempt );
-		$this->rate_limiter->release_order_lock( $first_attempt );
 		WC()->session->set( $this->key, [] );
 
-		$this->rate_limiter->acquire_order_lock( $second_attempt );
-		try {
-			$this->assertTrue( $this->rate_limiter->is_limited( $second_attempt ) );
-		} finally {
-			$this->rate_limiter->release_order_lock( $second_attempt );
-		}
-	}
-
-	public function test_expired_order_lock_can_be_replaced_without_releasing_the_new_owner() {
-		global $wpdb;
-
-		$order          = WC_Helper_Order::create_order();
-		$option_name    = 'wcpay_rate_limiter_lock_' . md5( $this->key ) . '_' . $order->get_id();
-		$second_attempt = new Session_Rate_Limiter( $this->key, 2, 600 );
-		$third_attempt  = new Session_Rate_Limiter( $this->key, 2, 600 );
-		$this->rate_limiter->acquire_order_lock( $order );
-		$wpdb->update( $wpdb->options, [ 'option_value' => '0:expired' ], [ 'option_name' => $option_name ] );
-
-		try {
-			$second_attempt->acquire_order_lock( $order );
-			$this->rate_limiter->release_order_lock( $order );
-			try {
-				$third_attempt->acquire_order_lock( $order );
-				$this->fail( 'The old owner released a replacement lock.' );
-			} catch ( Rate_Limiter_Enabled_Exception $e ) {
-				$this->assertSame( 'rate_limiter_order_busy', $e->get_error_code() );
-			}
-		} finally {
-			$second_attempt->release_order_lock( $order );
-		}
+		$this->assertTrue( $this->rate_limiter->is_limited( $second_attempt ) );
 	}
 
 	public function test_disabled_option_turns_off_the_order_registry() {
