@@ -92,6 +92,17 @@ class WC_Payments_Order_Service {
 	];
 
 	/**
+	 * Intent statuses of a payment that took no money yet and can still be completed and cancelled.
+	 *
+	 * @const string[]
+	 */
+	const OPEN_INTENT_STATUSES = [
+		Intent_Status::REQUIRES_ACTION,
+		Intent_Status::REQUIRES_CONFIRMATION,
+		Intent_Status::REQUIRES_PAYMENT_METHOD,
+	];
+
+	/**
 	 * Meta key used to store the charge risk level.
 	 *
 	 * @const string
@@ -2388,6 +2399,13 @@ class WC_Payments_Order_Service {
 							$order->delete_meta_data( '_wcpay_net' );
 					}
 
+					// A payment that is still open can be completed after the order was cancelled, which charges the
+					// shopper and brings the order back: one waiting for 3DS or a redirect in the browser, a declined
+					// or unconfirmed one by anyone holding its client secret. One being processed can't be cancelled.
+					if ( in_array( $intent->get_status(), self::OPEN_INTENT_STATUSES, true ) && $this->is_intent_created_for_order( $intent, $order ) ) {
+						$intent = $this->cancel_open_payment_of_cancelled_order( $order, $intent );
+					}
+
 					$this->set_intention_status_for_order( $order, $intent->get_status() );
 					$order->save();
 				} catch ( \Exception $e ) {
@@ -2400,6 +2418,58 @@ class WC_Payments_Order_Service {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Cancels a payment that is still open when its order is cancelled, and notes the outcome.
+	 *
+	 * @param WC_Order                           $order  The cancelled order.
+	 * @param WC_Payments_API_Abstract_Intention $intent The order's intent, in one of the open statuses.
+	 *
+	 * @return WC_Payments_API_Abstract_Intention The cancelled intent, or the given one when the cancel failed.
+	 */
+	private function cancel_open_payment_of_cancelled_order( WC_Order $order, $intent ) {
+		$intent_id = $intent->get_id();
+
+		try {
+			$request = Cancel_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
+			/* translators: %1: the ID of a WooPayments payment. */
+			$message = __( 'The WooPayments payment <code>%1$s</code> was still open, and was cancelled because the order was cancelled.', 'woocommerce-payments' );
+		} catch ( \Throwable $e ) {
+			Logger::error( sprintf( 'Could not cancel intent %1$s of cancelled order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
+			/* translators: %1: the ID of a WooPayments payment. */
+			$message = __( 'The WooPayments payment <code>%1$s</code> is still open and could not be cancelled with the order. If the shopper completes it, the order will be paid.', 'woocommerce-payments' );
+		}
+
+		$this->add_note_naming_intent( $order, $message, $intent_id );
+
+		return $intent;
+	}
+
+	/**
+	 * Whether an intent was created for an order, going by the intent's own metadata.
+	 *
+	 * An order can name an intent created for another order, as one copied from a subscription.
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent The intent.
+	 * @param WC_Order                           $order  The order.
+	 *
+	 * @return bool
+	 */
+	private function is_intent_created_for_order( $intent, WC_Order $order ): bool {
+		$metadata = $intent->get_metadata();
+		$order_id = $order->get_id();
+
+		if ( is_numeric( $metadata['order_id'] ?? '' ) && (int) $metadata['order_id'] === $order_id ) {
+			return true;
+		}
+
+		// WooPay intents name the store's order by its number.
+		return filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN )
+			&& is_numeric( $metadata['order_number'] ?? '' )
+			&& (int) $metadata['order_number'] === $order_id;
 	}
 
 	/**
