@@ -643,12 +643,6 @@ parameters:
 			path: includes/class-wc-payments-order-service.php
 
 		-
-			rawMessage: 'Strict comparison using !== between null and WC_Order will always evaluate to true.'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: includes/class-wc-payments-order-service.php
-
-		-
 			rawMessage: 'Strict comparison using !== between null and string will always evaluate to true.'
 			identifier: notIdentical.alwaysTrue
 			count: 2
