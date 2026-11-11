@@ -169,7 +169,7 @@ class WCPay_Playground_Demo_Http implements WC_Payments_Http_Interface {
 	 */
 	private function load_fixture( string $method, string $route ) {
 		// The route becomes a file path, so only plain path characters get through.
-		if ( ! preg_match( '#^[A-Z]+$#', $method ) || ! preg_match( '#^[a-z0-9_-]+(/[a-z0-9_-]+)*$#', $route ) ) {
+		if ( ! preg_match( '#^[A-Z]+$#', $method ) || ! preg_match( '#^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$#', $route ) ) {
 			return null;
 		}
 
