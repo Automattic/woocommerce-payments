@@ -168,6 +168,7 @@ function wcpay_playground_handle_connect() {
 	Jetpack_Options::update_option( 'master_user', $owner_id );
 	Jetpack_Options::update_option( 'blog_token', $blog_token );
 	Jetpack_Options::update_option( 'user_tokens', [ $owner_id => $user_token ] );
+	wcpay_playground_clear_cached_server_data();
 
 	// The check against the server happens on the next request, once Jetpack has loaded with the new tokens.
 	wcpay_playground_redirect_to_connect_page( [ 'wcpay-playground-connected' => 1 ] );
@@ -185,11 +186,19 @@ function wcpay_playground_handle_disconnect() {
 	if ( class_exists( 'Jetpack_Options' ) ) {
 		Jetpack_Options::delete_option( [ 'id', 'master_user', 'blog_token', 'user_tokens' ] );
 	}
-	if ( class_exists( 'WC_Payments' ) ) {
-		WC_Payments::get_account_service()->clear_cache();
-	}
+	wcpay_playground_clear_cached_server_data();
 
 	wcpay_playground_redirect_to_connect_page();
+}
+
+/**
+ * Forgets everything WooPayments has cached from the server, so data from one connection
+ * is never shown under another.
+ */
+function wcpay_playground_clear_cached_server_data() {
+	if ( class_exists( 'WC_Payments' ) ) {
+		WC_Payments::get_database_cache()->delete_all();
+	}
 }
 
 /**
