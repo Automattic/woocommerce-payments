@@ -805,8 +805,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * An order still awaiting payment can name a payment it is not being paid with, so a failure for
-	 * another one still fails it.
+	 * Records current behavior, not a requirement: only an order on hold ignores the failure of a payment it
+	 * no longer names, so a late failure of an earlier attempt still fails a pending order waiting on a
+	 * retry's 3DS. Extending the check to pending orders is left to WOOPMNT-6681.
 	 */
 	public function test_payment_intent_failed_still_fails_a_pending_order_that_names_another_payment() {
 		$order = $this->create_order_waiting_on_a_payment( Order_Status::PENDING, Intent_Status::REQUIRES_ACTION );
