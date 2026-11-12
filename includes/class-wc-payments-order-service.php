@@ -2210,6 +2210,7 @@ class WC_Payments_Order_Service {
 			)
 		);
 
+		$this->clear_stale_fraud_data_for_order( $order );
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
