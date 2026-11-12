@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Load the card form on My account > Add payment method when the cart total is over the payment method's amount limit.
