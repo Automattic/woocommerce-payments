@@ -277,6 +277,40 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
 	} );
 
+	test( 'renders a partially captured charge as paid at the captured amount', async () => {
+		const charge = getBaseCharge();
+		charge.amount_captured = 1000;
+		charge.amount_refunded = 1000;
+		charge.refunded = false;
+		charge.refunds?.data.push( {
+			status: 'succeeded',
+			balance_transaction: {
+				amount: -1000,
+				currency: 'usd',
+				reporting_category: 'partial_capture_reversal',
+			},
+		} );
+
+		renderCharge( charge );
+
+		screen.getByText( 'Paid' );
+		screen.getByText( '$10.00' );
+		screen.getByText( /^Authorized: \$20\.00/ );
+		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Transaction actions/i } )
+		);
+		await userEvent.click(
+			await screen.findByRole( 'menuitem', { name: 'Refund in full' } )
+		);
+		expect(
+			await screen.findByText( /This will issue a full refund of/ )
+		).toHaveTextContent(
+			'This will issue a full refund of $10.00 to the customer.'
+		);
+	} );
+
 	test( 'renders the Tap to Pay channel from metadata with ios COTS_DEVICE', () => {
 		const charge = getBaseCharge();
 		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );
