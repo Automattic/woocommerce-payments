@@ -206,7 +206,9 @@ jobs:
           - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments          
           
           #### Option 2. Jurassic Ninja - available for logged-in A12s
-         
+
+          :warning: Log in at [jurassic.ninja](https://jurassic.ninja/) first. Without a login, the link below takes you to the Jurassic Ninja homepage and no site is created.
+
           :rocket: [Launch a JN site with this branch and sample products](https://jurassic.ninja/create/?jetpack-beta&nojetpack&woocommerce&woocommerce-import-sample-data&woocommerce-payments-dev-tools&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
           :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
