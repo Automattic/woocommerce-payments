@@ -256,8 +256,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 		if ( $order && ( $order->is_paid() || $order->has_status( 'on-hold' ) ) ) {
 			Logger::info(
 				sprintf(
-					'invoice.payment_failed webhook processing for %s was skipped. Order #%d is %s, so the invoice was already paid.',
+					'invoice.payment_failed webhook processing for %s (attempt %d) was skipped because order #%d is %s.',
 					$wcpay_invoice_id,
+					$attempts,
 					$order->get_id(),
 					$order->get_status()
 				)

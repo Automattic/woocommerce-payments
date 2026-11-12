@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 
 /**
@@ -562,8 +563,12 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_invoice_payment_failed_ignored_when_order_already_paid( string $order_status, int $attempt_count ) {
 		$wcpay_invoice_id = 'ii_paidInvoiceID';
+		$charge_id        = 'ch_paid';
 		$test_body        = $this->get_mock_test_body( 'sub_invoicePaid', 'cus_paid1234', $wcpay_invoice_id, 'pi_paid', $attempt_count );
-		$renewal_order    = WC_Helper_Order::create_order();
+
+		$test_body['data']['object']['charge'] = $charge_id;
+
+		$renewal_order = WC_Helper_Order::create_order();
 		$renewal_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $wcpay_invoice_id );
 		$renewal_order->set_status( $order_status );
 		$renewal_order->save();
@@ -579,11 +584,14 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$this->mock_invoice_service->expects( $this->never() )->method( 'set_order_invoice_id' );
 		$this->mock_invoice_service->expects( $this->never() )->method( 'mark_pending_invoice_for_subscription' );
 		$this->mock_invoice_service->expects( $this->never() )->method( 'record_subscription_payment_context' );
+		$this->mock_wcpay_request( Get_Charge::class, 0, $charge_id );
 
 		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
 
 		$this->assertSame( 'active', $mock_subscription->get_status() );
 		$this->assertSame( $order_status, wc_get_order( $renewal_order->get_id() )->get_status() );
+
+		WC_Subscriptions::set_wcs_get_subscriptions( null );
 	}
 
 	/**
@@ -631,6 +639,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
 
 		$this->assertSame( 'on-hold', $mock_subscription->get_status() );
+
+		WC_Subscriptions::set_wcs_get_subscriptions( null );
 	}
 
 	/**
