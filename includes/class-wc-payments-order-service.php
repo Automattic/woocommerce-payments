@@ -2091,7 +2091,7 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 		} else {
-			$this->clear_fraud_block_for_order( $order );
+			$this->clear_stale_fraud_data_for_order( $order );
 		}
 
 		if ( ! $this->intent_has_card_payment_type( $intent_data ) ) {
@@ -2104,17 +2104,28 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Removes the fraud data of an earlier blocked attempt from an order whose payment went through.
+	 * Removes the fraud data of an earlier blocked or reviewed attempt when a later payment has no fraud outcome.
 	 *
-	 * A payment without a fraud outcome, like a scheduled renewal retry, writes no fraud data of its own,
-	 * so the paid order would still show as blocked and could be cancelled by mistake.
+	 * Without a new fraud outcome, the earlier attempt's warning would remain on the order after payment.
+	 * Approved outcomes already describe a successful payment and stay on the order.
 	 *
 	 * @param WC_Order $order Order object.
 	 *
 	 * @return void
 	 */
-	private function clear_fraud_block_for_order( $order ) {
-		if ( Fraud_Meta_Box_Type::BLOCK !== $this->get_fraud_meta_box_type_for_order( $order ) ) {
+	private function clear_stale_fraud_data_for_order( $order ) {
+		$meta_box_type = $this->get_fraud_meta_box_type_for_order( $order );
+		if ( ! in_array(
+			$meta_box_type,
+			[
+				Fraud_Meta_Box_Type::BLOCK,
+				Fraud_Meta_Box_Type::REVIEW,
+				Fraud_Meta_Box_Type::REVIEW_BLOCKED,
+				Fraud_Meta_Box_Type::REVIEW_EXPIRED,
+				Fraud_Meta_Box_Type::REVIEW_FAILED,
+			],
+			true
+		) ) {
 			return;
 		}
 
@@ -2224,7 +2235,7 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_ALLOW );
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::ALLOW );
 		} else {
-			$this->clear_fraud_block_for_order( $order );
+			$this->clear_stale_fraud_data_for_order( $order );
 		}
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
@@ -2283,6 +2294,8 @@ class WC_Payments_Order_Service {
 			$fraud_meta_box_type = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
 			$this->set_fraud_outcome_status_for_order( $order, $fraud_outcome );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
+		} else {
+			$this->clear_stale_fraud_data_for_order( $order );
 		}
 		$this->attach_transaction_fee_to_order( $order, $intent->get_charge() );
 		$this->update_order_status( $order, 'payment_complete', $intent_id );
