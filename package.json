@@ -220,7 +220,7 @@
 		"shelljs": "0.10.0",
 		"stream-browserify": "3.0.0",
 		"stylelint": "13.13.1",
-		"stylelint-config-prettier": "8.0.2",
+		"stylelint-config-prettier": "9.0.5",
 		"tinycolor2": "1.6.0",
 		"ts-jest": "29.4.12",
 		"ts-loader": "9.6.2",
