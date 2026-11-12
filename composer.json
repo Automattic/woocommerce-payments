@@ -23,7 +23,7 @@
     "require": {
         "php": ">=7.3",
         "ext-json": "*",
-        "automattic/jetpack-connection": "9.13.0",
+        "automattic/jetpack-connection": "9.16.2",
         "automattic/jetpack-config": "4.0.1",
         "automattic/jetpack-autoloader": "6.0.2",
         "automattic/jetpack-sync": "5.4.1",
