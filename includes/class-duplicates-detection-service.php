@@ -219,7 +219,7 @@ class Duplicates_Detection_Service {
 	/**
 	 * Lazy load registered gateways.
 	 *
-	 * @return array Registered gateways.
+	 * @return \WC_Payment_Gateway[] Registered gateways.
 	 */
 	private function get_registered_gateways() {
 		if ( null === $this->registered_gateways ) {
