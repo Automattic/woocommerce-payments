@@ -501,9 +501,9 @@ class WC_Payments_Order_Service {
 			case Intent_Status::PROCESSING:
 			case Intent_Status::REQUIRES_CAPTURE:
 				if ( Rule::FRAUD_OUTCOME_REVIEW === $intent_data['fraud_outcome'] ) {
-					$this->mark_order_held_for_review_for_fraud( $order, $intent_data );
+					$this->mark_order_held_for_review_for_fraud( $order, $intent, $intent_data );
 				} else {
-					$this->mark_payment_authorized( $order, $intent_data );
+					$this->mark_payment_authorized( $order, $intent, $intent_data );
 				}
 				break;
 			case Intent_Status::REQUIRES_ACTION:
@@ -2117,6 +2117,19 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Checks whether a payment intent is for less than the order's current total, in the same currency.
+	 *
+	 * @param WC_Payments_API_Payment_Intention $intent The intent to compare.
+	 * @param WC_Order                          $order  The order to compare against.
+	 *
+	 * @return bool
+	 */
+	private function intent_amount_below_order_total( WC_Payments_API_Payment_Intention $intent, WC_Order $order ): bool {
+		return strtolower( $intent->get_currency() ) === strtolower( $order->get_currency() )
+			&& (int) $intent->get_amount() < WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+	}
+
+	/**
 	 * Puts an order on hold when its payment succeeded for an amount or currency that differs from the order total.
 	 *
 	 * @param WC_Order                          $order       Order object.
@@ -2171,13 +2184,14 @@ class WC_Payments_Order_Service {
 	/**
 	 * Updates an order to on-hold status, while adding a note with a link to the transaction.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param array    $intent_data   The intent data associated with this order.
+	 * @param WC_Order                           $order       Order object.
+	 * @param WC_Payments_API_Abstract_Intention $intent      The authorized intent.
+	 * @param array                              $intent_data The intent data associated with this order.
 	 *
 	 * @return void
 	 */
-	private function mark_payment_authorized( $order, $intent_data ) {
-		$note = $this->generate_payment_authorized_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+	private function mark_payment_authorized( $order, WC_Payments_API_Abstract_Intention $intent, $intent_data ) {
+		$note = $this->generate_payment_authorized_note( $order, $intent, $intent_data['intent_id'], $intent_data['charge_id'] );
 		if ( $this->order_note_exists( $order, $note )
 			|| $order->has_status( [ Order_Status::ON_HOLD ] ) ) {
 			return;
@@ -2276,15 +2290,16 @@ class WC_Payments_Order_Service {
 	/**
 	 * Changes status to On-Hold, adds fraud meta data, and adds the fraud held for review note.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param array    $intent_data   The intent data associated with this order.
+	 * @param WC_Order                           $order       Order object.
+	 * @param WC_Payments_API_Abstract_Intention $intent      The intent held for review.
+	 * @param array                              $intent_data The intent data associated with this order.
 	 *
 	 * @return void
 	 */
-	private function mark_order_held_for_review_for_fraud( $order, $intent_data ) {
+	private function mark_order_held_for_review_for_fraud( $order, WC_Payments_API_Abstract_Intention $intent, $intent_data ) {
 		$ruleset_results = $intent_data['fraud_ruleset_results'] ?? [];
 
-		$note = $this->generate_fraud_held_for_review_note( $order, $intent_data['intent_id'], $intent_data['charge_id'], $ruleset_results );
+		$note = $this->generate_fraud_held_for_review_note( $order, $intent, $intent_data['intent_id'], $intent_data['charge_id'], $ruleset_results );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -2754,13 +2769,14 @@ class WC_Payments_Order_Service {
 	/**
 	 * Generates the payment authorized order note.
 	 *
-	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param WC_Order                           $order     Order object.
+	 * @param WC_Payments_API_Abstract_Intention $intent    The authorized intent.
+	 * @param string                             $intent_id The ID of the intent associated with this order.
+	 * @param string                             $charge_id The charge ID related to the intent/order.
 	 *
 	 * @return string
 	 */
-	private function generate_payment_authorized_note( $order, $intent_id, $charge_id ): string {
+	private function generate_payment_authorized_note( $order, WC_Payments_API_Abstract_Intention $intent, $intent_id, $charge_id ): string {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -2771,13 +2787,74 @@ class WC_Payments_Order_Service {
 					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order ),
+			$this->get_intent_amount_for_note( $order, $intent ),
 			'WooPayments',
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
 			$transaction_url
 		);
 
-		return $note;
+		$warning = $this->get_capture_shortfall_warning( $order, $intent );
+		return '' === $warning ? $note : $note . ' ' . $warning;
+	}
+
+	/**
+	 * Formats the amount an intent holds, for order notes.
+	 *
+	 * A merchant can edit a pending order while the shopper is still paying, so the order total
+	 * isn't always what Stripe holds.
+	 *
+	 * @param WC_Order                           $order  Order object.
+	 * @param WC_Payments_API_Abstract_Intention $intent The intent.
+	 *
+	 * @return string
+	 */
+	private function get_intent_amount_for_note( WC_Order $order, WC_Payments_API_Abstract_Intention $intent ): string {
+		if ( ! $intent instanceof WC_Payments_API_Payment_Intention ) {
+			return $this->get_order_amount( $order );
+		}
+
+		$intent_currency = strtoupper( $intent->get_currency() );
+		$amount          = WC_Payments_Multi_Currency()->get_backend_formatted_wc_price(
+			WC_Payments_Utils::interpret_stripe_amount( (int) $intent->get_amount(), $intent_currency ),
+			[ 'currency' => $intent_currency ]
+		);
+		if ( strtoupper( $order->get_currency() ) === $intent_currency ) {
+			return WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $amount, $intent_currency );
+		}
+
+		// Without Multi-Currency there's no code, and "$12.00" on a CAD order reads as CAD.
+		if ( false === strpos( WC_Payments_Utils::decode_html_entities( wp_strip_all_tags( $amount ) ), $intent_currency ) ) {
+			$amount .= ' ' . $intent_currency;
+		}
+
+		return $amount;
+	}
+
+	/**
+	 * Warns the merchant when capturing the order total would fail because the authorization is lower.
+	 *
+	 * @param WC_Order                           $order  Order object.
+	 * @param WC_Payments_API_Abstract_Intention $intent The intent.
+	 *
+	 * @return string The warning, or an empty string when the authorization covers the order total.
+	 */
+	private function get_capture_shortfall_warning( WC_Order $order, WC_Payments_API_Abstract_Intention $intent ): string {
+		if ( ! $intent instanceof WC_Payments_API_Payment_Intention ) {
+			return '';
+		}
+		// Processing intents (async methods like SEPA) aren't waiting on a manual capture.
+		if ( Intent_Status::REQUIRES_CAPTURE !== $intent->get_status() ) {
+			return '';
+		}
+		if ( ! $this->intent_amount_below_order_total( $intent, $order ) ) {
+			return '';
+		}
+
+		return sprintf(
+			/* translators: %1: the order total */
+			esc_html__( 'The order total, %1$s, is higher than the authorized amount, so capturing the full total will fail. Lower the order total or cancel the authorization.', 'woocommerce-payments' ),
+			$this->get_order_amount( $order )
+		);
 	}
 
 	/**
@@ -2921,14 +2998,15 @@ class WC_Payments_Order_Service {
 	/**
 	 * Generates the fraud held for review order note.
 	 *
-	 * @param WC_Order $order           Order object.
-	 * @param string   $intent_id       The ID of the intent associated with this order.
-	 * @param string   $charge_id       The charge ID related to the intent/order.
-	 * @param array    $ruleset_results The risk filter results that held the payment for review, as a map of rule key => outcome.
+	 * @param WC_Order                           $order           Order object.
+	 * @param WC_Payments_API_Abstract_Intention $intent          The intent held for review.
+	 * @param string                             $intent_id       The ID of the intent associated with this order.
+	 * @param string                             $charge_id       The charge ID related to the intent/order.
+	 * @param array                              $ruleset_results The risk filter results that held the payment for review, as a map of rule key => outcome.
 	 *
 	 * @return string
 	 */
-	private function generate_fraud_held_for_review_note( $order, $intent_id, $charge_id, array $ruleset_results = [] ): string {
+	private function generate_fraud_held_for_review_note( $order, WC_Payments_API_Abstract_Intention $intent, $intent_id, $charge_id, array $ruleset_results = [] ): string {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url(
 			$intent_id,
 			$charge_id,
@@ -2938,8 +3016,8 @@ class WC_Payments_Order_Service {
 			]
 		);
 
-		return $this->generate_fraud_note(
-			$order,
+		$note = $this->generate_fraud_note(
+			$this->get_intent_amount_for_note( $order, $intent ),
 			$transaction_url,
 			$ruleset_results,
 			/* translators: %1: the amount held for review, %2: the list of risk filters that held the payment for review */
@@ -2947,6 +3025,9 @@ class WC_Payments_Order_Service {
 			/* translators: %1: the amount held for review */
 			__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' )
 		);
+
+		$warning = $this->get_capture_shortfall_warning( $order, $intent );
+		return '' === $warning ? $note : $note . '<br><br>' . $warning;
 	}
 
 	/**
@@ -2971,7 +3052,7 @@ class WC_Payments_Order_Service {
 		);
 
 		return $this->generate_fraud_note(
-			$order,
+			$this->get_order_amount( $order ),
 			$transaction_url,
 			$ruleset_results,
 			/* translators: %1: the blocked amount, %2: the list of risk filters that blocked the payment */
@@ -2986,15 +3067,15 @@ class WC_Payments_Order_Service {
 	 * fired risk filters and a generic fallback when none are known (e.g. card-testing-prevention
 	 * blocks, which carry no ruleset data).
 	 *
-	 * @param WC_Order $order                 Order object.
-	 * @param string   $transaction_url       Transaction details URL, or an empty string when none is available.
-	 * @param array    $ruleset_results       The risk filter results, as a map of rule key => outcome.
-	 * @param string   $with_filters_template Translated template used when the fired risk filters are known. Takes the amount, the risk filter list, and the transaction URL, in that order.
-	 * @param string   $generic_template      Translated fallback template used when no risk filters are known. Takes the amount and the transaction URL, in that order.
+	 * @param string $amount                The formatted payment amount.
+	 * @param string $transaction_url       Transaction details URL, or an empty string when none is available.
+	 * @param array  $ruleset_results       The risk filter results, as a map of rule key => outcome.
+	 * @param string $with_filters_template Translated template used when the fired risk filters are known. Takes the amount, the risk filter list, and the transaction URL, in that order.
+	 * @param string $generic_template      Translated fallback template used when no risk filters are known. Takes the amount and the transaction URL, in that order.
 	 *
 	 * @return string
 	 */
-	private function generate_fraud_note( WC_Order $order, string $transaction_url, array $ruleset_results, string $with_filters_template, string $generic_template ): string {
+	private function generate_fraud_note( string $amount, string $transaction_url, array $ruleset_results, string $with_filters_template, string $generic_template ): string {
 		$labels = Fraud_Risk_Tools::get_ruleset_result_labels( $ruleset_results );
 
 		if ( [] !== $labels ) {
@@ -3009,7 +3090,7 @@ class WC_Payments_Order_Service {
 						'a'      => ! empty( $transaction_url ) ? '<a href="%3$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 					]
 				),
-				$this->get_order_amount( $order ),
+				$amount,
 				$rules_list,
 				$transaction_url
 			);
@@ -3024,7 +3105,7 @@ class WC_Payments_Order_Service {
 					'a'      => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order ),
+			$amount,
 			$transaction_url
 		);
 	}
