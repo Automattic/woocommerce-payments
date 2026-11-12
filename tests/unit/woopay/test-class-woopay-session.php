@@ -1250,6 +1250,65 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_ajax_init_woopay_logs_the_result_but_not_the_redirect_url() {
+		$redirect_url = 'https://pay.woo.com/woopay/?platform_checkout_key=checkout-key&user_session=shopper-user-session';
+
+		WC_Payments::mode()->dev();
+
+		// The Jetpack client signs with a `key.secret` token, so the request reaches the HTTP layer.
+		Jetpack_Options::update_option( 'blog_token', 'test.secret' );
+
+		$messages = [];
+		add_filter(
+			'woocommerce_logger_log_message',
+			function ( $message ) use ( &$messages ) {
+				$messages[] = $message;
+
+				return $message;
+			}
+		);
+
+		// Runs after the handler helper's request block, so WooPay answers.
+		add_filter(
+			'pre_http_request',
+			function () use ( $redirect_url ) {
+				return [
+					'headers'  => [],
+					'body'     => wp_json_encode(
+						[
+							'result' => 'success',
+							'url'    => $redirect_url,
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+					'cookies'  => [],
+					'filename' => null,
+				];
+			},
+			20
+		);
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = home_url();
+		$_REQUEST['_ajax_nonce']   = wp_create_nonce( 'wcpay_init_woopay_nonce' );
+
+		$response = $this->call_ajax_handler( 'ajax_init_woopay' );
+
+		$this->assertSame(
+			[
+				'result' => 'success',
+				'url'    => 'https://pay.woo.com/woopay/?platform_checkout_key=checkout-key&user_session=shopper-user-session',
+			],
+			$response
+		);
+		$this->assertContains( 'WooPay init result: success', $messages );
+		$this->assertStringNotContainsString( 'checkout-key', implode( "\n", $messages ) );
+		$this->assertStringNotContainsString( 'shopper-user-session', implode( "\n", $messages ) );
+	}
+
 	public function test_ajax_set_woopay_phone_number_refuses_a_cross_origin_post() {
 		$_SERVER['REQUEST_METHOD'] = 'POST';
 		$_SERVER['HTTP_ORIGIN']    = 'https://elsewhere.example';
