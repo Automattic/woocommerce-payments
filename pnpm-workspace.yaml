@@ -51,7 +51,8 @@ overrides:
   '@types/react-dom': '19.2.7'
 
 packageExtensions:
-  # dataviews' `wp` build bundles @wordpress/components' date pickers, which import react-day-picker, but dataviews doesn't declare it.
+  # dataviews' `wp` build imports these packages without declaring them.
   '@wordpress/dataviews@14':
     dependencies:
       react-day-picker: '^9.7.0'
+      is-plain-object: '5.0.0'
