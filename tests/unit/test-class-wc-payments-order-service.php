@@ -4837,7 +4837,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
 		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
 
-		$this->assertSame( 1, substr_count( $this->order_note_contents(), 'A WooPayments authorization (<code>ch_test_open_authorization</code>) is still open' ) );
+		$this->assertSame( 1, substr_count( $this->order_note_contents(), '%2Fpayments%2Ftransactions%2Fdetails&id=pi_test_open_authorization" target="_blank" rel="noopener noreferrer">pi_test_open_authorization</a>) is still open' ) );
 		$this->assertSame( 'requires_capture', $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
 	}
 

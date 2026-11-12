@@ -4454,7 +4454,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'on-hold', $order->get_status() );
 		$this->assertSame( $stored_charge_id, $order->get_meta( '_charge_id' ) );
 		$this->assertSame( 'canceled', $order->get_meta( '_intention_status' ) );
-		$this->assertStringContainsString( 'This order now uses another payment method, so its status was not changed.', $this->get_order_notes_text( $order ) );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_expired" target="_blank" rel="noopener noreferrer">pi_expired</a>) expired. This order now uses another payment method, so its status was not changed.', $this->get_order_notes_text( $order ) );
 	}
 
 	/**

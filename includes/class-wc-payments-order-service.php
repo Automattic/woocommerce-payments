@@ -2448,13 +2448,15 @@ class WC_Payments_Order_Service {
 					// Capturing here would charge the shopper on top of whatever the order's payment method took.
 					// Canceling can't be undone and the switch may be a mistake, so the merchant decides.
 					if ( $is_open_authorization && ! $is_woopayments_order ) {
-						$note = sprintf(
+						$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge->get_id() );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the ID of a WooPayments charge. */
-								__( 'A WooPayments authorization (<code>%1$s</code>) is still open, but this order now uses another payment method, so it was not captured. Capture it under Payments > Transactions > Uncaptured, or let it expire.', 'woocommerce-payments' ),
-								[ 'code' => '<code>' ]
+								/* translators: %1: the ID of a WooPayments payment, %2: payment details URL. */
+								__( 'A WooPayments authorization (<a>%1$s</a>) is still open, but this order now uses another payment method, so it was not captured. Capture it under Payments > Transactions > Uncaptured, or let it expire.', 'woocommerce-payments' ),
+								[ 'a' => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>' ]
 							),
-							$charge->get_id()
+							esc_html( WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge->get_id() ) ),
+							$transaction_url
 						);
 						if ( ! $this->order_note_exists( $order, $note ) ) {
 							$order->add_order_note( $note );
