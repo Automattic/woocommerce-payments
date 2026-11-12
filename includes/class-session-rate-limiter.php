@@ -9,6 +9,8 @@ namespace WCPay;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
+use WC_Payments_Utils;
+
 /**
  * Counts events for the current WooCommerce session, and limits further attempts after a threshold.
  *
@@ -86,13 +88,16 @@ class Session_Rate_Limiter {
 		$reserved_key = array_pop( $this->reserved_keys );
 		if ( null !== $reserved_key ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must be read and written in the database, not a cache.
-			$wpdb->query(
+			$counted = $wpdb->query(
 				$wpdb->prepare(
 					"UPDATE {$wpdb->prefix}wc_rate_limits SET rate_limit_expiry = %d WHERE rate_limit_key = %s",
 					$expiry,
 					$reserved_key
 				)
 			);
+			if ( false === $counted ) {
+				$this->log_query_failure( 'extend the limit after a counted attempt' );
+			}
 			return;
 		}
 
@@ -103,7 +108,7 @@ class Session_Rate_Limiter {
 
 		// `rate_limit_remaining` is assigned first, so it still compares the stored expiry.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must be read and written in the database, not a cache.
-		$wpdb->query(
+		$counted = $wpdb->query(
 			$wpdb->prepare(
 				"INSERT INTO {$wpdb->prefix}wc_rate_limits (rate_limit_key, rate_limit_expiry, rate_limit_remaining)
 				VALUES (%s, %d, %d)
@@ -116,6 +121,9 @@ class Session_Rate_Limiter {
 				$now
 			)
 		);
+		if ( false === $counted ) {
+			$this->log_query_failure( 'count an attempt' );
+		}
 	}
 
 	/**
@@ -190,6 +198,7 @@ class Session_Rate_Limiter {
 			)
 		);
 		if ( false === $started ) {
+			$this->log_query_failure( 'start an allowance' );
 			return false;
 		}
 
@@ -204,6 +213,7 @@ class Session_Rate_Limiter {
 			)
 		);
 		if ( false === $reserved ) {
+			$this->log_query_failure( 'reserve an attempt' );
 			return false;
 		}
 		if ( 0 === $reserved ) {
@@ -226,7 +236,7 @@ class Session_Rate_Limiter {
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must be read and written in the database, not a cache.
-		$wpdb->query(
+		$released = $wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->prefix}wc_rate_limits
 				SET rate_limit_remaining = LEAST( rate_limit_remaining + 1, %d )
@@ -234,6 +244,30 @@ class Session_Rate_Limiter {
 				$this->threshold,
 				$reserved_key,
 				time()
+			)
+		);
+		if ( false === $released ) {
+			$this->log_query_failure( 'hand back a reserved attempt' );
+		}
+	}
+
+	/**
+	 * Logs a failed `wc_rate_limits` query.
+	 *
+	 * A failed query lets attempts through, or keeps an attempt reserved until the allowance starts over, so the log is
+	 * the only sign of it. It goes to the WooCommerce log because the WooPayments logger is off by default.
+	 *
+	 * @param string $action What the limiter could not do.
+	 */
+	private function log_query_failure( string $action ) {
+		global $wpdb;
+
+		WC_Payments_Utils::log_to_wc(
+			sprintf(
+				'Session rate limiter %1$s could not %2$s: %3$s',
+				$this->key,
+				$action,
+				$wpdb->last_error
 			)
 		);
 	}

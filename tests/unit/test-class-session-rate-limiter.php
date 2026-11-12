@@ -34,6 +34,27 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 	private $original_session;
 
 	/**
+	 * The `query` filter that makes `wc_rate_limits` queries fail, while one is in place.
+	 *
+	 * @var callable|null
+	 */
+	private $query_breaker;
+
+	/**
+	 * Whether `$wpdb` suppressed errors before a test broke the queries.
+	 *
+	 * @var bool
+	 */
+	private $suppressed_errors;
+
+	/**
+	 * Messages written to the WooCommerce log, while they are captured.
+	 *
+	 * @var string[]
+	 */
+	private $logged = [];
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -50,6 +71,8 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		global $wpdb;
 
+		$this->restore_rate_limit_queries();
+		remove_filter( 'woocommerce_logger_log_message', [ $this, 'capture_log_message' ] );
 		WC()->session = $this->original_session;
 		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_rate_limits WHERE rate_limit_key LIKE 'wcpay_card_declined_registry_%'" );
 		delete_option( 'wcpay_session_rate_limiter_disabled_' . $this->key );
@@ -164,6 +187,84 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
 	}
 
+	public function test_bump_after_the_delay_has_passed_starts_a_new_allowance() {
+		$this->rate_limiter->bump();
+		$this->rate_limiter->bump();
+		$this->expire_rate_limit_row();
+
+		$this->rate_limiter->bump();
+
+		$this->assertSame( 1, $this->get_remaining_attempts() );
+		$this->assertFalse( $this->rate_limiter->is_limited() );
+	}
+
+	public function test_attempt_released_after_the_allowance_started_over_does_not_raise_it_above_the_threshold() {
+		$slow_request = new Session_Rate_Limiter( $this->key, self::THRESHOLD, self::DELAY );
+		$this->assertFalse( $slow_request->is_limited_or_reserve() );
+		$this->expire_rate_limit_row();
+
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+		$this->rate_limiter->release();
+		$slow_request->release();
+
+		$this->assertSame( 2, $this->get_remaining_attempts() );
+	}
+
+	public function test_attempt_is_let_through_and_logged_when_the_allowance_cannot_be_started() {
+		$this->capture_log();
+		$this->break_rate_limit_queries( 'INSERT' );
+
+		$is_limited = $this->rate_limiter->is_limited_or_reserve();
+
+		$this->restore_rate_limit_queries();
+		$this->rate_limiter->release();
+
+		$this->assertFalse( $is_limited );
+		$this->assertNull( $this->get_remaining_attempts() );
+		$this->assertCount( 1, $this->logged );
+		$this->assertStringStartsWith( 'Session rate limiter wcpay_card_declined_registry could not start an allowance: ', $this->logged[0] );
+	}
+
+	public function test_attempt_is_let_through_and_logged_when_it_cannot_be_reserved() {
+		$this->rate_limiter->bump();
+		$this->rate_limiter->bump();
+		$this->capture_log();
+		$this->break_rate_limit_queries( 'UPDATE' );
+
+		$is_limited = $this->rate_limiter->is_limited_or_reserve();
+
+		$this->restore_rate_limit_queries();
+		$this->rate_limiter->release();
+
+		$this->assertFalse( $is_limited );
+		$this->assertSame( 0, $this->get_remaining_attempts() );
+		$this->assertCount( 1, $this->logged );
+		$this->assertStringStartsWith( 'Session rate limiter wcpay_card_declined_registry could not reserve an attempt: ', $this->logged[0] );
+	}
+
+	public function test_failure_to_count_an_attempt_is_logged() {
+		$this->capture_log();
+		$this->break_rate_limit_queries( 'INSERT' );
+
+		$this->rate_limiter->bump();
+
+		$this->assertCount( 1, $this->logged );
+		$this->assertStringStartsWith( 'Session rate limiter wcpay_card_declined_registry could not count an attempt: ', $this->logged[0] );
+	}
+
+	public function test_failure_to_hand_back_a_reserved_attempt_is_logged() {
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+		$this->capture_log();
+		$this->break_rate_limit_queries( 'UPDATE' );
+
+		$this->rate_limiter->release();
+
+		$this->restore_rate_limit_queries();
+		$this->assertSame( 1, $this->get_remaining_attempts() );
+		$this->assertCount( 1, $this->logged );
+		$this->assertStringStartsWith( 'Session rate limiter wcpay_card_declined_registry could not hand back a reserved attempt: ', $this->logged[0] );
+	}
+
 	public function test_limiter_turned_off_by_the_merchant_lets_attempts_through() {
 		$this->rate_limiter->bump();
 		$this->rate_limiter->bump();
@@ -190,6 +291,59 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 		);
 
 		return null === $remaining ? null : (int) $remaining;
+	}
+
+	/**
+	 * Makes `wc_rate_limits` queries that start with the given statement fail, until `restore_rate_limit_queries()`.
+	 *
+	 * @param string $statement The SQL statement to break, such as `INSERT` or `UPDATE`.
+	 */
+	private function break_rate_limit_queries( string $statement ) {
+		global $wpdb;
+
+		$this->suppressed_errors = $wpdb->suppress_errors( true );
+		$this->query_breaker     = function ( $query ) use ( $statement ) {
+			if ( false !== strpos( $query, 'wc_rate_limits' ) && 0 === strpos( ltrim( $query ), $statement ) ) {
+				return 'SELECT * FROM wcpay_missing_rate_limits_table';
+			}
+			return $query;
+		};
+		add_filter( 'query', $this->query_breaker );
+	}
+
+	/**
+	 * Lets `wc_rate_limits` queries run again after `break_rate_limit_queries()`.
+	 */
+	private function restore_rate_limit_queries() {
+		global $wpdb;
+
+		if ( null === $this->query_breaker ) {
+			return;
+		}
+
+		remove_filter( 'query', $this->query_breaker );
+		$wpdb->suppress_errors( $this->suppressed_errors );
+		$this->query_breaker = null;
+	}
+
+	/**
+	 * Starts collecting the messages written to the WooCommerce log in `$this->logged`.
+	 */
+	private function capture_log() {
+		add_filter( 'woocommerce_logger_log_message', [ $this, 'capture_log_message' ] );
+	}
+
+	/**
+	 * Records a WooCommerce log message once, since the logger runs this filter for each of its handlers.
+	 *
+	 * @param string $message The message.
+	 * @return string
+	 */
+	public function capture_log_message( $message ) {
+		if ( ! in_array( $message, $this->logged, true ) ) {
+			$this->logged[] = $message;
+		}
+		return $message;
 	}
 
 	/**
