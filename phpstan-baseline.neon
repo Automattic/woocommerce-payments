@@ -189,7 +189,7 @@ parameters:
 		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
-			count: 2
+			count: 1
 			path: includes/class-session-rate-limiter.php
 
 		-
