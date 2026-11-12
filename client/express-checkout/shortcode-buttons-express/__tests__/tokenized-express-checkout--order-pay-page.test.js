@@ -260,6 +260,8 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 
 	afterEach( () => {
 		delete global.Stripe;
+		delete $.fn.block;
+		delete $.fn.unblock;
 		server.events.removeListener( 'request:start', requestListener );
 		server.resetHandlers();
 	} );
@@ -334,5 +336,50 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).toBeVisible();
+	} );
+
+	it( 'shows the new order total in the wallet after the total changed while placing the order', async () => {
+		// The overlay shown while the element refreshes.
+		$.fn.block = jest.fn().mockReturnThis();
+		$.fn.unblock = jest.fn().mockReturnThis();
+		let orderResponseBody;
+		const rememberOrderResponse = ( response ) => {
+			orderResponseBody = orderResponseBody ?? response.body;
+		};
+		server.events.on( 'response:mocked', rememberOrderResponse );
+		let getCartApiHandler;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { getCartApiHandler } = await import( '../../event-handlers' ) );
+		} );
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( { amount: 6510 } )
+			)
+		);
+		server.events.removeListener(
+			'response:mocked',
+			rememberOrderResponse
+		);
+		// The wallet's address added tax, so the order now has a higher total.
+		const order = JSON.parse( orderResponseBody );
+		server.use(
+			rest.get( '/wc/store/v1/order/:id', ( req, res, ctx ) =>
+				res(
+					ctx.json( {
+						...order,
+						totals: { ...order.totals, total_price: '7020' },
+					} )
+				)
+			)
+		);
+
+		getCartApiHandler().onOrderTotalChanged();
+
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( { amount: 7020 } )
+			)
+		);
 	} );
 } );

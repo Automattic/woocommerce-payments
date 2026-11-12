@@ -195,6 +195,8 @@ jQuery( ( $ ) => {
 				orderId: getConfig( 'order_id' ),
 				key: getConfig( 'key' ),
 				billingEmail: getConfig( 'billing_email' ),
+				// The next attempt has to show the order's new total in the wallet.
+				onOrderTotalChanged: () => refreshExpressCheckoutElement(),
 			} )
 		);
 	}

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop Apple Pay and Google Pay on payment links from charging a total that changed after the wallet's address was added.

@@ -409,6 +409,56 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			expect( data.billing_address.country ).toBe( 'FR' );
 		} );
 
+		it( 'refreshes the order when its total changed, and keeps the saved address for the next attempt', async () => {
+			const onOrderTotalChanged = jest.fn();
+			const api = new ExpressCheckoutOrderApi( {
+				orderId: '1',
+				key: 'key_123',
+				onOrderTotalChanged,
+			} );
+			apiFetch.mockResolvedValueOnce( {
+				billing_address: BLANK_BILLING_ADDRESS,
+				shipping_address: BLANK_SHIPPING_ADDRESS,
+			} );
+			await api.getCart();
+			apiFetch.mockRejectedValueOnce( {
+				code: 'wcpay_express_checkout_order_total_changed',
+			} );
+
+			await expect(
+				api.placeOrder( { billing_address: WALLET_BILLING_ADDRESS } )
+			).rejects.toEqual( {
+				code: 'wcpay_express_checkout_order_total_changed',
+			} );
+
+			expect( onOrderTotalChanged ).toHaveBeenCalledTimes( 1 );
+			expect( api.billingEmail ).toBe( 'buyer@wallet.com' );
+			expect( api.cachedCartData.billing_address.country ).toBe( 'GB' );
+		} );
+
+		it( 'does not refresh the order on other failures', async () => {
+			const onOrderTotalChanged = jest.fn();
+			const api = new ExpressCheckoutOrderApi( {
+				orderId: '1',
+				key: 'key_123',
+				onOrderTotalChanged,
+			} );
+			apiFetch.mockResolvedValueOnce( {
+				billing_address: BLANK_BILLING_ADDRESS,
+				shipping_address: BLANK_SHIPPING_ADDRESS,
+			} );
+			await api.getCart();
+			apiFetch.mockRejectedValueOnce( {
+				code: 'woocommerce_rest_checkout_process_payment_error',
+			} );
+
+			await expect(
+				api.placeOrder( { billing_address: WALLET_BILLING_ADDRESS } )
+			).rejects.toBeDefined();
+
+			expect( onOrderTotalChanged ).not.toHaveBeenCalled();
+		} );
+
 		it( "keeps the order's own shipping address", async () => {
 			const { data } = await placeOrderFor( {
 				billing_address: BLANK_BILLING_ADDRESS,

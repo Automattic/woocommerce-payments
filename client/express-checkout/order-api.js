@@ -29,6 +29,10 @@ const ERRORS_BEFORE_PERSISTENCE = [
 	'invalid_order_update_status',
 ];
 
+// WooPayments rejects a payment whose order total changed once the wallet's address was set (e.g. tax for that
+// address). WooCommerce has saved the address and the new total by then, so the order is fetched again.
+const ORDER_TOTAL_CHANGED_ERROR = 'wcpay_express_checkout_order_total_changed';
+
 const CONTACT_FIELDS = [
 	'first_name',
 	'last_name',
@@ -77,17 +81,27 @@ export default class ExpressCheckoutOrderApi {
 	// needed to replay the cart data to the `placeOrder` endpoint when placing the order.
 	cachedCartData = {};
 
+	// called when the order total changed while placing the order, so the shown total can be refreshed.
+	onOrderTotalChanged;
+
 	/**
 	 * Creates an instance of class to query for order data.
 	 *
-	 * @param {string}  orderId      The order ID,
-	 * @param {string}  key          The order key, used to verify the order ID.
-	 * @param {string?} billingEmail The billing email address, used for guest orders.
+	 * @param {string}    orderId             The order ID,
+	 * @param {string}    key                 The order key, used to verify the order ID.
+	 * @param {string?}   billingEmail        The billing email address, used for guest orders.
+	 * @param {Function?} onOrderTotalChanged Called when placing the order failed because its total changed.
 	 */
-	constructor( { orderId, key, billingEmail = '' } ) {
+	constructor( {
+		orderId,
+		key,
+		billingEmail = '',
+		onOrderTotalChanged = () => {},
+	} ) {
 		this.orderId = orderId;
 		this.key = key;
 		this.billingEmail = billingEmail;
+		this.onOrderTotalChanged = onOrderTotalChanged;
 	}
 
 	/**
@@ -196,6 +210,10 @@ export default class ExpressCheckoutOrderApi {
 			// errors (`fetch_error`, `invalid_json`) may come after the order was saved.
 			if ( ! ERRORS_BEFORE_PERSISTENCE.includes( error?.code ) ) {
 				rememberPersistedData();
+			}
+
+			if ( error?.code === ORDER_TOTAL_CHANGED_ERROR ) {
+				this.onOrderTotalChanged();
 			}
 
 			throw error;
