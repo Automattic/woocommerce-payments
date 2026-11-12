@@ -646,7 +646,12 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $this->get_provider_decline_message( $error ) );
+		$message = $this->get_provider_decline_message( $error );
+		if ( $this->skip_payment_failure_for_closed_order( $order, $intent_id, $charge_id, $message ) ) {
+			return;
+		}
+
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $message );
 
 		$this->update_order_status( $order, Order_Status::FAILED );
 		if ( ! $this->order_note_exists( $order, $note ) ) {

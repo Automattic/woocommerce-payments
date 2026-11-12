@@ -2090,6 +2090,44 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A decline that arrives after the order was cancelled or refunded, for example once WooCommerce's
+	 * unpaid-order timeout cancelled it while the shopper was on the payment provider's page, leaves
+	 * the order status alone so WooCommerce sends no failed-order email.
+	 *
+	 * @dataProvider provider_order_no_longer_awaiting_payment
+	 */
+	public function test_mark_payment_declined_leaves_order_no_longer_awaiting_payment_unchanged( string $order_status, string $expected_status ) {
+		// Arrange: Put the order in a status where its payment is no longer awaited.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$error  = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+		$this->order->set_status( $order_status );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::CANCELED );
+		$notes_before          = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$failed_actions_before = did_action( 'woocommerce_order_status_failed' );
+
+		// Act: Deliver the decline.
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $intent->get_charge()->get_id(), $error );
+
+		// Assert: The status did not change and no failed-order transition fired.
+		$this->assertSame( $expected_status, wc_get_order( $this->order->get_id() )->get_status() );
+		$this->assertSame( $failed_actions_before, did_action( 'woocommerce_order_status_failed' ) );
+
+		// Assert: One note says why the status was left alone, with the provider's decline details.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ) + 1, $notes );
+		$this->assertStringContainsString( 'arrived after this order was cancelled or refunded, so the order status was not changed', $notes[0]->content );
+		$this->assertStringContainsString( 'Decline code: <code>generic_decline</code>', $notes[0]->content );
+
+		// Assert: The intent status already stored on the order is kept, and the order is not left locked.
+		$this->assertSame( 'canceled', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
 	 * Tests if the payment capture was noted failed.
 	 *
 	 * @dataProvider mark_payment_capture_failed_provider
