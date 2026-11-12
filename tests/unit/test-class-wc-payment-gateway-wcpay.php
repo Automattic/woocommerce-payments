@@ -732,7 +732,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			],
 			'Link'                   => [
 				'payment_details'  => [ 'type' => 'link' ],
-				'expected_title'   => 'Stripe Link',
+				'expected_title'   => 'Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 			'Link (via card wallet)' => [
@@ -744,7 +744,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						],
 					],
 				],
-				'expected_title'   => 'Stripe Link',
+				'expected_title'   => 'Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 		];
@@ -804,7 +804,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'Link'       => [
 				'express_type'     => 'link',
 				'stripe_type'      => 'link',
-				'expected_title'   => 'Stripe Link',
+				'expected_title'   => 'Link',
 				'expected_gateway' => 'woocommerce_payments',
 				'payment_details'  => [
 					'type' => 'link',
@@ -1023,8 +1023,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return [
 			'GB, Link charge'      => [ 'GB', $link_charge, 'Onelink' ],
 			'GB, Link card wallet' => [ 'GB', $link_wallet_charge, 'Onelink' ],
-			'US, Link charge'      => [ 'US', $link_charge, 'Stripe Link' ],
-			'US, Link card wallet' => [ 'US', $link_wallet_charge, 'Stripe Link' ],
+			'US, Link charge'      => [ 'US', $link_charge, 'Link' ],
+			'US, Link card wallet' => [ 'US', $link_wallet_charge, 'Link' ],
 		];
 	}
 
@@ -1086,7 +1086,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->set_payment_method_title_for_order( $order, 'link', [ 'type' => 'link' ] );
 
 		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
-		$this->assertSame( 'Stripe Link', $order->get_payment_method_title() );
+		$this->assertSame( 'Link', $order->get_payment_method_title() );
 	}
 
 	/**
@@ -1807,6 +1807,55 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( WC_Payment_Gateway_WCPay::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE . '=yes', $redirect_url );
 	}
 
+	/**
+	 * Test that a declined setup intent for a zero-amount order fails the order and records
+	 * the payment provider's decline details.
+	 */
+	public function test_process_redirect_payment_with_setup_intent_error_marks_order_failed() {
+		$setup_intent_id = 'seti_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0 );
+		$order->update_meta_data( '_intent_id', $setup_intent_id );
+		$order->save();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 1, $setup_intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'               => $setup_intent_id,
+						'status'           => Intent_Status::REQUIRES_PAYMENT_METHOD,
+						'metadata'         => [ 'order_id' => (string) $order->get_id() ],
+						'last_setup_error' => [
+							'code'         => 'setup_intent_authentication_failure',
+							'message'      => 'The bank declined the setup.',
+							'decline_code' => 'generic_decline',
+						],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$mock_gateway->process_redirect_payment( $order, $setup_intent_id, false );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'failed', $result_order->get_status() );
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments (<code>seti_mock</code>)', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The bank declined the setup.</code>. Decline code: <code>generic_decline</code>.', $note_text );
+		$this->assertStringNotContainsString( 'UPE payment failed', $note_text );
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+	}
+
 	// This test uses a mock of the gateway class due to get_selected_payment_method()'s reliance on the static method WC_Payments::get_payment_method_map(), which can't be mocked. Refactoring the gateway class to avoid using this static method would allow mocking it in tests.
 	public function test_process_redirect_payment_save_payment_token() {
 		/** @var WC_Payment_Gateway_WCPay */
@@ -2223,10 +2272,49 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Errors that are not retryable declines keep the previous behavior: the order is failed.
 		$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
 
+		// The note records the provider's decline details.
 		$note_text = $this->get_order_notes_text( $result_order->get_id() );
-		$this->assertStringContainsString( 'UPE payment failed', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>' . esc_html( $last_payment_error['message'] ) . '</code>', $note_text );
+		$this->assertStringNotContainsString( 'UPE payment failed', $note_text );
 
 		// The customer is sent back to the checkout page.
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+	}
+
+	/**
+	 * Test that an exception without the payment provider's error details, e.g. a failed request
+	 * to the server, still fails the order with the generic failure message.
+	 */
+	public function test_process_redirect_payment_without_provider_error_marks_order_failed_with_generic_note() {
+		$intent_id           = 'pi_mock';
+		$save_payment_method = false;
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Server unavailable', 'server_error', 500 ) );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'failed', $result_order->get_status() );
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'UPE payment failed: Server unavailable', $note_text );
+		$this->assertStringNotContainsString( 'With the following message', $note_text );
 		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
 	}
 
@@ -2314,20 +2402,50 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * A redirect return must not duplicate the failure note already written by the BNPL webhook.
+	 * Data provider for BNPL failures reported by both the webhook and the redirect return.
+	 *
+	 * @return array[] Test cases with the payment method type, decline code, whether the webhook
+	 *                 arrives first, the expected order status and whether the customer returns to the pay-for-order page.
 	 */
-	public function test_process_redirect_payment_does_not_duplicate_bnpl_webhook_note() {
+	public function bnpl_failure_reported_twice_provider(): array {
+		return [
+			'retryable klarna decline, webhook first'  => [ Payment_Method::KLARNA, 'klarna_payment_declined', true, 'pending', true ],
+			'retryable klarna decline, redirect first' => [ Payment_Method::KLARNA, 'klarna_payment_declined', false, 'pending', true ],
+			'non-retryable afterpay decline, webhook first' => [ Payment_Method::AFTERPAY, 'generic_decline', true, 'failed', false ],
+			'non-retryable afterpay decline, redirect first' => [ Payment_Method::AFTERPAY, 'generic_decline', false, 'failed', false ],
+		];
+	}
+
+	/**
+	 * A BNPL failure reported by both the webhook and the redirect return must result in a single
+	 * failure note, whichever arrives first, and the order status must not depend on the order.
+	 *
+	 * @dataProvider bnpl_failure_reported_twice_provider
+	 *
+	 * @param string $payment_method_type     The BNPL payment method type.
+	 * @param string $decline_code            The decline code of the last payment error.
+	 * @param bool   $webhook_first           Whether the webhook arrives before the customer returns.
+	 * @param string $expected_status         The expected order status.
+	 * @param bool   $expect_pay_for_order    Whether the customer is sent to the pay-for-order page.
+	 */
+	public function test_bnpl_failure_reported_by_webhook_and_redirect_adds_a_single_note(
+		string $payment_method_type,
+		string $decline_code,
+		bool $webhook_first,
+		string $expected_status,
+		bool $expect_pay_for_order
+	) {
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
 		$save_payment_method = false;
 		$error               = [
 			'code'           => 'payment_intent_payment_attempt_failed',
-			'message'        => 'The customer declined the payment.',
-			'decline_code'   => 'klarna_payment_declined',
-			'doc_url'        => 'https://docs.example.com/klarna-decline',
+			'message'        => 'The customer has terminated the authorization flow.',
+			'decline_code'   => $decline_code,
+			'doc_url'        => 'https://docs.example.com/decline',
 			'payment_method' => [
 				'id'   => $payment_method_id,
-				'type' => Payment_Method::KLARNA,
+				'type' => $payment_method_type,
 			],
 		];
 
@@ -2352,7 +2470,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( 'pi_mock' )
 			->willReturn( $order );
 
-		$webhook = new WC_Payments_Webhook_Processing_Service(
+		$webhook         = new WC_Payments_Webhook_Processing_Service(
 			$this->mock_api_client,
 			$db,
 			$this->mock_wcpay_account,
@@ -2364,26 +2482,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->createMock( WC_Payments_Onboarding_Service::class ),
 			$this->mock_token_service
 		);
-
-		$webhook->process(
-			[
-				'id'       => 'evt_mock',
-				'type'     => 'payment_intent.payment_failed',
-				'livemode' => WC_Payments::mode()->is_live(),
-				'data'     => [
-					'object' => [
-						'id'                 => $intent_id,
-						'metadata'           => [ 'order_id' => (string) $order_id ],
-						'charges'            => [ 'data' => [ [ 'id' => $charge_id ] ] ],
-						'last_payment_error' => $error,
+		$process_webhook = function () use ( $webhook, $intent_id, $order_id, $charge_id, $error ) {
+			$webhook->process(
+				[
+					'id'       => 'evt_mock',
+					'type'     => 'payment_intent.payment_failed',
+					'livemode' => WC_Payments::mode()->is_live(),
+					'data'     => [
+						'object' => [
+							'id'                 => $intent_id,
+							'metadata'           => [ 'order_id' => (string) $order_id ],
+							'charges'            => [ 'data' => [ [ 'id' => $charge_id ] ] ],
+							'last_payment_error' => $error,
+						],
 					],
-				],
-			]
-		);
-
-		$notes_before_return = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' );
-		$this->assertSame( 1, substr_count( implode( "\n", $notes_before_return ), 'Decline code: <code>klarna_payment_declined</code>' ) );
-		$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+				]
+			);
+		};
 
 		wp_get_current_user();
 		$redirect_url = null;
@@ -2396,12 +2511,25 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+		if ( $webhook_first ) {
+			$process_webhook();
+			// The webhook only notes the failure, it doesn't change the order status.
+			$this->assertSame( 'pending', wc_get_order( $order_id )->get_status() );
+			$this->assertCount( 1, wc_get_order_notes( [ 'order_id' => $order_id ] ) );
+			$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+		} else {
+			$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+			$process_webhook();
+		}
 
-		$notes_after_return = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' );
-		$this->assertSame( $notes_before_return, $notes_after_return );
-		$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
-		$this->assertSame( $order->get_checkout_payment_url(), $redirect_url );
+		$note_text = $this->get_order_notes_text( $order_id );
+		$this->assertSame( 1, substr_count( $note_text, '<strong>failed</strong>' ) );
+		$this->assertSame( 1, substr_count( $note_text, "Decline code: <code>{$decline_code}</code>" ) );
+		$this->assertStringNotContainsString( 'UPE payment failed', $note_text );
+		// Besides the failure note, a failed order only gets the status change note.
+		$this->assertCount( 'failed' === $expected_status ? 2 : 1, wc_get_order_notes( [ 'order_id' => $order_id ] ) );
+		$this->assertSame( $expected_status, wc_get_order( $order_id )->get_status() );
+		$this->assertSame( $expect_pay_for_order ? $order->get_checkout_payment_url() : wc_get_checkout_url(), $redirect_url );
 	}
 
 	public function test_get_payment_methods_with_post_request_context() {
@@ -4469,12 +4597,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->never() )
 			->method( 'set_mandate_data' );
 
-		// Mandate data is required for SEPA and Stripe Link only, $this->card_gateway is created with card hence mandate data should not be added.
+		// Mandate data is required for SEPA and Link only, $this->card_gateway is created with card hence mandate data should not be added.
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
 	public function test_set_mandate_data_to_payment_intent_if_required() {
-		// Mandate data is required for SEPA and Stripe Link, hence creating the gateway with a SEPA payment method should add mandate data.
+		// Mandate data is required for SEPA and Link, hence creating the gateway with a SEPA payment method should add mandate data.
 		$gateway        = $this->get_gateway( Payment_Method::SEPA );
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
@@ -7810,7 +7938,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'type' => 'link',
 					'link' => [ 'country' => '' ],
 				],
-				'Stripe Link',
+				'Link',
 			],
 			'card with wallet' => [
 				[
@@ -7821,7 +7949,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						'wallet' => [ 'type' => 'link' ],
 					],
 				],
-				'Stripe Link',
+				'Link',
 			],
 		];
 	}

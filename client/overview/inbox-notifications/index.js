@@ -6,7 +6,6 @@ import { useState } from '@wordpress/element';
 import { EmptyContent, Section } from '@woocommerce/components';
 import { NOTES_STORE_NAME, QUERY_DEFAULTS } from '@woocommerce/data';
 import { useSelect, useDispatch } from '@wordpress/data';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import {
 	InboxNoteCard,
 	InboxDismissConfirmationModal,
@@ -17,7 +16,6 @@ import {
  * Internal dependencies
  */
 import { recordEvent } from 'tracks';
-import './index.scss';
 
 const INBOX_QUERY = {
 	page: 1,
@@ -96,30 +94,24 @@ const renderNotes = ( {
 	const notesArray = Object.keys( notes ).map( ( key ) => notes[ key ] );
 
 	return (
-		<TransitionGroup role="menu">
+		<div role="menu">
 			{ notesArray.map( ( note ) => {
 				const { id: noteId, is_deleted: isDeleted } = note;
 				if ( isDeleted ) {
 					return null;
 				}
 				return (
-					<CSSTransition
+					<InboxNoteCard
 						key={ noteId }
-						timeout={ 500 }
-						classNames="wcpay-inbox-message"
-					>
-						<InboxNoteCard
-							key={ noteId }
-							note={ note }
-							onDismiss={ onDismiss }
-							onNoteActionClick={ onNoteActionClick }
-							onBodyLinkClick={ onBodyLinkClick }
-							onNoteVisible={ onNoteVisible }
-						/>
-					</CSSTransition>
+						note={ note }
+						onDismiss={ onDismiss }
+						onNoteActionClick={ onNoteActionClick }
+						onBodyLinkClick={ onBodyLinkClick }
+						onNoteVisible={ onNoteVisible }
+					/>
 				);
 			} ) }
-		</TransitionGroup>
+		</div>
 	);
 };
 

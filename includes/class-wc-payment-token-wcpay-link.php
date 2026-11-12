@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WooCommerce Stripe Link Payment Token.
+ * WooCommerce Link Payment Token.
  *
  * Representation of a payment token for Link.
  *
@@ -51,7 +51,7 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 		$account_country = WC_Payments::get_gateway()->get_account_country();
 
 		return sprintf(
-			/* translators: 1: Link brand name (Stripe Link or Onelink), 2: customer email. */
+			/* translators: 1: Link brand name (Link or Onelink), 2: customer email. */
 			__( '%1$s email ending in %2$s', 'woocommerce-payments' ),
 			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_title( $account_country ),
 			$this->get_redacted_email()

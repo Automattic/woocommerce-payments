@@ -37,7 +37,7 @@ $request->set_payment_methods( $payment_methods );     // ['card'], ['card', 'li
 $response = $request->send();
 ```
 
-### Stripe Link Charge Quirk
+### Link Charge Quirk
 
 Stripe returns `payment_method_details.type = 'card'` (not `'link'`) in charge objects for Link payments, because Link wraps a stored card. To correctly identify Link:
 - **Don't** rely on `charge.payment_method_details.type` — it's `'card'` for Link
