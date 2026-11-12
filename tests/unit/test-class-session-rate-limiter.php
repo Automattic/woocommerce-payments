@@ -138,6 +138,8 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 
 	public function test_requests_of_one_session_running_at_the_same_time_cannot_exceed_the_threshold() {
 		// Each request builds its own limiter, and every request checks the limiter before any decline comes back.
+		// The checks still run one after another on one database connection, so this shows that a reservation counts
+		// before its decline does. It cannot show that the conditional update is atomic between connections.
 		$requests = [];
 		$allowed  = [];
 		for ( $i = 0; $i < 5; $i++ ) {
