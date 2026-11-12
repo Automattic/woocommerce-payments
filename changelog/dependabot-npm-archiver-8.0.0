@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Bump `archiver` to 8.0.0 and switch the release build to its `ZipArchive` class.
