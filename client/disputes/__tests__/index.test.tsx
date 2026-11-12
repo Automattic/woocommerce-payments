@@ -169,6 +169,8 @@ const mockDisputes = [
 ];
 
 describe( 'Disputes list', () => {
+	const realDateNow = Date.now;
+
 	beforeEach( () => {
 		// mock Date.now that moment library uses to get current date for testing purposes
 		Date.now = jest.fn( () =>
@@ -210,8 +212,7 @@ describe( 'Disputes list', () => {
 	} );
 
 	afterEach( () => {
-		// roll it back
-		Date.now = () => new Date().getTime();
+		Date.now = realDateNow;
 	} );
 
 	test( 'renders correctly', () => {

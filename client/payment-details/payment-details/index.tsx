@@ -43,7 +43,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	// The refund modal (and the charge-derived props it needs) lives in the
 	// summary card; the summary registers an opener here so the timeline's
 	// early-fraud-warning "Refund this payment" CTA can trigger it.
-	const refundModalOpener = useRef< () => void >();
+	const refundModalOpener = useRef< ( () => void ) | undefined >( undefined );
 	const registerRefundOpener = useCallback( ( open: () => void ) => {
 		refundModalOpener.current = open;
 	}, [] );

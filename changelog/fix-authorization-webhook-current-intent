@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Keep a manual capture authorization from an earlier attempt from replacing the payment an order is waiting on.

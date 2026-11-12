@@ -25,7 +25,7 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 };
 
 /**
- * Check whether Stripe Link is enabled.
+ * Check whether Link is enabled.
  *
  * @param {Object} paymentMethodsConfig Checkout payment methods configuration settings object.
  * @return {boolean} True, if enabled; false otherwise.
@@ -38,7 +38,7 @@ export const isLinkEnabled = ( paymentMethodsConfig ) => {
 };
 
 /**
- * Returns the trimmed email when it looks valid enough to pass to Stripe Link.
+ * Returns the trimmed email when it looks valid enough to pass to Link.
  * An empty or half-typed email would make Link look up the wrong customer.
  *
  * @param {string} email The email entered at checkout.

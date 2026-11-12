@@ -1,0 +1,73 @@
+{
+	"account_id": "acct_playground_demo",
+	"live_publishable_key": "pk_live_playground_demo",
+	"test_publishable_key": "pk_test_playground_demo",
+	"is_live": false,
+	"is_test_drive": false,
+	"test_mode": true,
+	"status": "complete",
+	"payments_enabled": true,
+	"details_submitted": true,
+	"has_pending_requirements": false,
+	"has_overdue_requirements": false,
+	"current_deadline": null,
+	"requirements": { "errors": [] },
+	"created": "@datetime:-14 months",
+	"country": "US",
+	"email": "demo@example.com",
+	"communications_email": "demo@example.com",
+	"statement_descriptor": "DEMO STORE",
+	"business_profile": {
+		"name": "Demo Store",
+		"url": "https://example.com",
+		"support_email": "support@example.com",
+		"support_phone": "+15555550100",
+		"support_address": {
+			"line1": "60 29th Street",
+			"line2": "",
+			"city": "San Francisco",
+			"state": "CA",
+			"postal_code": "94110",
+			"country": "US"
+		}
+	},
+	"branding": { "icon": "", "logo": "", "primary_color": "", "secondary_color": "" },
+	"capabilities": { "card_payments": "active", "transfers": "active" },
+	"store_currencies": { "default": "usd", "supported": [ "usd" ] },
+	"customer_currencies": { "supported": [ "usd", "eur", "gbp", "cad" ] },
+	"deposits": {
+		"status": "enabled",
+		"restrictions": "deposits_unrestricted",
+		"interval": "daily",
+		"delay_days": 2,
+		"weekly_anchor": "",
+		"monthly_anchor": null,
+		"completed_waiting_period": true,
+		"minimum_manual_deposit_amounts": { "usd": 500 },
+		"minimum_scheduled_deposit_amounts": { "usd": 500 }
+	},
+	"instant_deposits_eligible": false,
+	"fees": {
+		"card": {
+			"base": { "currency": "usd", "percentage_rate": 0.029, "fixed_rate": 30 },
+			"additional": { "currency": "usd", "percentage_rate": 0.01, "fixed_rate": 0 },
+			"fx": { "currency": "usd", "percentage_rate": 0.01, "fixed_rate": 0 },
+			"discount": []
+		}
+	},
+	"account_details": {
+		"account_status": { "text": "Complete", "background_color": "green" },
+		"payout_status": { "text": "Available", "background_color": "green", "popover": null },
+		"banner": null
+	},
+	"fraud_mitigation_settings": { "avs_check_enabled": false, "cvc_check_enabled": true },
+	"latest_tos_agreement": { "date": "@datetime:-14 months", "is_current_version": true },
+	"lifetime_total_payment_volume": 1284500,
+	"capital": { "has_active_loan": false, "has_previous_loans": false, "loans": [] },
+	"card_present_eligible": false,
+	"has_card_readers_available": false,
+	"has_submitted_vat_data": false,
+	"is_documents_enabled": false,
+	"card_testing_protection_eligible": false,
+	"eligibility_review_prompt": null
+}
