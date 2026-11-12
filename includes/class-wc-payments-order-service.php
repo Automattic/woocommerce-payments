@@ -2294,8 +2294,6 @@ class WC_Payments_Order_Service {
 			$fraud_meta_box_type = Rule::FRAUD_OUTCOME_REVIEW === $this->get_fraud_outcome_status_for_order( $order ) ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
 			$this->set_fraud_outcome_status_for_order( $order, $fraud_outcome );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
-		} else {
-			$this->clear_stale_fraud_data_for_order( $order );
 		}
 		$this->attach_transaction_fee_to_order( $order, $intent->get_charge() );
 		$this->update_order_status( $order, 'payment_complete', $intent_id );
