@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add an E2E test for adding a card from My account when the cart total is over the payment amount limit.
