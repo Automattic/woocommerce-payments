@@ -1,4 +1,4 @@
 Significance: patch
-Type: dev
+Type: fix
 
-Add an E2E test for adding a card from My account when the cart total is over the payment amount limit.
+Load the card form on My account > Add payment method when the cart total is over the payment method's amount limit.
