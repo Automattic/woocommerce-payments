@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WooPayments Playground preview
- * Description: Lets WooPayments run in a WordPress Playground preview of a pull request, either on fixture data or on a sandbox connection pasted in by the visitor.
+ * Description: Lets WooPayments run in WordPress Playground, either on fixture data (pull request previews) or on a sandbox connection pasted in by the visitor (local runs).
  *
  * @package WooCommerce\Payments
  */

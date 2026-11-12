@@ -4,11 +4,10 @@ Every pull request gets [WordPress Playground](https://wordpress.org/playground/
 
 - **Open with demo data** starts a store that looks connected and reads everything from fixture files.
 - **Open unconnected** starts a fresh store on the WooPayments Connect screen.
-- **Open and connect a sandbox** starts a store that asks for the connection of a sandbox site you already have, then talks to the real server.
-
-The first and third are what this directory provides.
 
 The links are built in `.github/workflows/pr-build-live-branch.yml`.
+
+This directory provides the demo data, and a third mode that is only run locally: a store that asks for the connection of a sandbox site you already have, then talks to the real server. See [Connecting a sandbox](#connecting-a-sandbox) for why it has no link.
 
 ## Why the previews need help
 
@@ -60,27 +59,35 @@ Anything PHP's `strtotime()` accepts works after the colon.
 
 ## Connecting a sandbox
 
+This mode runs locally, from code you have checked out:
+
+```bash
+npx @wp-playground/cli@3.1.64 server --login --blueprint=dev/playground/blueprint-local-connect.json --mount-dir dev/playground/mu-plugins /wordpress/wp-content/mu-plugins
+```
+
+It has no link in the pull request comment on purpose. Whatever code runs in the preview can read the connection that is pasted in, and a link cannot promise whose code that is: Playground's artifact proxy picks a build by branch name, so it serves the newest build of any pull request whose branch has that name, forks included.
+
 The "Sandbox connection" page shows a WP-CLI command to run on a sandbox site that is already connected to WooPayments. It prints one line of JSON with that site's blog ID and Jetpack tokens; paste it into the page and the preview uses that connection. A "Remove the connection" button takes it out again.
 
 With a connection, the preview shows the sandbox account's real data and can take test payments at checkout. WooPayments is kept in test mode whatever account is behind the connection.
 
 What it cannot do:
 
-- **Receive webhooks.** Nothing can reach a site in a browser tab, so anything that arrives by webhook, such as dispute updates, never shows up.
+- **Receive webhooks.** Nothing on the internet can reach the preview, so anything that arrives by webhook, such as dispute updates, never shows up.
 - **Onboard a new account.** It reuses a connection; it cannot create one.
 
 Four things in the plugin make this work, and should stay:
 
 - **Jetpack sync is off.** The preview shares a blog ID with the sandbox site. If it synced, WordPress.com would see a second URL for that blog and could put the sandbox site into Jetpack safe mode.
 - **Jetpack identity-crisis handling is off.** The preview's URL never matches the one WordPress.com has for that blog, and the mismatch it would report back puts the preview itself into safe mode.
-- **Two request headers are dropped**, `Idempotency-Key` and `X-Request-Initiated`. In a browser Playground the browser makes PHP's HTTP requests, and WordPress.com does not allow those two headers across origins, so every request carrying them would fail. The server works without them. Without an idempotency key the API client does not retry, so a request that fails in the preview fails once.
+- **Two request headers are dropped**, `Idempotency-Key` and `X-Request-Initiated`. In a browser Playground the browser makes PHP's HTTP requests, and WordPress.com does not allow those two headers across origins, so every request carrying them would fail. The local command does not need this, but it keeps the mode usable in a browser Playground. The server works without them. Without an idempotency key the API client does not retry, so a request that fails in the preview fails once.
 - **A placeholder user may be created.** Jetpack only accepts a user token for the user ID it was issued to, so if the sandbox site's connection owner is not user 1, the preview creates a user with that ID and no role.
 
-**Only paste a connection into a preview of a pull request you trust, and only from a sandbox site.** The plugin code in the preview comes from the pull request, so it can read what you paste. For that reason the workflow leaves this link out on pull requests from forks. The connection stays in the browser's Playground storage until it is removed or the Playground site is deleted.
+**Only paste a connection from a sandbox site, and only into a preview running code you trust.** The local command installs the latest `develop` build of WooPayments and mounts the preview plugin from your checkout. The connection stays in that Playground site until it is removed or the site is deleted.
 
 ## Safety
 
-The plugin does nothing unless `WCPAY_PLAYGROUND_PREVIEW` is defined as `demo` or `connect`; only the preview Blueprints define it. In demo mode it also stays out of the way on a site that has a Jetpack blog token, so fixtures cannot stand in for a real connection.
+The plugin does nothing unless `WCPAY_PLAYGROUND_PREVIEW` is defined as `demo` or `connect`; only the Blueprints define it, and the pull request links only ever use `demo`. In demo mode it also stays out of the way on a site that has a Jetpack blog token, so fixtures cannot stand in for a real connection.
 
 Nothing in this directory ships in the plugin zip.
 
@@ -88,10 +95,10 @@ Nothing in this directory ships in the plugin zip.
 
 When a pull request changes what a screen reads from the server, update the matching fixture in the same pull request: the preview loads the fixtures from the pull request's own build. `tests/unit/dev/test-class-wcpay-playground-demo-http.php` requests every fixture in this directory, so one that is not valid JSON fails CI.
 
-To try changes locally, run Playground with this directory mounted. It needs Node.js and nothing else:
+To try fixture changes locally, run Playground with this directory mounted. It needs Node.js and nothing else:
 
 ```bash
 npx @wp-playground/cli@3.1.64 server --login --blueprint=dev/playground/blueprint-local.json --mount-dir dev/playground/mu-plugins /wordpress/wp-content/mu-plugins
 ```
 
-This installs WooCommerce and the latest `develop` build of WooPayments, and serves the site at <http://127.0.0.1:9400> (log in as `admin` / `password` if asked). To try the sandbox connection page instead, change `WCPAY_PLAYGROUND_PREVIEW` in `blueprint-local.json` to `connect`. Fixture edits apply on the next page load; account data is cached, so after changing `GET/accounts.json` run "Clear WooPayments account cache" under WooCommerce → Status → Tools. Missing fixtures are listed in `wp-content/debug.log`.
+This installs WooCommerce and the latest `develop` build of WooPayments, and serves the site at <http://127.0.0.1:9400> (log in as `admin` / `password` if asked). Fixture edits apply on the next page load; account data is cached, so after changing `GET/accounts.json` run "Clear WooPayments account cache" under WooCommerce → Status → Tools. Missing fixtures are listed in `wp-content/debug.log`.
