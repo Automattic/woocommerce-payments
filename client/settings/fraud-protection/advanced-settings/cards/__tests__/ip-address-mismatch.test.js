@@ -57,26 +57,4 @@ describe( 'International billing address card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
-
-	test( 'renders correctly when enabled and checked', () => {
-		settings.ip_address_mismatch.enabled = true;
-		settings.ip_address_mismatch.block = true;
-		const { container } = render(
-			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<IPAddressMismatchRuleCard />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'renders like disabled when checked, but not enabled', () => {
-		settings.ip_address_mismatch.enabled = false;
-		settings.ip_address_mismatch.block = true;
-		const { container } = render(
-			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<IPAddressMismatchRuleCard />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
 } );

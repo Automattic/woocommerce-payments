@@ -276,14 +276,17 @@ describe( 'PaymentMethodsSection', () => {
 	} );
 
 	it( 'should not render duplicate notices when they have been dismissed', () => {
+		const GATEWAYS_ENABLING_CARD = [ 'other_gateway' ];
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
 
 		render(
 			<DuplicatedPaymentMethodsContext.Provider
 				value={ {
-					duplicates: [ 'card' ],
-					dismissedDuplicateNotices: [ 'card' ],
+					duplicates: { card: GATEWAYS_ENABLING_CARD },
+					dismissedDuplicateNotices: {
+						card: GATEWAYS_ENABLING_CARD,
+					},
 					setDismissedDuplicateNotices: jest.fn(),
 				} }
 			>
