@@ -744,4 +744,23 @@ describe( 'Transactions list', () => {
 			).not.toBeInTheDocument();
 		} );
 	} );
+
+	test( 'labels the released remainder of a partial capture', () => {
+		mockUseTransactions.mockReturnValue( {
+			transactions: [
+				{
+					...getMockTransactions()[ 0 ],
+					type: 'partial_capture_reversal',
+				},
+			],
+			transactionsError: undefined,
+			isLoading: false,
+		} );
+
+		render( <TransactionsList /> );
+
+		expect(
+			screen.getByText( 'Uncaptured amount released' )
+		).toBeInTheDocument();
+	} );
 } );

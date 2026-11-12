@@ -11,6 +11,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Mode;
 use WCPay\Constants\Payment_Method;
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
@@ -84,6 +85,21 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * When an earlier takeover happened, as stored in the mark.
 	 */
 	const EARLIER_TAKEOVER_AT = '1700000000';
+
+	/**
+	 * Gateway ID of WooCommerce's direct bank transfer.
+	 */
+	const BANK_TRANSFER_GATEWAY_ID = 'bacs';
+
+	/**
+	 * Intent ID of a WooPayments authorization that hasn't been captured yet.
+	 */
+	const OPEN_AUTHORIZATION_INTENT_ID = 'pi_test_open_authorization';
+
+	/**
+	 * Charge ID of a WooPayments authorization that hasn't been captured yet.
+	 */
+	const OPEN_AUTHORIZATION_CHARGE_ID = 'ch_test_open_authorization';
 
 	/**
 	 * Amount, in cents, of an authorization taken before the merchant edited the order.
@@ -731,8 +747,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Completing the order no longer captures the earlier attempt: WooPayments captures on completion from the
-	 * intent on the order, with no check on the order's gateway, and the attempt's intent is gone.
+	 * Completing the order no longer captures the earlier attempt: the attempt's intent is gone from the order,
+	 * so WooPayments has nothing to look up.
 	 */
 	public function test_completing_an_order_paid_with_other_gateway_does_not_capture_the_earlier_attempt() {
 		$order = $this->create_order_with_payment_details( 'cod' );
@@ -1452,6 +1468,40 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::ALLOW,
 			],
+		];
+	}
+
+	/**
+	 * A later payment that succeeds without a fraud outcome, like a scheduled renewal retry,
+	 * must not leave the order showing as blocked.
+	 *
+	 * @dataProvider clears_fraud_block_provider
+	 */
+	public function test_payment_without_fraud_outcome_clears_fraud_block( $intent_status ) {
+		$this->order_service->mark_order_blocked_for_fraud(
+			$this->order,
+			'pi_blocked',
+			Intent_Status::CANCELED,
+			[ Fraud_Risk_Tools::RULE_AVS_VERIFICATION => Rule::FRAUD_OUTCOME_BLOCK ]
+		);
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'status'                 => $intent_status,
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( '', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( '', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertSame( [], $this->order_service->get_fraud_ruleset_results_for_order( $this->order ) );
+	}
+
+	public function clears_fraud_block_provider() {
+		return [
+			'payment_completed'  => [ Intent_Status::SUCCEEDED ],
+			'payment_authorized' => [ Intent_Status::REQUIRES_CAPTURE ],
 		];
 	}
 
@@ -4907,6 +4957,43 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
 
 		$this->assertSame( $notes_before, $this->order_note_contents() );
+	}
+
+	/**
+	 * Capturing an open authorization on an order moved to another payment method would charge the shopper twice,
+	 * so completing it only tells the merchant. Completing it again adds no second note.
+	 */
+	public function test_capture_authorization_on_order_status_change_does_not_capture_for_other_payment_method() {
+		$this->order->set_payment_method( self::BANK_TRANSFER_GATEWAY_ID );
+		$this->order->save();
+		$this->order_service->set_intent_id_for_order( $this->order, self::OPEN_AUTHORIZATION_INTENT_ID );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$open_authorization = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::OPEN_AUTHORIZATION_INTENT_ID,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+				'charge' => [
+					'id'       => self::OPEN_AUTHORIZATION_CHARGE_ID,
+					'captured' => false,
+				],
+			]
+		);
+		// Each mock serves one request, and the order is completed twice.
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_test_open_authorization' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $open_authorization );
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_test_open_authorization' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $open_authorization );
+		$this->mock_wcpay_request( Capture_Intention::class, 0 );
+
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		$this->assertSame( 1, substr_count( $this->order_note_contents(), '%2Fpayments%2Ftransactions%2Fdetails&id=pi_test_open_authorization" target="_blank" rel="noopener noreferrer">pi_test_open_authorization</a>) is still open' ) );
+		$this->assertSame( 'requires_capture', $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
 	}
 
 	/**

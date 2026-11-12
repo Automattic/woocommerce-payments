@@ -2090,6 +2090,8 @@ class WC_Payments_Order_Service {
 			$fraud_meta_box_type = Order_Status::ON_HOLD === $order->get_status() ? Fraud_Meta_Box_Type::REVIEW_ALLOWED : Fraud_Meta_Box_Type::ALLOW;
 			$this->set_fraud_outcome_status_for_order( $order, $intent_data['fraud_outcome'] );
 			$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
+		} else {
+			$this->clear_fraud_block_for_order( $order );
 		}
 
 		if ( ! $this->intent_has_card_payment_type( $intent_data ) ) {
@@ -2099,6 +2101,27 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Removes the fraud data of an earlier blocked attempt from an order whose payment went through.
+	 *
+	 * A payment without a fraud outcome, like a scheduled renewal retry, writes no fraud data of its own,
+	 * so the paid order would still show as blocked and could be cancelled by mistake.
+	 *
+	 * @param WC_Order $order Order object.
+	 *
+	 * @return void
+	 */
+	private function clear_fraud_block_for_order( $order ) {
+		if ( Fraud_Meta_Box_Type::BLOCK !== $this->get_fraud_meta_box_type_for_order( $order ) ) {
+			return;
+		}
+
+		$order->delete_meta_data( self::WCPAY_FRAUD_META_BOX_TYPE_META_KEY );
+		$order->delete_meta_data( self::WCPAY_FRAUD_OUTCOME_STATUS_META_KEY );
+		$order->delete_meta_data( self::WCPAY_FRAUD_RULESET_RESULTS_META_KEY );
+		$order->save_meta_data();
 	}
 
 	/**
@@ -2200,6 +2223,8 @@ class WC_Payments_Order_Service {
 		if ( Rule::FRAUD_OUTCOME_ALLOW === $intent_data['fraud_outcome'] ) {
 			$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_ALLOW );
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::ALLOW );
+		} else {
+			$this->clear_fraud_block_for_order( $order );
 		}
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
@@ -2437,15 +2462,20 @@ class WC_Payments_Order_Service {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
-					$intent = $request->send();
-					$charge = $intent->get_charge();
+					$intent                = $request->send();
+					$charge                = $intent->get_charge();
+					$is_woopayments_order  = 0 === strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID );
+					$is_open_authorization = null !== $charge
+						&& false === $charge->is_captured()
+						&& Intent_Status::SUCCEEDED === $charge->get_status()
+						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status();
 
 					// WooCommerce has already completed the order by now, so the merchant can only be told.
 					// An order moved to another payment method may well be paid, so it gets no note.
 					if (
 						Intent_Status::REQUIRES_CAPTURE === $cached_intent_status
 						&& Intent_Status::CANCELED === $intent->get_status()
-						&& 0 === strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID )
+						&& $is_woopayments_order
 					) {
 						$order->add_order_note(
 							WC_Payments_Utils::esc_interpolated_html(
@@ -2455,27 +2485,35 @@ class WC_Payments_Order_Service {
 						);
 					}
 
-					/**
-					 * Successful but not captured Charge is an authorization
-					 * that needs to be captured.
-					 */
-					if ( null !== $charge
-						&& false === $charge->is_captured()
-						&& Intent_Status::SUCCEEDED === $charge->get_status()
-						&& Intent_Status::REQUIRES_CAPTURE === $intent->get_status()
-					) {
-							$request = Capture_Intention::create( $intent_id );
-							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
-							// Without fresh Level 3 data, Stripe checks the capture against the data saved at
-							// authorization and refuses an edited total. Same Level 3 rule as capture_charge().
+					// Capturing here would charge the shopper on top of whatever the order's payment method took.
+					// Canceling can't be undone and the switch may be a mistake, so the merchant decides.
+					if ( $is_open_authorization && ! $is_woopayments_order ) {
+						$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge->get_id() );
+						$note            = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the ID of a WooPayments payment, %2: payment details URL. */
+								__( 'A WooPayments authorization (<a>%1$s</a>) is still open, but this order now uses another payment method, so it was not captured. Capture it under Payments > Transactions > Uncaptured, or let it expire.', 'woocommerce-payments' ),
+								[ 'a' => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>' ]
+							),
+							esc_html( WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge->get_id() ) ),
+							$transaction_url
+						);
+						if ( ! $this->order_note_exists( $order, $note ) ) {
+							$order->add_order_note( $note );
+						}
+					} elseif ( $is_open_authorization ) {
+						$request = Capture_Intention::create( $intent_id );
+						$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+						// Without fresh Level 3 data, Stripe checks the capture against the data saved at
+						// authorization and refuses an edited total. Same Level 3 rule as capture_charge().
 						if ( 'woocommerce_payments_amazon_pay' !== $order->get_payment_method() ) {
 							$request->set_level3( wcpay_get_container()->get( Level3Service::class )->get_data_from_order( $order->get_id() ) );
 						}
-							$request->set_hook_args( $order );
-							$intent = $request->send();
+						$request->set_hook_args( $order );
+						$intent = $request->send();
 
-							$this->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
-							$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
+						$this->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
+						$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
 					}
 
 					$this->set_intention_status_for_order( $order, $intent->get_status() );

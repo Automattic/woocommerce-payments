@@ -402,25 +402,29 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
+		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
+
 		if ( 0 !== strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
-			$note = sprintf(
+			$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+			$note            = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the ID of a WooPayments charge. */
-					__( 'A WooPayments authorization (<code>%1$s</code>) expired. This order now uses another payment method, so its status was not changed.', 'woocommerce-payments' ),
-					[ 'code' => '<code>' ]
+					/* translators: %1: the ID of a WooPayments payment, %2: payment details URL. */
+					__( 'A WooPayments authorization (<a>%1$s</a>) expired. This order now uses another payment method, so its status was not changed.', 'woocommerce-payments' ),
+					[ 'a' => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>' ]
 				),
-				$charge_id
+				esc_html( WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ) ),
+				$transaction_url
 			);
 			if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
 				$order->add_order_note( $note );
 			}
+			// WooPayments took no money, but the order screen shows the fee once the status leaves requires_capture.
+			$order->delete_meta_data( WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY );
+			$order->delete_meta_data( '_wcpay_net' );
 			// Stripe cancels a payment when its authorization expires. Storing that spares a request when the order is completed.
 			$this->order_service->set_intention_status_for_order( $order, Intent_Status::CANCELED );
 			return;
 		}
-
-		// Get the intent_id and then its status.
-		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
 
 		$request = Get_Intention::create( $intent_id );
 		$request->set_hook_args( $order );

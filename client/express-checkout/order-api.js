@@ -9,15 +9,64 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { getExpressCheckoutData } from './utils';
 
-// Failures that happen before the Store API persists the billing address to the order, so the
-// email we sent was not stored and should not be remembered for the next attempt.
+// Failures that happen before the Store API persists the addresses to the order, so the
+// addresses and email we sent were not stored and should not be remembered for the next attempt.
 const ERRORS_BEFORE_PERSISTENCE = [
 	'woocommerce_rest_invalid_billing_email',
 	'woocommerce_rest_invalid_order',
 	'woocommerce_rest_invalid_user',
+	// Before saving on WooCommerce 11.0+ only; older versions save the order first.
 	'woocommerce_rest_invalid_address',
 	'woocommerce_rest_invalid_address_country',
+	// WooCommerce 11.3+ rejects an address change that would re-price the order.
+	'woocommerce_rest_checkout_order_address_change_not_allowed',
+	// The request failed the endpoint's schema, e.g. a malformed wallet email or phone.
+	'rest_invalid_param',
+	// Rejected before the route runs, or for an order that can't be paid.
+	'woocommerce_rest_missing_nonce',
+	'woocommerce_rest_invalid_nonce',
+	'rate_limit_exceeded',
+	'invalid_order_update_status',
 ];
+
+const CONTACT_FIELDS = [
+	'first_name',
+	'last_name',
+	'company',
+	'email',
+	'phone',
+];
+
+// Kept together, so an address never mixes its own location with another one's.
+const LOCATION_FIELDS = [
+	'address_1',
+	'address_2',
+	'city',
+	'state',
+	'postcode',
+	'country',
+];
+
+/**
+ * Returns the order address with its blank contact fields and all of its location fields taken from another address.
+ *
+ * @param {Object} orderAddress  The address saved on the order.
+ * @param {Object} sourceAddress The address to fill from, e.g. the wallet's billing address.
+ * @return {Object} The address to send to the Store API.
+ */
+const fillMissingFields = ( orderAddress, sourceAddress = {} ) => {
+	const address = { ...orderAddress };
+
+	CONTACT_FIELDS.forEach( ( field ) => {
+		address[ field ] =
+			orderAddress[ field ] || sourceAddress[ field ] || '';
+	} );
+	LOCATION_FIELDS.forEach( ( field ) => {
+		address[ field ] = sourceAddress[ field ] || '';
+	} );
+
+	return address;
+};
 
 export default class ExpressCheckoutOrderApi {
 	// parameters used in every request, just in different ways.
@@ -57,6 +106,7 @@ export default class ExpressCheckoutOrderApi {
 		// Keep the merchant's address (it determines tax) and only fill the contact fields a
 		// merchant-created pay-for-order may be missing (email, phone). The Store API needs them to
 		// take payment and the wallet provides them, so backfilling is safe and tax stays untouched.
+		// Orders with no billing country are the exception, handled below.
 		// See https://github.com/woocommerce/woocommerce/issues/48540
 		const walletEmail = paymentData.billing_address?.email;
 		const walletPhone = paymentData.billing_address?.phone;
@@ -64,17 +114,54 @@ export default class ExpressCheckoutOrderApi {
 		const orderBillingAddress = this.cachedCartData.billing_address;
 		const orderShippingAddress = this.cachedCartData.shipping_address;
 
-		const billingAddress = orderBillingAddress && {
-			...orderBillingAddress,
-			email: orderBillingAddress.email || walletEmail,
-			phone: orderBillingAddress.phone || walletPhone,
-		};
-		const shippingAddress = orderShippingAddress && {
+		// An order with no billing country (e.g. one created in the mobile apps and shared as a
+		// payment link) can't pass the Store API address validation, so it takes the wallet's
+		// billing address. WooCommerce allows an order's first address even when it re-prices the order.
+		const hasNoOrderBillingAddress =
+			orderBillingAddress && ! orderBillingAddress.country;
+
+		const billingAddress = hasNoOrderBillingAddress
+			? fillMissingFields(
+					orderBillingAddress,
+					paymentData.billing_address
+				)
+			: orderBillingAddress && {
+					...orderBillingAddress,
+					email: orderBillingAddress.email || walletEmail,
+					phone: orderBillingAddress.phone || walletPhone,
+				};
+
+		let shippingAddress = orderShippingAddress && {
 			...orderShippingAddress,
 			phone: orderShippingAddress.phone || walletPhone,
 		};
+		if ( hasNoOrderBillingAddress && ! orderShippingAddress?.country ) {
+			// The order ships to its new billing address. It's sent explicitly, because WooCommerce
+			// before 11.0 passes a missing shipping address straight to `WC_Order::set_shipping_address()`.
+			shippingAddress = fillMissingFields(
+				orderShippingAddress ?? {},
+				billingAddress
+			);
+			// The shipping address has no email field.
+			delete shippingAddress.email;
+		}
 
 		const sentBillingEmail = billingAddress?.email;
+		// Placing the order persists what was sent, so a later attempt (a retry, or switching express
+		// method) must start from it: authorize with the new email, and keep the saved address
+		// instead of sending another wallet's.
+		const rememberPersistedData = () => {
+			if ( sentBillingEmail ) {
+				this.billingEmail = sentBillingEmail;
+			}
+			if ( hasNoOrderBillingAddress ) {
+				this.cachedCartData = {
+					...this.cachedCartData,
+					billing_address: billingAddress,
+					shipping_address: shippingAddress,
+				};
+			}
+		};
 
 		try {
 			const response = await apiFetch( {
@@ -82,6 +169,11 @@ export default class ExpressCheckoutOrderApi {
 				path: `/wc/store/v1/checkout/${ this.orderId }`,
 				headers: {
 					Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
+					// Normalizes the addresses as on the cart (state names, address lines). It's needed on
+					// every attempt, because a retry sends the wallet's address that an earlier one saved.
+					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce,
 				},
 				data: {
 					...paymentData,
@@ -94,23 +186,16 @@ export default class ExpressCheckoutOrderApi {
 				},
 			} );
 
-			// Placing the order persists this email value server-side, so a later attempt (a retry, or
-			// switching express method) must authorize with it. Remembering it, to ensure retries succeed.
-			if ( sentBillingEmail ) {
-				this.billingEmail = sentBillingEmail;
-			}
+			rememberPersistedData();
 
 			return response;
 		} catch ( error ) {
-			// A failed payment still persisted the email (it is saved before payment is taken), so
-			// remember it for the same reason. Skip the failures that happen before persistence,
-			// which a payment failure never is (it carries `process_payment_error`, or no code at
-			// all when apiFetch rejects with an unparsed response).
-			if (
-				sentBillingEmail &&
-				! ERRORS_BEFORE_PERSISTENCE.includes( error?.code )
-			) {
-				this.billingEmail = sentBillingEmail;
+			// A failed payment still persisted the addresses (they are saved before payment is taken),
+			// so remember them for the same reason. Skip the failures that happen before persistence.
+			// A payment failure carries `process_payment_error`; network and unparseable-response
+			// errors (`fetch_error`, `invalid_json`) may come after the order was saved.
+			if ( ! ERRORS_BEFORE_PERSISTENCE.includes( error?.code ) ) {
+				rememberPersistedData();
 			}
 
 			throw error;
