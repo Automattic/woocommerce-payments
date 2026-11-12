@@ -21,7 +21,7 @@ echo "Stopping containers for this worktree"
 pnpm run down
 
 # Drop test database if it exists
-TEST_DB_NAME="wcpay_tests_${WORKTREE_ID}"
+TEST_DB_NAME=$("$(dirname "$0")/test-db-name.sh" "$WORKTREE_ID")
 if docker ps --format '{{.Names}}' | grep -q "wcpay_db"; then
     echo "Checking for test database: ${TEST_DB_NAME}"
     # Check if database exists before attempting to drop
