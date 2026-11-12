@@ -53,6 +53,10 @@ mkdir( targetFolder );
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
 
+// QIT's PHPStan run reads phpstan.neon from the zip root. The repo-root
+// phpstan.neon is the dev config, so ship the QIT one under that name instead.
+cp( 'tests/qit/phpstan.neon', targetFolder + '/phpstan.neon' );
+
 // these files are only needed by `combine-pot-files.php`, keeping them out of the zip.
 rm(
 	'-f',

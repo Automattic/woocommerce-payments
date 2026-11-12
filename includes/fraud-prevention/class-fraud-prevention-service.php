@@ -52,8 +52,8 @@ class Fraud_Prevention_Service {
 	/**
 	 * Returns singleton instance.
 	 *
-	 * @param null $session Session instance.
-	 * @param null $gateway WC_Payment_Gateway_WCPay instance.
+	 * @param \WC_Session|null              $session Session instance.
+	 * @param WC_Payment_Gateway_WCPay|null $gateway WC_Payment_Gateway_WCPay instance.
 	 * @return Fraud_Prevention_Service
 	 */
 	public static function get_instance( $session = null, $gateway = null ): self {

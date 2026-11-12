@@ -883,6 +883,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 		}
+
+		return null;
 	}
 
 	/**
@@ -2248,7 +2250,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( ! empty( $woopay_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
 				$setup_intent_request = Get_Setup_Intention::create( $woopay_intent_id );
-				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
 
 				$intent_metadata          = $intent->get_metadata();
@@ -4685,7 +4687,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
-				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
 				$this->ensure_intent_belongs_to_order( $intent, $order );
 				$status = $intent->get_status();
