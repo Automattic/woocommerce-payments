@@ -82,6 +82,25 @@ jobs:
           # Only need to retain for a day since the Jetpack Beta Builder slurps it up to distribute.
           retention-days: 1
 
+      # The Playground links in the PR comment download their artifacts on every click, so these are kept
+      # for longer. The run ID in the names ties each link to the build and the preview plugin of one run:
+      # a later run that fails or is cancelled part-way cannot leave a link with a mismatched pair.
+      - name: "Upload the zip file as an artifact for the Playground previews"
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: plugins-${{ github.run_id }}
+          path: release
+          retention-days: 14
+
+      # The demo preview needs the plugin from dev/playground, which is not part of the plugin zip.
+      - name: "Upload the Playground preview plugin as an artifact"
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playground-preview-${{ github.run_id }}
+          path: dev/playground/mu-plugins
+          if-no-files-found: error
+          retention-days: 14
+
       - name: "Get plugin data for Jetpack Beta Builder"
         id: get-plugin-data
         env:
@@ -106,9 +125,66 @@ jobs:
             --form-string "plugins=$PLUGIN_DATA" \
             --form-string "secret=$SECRET"
 
+      # WordPress Playground runs in the visitor's browser and can only fetch public URLs.
+      # Its artifact proxy serves this workflow's artifacts for the PR, looked up by workflow
+      # name - hence GITHUB_WORKFLOW rather than a literal that a rename would silently break.
+      # The build artifact wraps the plugin zip, so the Blueprints unzip it before installing.
+      - name: "Build the WordPress Playground preview links"
+        id: playground
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          ARTIFACT_PROXY=$( jq -rn \
+            --arg org "$GITHUB_REPOSITORY_OWNER" \
+            --arg repo "${GITHUB_REPOSITORY#*/}" \
+            --arg workflow "$GITHUB_WORKFLOW" \
+            --arg pr "$PR_NUMBER" \
+            '"https://playground.wordpress.net/plugin-proxy.php?org=\($org|@uri)&repo=\($repo|@uri)&workflow=\($workflow|@uri)&pr=\($pr|@uri)"' )
+
+          BLUEPRINTS=$( jq -cn --arg proxy "$ARTIFACT_PROXY" --arg run "$GITHUB_RUN_ID" '
+            {
+              "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+              preferredVersions: { php: "8.3", wp: "latest" },
+              features: { networking: true }
+            } as $base
+            | { step: "login", username: "admin" } as $login
+            | { step: "installPlugin", pluginData: { resource: "wordpress.org/plugins", slug: "woocommerce" }, options: { activate: true } } as $woocommerce
+            | [
+                { step: "unzip", zipFile: { resource: "url", url: ( $proxy + "&artifact=plugins-" + $run ), caption: "Downloading the WooPayments build for this PR" }, extractToPath: "/tmp/pr" },
+                { step: "installPlugin", pluginData: { resource: "vfs", path: "/tmp/pr/woocommerce-payments-dev.zip" }, options: { activate: true } }
+              ] as $woopayments
+            | [
+                { step: "unzip", zipFile: { resource: "url", url: ( $proxy + "&artifact=playground-preview-" + $run ), caption: "Downloading the preview plugin" }, extractToPath: "/wordpress/wp-content/mu-plugins" }
+              ] as $preview_plugin
+            | [
+                { step: "runPHP", code: "<?php require \"/wordpress/wp-load.php\"; require WPMU_PLUGIN_DIR . \"/wcpay-playground-preview/setup.php\";" }
+              ] as $preview_setup
+            | {
+                unconnected: ( $base + {
+                  landingPage: "/wp-admin/admin.php?page=wc-admin&path=/payments/connect",
+                  steps: ( [
+                    $login,
+                    $woocommerce,
+                    { step: "runPHP", code: "<?php require \"/wordpress/wp-load.php\"; delete_transient( \"_wc_activation_redirect\" ); update_option( \"woocommerce_onboarding_profile\", array( \"skipped\" => true ) );" }
+                  ] + $woopayments )
+                } ),
+                demo: ( $base + {
+                  landingPage: "/wp-admin/admin.php?page=wc-admin&path=/payments/overview",
+                  constants: { WCPAY_PLAYGROUND_PREVIEW: "demo" },
+                  steps: ( [ $login ] + $preview_plugin + [ $woocommerce ] + $woopayments + $preview_setup )
+                } )
+              }' )
+
+          {
+            echo "url=https://playground.wordpress.net/#$( jq -rn --argjson blueprints "$BLUEPRINTS" '$blueprints.unconnected|tojson|@uri' )"
+            echo "demo_url=https://playground.wordpress.net/#$( jq -rn --argjson blueprints "$BLUEPRINTS" '$blueprints.demo|tojson|@uri' )"
+          } >> "$GITHUB_OUTPUT"
+
       - name: "Add/update the information as a comment in the PR"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLAYGROUND_URL: ${{ steps.playground.outputs.url }}
+          PLAYGROUND_DEMO_URL: ${{ steps.playground.outputs.demo_url }}
           PR_NUMBER: ${{ github.event.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_HEAD_REF: ${{ github.head_ref }}
@@ -134,7 +210,14 @@ jobs:
           :rocket: [Launch a JN site with this branch and sample products](https://jurassic.ninja/create/?jetpack-beta&nojetpack&woocommerce&woocommerce-import-sample-data&woocommerce-payments-dev-tools&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
           :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
-          
+
+          #### Option 3. WordPress Playground - runs in your browser
+
+          - :test_tube: [Open with demo data](${PLAYGROUND_DEMO_URL}): the store looks connected and shows made-up balances, payouts, transactions and disputes. It cannot take payments.
+          - :electric_plug: [Open unconnected](${PLAYGROUND_URL}): a fresh store on the Connect screen. Connecting from there does not work.
+
+          :information_source: Neither can onboard a new account, take a payment or receive webhooks. The demo data never changes, so it shows how screens look, not how the server behaves. The links stop working 14 days after the last build. To run a preview against a sandbox connection, [do it locally](https://github.com/Automattic/woocommerce-payments/tree/develop/dev/playground#connecting-a-sandbox).
+
           ---
 
           Build info: 

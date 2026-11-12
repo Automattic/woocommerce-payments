@@ -148,6 +148,11 @@ HTMLOptionsCollection [
     Refund failure
   </option>,
   <option
+    value="partial_capture_reversal"
+  >
+    Uncaptured amount released
+  </option>,
+  <option
     value="dispute"
   >
     Dispute
