@@ -6,7 +6,7 @@ require( 'shelljs/global' );
 // directory would still produce a zip and exit 0.
 config.fatal = true;
 const chalk = require( 'chalk' );
-const archiver = require( 'archiver' );
+const { ZipArchive } = require( 'archiver' );
 const fs = require( 'fs' );
 
 const pluginSlug = process.env.npm_package_name;
@@ -67,7 +67,7 @@ rm( '-rf', targetFolder + '/includes/multi-currency/client' );
 const output = fs.createWriteStream(
 	releaseFolder + '/' + pluginSlug + '.zip'
 );
-const archive = archiver( 'zip', { zlib: { level: 9 } } );
+const archive = new ZipArchive( { zlib: { level: 9 } } );
 
 output.on( 'close', () => {
 	console.log(
