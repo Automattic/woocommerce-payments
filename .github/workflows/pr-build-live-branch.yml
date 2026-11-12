@@ -77,10 +77,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: plugins # Hard-coded value for Jetpack Beta Builder. The Playground link below fetches it by this name too.
+          name: plugins # Hard-coded value for Jetpack Beta Builder.
           path: release
-          # The Jetpack Beta Builder slurps it up within minutes, but the Playground link in the PR comment
-          # downloads this artifact on every click, so it only works for as long as the artifact is retained.
+          # Only need to retain for a day since the Jetpack Beta Builder slurps it up to distribute.
+          retention-days: 1
+
+      # The Playground links in the PR comment download their artifacts on every click, so these are kept
+      # for longer. The run ID in the names ties each link to the build and the preview plugin of one run:
+      # a later run that fails or is cancelled part-way cannot leave a link with a mismatched pair.
+      - name: "Upload the zip file as an artifact for the Playground previews"
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: plugins-${{ github.run_id }}
+          path: release
+          retention-days: 14
+
+      # The demo preview needs the plugin from dev/playground, which is not part of the plugin zip.
+      - name: "Upload the Playground preview plugin as an artifact"
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playground-preview-${{ github.run_id }}
+          path: dev/playground/mu-plugins
+          if-no-files-found: error
           retention-days: 14
 
       - name: "Get plugin data for Jetpack Beta Builder"
@@ -107,19 +125,10 @@ jobs:
             --form-string "plugins=$PLUGIN_DATA" \
             --form-string "secret=$SECRET"
 
-      # The demo preview needs the plugin from dev/playground, which is not part of the plugin zip.
-      - name: "Upload the Playground preview plugin as an artifact"
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: playground-preview
-          path: dev/playground/mu-plugins
-          if-no-files-found: error
-          retention-days: 14
-
       # WordPress Playground runs in the visitor's browser and can only fetch public URLs.
-      # Its artifact proxy serves this workflow's latest artifacts for the PR, looked up by
-      # workflow name - hence GITHUB_WORKFLOW rather than a literal that a rename would silently break.
-      # The `plugins` artifact wraps the plugin zip, so the Blueprints unzip it before installing.
+      # Its artifact proxy serves this workflow's artifacts for the PR, looked up by workflow
+      # name - hence GITHUB_WORKFLOW rather than a literal that a rename would silently break.
+      # The build artifact wraps the plugin zip, so the Blueprints unzip it before installing.
       - name: "Build the WordPress Playground preview links"
         id: playground
         env:
@@ -132,7 +141,7 @@ jobs:
             --arg pr "$PR_NUMBER" \
             '"https://playground.wordpress.net/plugin-proxy.php?org=\($org|@uri)&repo=\($repo|@uri)&workflow=\($workflow|@uri)&pr=\($pr|@uri)"' )
 
-          BLUEPRINTS=$( jq -cn --arg proxy "$ARTIFACT_PROXY" '
+          BLUEPRINTS=$( jq -cn --arg proxy "$ARTIFACT_PROXY" --arg run "$GITHUB_RUN_ID" '
             {
               "$schema": "https://playground.wordpress.net/blueprint-schema.json",
               preferredVersions: { php: "8.3", wp: "latest" },
@@ -141,11 +150,11 @@ jobs:
             | { step: "login", username: "admin" } as $login
             | { step: "installPlugin", pluginData: { resource: "wordpress.org/plugins", slug: "woocommerce" }, options: { activate: true } } as $woocommerce
             | [
-                { step: "unzip", zipFile: { resource: "url", url: ( $proxy + "&artifact=plugins" ), caption: "Downloading the WooPayments build for this PR" }, extractToPath: "/tmp/pr" },
+                { step: "unzip", zipFile: { resource: "url", url: ( $proxy + "&artifact=plugins-" + $run ), caption: "Downloading the WooPayments build for this PR" }, extractToPath: "/tmp/pr" },
                 { step: "installPlugin", pluginData: { resource: "vfs", path: "/tmp/pr/woocommerce-payments-dev.zip" }, options: { activate: true } }
               ] as $woopayments
             | [
-                { step: "unzip", zipFile: { resource: "url", url: ( $proxy + "&artifact=playground-preview" ), caption: "Downloading the preview plugin" }, extractToPath: "/wordpress/wp-content/mu-plugins" }
+                { step: "unzip", zipFile: { resource: "url", url: ( $proxy + "&artifact=playground-preview-" + $run ), caption: "Downloading the preview plugin" }, extractToPath: "/wordpress/wp-content/mu-plugins" }
               ] as $preview_plugin
             | [
                 { step: "runPHP", code: "<?php require \"/wordpress/wp-load.php\"; require WPMU_PLUGIN_DIR . \"/wcpay-playground-preview/setup.php\";" }
