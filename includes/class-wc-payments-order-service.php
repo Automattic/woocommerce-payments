@@ -2462,18 +2462,18 @@ class WC_Payments_Order_Service {
 							$order->add_order_note( $note );
 						}
 					} elseif ( $is_open_authorization ) {
-							$request = Capture_Intention::create( $intent_id );
-							$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
-							// Without fresh Level 3 data, Stripe checks the capture against the data saved at
-							// authorization and refuses an edited total. Same Level 3 rule as capture_charge().
+						$request = Capture_Intention::create( $intent_id );
+						$request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() ) );
+						// Without fresh Level 3 data, Stripe checks the capture against the data saved at
+						// authorization and refuses an edited total. Same Level 3 rule as capture_charge().
 						if ( 'woocommerce_payments_amazon_pay' !== $order->get_payment_method() ) {
 							$request->set_level3( wcpay_get_container()->get( Level3Service::class )->get_data_from_order( $order->get_id() ) );
 						}
-							$request->set_hook_args( $order );
-							$intent = $request->send();
+						$request->set_hook_args( $order );
+						$intent = $request->send();
 
-							$this->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
-							$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
+						$this->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
+						$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
 					}
 
 					$this->set_intention_status_for_order( $order, $intent->get_status() );
