@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Keep the PHP unit test database name within MySQL's 64-character limit in worktrees with long directory names.
