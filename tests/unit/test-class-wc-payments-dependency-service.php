@@ -85,6 +85,70 @@ class WC_Payments_Dependency_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsStringIgnoringCase( 'WooPayments requires WooCommerce Admin to be enabled', $result );
 	}
 
+	/**
+	 * @dataProvider blocking_dependencies_provider
+	 */
+	public function test_get_blocking_dependencies( $invalid_dependencies, $expected ) {
+		$service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setMethods( [ 'get_invalid_dependencies' ] )
+			->getMock();
+		$service->method( 'get_invalid_dependencies' )->willReturn( $invalid_dependencies );
+
+		$this->assertSame( $expected, $service->get_blocking_dependencies() );
+	}
+
+	public function blocking_dependencies_provider() {
+		return [
+			'compatible'        => [ [], [] ],
+			'old versions'      => [ [ 'woocore_outdated', 'wc_admin_outdated', 'wp_outdated' ], [] ],
+			'missing Woo'       => [ [ 'woocore_disabled', 'woocore_outdated', 'wc_admin_not_found' ], [ 'woocore_disabled', 'wc_admin_not_found' ] ],
+			'disabled WC Admin' => [ [ 'woocore_outdated', 'wc_admin_not_found' ], [ 'wc_admin_not_found' ] ],
+		];
+	}
+
+	public function test_account_cache_clear_does_not_change_blocking_dependencies() {
+		$service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setMethods( [ 'is_woo_core_version_compatible' ] )
+			->getMock();
+		$service->method( 'is_woo_core_version_compatible' )->willReturn( false );
+		update_option( WCPay\Database_Cache::ACCOUNT_KEY, [ 'data' => [ 'account_id' => 'acct_test' ] ] );
+
+		$this->assertSame( [], $service->get_blocking_dependencies() );
+		WC_Payments::get_account_service()->clear_cache();
+
+		$this->assertFalse( get_option( 'wcpay_account_data' ) );
+		$this->assertSame( [], $service->get_blocking_dependencies() );
+		$this->assertSame( [ 'woocore_outdated' ], $service->get_invalid_dependencies() );
+	}
+
+	/**
+	 * @dataProvider dependency_notice_provider
+	 */
+	public function test_dependency_notice_severity( $dependencies, $notice_class, $message ) {
+		$service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setMethods( [ 'get_invalid_dependencies', 'are_assets_built' ] )
+			->getMock();
+		$service->method( 'get_invalid_dependencies' )->willReturn( $dependencies );
+		$service->method( 'are_assets_built' )->willReturn( true );
+
+		ob_start();
+		$service->display_admin_notices();
+		$notice = ob_get_clean();
+
+		$this->assertStringContainsString( $notice_class, $notice );
+		$this->assertStringContainsString( $message, $notice );
+	}
+
+	public function dependency_notice_provider() {
+		return [
+			'old Woo'           => [ [ 'woocore_outdated' ], 'notice-warning', 'WooCommerce' ],
+			'old WP'            => [ [ 'wp_outdated' ], 'notice-warning', 'WordPress' ],
+			'old WC Admin'      => [ [ 'wc_admin_outdated' ], 'notice-warning', 'WooCommerce Admin' ],
+			'missing Woo'       => [ [ 'woocore_disabled', 'woocore_outdated' ], 'notice-error', 'to be installed and active' ],
+			'disabled WC Admin' => [ [ 'woocore_outdated', 'wc_admin_not_found' ], 'notice-error', 'WooCommerce Admin to be enabled' ],
+		];
+	}
+
 	public function test_display_admin_notices_assets_not_built() {
 		// Create a partial mock, leaving out the method under test.
 		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
