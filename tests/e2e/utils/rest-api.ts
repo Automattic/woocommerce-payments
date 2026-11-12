@@ -12,12 +12,21 @@ const userEndpoint = '/wc/v3/customers';
 const ordersEndpoint = '/wc/v3/orders';
 const widgetEndpoint = '/wp/v2/widgets';
 const productsEndpoint = '/wc/v3/products';
+const shippingZonesEndpoint = '/wc/v3/shipping/zones';
 
 export type CustomerType = typeof config.users.customer;
 export type AddressType = Omit<
 	typeof config.addresses.customer.billing,
 	'state'
 > & { state?: string };
+
+// Handles needed to tear down the zones/methods created for the ECE specs. The
+// rest-of-world zone (built-in zone 0) can't be deleted, so we track the method
+// instance ids we added to it and remove just those.
+export type EceShippingZoneHandles = {
+	usZoneId: number;
+	rowMethodInstanceIds: number[];
+};
 
 class RestAPI {
 	private baseUrl: string;
@@ -220,6 +229,93 @@ class RestAPI {
 		} );
 
 		return `${ order.data.id }`;
+	}
+
+	/**
+	 * Provisions the shipping the ECE fake-sheet specs need: a US zone (Free +
+	 * $11 flat rate) and the rest-of-world zone 0 (Free + $22 flat rate). Kept
+	 * out of the global E2E setup so the no-shipping checkout the wc-blocks and
+	 * Alipay specs assume stays intact for everyone else.
+	 */
+	async createEceShippingZones(): Promise< EceShippingZoneHandles > {
+		const client = this.getAdminClient();
+
+		// A crashed prior run can leave a stale US zone behind; drop it first so
+		// we don't stack duplicates.
+		const existingZones = await client.get( shippingZonesEndpoint );
+		if ( existingZones.data && existingZones.data.length ) {
+			for ( const zone of existingZones.data ) {
+				if ( zone.name === 'United States' ) {
+					await client.delete(
+						`${ shippingZonesEndpoint }/${ zone.id }`,
+						{ params: { force: true } }
+					);
+				}
+			}
+		}
+
+		const usZone = await client.post( shippingZonesEndpoint, {
+			name: 'United States',
+			order: 0,
+		} );
+		const usZoneId = usZone.data.id;
+
+		// Locations is a PUT that takes a bare array as the whole body - wrapping
+		// it in an object or POSTing makes the zone match nothing.
+		await client.put(
+			`${ shippingZonesEndpoint }/${ usZoneId }/locations`,
+			[ { code: 'US', type: 'country' } ]
+		);
+
+		await client.post( `${ shippingZonesEndpoint }/${ usZoneId }/methods`, {
+			method_id: 'free_shipping',
+		} );
+		await client.post( `${ shippingZonesEndpoint }/${ usZoneId }/methods`, {
+			method_id: 'flat_rate',
+			settings: { cost: '11' },
+		} );
+
+		// Zone 0 is WooCommerce's built-in "Locations not covered by your other
+		// zones" - it can't be created or deleted, only have methods added.
+		const rowFree = await client.post(
+			`${ shippingZonesEndpoint }/0/methods`,
+			{ method_id: 'free_shipping' }
+		);
+		const rowFlat = await client.post(
+			`${ shippingZonesEndpoint }/0/methods`,
+			{ method_id: 'flat_rate', settings: { cost: '22' } }
+		);
+
+		return {
+			usZoneId,
+			rowMethodInstanceIds: [ rowFree.data.id, rowFlat.data.id ],
+		};
+	}
+
+	/**
+	 * Reverses createEceShippingZones: removes the methods added to zone 0 and
+	 * force-deletes the US zone. Best-effort - a partial create still tears down
+	 * whatever did land.
+	 */
+	async deleteEceShippingZones( {
+		usZoneId,
+		rowMethodInstanceIds,
+	}: EceShippingZoneHandles ): Promise< void > {
+		const client = this.getAdminClient();
+
+		for ( const instanceId of rowMethodInstanceIds ) {
+			await client
+				.delete(
+					`${ shippingZonesEndpoint }/0/methods/${ instanceId }`
+				)
+				.catch( () => undefined );
+		}
+
+		await client
+			.delete( `${ shippingZonesEndpoint }/${ usZoneId }`, {
+				params: { force: true },
+			} )
+			.catch( () => undefined );
 	}
 }
 
