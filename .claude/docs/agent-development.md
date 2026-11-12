@@ -1,6 +1,6 @@
 # Development and delivery
 
-**Last updated:** 2026-10-24
+**Last updated:** 2026-11-12
 
 Read the sections relevant to the current task. Paths and commands in this reference are relative to the repository root unless stated otherwise.
 
@@ -101,6 +101,10 @@ All pnpm settings live in `pnpm-workspace.yaml` — since pnpm 11 the `package.j
 ```bash
 pnpm run i18n:pot                    # Generate translations
 ```
+
+### Playground PR previews
+
+Each PR's "Test the build" comment links to WordPress Playground previews: an unconnected store, and one that looks connected by answering server requests from fixture files. A third mode, which reuses a pasted sandbox connection, runs locally only. When a change alters what an admin screen reads from the server, update the matching fixture in the same PR. See [dev/playground/README.md](../../dev/playground/README.md) for how requests map to fixtures, what each preview cannot do, and the local command.
 
 
 ## Git Workflow
