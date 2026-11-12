@@ -294,7 +294,7 @@ describe( 'Advanced fraud protection settings', () => {
 		expect( container ).toMatchSnapshot();
 		expect(
 			document.querySelectorAll(
-				'fraud-protection-advanced-settings-error-notice'
+				'.fraud-protection-advanced-settings-error-notice'
 			).length
 		).toBe( 0 );
 	} );
@@ -361,7 +361,7 @@ describe( 'Advanced fraud protection settings', () => {
 		} );
 		expect(
 			document.querySelectorAll(
-				'fraud-protection-advanced-settings-error-notice'
+				'.fraud-protection-advanced-settings-error-notice'
 			).length
 		).toBe( 0 );
 		expect( protectionLevelState.state ).toBe( 'advanced' );
@@ -433,7 +433,7 @@ describe( 'Advanced fraud protection settings', () => {
 		} );
 		expect(
 			document.querySelectorAll(
-				'fraud-protection-advanced-settings-error-notice'
+				'.fraud-protection-advanced-settings-error-notice'
 			).length
 		).toBe( 0 );
 		expect( protectionLevelState.state ).toBe( 'advanced' );

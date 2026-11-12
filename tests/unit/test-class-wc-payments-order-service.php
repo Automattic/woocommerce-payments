@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
@@ -93,6 +94,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Order total after the merchant removed an item from an authorized order.
 	 */
 	const REDUCED_ORDER_TOTAL = 10.00;
+
+	/**
+	 * Order total equal to AUTHORIZED_AMOUNT.
+	 */
+	const AUTHORIZED_ORDER_TOTAL = 12.00;
+
+	/**
+	 * Order total after the merchant added an item to an order while its payment was being authorized.
+	 */
+	const RAISED_ORDER_TOTAL = 15.00;
 
 	/**
 	 * Level 3 data built from the order when it is captured.
@@ -1463,6 +1474,115 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the order is not locked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	public function test_payment_authorized_note_warns_when_authorized_amount_is_below_order_total() {
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => self::AUTHORIZED_AMOUNT,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 was authorized', $note_text );
+		$this->assertStringContainsString( 'The order total, $15.00, is higher than the authorized amount', $note_text );
+	}
+
+	/**
+	 * @dataProvider payment_authorized_without_total_warning_provider
+	 */
+	public function test_payment_authorized_note_has_no_warning_when_authorized_amount_covers_order_total( $order_total ) {
+		$this->order->set_total( $order_total );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => self::AUTHORIZED_AMOUNT,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 was authorized', $note_text );
+		$this->assertStringNotContainsString( 'The order total', $note_text );
+	}
+
+	public function payment_authorized_without_total_warning_provider() {
+		return [
+			'authorized amount equals order total' => [ self::AUTHORIZED_ORDER_TOTAL ],
+			'authorized amount above order total'  => [ self::REDUCED_ORDER_TOTAL ],
+		];
+	}
+
+	public function test_payment_authorized_note_has_no_warning_when_intent_is_processing() {
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => self::AUTHORIZED_AMOUNT,
+				'status' => Intent_Status::PROCESSING,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertStringContainsString( 'A payment of $12.00 was authorized', $note_text );
+		$this->assertStringNotContainsString( 'The order total', $note_text );
+	}
+
+	public function test_payment_authorized_note_has_no_warning_when_currencies_differ() {
+		$this->order->set_currency( Currency_Code::CANADIAN_DOLLAR );
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'   => self::AUTHORIZED_AMOUNT,
+				'currency' => 'usd',
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 USD was authorized', $note_text );
+		$this->assertStringNotContainsString( 'The order total', $note_text );
+	}
+
+	public function test_held_for_review_note_warns_when_authorized_amount_is_below_order_total() {
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'   => self::AUTHORIZED_AMOUNT,
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW,
+				],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 was held for review', $note_text );
+		$this->assertStringContainsString( 'The order total, $15.00, is higher than the authorized amount', $note_text );
 	}
 
 	/**
@@ -4841,6 +4961,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'Succeeded intent' => [ Intent_Status::SUCCEEDED ],
 			'Canceled intent'  => [ Intent_Status::CANCELED ],
 		];
+	}
+
+	/**
+	 * Cancelling an order that no longer exists must not throw.
+	 */
+	public function test_cancel_authorizations_on_order_status_change_ignores_a_missing_order() {
+		$missing_order_id = PHP_INT_MAX;
+		$this->assertFalse( wc_get_order( $missing_order_id ), 'Precondition: the order id must not exist.' );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $missing_order_id );
 	}
 
 	/**

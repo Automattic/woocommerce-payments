@@ -21,6 +21,7 @@ describe( 'SaveSettingsSection', () => {
 	it( 'disables the button when loading data', () => {
 		useSettings.mockReturnValue( {
 			isLoading: true,
+			isDirty: true,
 		} );
 
 		render( <SaveSettingsSection /> );
@@ -41,6 +42,7 @@ describe( 'SaveSettingsSection', () => {
 	it( 'disables the button when saving data', () => {
 		useSettings.mockReturnValue( {
 			isSaving: true,
+			isDirty: true,
 		} );
 
 		render( <SaveSettingsSection /> );

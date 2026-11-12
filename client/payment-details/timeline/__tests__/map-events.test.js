@@ -1724,6 +1724,24 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 } );
 
 describe( 'composeTaxString', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			shouldUseExplicitPrice: true,
+			zeroDecimalCurrencies: [],
+			connect: { country: 'US' },
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
+	} );
+
 	it( 'should return empty string when no tax data is present', () => {
 		const event = {};
 		expect( composeTaxString( event ) ).toBe( '' );
@@ -1763,6 +1781,22 @@ describe( 'composeTaxString', () => {
 		};
 		expect( composeTaxString( event ) ).toBe(
 			'Tax ES VAT (21.00%): -€0.10'
+		);
+	} );
+
+	it( 'should use the translatable label for the tax description', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'GBP',
+					percentage_rate: 0.2,
+					description: 'GB VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe(
+			'Tax UK VAT (20.00%): -£0.10'
 		);
 	} );
 

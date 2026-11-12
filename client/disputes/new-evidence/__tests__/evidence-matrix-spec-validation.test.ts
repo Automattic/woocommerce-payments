@@ -1948,27 +1948,23 @@ describe( 'Evidence Matrix Specification Validation', () => {
 					} );
 				} );
 
-				it( 'should exclude non-applicable document fields', () => {
-					if (
-						! spec.uiFields.shouldExclude ||
-						spec.uiFields.shouldExclude.length === 0
-					) {
-						return;
-					}
+				const excludedFields = spec.uiFields.shouldExclude ?? [];
+				if ( excludedFields.length > 0 ) {
+					it( 'should exclude non-applicable document fields', () => {
+						const fields = getRecommendedDocumentFields(
+							spec.reason,
+							spec.refundStatus,
+							spec.status,
+							spec.productType
+						);
 
-					const fields = getRecommendedDocumentFields(
-						spec.reason,
-						spec.refundStatus,
-						spec.status,
-						spec.productType
-					);
+						const fieldKeys = fields.map( ( f ) => f.key );
 
-					const fieldKeys = fields.map( ( f ) => f.key );
-
-					spec.uiFields.shouldExclude.forEach( ( excludedKey ) => {
-						expect( fieldKeys ).not.toContain( excludedKey );
+						excludedFields.forEach( ( excludedKey ) => {
+							expect( fieldKeys ).not.toContain( excludedKey );
+						} );
 					} );
-				} );
+				}
 
 				it( 'should have correct labels for document fields', () => {
 					const fields = getRecommendedDocumentFields(
@@ -2092,34 +2088,29 @@ describe( 'Evidence Matrix Specification Validation', () => {
 				);
 			} );
 
-			it( 'should exclude non-applicable attachments from cover letter', () => {
-				if (
-					! spec.coverLetterAttachments.shouldExclude ||
-					spec.coverLetterAttachments.shouldExclude.length === 0
-				) {
-					return;
-				}
+			const excludedAttachments =
+				spec.coverLetterAttachments.shouldExclude ?? [];
+			if ( excludedAttachments.length > 0 ) {
+				it( 'should exclude non-applicable attachments from cover letter', () => {
+					// Create evidence object with all possible keys set
+					const evidence: Record< string, string > = {};
+					Object.values( DOCUMENT_FIELD_KEYS ).forEach( ( key ) => {
+						evidence[ key ] = `${ key }_url`;
+					} );
 
-				// Create evidence object with all possible keys set
-				const evidence: Record< string, string > = {};
-				Object.values( DOCUMENT_FIELD_KEYS ).forEach( ( key ) => {
-					evidence[ key ] = `${ key }_url`;
-				} );
+					const dispute = createMockDispute( spec.reason, evidence );
+					const attachments = generateAttachments(
+						dispute as any,
+						spec.status,
+						spec.productType,
+						spec.refundStatus
+					);
 
-				const dispute = createMockDispute( spec.reason, evidence );
-				const attachments = generateAttachments(
-					dispute as any,
-					spec.status,
-					spec.productType,
-					spec.refundStatus
-				);
-
-				spec.coverLetterAttachments.shouldExclude.forEach(
-					( excludedLabel ) => {
+					excludedAttachments.forEach( ( excludedLabel ) => {
 						expect( attachments ).not.toContain( excludedLabel );
-					}
-				);
-			} );
+					} );
+				} );
+			}
 		} );
 	} );
 
