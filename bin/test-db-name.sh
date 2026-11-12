@@ -11,7 +11,7 @@
 
 set -e
 
-WORKTREE_ID="${1-default}"
+WORKTREE_ID="${1:-default}"
 MAX_LENGTH=64
 NAME="wcpay_tests_${WORKTREE_ID}"
 

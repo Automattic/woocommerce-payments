@@ -24,6 +24,7 @@ LONG_ID=woocommerce_payments_fix_test_db_name_length_for_long_worktree_branches
 LONG_ID_OTHER_SUFFIX=woocommerce_payments_fix_test_db_name_length_for_long_worktree_branchez
 
 assert_eq "$("$TEST_DB_NAME")" "wcpay_tests_default" "defaults to the default worktree"
+assert_eq "$("$TEST_DB_NAME" "")" "wcpay_tests_default" "defaults an empty ID to the default worktree"
 assert_eq "$("$TEST_DB_NAME" "$SHORT_ID")" "wcpay_tests_laughing_davinci_da71cd" "keeps a short name unchanged"
 assert_eq "$("$TEST_DB_NAME" "$ID_AT_LIMIT")" "wcpay_tests_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" "keeps a 64-character name unchanged"
 assert_eq "$("$TEST_DB_NAME" "$ID_OVER_LIMIT")" "wcpay_tests_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_7e196e98" "shortens a 65-character name to 64"
