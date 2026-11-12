@@ -418,6 +418,9 @@ class WC_Payments_Webhook_Processing_Service {
 			if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
 				$order->add_order_note( $note );
 			}
+			// WooPayments took no money, but the order screen shows the fee once the status leaves requires_capture.
+			$order->delete_meta_data( WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY );
+			$order->delete_meta_data( '_wcpay_net' );
 			// Stripe cancels a payment when its authorization expires. Storing that spares a request when the order is completed.
 			$this->order_service->set_intention_status_for_order( $order, Intent_Status::CANCELED );
 			return;
