@@ -6077,9 +6077,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
 
-		unset( $_GET['change_payment_method'] );
-		WC_Subscriptions::set_wcs_is_subscription( null );
-
 		$this->assertSame( 'fail', $result['result'] );
 	}
 
@@ -6128,9 +6125,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'bump' );
 
 		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
-
-		unset( $_GET['change_payment_method'] );
-		WC_Subscriptions::set_wcs_is_subscription( null );
 
 		$this->assertSame( 'success', $result['result'] );
 	}
