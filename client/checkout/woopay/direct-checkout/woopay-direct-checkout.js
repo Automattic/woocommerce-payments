@@ -18,6 +18,7 @@ class WooPayDirectCheckout {
 	static sessionConnect;
 	static encryptedSessionDataPromise;
 	static elementsWithRedirectListener = new WeakSet();
+	static checkoutButtonObserver;
 	static redirectElements = {
 		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout .checkout-button',
 		BLOCKS_CART_PROCEED_BUTTON:
@@ -67,6 +68,8 @@ class WooPayDirectCheckout {
 	 * Teardown WooPayDirectCheckout.
 	 */
 	static teardown() {
+		this.checkoutButtonObserver?.disconnect();
+		this.checkoutButtonObserver = null;
 		this.sessionConnect?.detachMessageListener();
 		this.userConnect?.detachMessageListener();
 
@@ -301,6 +304,42 @@ class WooPayDirectCheckout {
 		elements,
 		userIsLoggedIn = false
 	) {
+		// Cart synchronization can render buttons after the debounced session refresh.
+		// Bind on insertion without prefetching again or repeating the login check.
+		if ( ! this.checkoutButtonObserver ) {
+			const selector = Object.values( this.redirectElements ).join(
+				', '
+			);
+			this.checkoutButtonObserver = new MutationObserver(
+				( mutations ) => {
+					const newButtons = [];
+					for ( const { addedNodes } of mutations ) {
+						for ( const node of addedNodes ) {
+							if ( node.nodeType !== Node.ELEMENT_NODE ) {
+								continue;
+							}
+							if ( node.matches( selector ) ) {
+								newButtons.push( node );
+							}
+							newButtons.push(
+								...node.querySelectorAll( selector )
+							);
+						}
+					}
+					if ( newButtons.length ) {
+						this.addRedirectToWooPayEventListener(
+							newButtons,
+							userIsLoggedIn
+						);
+					}
+				}
+			);
+			this.checkoutButtonObserver.observe( document.body, {
+				childList: true,
+				subtree: true,
+			} );
+		}
+
 		/**
 		 * Adds a loading spinner to the given element.
 		 *

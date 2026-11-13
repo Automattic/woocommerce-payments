@@ -10,10 +10,6 @@ jest.mock( 'wcpay/utils/navigation', () => ( {
 	redirectTo: jest.fn(),
 } ) );
 
-jest.spyOn( WooPayDirectCheckout, 'isWooPayReachable' ).mockResolvedValue(
-	true
-);
-
 describe( 'WooPayDirectCheckout', () => {
 	describe( 'addRedirectToWooPayEventListener', () => {
 		let elements;
@@ -35,14 +31,75 @@ describe( 'WooPayDirectCheckout', () => {
 					.CLASSIC_CART_PROCEED_BUTTON
 			);
 
-			WooPayDirectCheckout.teardown = jest.fn();
-			WooPayDirectCheckout.getWooPayCheckoutUrl = jest.fn();
-			WooPayDirectCheckout.getWooPayMinimumSessionUrl = jest.fn();
+			jest.spyOn( WooPayDirectCheckout, 'teardown' );
+			jest.spyOn(
+				WooPayDirectCheckout,
+				'getWooPayCheckoutUrl'
+			).mockReset();
+			jest.spyOn(
+				WooPayDirectCheckout,
+				'getWooPayMinimumSessionUrl'
+			).mockReset();
+			jest.spyOn(
+				WooPayDirectCheckout,
+				'isWooPayReachable'
+			).mockResolvedValue( true );
 		} );
 
 		afterEach( () => {
-			elements.forEach( ( el ) => el.parentElement.remove() );
+			WooPayDirectCheckout.teardown();
+			document.body.replaceChildren();
+			jest.restoreAllMocks();
 			jest.clearAllMocks();
+		} );
+
+		it( 'redirects a Cart block button rendered after the initial binding', async () => {
+			WooPayDirectCheckout.getWooPayCheckoutUrl.mockResolvedValue(
+				'https://woopay.test/woopay?platform_checkout_key=1234567890'
+			);
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( [], true );
+
+			await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+			const container = document.createElement( 'div' );
+			container.innerHTML =
+				'<div class="wp-block-woocommerce-proceed-to-checkout-block">' +
+				'<a href="https://merchant.test/checkout">Proceed to checkout</a></div>';
+			document.body.appendChild( container );
+
+			await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+			container.querySelector( 'a' ).click();
+
+			await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+			expect(
+				WooPayDirectCheckout.getWooPayCheckoutUrl
+			).toHaveBeenCalledTimes( 1 );
+			expect( redirectTo ).toHaveBeenCalledWith(
+				'https://woopay.test/woopay?platform_checkout_key=1234567890'
+			);
+		} );
+
+		it( 'redirects a new Mini-Cart button when third-party cookies are unavailable', async () => {
+			WooPayDirectCheckout.getWooPayMinimumSessionUrl.mockResolvedValue(
+				'https://woopay.test/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
+			);
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( [], false );
+
+			const checkoutButton = document.createElement( 'a' );
+			checkoutButton.href = 'https://merchant.test/checkout';
+			checkoutButton.className =
+				'wp-block-woocommerce-mini-cart-checkout-button-block';
+			document.body.appendChild( checkoutButton );
+
+			await new Promise( ( resolve ) => setImmediate( resolve ) );
+			checkoutButton.click();
+			await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+			expect( redirectTo ).toHaveBeenCalledWith(
+				'https://woopay.test/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
+			);
 		} );
 
 		it( 'should add event listeners to provided "proceed to checkout" button elements', () => {
