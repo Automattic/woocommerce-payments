@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Revert the Apple Pay / Google Pay billing address fallback for payment link orders without a billing address (#12368).
