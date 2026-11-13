@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Express checkout: send a '-' shipping last name for one-word Apple Pay and Google Pay contact names, so WooCommerce no longer rejects the order with "Last name is required".
+Express checkout: send a '-' shipping last name for one-word Apple Pay and Google Pay contact names, including when paying for an existing order, so WooCommerce no longer rejects the order with "Last name is required".

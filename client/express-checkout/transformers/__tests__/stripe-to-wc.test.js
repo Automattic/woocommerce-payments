@@ -131,6 +131,7 @@ describe( 'stripe-to-wc transformers', () => {
 			it.each( [
 				[ 'a one-word name', 'Patrice' ],
 				[ 'a one-word name with a trailing space', 'Patrice ' ],
+				[ 'a one-word name with two trailing spaces', 'Patrice  ' ],
 			] )(
 				'falls back to "-" for the shipping last name with %s',
 				( _, name ) => {

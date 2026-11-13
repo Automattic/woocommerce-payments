@@ -75,7 +75,7 @@ export const transformStripePaymentMethodForStoreApi = (
 					...shippingAddress,
 					// Wallets accept one-word contact names, but WooCommerce requires a
 					// shipping last name. Mirrors the billing fallback above.
-					last_name: shippingAddress.last_name || '-',
+					last_name: shippingAddress.last_name.trim() || '-',
 					// adding the phone number, because it might be needed.
 					// Stripe doesn't provide us with a different phone number for shipping,
 					// so we're going to use the same phone used for billing.
