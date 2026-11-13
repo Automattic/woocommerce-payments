@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 
 /**
@@ -550,6 +551,110 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
 
 		$this->assertTrue( $mock_subscription->has_status( 'cancelled' ) );
+	}
+
+	/**
+	 * Test a late or repeated invoice.payment_failed event leaves an invoice's paid order and its subscription alone.
+	 *
+	 * @param string $order_status  Status of the invoice's order when the failure event arrives.
+	 * @param int    $attempt_count Attempt count carried by the failure event.
+	 *
+	 * @dataProvider provider_invoice_payment_failed_order_already_paid
+	 */
+	public function test_invoice_payment_failed_ignored_when_order_already_paid( string $order_status, int $attempt_count ) {
+		$wcpay_invoice_id = 'ii_paidInvoiceID';
+		$charge_id        = 'ch_paid';
+		$test_body        = $this->get_mock_test_body( 'sub_invoicePaid', 'cus_paid1234', $wcpay_invoice_id, 'pi_paid', $attempt_count );
+
+		$test_body['data']['object']['charge'] = $charge_id;
+
+		$renewal_order = WC_Helper_Order::create_order();
+		$renewal_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $wcpay_invoice_id );
+		$renewal_order->set_status( $order_status );
+		$renewal_order->save();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->update_status( 'active' );
+
+		WC_Subscriptions::set_wcs_get_subscriptions(
+			function ( $_unused_args ) use ( $mock_subscription ) {
+				return [ $mock_subscription ];
+			}
+		);
+
+		$this->mock_invoice_service->expects( $this->never() )->method( 'set_order_invoice_id' );
+		$this->mock_invoice_service->expects( $this->never() )->method( 'mark_pending_invoice_for_subscription' );
+		$this->mock_invoice_service->expects( $this->never() )->method( 'record_subscription_payment_context' );
+		$this->mock_wcpay_request( Get_Charge::class, 0, $charge_id );
+
+		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
+
+		$this->assertSame( 'active', $mock_subscription->get_status() );
+		$this->assertSame( $order_status, wc_get_order( $renewal_order->get_id() )->get_status() );
+
+		WC_Subscriptions::set_wcs_get_subscriptions( null );
+	}
+
+	/**
+	 * Order statuses invoice.paid leaves the invoice's order in.
+	 *
+	 * @return array
+	 */
+	public function provider_invoice_payment_failed_order_already_paid(): array {
+		return [
+			'paid order'                     => [ 'processing', 1 ],
+			'completed order'                => [ 'completed', 1 ],
+			'order held for amount mismatch' => [ 'on-hold', 1 ],
+			'paid order on the last attempt' => [ 'processing', 4 ],
+		];
+	}
+
+	/**
+	 * Test a failed attempt on an invoice whose order the invoice did not pay is still recorded.
+	 *
+	 * @param string $order_status Status of the invoice's order when the failure event arrives.
+	 *
+	 * @dataProvider provider_invoice_payment_failed_order_not_paid_by_invoice
+	 */
+	public function test_invoice_payment_failed_processed_when_order_not_paid_by_invoice( string $order_status ) {
+		$wcpay_invoice_id = 'ii_failedInvoiceID';
+		$test_body        = $this->get_mock_test_body( 'sub_invoiceFailed', 'cus_failed1234', $wcpay_invoice_id, 'pi_failed', 2 );
+		$renewal_order    = WC_Helper_Order::create_order();
+		$renewal_order->update_meta_data( self::ORDER_INVOICE_ID_KEY, $wcpay_invoice_id );
+		$renewal_order->set_status( $order_status );
+		$renewal_order->save();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->update_status( 'active' );
+
+		WC_Subscriptions::set_wcs_get_subscriptions(
+			function ( $_unused_args ) use ( $mock_subscription ) {
+				return [ $mock_subscription ];
+			}
+		);
+
+		$this->mock_invoice_service->expects( $this->never() )->method( 'set_order_invoice_id' );
+		$this->mock_invoice_service->expects( $this->once() )
+			->method( 'mark_pending_invoice_for_subscription' )
+			->with( $mock_subscription, 'ii_failedInvoiceID' );
+
+		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );
+
+		$this->assertSame( 'on-hold', $mock_subscription->get_status() );
+
+		WC_Subscriptions::set_wcs_get_subscriptions( null );
+	}
+
+	/**
+	 * Order statuses in which a failed attempt is still recorded.
+	 *
+	 * @return array
+	 */
+	public function provider_invoice_payment_failed_order_not_paid_by_invoice(): array {
+		return [
+			'failed order'    => [ 'failed' ],
+			'pending order'   => [ 'pending' ],
+			'cancelled order' => [ 'cancelled' ],
+			'refunded order'  => [ 'refunded' ],
+		];
 	}
 
 	/**
