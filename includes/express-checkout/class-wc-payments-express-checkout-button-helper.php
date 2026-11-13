@@ -779,6 +779,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
+		// Pages with a cart or checkout block can be rendered without a cart, e.g. by the block editor's REST request.
+		// The cart checks below need one, and there is nothing to pay for without it.
+		if ( ( $this->is_checkout() || $this->is_cart() ) && ! isset( WC()->cart ) ) {
+			return false;
+		}
+
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( Express Checkout Element button disabled )' );
@@ -881,6 +887,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function has_allowed_items_in_cart() {
+		if ( ! isset( WC()->cart ) ) {
+			return false;
+		}
+
 		/**
 		 * Pre Orders compatbility where we don't support charge upon release.
 		 */

@@ -902,6 +902,43 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertTrue( $helper->should_show_express_checkout_button() );
 	}
 
+	/**
+	 * @dataProvider provider_block_page_content
+	 */
+	public function test_should_not_show_express_checkout_button_on_block_page_without_cart( string $post_content ) {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( $post_content );
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+		// REST requests, such as the block editor loading the page, have no cart.
+		$cart      = WC()->cart;
+		WC()->cart = null;
+
+		try {
+			$this->assertFalse( $helper->should_show_express_checkout_button() );
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			WC()->cart = $cart;
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_has_allowed_items_in_cart_returns_false_without_cart() {
+		$cart      = WC()->cart;
+		WC()->cart = null;
+
+		try {
+			$this->assertFalse( $this->system_under_test->has_allowed_items_in_cart() );
+		} finally {
+			WC()->cart = $cart;
+		}
+	}
+
 	public function test_should_not_show_express_checkout_button_for_non_shipping_but_price_does_not_include_tax() {
 		$helper = $this->create_helper_on_cart_with_express_checkout_enabled();
 

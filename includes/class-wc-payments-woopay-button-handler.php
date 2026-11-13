@@ -291,6 +291,11 @@ class WC_Payments_WooPay_Button_Handler {
 			return false;
 		}
 
+		// Pages with a cart or checkout block can be rendered without a cart, e.g. by the block editor's REST request.
+		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! isset( WC()->cart ) ) {
+			return false;
+		}
+
 		// Cart has unsupported product type.
 		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
