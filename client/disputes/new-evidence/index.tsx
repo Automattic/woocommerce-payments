@@ -31,9 +31,10 @@ import { encodePathSegment } from 'utils/path-segment';
 import {
 	generateCoverLetter,
 	getBusinessDetails,
+	isSameCoverLetterIgnoringDate,
 } from './cover-letter-generator';
 import { useDisputeEvidence } from 'wcpay/data/disputes';
-import { useGetSettings } from 'wcpay/data/settings';
+import { useGetSettings, useSettings } from 'wcpay/data/settings';
 // The only dispatch made through this store handle invalidates getPaymentIntent,
 // which now lives in the payment-intents store.
 import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
@@ -135,6 +136,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 	const settings = useGetSettings();
+	const { isLoading: isLoadingSettings } = useSettings();
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 	const [ refundStatus, setRefundStatus ] = useState(
 		'refund_has_been_issued'
@@ -157,6 +159,13 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Data loading ---
 	useEffect( () => {
+		// A saved letter counts as hand-edited when it differs from one generated now, and the
+		// generated letter includes the support email and phone from settings. Comparing before
+		// settings load would flag an untouched letter. A failed settings fetch still finishes
+		// resolving, so the form loads with empty settings instead of waiting forever.
+		if ( isLoadingSettings ) {
+			return;
+		}
 		const fetchDispute = async () => {
 			try {
 				setIsInitialLoading( true );
@@ -272,7 +281,10 @@ export default ( { query }: { query: { id: string } } ) => {
 							suggestedProductType
 						);
 						setIsCoverLetterManuallyEdited(
-							savedCoverLetter !== generatedContent
+							! isSameCoverLetterIgnoringDate(
+								savedCoverLetter,
+								generatedContent
+							)
 						);
 					}
 				} else if (
@@ -306,8 +318,9 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Load once per dispute: each run resets the form to the saved evidence, so re-running when
 		// settings or the status selections change would wipe what the merchant has typed. The
 		// evidence update effect regenerates the cover letter when those values change.
+		// isLoadingSettings flips to false once per page load, as nothing invalidates getSettings.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ disputeId ] );
+	}, [ disputeId, isLoadingSettings ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -371,9 +384,19 @@ export default ( { query }: { query: { id: string } } ) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- We only want to fetch the file details when uploadedFiles changes.
 	}, [ dispute?.evidence ] );
 
+	// --- Read-only logic ---
+	const readOnly =
+		dispute &&
+		dispute.status !== 'needs_response' &&
+		dispute.status !== 'warning_needs_response';
+
 	// Update cover letter when evidence changes
 	useEffect( () => {
 		if ( ! dispute || ! settings ) return;
+		// Show a submitted letter as the bank got it, not rebuilt with today's date.
+		if ( readOnly ) {
+			return;
+		}
 
 		// Get the document fields that are applicable for the current reason + product type
 		// This ensures we only include evidence for fields shown in the current UI
@@ -481,6 +504,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		duplicateStatus,
 		coverLetter,
 		productType,
+		readOnly,
 	] );
 
 	// --- Step logic ---
@@ -697,12 +721,6 @@ export default ( { query }: { query: { id: string } } ) => {
 			handleSaveError( err, submit );
 		}
 	};
-
-	// --- Read-only logic ---
-	const readOnly =
-		dispute &&
-		dispute.status !== 'needs_response' &&
-		dispute.status !== 'warning_needs_response';
 
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {
