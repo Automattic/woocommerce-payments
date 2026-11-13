@@ -69,6 +69,8 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 		if ( ! $this->is_ephemeral_cart() ) {
 			add_action( 'shutdown', [ $this, 'save_data' ], 20 );
 			add_action( 'woocommerce_set_cart_cookies', [ $this, 'set_customer_session_cookie' ] );
+		} else {
+			add_filter( 'woocommerce_set_cookie_enabled', [ $this, 'disable_cart_cookies' ], 10, 2 );
 		}
 	}
 
@@ -87,6 +89,26 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 		}
 
 		parent::set_customer_session_cookie( $set );
+	}
+
+	/**
+	 * Stops the cart cookies on requests that only read product prices and payment methods.
+	 *
+	 * Adding the product to the throwaway cart would send `woocommerce_items_in_cart`, and page caches skip shoppers
+	 * who have it, even though the cart is emptied before the response. If the shopper has a real cart, its hash
+	 * cookie would be swapped for the throwaway cart's.
+	 *
+	 * @param bool   $enabled Whether WooCommerce should set the cookie.
+	 * @param string $name    Cookie name.
+	 *
+	 * @return bool
+	 */
+	public function disable_cart_cookies( $enabled, $name ) {
+		if ( in_array( $name, [ 'woocommerce_items_in_cart', 'woocommerce_cart_hash' ], true ) ) {
+			return false;
+		}
+
+		return $enabled;
 	}
 
 	/**
