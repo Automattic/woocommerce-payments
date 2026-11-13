@@ -12,6 +12,7 @@ import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-d
 // Must match the debounce waits and the pending-item polling in index.js.
 const CART_SETTLE_DELAY_MS = 400;
 const PENDING_POLL_INTERVAL_MS = 100;
+const PENDING_POLL_ATTEMPTS = 60;
 const MICROTASK_FLUSH_ROUNDS = 20;
 const CART_ITEM = { product: { key: 'cart-item-key' } };
 
@@ -24,9 +25,10 @@ jest.mock( '@wordpress/hooks', () => ( {
 } ) );
 
 let mockIsItemPendingQuantity = false;
+let mockIsItemPendingDelete = false;
 jest.mock( '@wordpress/data', () => ( {
 	select: () => ( {
-		isItemPendingDelete: () => false,
+		isItemPendingDelete: () => mockIsItemPendingDelete,
 		isItemPendingQuantity: () => mockIsItemPendingQuantity,
 	} ),
 	dispatch: () => ( {
@@ -213,6 +215,7 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 
 	afterEach( () => {
 		mockIsItemPendingQuantity = false;
+		mockIsItemPendingDelete = false;
 		jest.useRealTimers();
 	} );
 
@@ -310,6 +313,69 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 		).not.toHaveBeenCalled();
 
 		mockIsItemPendingQuantity = false;
+		await advanceTimersAndFlush( PENDING_POLL_INTERVAL_MS );
+		await settleCart();
+
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'does not prefetch when a quantity change is still pending after the last poll', async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			true
+		);
+		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+
+		fireEvent.load( window );
+		await flushPromises();
+		jest.clearAllMocks();
+		mockIsItemPendingQuantity = true;
+
+		wpHookCallbacks[
+			'experimental__woocommerce_blocks-cart-set-item-quantity'
+		]( CART_ITEM );
+		await settleCart();
+		for ( let i = 0; i < PENDING_POLL_ATTEMPTS; i++ ) {
+			await advanceTimersAndFlush( PENDING_POLL_INTERVAL_MS );
+		}
+		// Once polling gave up, the change finishing must not trigger a prefetch either.
+		mockIsItemPendingQuantity = false;
+		await advanceTimersAndFlush( PENDING_POLL_INTERVAL_MS );
+		await settleCart();
+
+		expect(
+			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
+		).toHaveBeenCalled();
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).not.toHaveBeenCalled();
+	} );
+
+	it( 'drops the prefetched session while a removal is in flight and prefetches once it is done', async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			true
+		);
+		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
+
+		fireEvent.load( window );
+		await flushPromises();
+		jest.clearAllMocks();
+		mockIsItemPendingDelete = true;
+
+		wpHookCallbacks[ 'experimental__woocommerce_blocks-cart-remove-item' ](
+			CART_ITEM
+		);
+		await settleCart();
+
+		expect(
+			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
+		).toHaveBeenCalled();
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).not.toHaveBeenCalled();
+
+		mockIsItemPendingDelete = false;
 		await advanceTimersAndFlush( PENDING_POLL_INTERVAL_MS );
 		await settleCart();
 
