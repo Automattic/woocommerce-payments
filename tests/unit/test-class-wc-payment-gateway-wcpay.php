@@ -5750,7 +5750,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -5821,7 +5821,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -5894,7 +5894,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -6149,7 +6149,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6180,7 +6180,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6212,7 +6212,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6772,8 +6772,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( true );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
 
 		try {
 			$this->card_gateway->process_payment( $order->get_id() );
@@ -6782,6 +6788,65 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->assertEquals( 'Your payment was not processed.', $e->getMessage() );
 			$this->assertEquals( 'WCPay\Exceptions\Rate_Limiter_Enabled_Exception', get_class( $e->getPrevious() ) );
 		}
+	}
+
+	public function test_process_payment_releases_the_reserved_attempt_when_the_payment_is_not_declined() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->mock_rate_limiter
+			->method( 'is_limited_or_reserve' )
+			->willReturn( false );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->method( 'process_payment_for_order' )
+			->willReturn(
+				[
+					'result'   => 'success',
+					'redirect' => 'https://example.com/order-received',
+				]
+			);
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'success', $result['result'] );
+	}
+
+	public function test_process_payment_releases_the_reserved_attempt_when_the_payment_fails_without_a_decline() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->mock_rate_limiter
+			->method( 'is_limited_or_reserve' )
+			->willReturn( false );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->method( 'process_payment_for_order' )
+			->willThrowException( new API_Exception( 'Error: something went wrong on our end.', 'processing_error', 500 ) );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
 	}
 
 	public function test_process_payment_returns_correct_redirect() {
