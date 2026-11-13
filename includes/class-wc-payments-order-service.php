@@ -2081,9 +2081,25 @@ class WC_Payments_Order_Service {
 		// Update the note with the fee breakdown details async, update order status, add order note.
 		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_data['intent_id'] );
 
+		$this->update_fraud_data_for_successful_payment( $order, $intent_data );
+		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
+		$order->add_order_note( $note );
+		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Records the fraud outcome of a successful payment, or clears an earlier attempt's warning when it has none.
+	 *
+	 * Call it before changing the order status: an order that is still on hold was held for review first.
+	 *
+	 * @param WC_Order $order       Order object.
+	 * @param array    $intent_data The data of the intent associated with this order.
+	 *
+	 * @return void
+	 */
+	private function update_fraud_data_for_successful_payment( $order, $intent_data ) {
 		/**
-		 * If we have a status for the fraud outcome, we want to add the proper meta data.
-		 * If auth/capture is enabled and the transaction is allowed, it will be 'allow'.
+		 * If auth/capture is enabled and the transaction is allowed, the outcome will be 'allow'.
 		 * If it was held for review for any reason, it will be 'review'.
 		 */
 		if ( '' !== $intent_data['fraud_outcome'] && Rule::is_valid_fraud_outcome_status( $intent_data['fraud_outcome'] ) ) {
@@ -2097,17 +2113,14 @@ class WC_Payments_Order_Service {
 		if ( ! $this->intent_has_card_payment_type( $intent_data ) ) {
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::NOT_CARD );
 		}
-
-		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
-		$order->add_order_note( $note );
-		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
 	}
 
 	/**
 	 * Removes the fraud data of an earlier blocked or reviewed attempt when a later payment has no fraud outcome.
 	 *
 	 * Without a new fraud outcome, the earlier attempt's warning would remain on the order after payment.
-	 * Approved outcomes already describe a successful payment and stay on the order.
+	 * Only warning states are cleared; other box types don't warn the merchant. `allow` doesn't prove an earlier
+	 * payment succeeded, though: a card payment that fails with `card_error` sets it too.
 	 *
 	 * @param WC_Order $order Order object.
 	 *
@@ -2210,7 +2223,7 @@ class WC_Payments_Order_Service {
 			)
 		);
 
-		$this->clear_stale_fraud_data_for_order( $order );
+		$this->update_fraud_data_for_successful_payment( $order, $intent_data );
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
 		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );

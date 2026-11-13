@@ -1530,6 +1530,25 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( [], $this->order_service->get_fraud_ruleset_results_for_order( $this->order ) );
 	}
 
+	public function test_payment_held_for_amount_mismatch_records_fraud_outcome() {
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'                 => 2267,
+				'status'                 => Intent_Status::SUCCEEDED,
+				'metadata'               => [ 'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW ],
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertSame( 'allow', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( 'allow', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+	}
+
 	public function test_successful_retry_clears_expired_review_fraud_data() {
 		$review_intent = WC_Helper_Intention::create_intention(
 			[
