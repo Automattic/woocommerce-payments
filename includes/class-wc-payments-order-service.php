@@ -556,6 +556,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		if ( $this->skip_payment_failure_for_closed_order( $order, $intent_id, $charge_id, $message ) ) {
+			return;
+		}
+
 		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $message );
 		if ( $this->order_note_exists( $order, $note )
 			|| $order->has_status( [ Order_Status::FAILED ] ) ) {
@@ -566,6 +570,52 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, Order_Status::FAILED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Leaves a cancelled or refunded order alone when a payment failure arrives for it.
+	 *
+	 * A failure can arrive after the order was cancelled or refunded, for example when a webhook
+	 * that could not be delivered is recovered later. Failing the order then would overwrite that
+	 * decision and make WooCommerce email the customer about a payment the order no longer awaits.
+	 *
+	 * @param WC_Order $order     Order object, locked for processing.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param string   $message   Optional failure message to add to the note.
+	 *
+	 * @return bool True when the failure was skipped and the order unlocked, false otherwise.
+	 */
+	private function skip_payment_failure_for_closed_order( $order, $intent_id, $charge_id, $message = '' ): bool {
+		if ( ! $order->has_status( [ Order_Status::CANCELLED, Order_Status::REFUNDED ] ) ) {
+			return false;
+		}
+
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: transaction ID of the payment, %2: transaction details URL */
+				__( 'A payment failure (<a>%1$s</a>) arrived after this order was cancelled or refunded, so the order status was not changed.', 'woocommerce-payments' ),
+				[
+					'a' => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
+		);
+
+		if ( ! empty( $message ) ) {
+			$note .= ' ' . $message;
+		}
+
+		if ( ! $this->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+		}
+
+		// Keep the stored intent status: a late event can be older than it, e.g. a refunded payment that had succeeded.
+		$this->complete_order_processing( $order );
+
+		return true;
 	}
 
 	/**
@@ -596,7 +646,12 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $this->get_provider_decline_message( $error ) );
+		$message = $this->get_provider_decline_message( $error );
+		if ( $this->skip_payment_failure_for_closed_order( $order, $intent_id, $charge_id, $message ) ) {
+			return;
+		}
+
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $message );
 
 		$this->update_order_status( $order, Order_Status::FAILED );
 		if ( ! $this->order_note_exists( $order, $note ) ) {
@@ -964,6 +1019,10 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_terminal_payment_failed( $order, string $intent_id, string $intent_status, string $charge_id, string $message ) {
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		if ( $this->skip_payment_failure_for_closed_order( $order, $intent_id, $charge_id, $message ) ) {
 			return;
 		}
 

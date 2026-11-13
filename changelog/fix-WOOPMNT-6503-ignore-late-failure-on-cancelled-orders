@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep cancelled and refunded orders as they are when a payment failure arrives late, so customers are no longer emailed about a failed payment for an order that was already closed.
