@@ -17,6 +17,18 @@ global.wcpayExpressCheckoutParams.nonce.store_api_nonce =
 global.wcpayExpressCheckoutParams.nonce.tokenized_cart_nonce =
 	'global_tokenized_cart_nonce';
 
+const ORDER_TOTAL = '1080';
+
+// `getCart()` fetches the order unparsed, to read the order amount header.
+const mockOrderFetch = ( orderData, orderTotal = null ) =>
+	apiFetch.mockResolvedValueOnce( {
+		json: async () => orderData,
+		headers: {
+			get: ( name ) =>
+				name === 'X-WooPayments-Order-Total' ? orderTotal : null,
+		},
+	} );
+
 describe( 'ExpressCheckoutOrderApi', () => {
 	afterEach( () => {
 		jest.resetAllMocks();
@@ -28,6 +40,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			key: 'key_123',
 			billingEmail: 'cheese@toast.com',
 		} );
+		mockOrderFetch( {} );
 
 		await api.getCart();
 		expect( apiFetch ).toHaveBeenCalledWith(
@@ -82,7 +95,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 		} );
 
 		// Order created by the merchant with an address but no email or phone (e.g. pay-for-order).
-		apiFetch.mockResolvedValueOnce( {
+		mockOrderFetch( {
 			billing_address: {
 				first_name: 'Merchant',
 				last_name: 'Set',
@@ -192,7 +205,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 				orderId: '1',
 				key: 'key_123',
 			} );
-			apiFetch.mockResolvedValueOnce( orderAddresses );
+			mockOrderFetch( orderAddresses );
 			await api.getCart();
 
 			await api.placeOrder( {
@@ -334,7 +347,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 					orderId: '1',
 					key: 'key_123',
 				} );
-				apiFetch.mockResolvedValueOnce( {
+				mockOrderFetch( {
 					billing_address: BLANK_BILLING_ADDRESS,
 					shipping_address: BLANK_SHIPPING_ADDRESS,
 				} );
@@ -388,7 +401,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 				orderId: '1',
 				key: 'key_123',
 			} );
-			apiFetch.mockResolvedValueOnce( {
+			mockOrderFetch( {
 				billing_address: BLANK_BILLING_ADDRESS,
 				shipping_address: BLANK_SHIPPING_ADDRESS,
 			} );
@@ -416,7 +429,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 				key: 'key_123',
 				onOrderTotalChanged,
 			} );
-			apiFetch.mockResolvedValueOnce( {
+			mockOrderFetch( {
 				billing_address: BLANK_BILLING_ADDRESS,
 				shipping_address: BLANK_SHIPPING_ADDRESS,
 			} );
@@ -443,7 +456,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 				key: 'key_123',
 				onOrderTotalChanged,
 			} );
-			apiFetch.mockResolvedValueOnce( {
+			mockOrderFetch( {
 				billing_address: BLANK_BILLING_ADDRESS,
 				shipping_address: BLANK_SHIPPING_ADDRESS,
 			} );
@@ -494,7 +507,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			billingEmail: '', // Order created without a billing email.
 		} );
 
-		apiFetch.mockResolvedValueOnce( {
+		mockOrderFetch( {
 			billing_address: {
 				first_name: 'Merchant',
 				country: 'US',
@@ -544,7 +557,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			billingEmail: '', // Order created without a billing email.
 		} );
 
-		apiFetch.mockResolvedValueOnce( {
+		mockOrderFetch( {
 			billing_address: { first_name: 'Merchant', email: '' },
 		} );
 		await api.getCart();
@@ -588,7 +601,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			billingEmail: '', // Order created without a billing email.
 		} );
 
-		apiFetch.mockResolvedValueOnce( {
+		mockOrderFetch( {
 			billing_address: { first_name: 'Merchant', email: '' },
 		} );
 		await api.getCart();
@@ -624,7 +637,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			billingEmail: '', // Order created without a billing email.
 		} );
 
-		apiFetch.mockResolvedValueOnce( {
+		mockOrderFetch( {
 			billing_address: { first_name: 'Merchant', email: '' },
 		} );
 		await api.getCart();
@@ -681,7 +694,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 				key: 'key_123',
 				billingEmail: '',
 			} );
-			apiFetch.mockResolvedValueOnce( {
+			mockOrderFetch( {
 				billing_address: { first_name: 'Merchant', email: '' },
 			} );
 			await api.getCart();
@@ -708,7 +721,7 @@ describe( 'ExpressCheckoutOrderApi', () => {
 			billingEmail: 'cheese@toast.com',
 		} );
 
-		apiFetch.mockResolvedValueOnce( {
+		mockOrderFetch( {
 			billing_address: {
 				first_name: 'Fake',
 				last_name: 'Test',
@@ -755,6 +768,28 @@ describe( 'ExpressCheckoutOrderApi', () => {
 					} ),
 					anythingElse: 'passedThrough',
 				} ),
+			} )
+		);
+	} );
+
+	it( 'sends back the order amount of the latest order fetch when placing the order', async () => {
+		const api = new ExpressCheckoutOrderApi( {
+			orderId: '1',
+			key: 'key_123',
+			billingEmail: 'cheese@toast.com',
+		} );
+		const order = { billing_address: { country: 'US' } };
+		mockOrderFetch( order, '1000' );
+		await api.getCart();
+		// The wallet was refreshed, e.g. after the total changed.
+		mockOrderFetch( order, ORDER_TOTAL );
+		await api.getCart();
+
+		await api.placeOrder( { billing_address: {} } );
+
+		expect( apiFetch.mock.lastCall[ 0 ].headers ).toEqual(
+			expect.objectContaining( {
+				'X-WooPayments-Order-Total': '1080',
 			} )
 		);
 	} );

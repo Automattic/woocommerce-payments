@@ -29,9 +29,13 @@ const ERRORS_BEFORE_PERSISTENCE = [
 	'invalid_order_update_status',
 ];
 
-// WooPayments rejects a payment whose order total changed once the wallet's address was set (e.g. tax for that
-// address). WooCommerce has saved the address and the new total by then, so the order is fetched again.
+// WooPayments rejects a payment whose order total differs from the one the order fetch returned, e.g. through tax
+// for the wallet's address, or a change in another tab. WooCommerce has saved the address and the new total by then,
+// so the order is fetched again.
 const ORDER_TOTAL_CHANGED_ERROR = 'wcpay_express_checkout_order_total_changed';
+
+// The order's amount from the order fetch, sent back with the payment so WooPayments can compare it.
+const ORDER_TOTAL_HEADER = 'X-WooPayments-Order-Total';
 
 const CONTACT_FIELDS = [
 	'first_name',
@@ -80,6 +84,9 @@ export default class ExpressCheckoutOrderApi {
 
 	// needed to replay the cart data to the `placeOrder` endpoint when placing the order.
 	cachedCartData = {};
+
+	// the order amount WooPayments returned with `cachedCartData`.
+	orderTotal = null;
 
 	// called when the order total changed while placing the order, so the shown total can be refreshed.
 	onOrderTotalChanged;
@@ -188,6 +195,9 @@ export default class ExpressCheckoutOrderApi {
 					'X-WooPayments-Tokenized-Cart': true,
 					'X-WooPayments-Tokenized-Cart-Nonce':
 						getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce,
+					...( this.orderTotal
+						? { [ ORDER_TOTAL_HEADER ]: this.orderTotal }
+						: {} ),
 				},
 				data: {
 					...paymentData,
@@ -227,12 +237,19 @@ export default class ExpressCheckoutOrderApi {
 	 * @return {Promise} Cart response object.
 	 */
 	async getCart() {
-		return ( this.cachedCartData = await apiFetch( {
+		// Unparsed, to read the order amount header. Failures are thrown as the raw response.
+		const response = await apiFetch( {
 			method: 'GET',
 			path: addQueryArgs( `/wc/store/v1/order/${ this.orderId }`, {
 				key: this.key,
 				billing_email: this.billingEmail,
 			} ),
-		} ) );
+			parse: false,
+		} );
+		const orderData = await response.json();
+
+		this.orderTotal = response.headers.get( ORDER_TOTAL_HEADER );
+
+		return ( this.cachedCartData = orderData );
 	}
 }

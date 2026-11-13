@@ -6,7 +6,8 @@
  * based on the shipping address chosen inside the wallet sheet.
  *
  * Also defends pay-for-order wallet payments against an order total that
- * changes once the wallet's address is set on the order.
+ * changed since the wallet sheet showed it, e.g. once the wallet's address
+ * is set on the order.
  *
  * @package WooCommerce\Payments
  */
@@ -28,11 +29,16 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 	const ORDER_TOTAL_CHANGED_ERROR_CODE = 'wcpay_express_checkout_order_total_changed';
 
 	/**
-	 * Totals of the pay-for-order orders in this request, before the request's address was set, by order ID.
-	 *
-	 * @var array<int, string>
+	 * Carries the order's amount: in the order fetch's response, and back in the payment request.
 	 */
-	private $order_totals_before_update = [];
+	const ORDER_TOTAL_HEADER = 'X-WooPayments-Order-Total';
+
+	/**
+	 * Amounts the pay-for-order wallet payments in this request expect to be charged, by order ID.
+	 *
+	 * @var array<int, int>
+	 */
+	private $expected_order_amounts = [];
 
 	/**
 	 * Boots the guard. Wires itself onto Store API checkout order builds so
@@ -49,6 +55,7 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 			10,
 			2
 		);
+		add_filter( 'rest_post_dispatch', [ $guard, 'add_order_total_header' ], 10, 3 );
 		add_filter( 'rest_pre_dispatch', [ $guard, 'remember_order_total' ], 10, 3 );
 		add_action(
 			'woocommerce_store_api_checkout_update_order_from_request',
@@ -57,8 +64,41 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 	}
 
 	/**
-	 * Remembers the total of the order a pay-for-order wallet payment is for, before the Store API sets the
-	 * request's address on it. The wallet sheet showed this total.
+	 * Adds the order's amount to a Store API order response. The pay-for-order wallet sheet shows the total from
+	 * that response, and the payment sends the amount back, so a total that changed since (e.g. in another tab)
+	 * is detected.
+	 *
+	 * @param mixed          $response The response.
+	 * @param WP_REST_Server $server   Server instance.
+	 * @param mixed          $request  The REST request.
+	 *
+	 * @return mixed
+	 */
+	public function add_order_total_header( $response, $server, $request ) {
+		if ( ! $response instanceof WP_REST_Response || 200 !== $response->get_status() ) {
+			return $response;
+		}
+
+		if ( ! $request instanceof WP_REST_Request || 'GET' !== $request->get_method() ) {
+			return $response;
+		}
+
+		if ( ! preg_match( '#^/wc/store/v1/order/(\d+)$#', $request->get_route(), $matches ) ) {
+			return $response;
+		}
+
+		$order = wc_get_order( (int) $matches[1] );
+		if ( $order instanceof WC_Order ) {
+			$response->header( self::ORDER_TOTAL_HEADER, (string) $this->get_order_amount( $order ) );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Remembers the amount a pay-for-order wallet payment expects to be charged, before the Store API sets the
+	 * request's address on the order: the amount from the order fetch the wallet sheet showed, or the order's
+	 * amount when the request arrives if the client didn't send one (e.g. a cached older script).
 	 *
 	 * @param mixed          $response The response to short-circuit the request with, passed through unchanged.
 	 * @param WP_REST_Server $server   Server instance.
@@ -80,17 +120,24 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 		}
 
 		$order = wc_get_order( (int) $matches[1] );
-		if ( $order instanceof WC_Order ) {
-			$this->order_totals_before_update[ $order->get_id() ] = (string) $order->get_total();
+		if ( ! $order instanceof WC_Order ) {
+			return $response;
 		}
+
+		$fetched_amount = (string) $request->get_header( self::ORDER_TOTAL_HEADER );
+
+		$this->expected_order_amounts[ $order->get_id() ] = ctype_digit( $fetched_amount )
+			? (int) $fetched_amount
+			: $this->get_order_amount( $order );
 
 		return $response;
 	}
 
 	/**
-	 * Rejects a pay-for-order wallet payment whose order total changed once the Store API set the wallet's address,
-	 * e.g. through tax for that address: the shopper authorized the total the wallet sheet showed. WooCommerce has
-	 * saved the address and the new total by now, so the next attempt shows and charges the new total.
+	 * Rejects a pay-for-order wallet payment whose order amount differs from the one it expects: the shopper
+	 * authorized the total the wallet sheet showed. It changes e.g. through tax for the wallet's address, or in
+	 * another tab. WooCommerce has saved the address and the new total by now, so the next attempt shows and
+	 * charges the new total.
 	 *
 	 * @param mixed $order The order being paid.
 	 *
@@ -100,26 +147,25 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 	 */
 	public function assert_order_total_unchanged( $order ) {
 		// Only set for express checkout pay-for-order requests.
-		if ( ! $order instanceof WC_Order || ! isset( $this->order_totals_before_update[ $order->get_id() ] ) ) {
+		if ( ! $order instanceof WC_Order || ! isset( $this->expected_order_amounts[ $order->get_id() ] ) ) {
 			return;
 		}
 
-		$decimals       = wc_get_price_decimals();
-		$total_before   = wc_format_decimal( $this->order_totals_before_update[ $order->get_id() ], $decimals );
-		$total_after    = wc_format_decimal( $order->get_total(), $decimals );
-		$order_currency = $order->get_currency();
-		unset( $this->order_totals_before_update[ $order->get_id() ] );
+		$expected_amount = $this->expected_order_amounts[ $order->get_id() ];
+		$order_amount    = $this->get_order_amount( $order );
+		unset( $this->expected_order_amounts[ $order->get_id() ] );
 
-		if ( $total_before === $total_after ) {
+		if ( $expected_amount === $order_amount ) {
 			return;
 		}
 
 		Logger::info(
-			'Express checkout order total changed when the wallet address was set.',
+			'Express checkout order total changed before the wallet payment.',
 			[
-				'order_id'     => $order->get_id(),
-				'total_before' => $total_before,
-				'total_after'  => $total_after,
+				'order_id'        => $order->get_id(),
+				'currency'        => $order->get_currency(),
+				'expected_amount' => $expected_amount,
+				'order_amount'    => $order_amount,
 			]
 		);
 
@@ -128,13 +174,25 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 			sprintf(
 				/* translators: %s: the new order total, e.g. $10.80 */
 				__(
-					'The order total changed to %s for your address, for example because of tax. You have not been charged — please check the new total and pay again.',
+					'The order total changed to %s, for example because of tax for your address. You have not been charged — please check the new total and pay again.',
 					'woocommerce-payments'
 				),
-				html_entity_decode( wp_strip_all_tags( wc_price( (float) $total_after, [ 'currency' => $order_currency ] ) ), ENT_QUOTES )
+				WC_Payments_Utils::format_currency( (float) $order->get_total(), $order->get_currency() )
 			),
 			400
 		);
+	}
+
+	/**
+	 * Returns the amount WooPayments charges for the order, in the order currency's smallest unit. It doesn't
+	 * depend on the shopper's selected Multi-Currency currency.
+	 *
+	 * @param WC_Order $order The order.
+	 *
+	 * @return int
+	 */
+	private function get_order_amount( WC_Order $order ): int {
+		return WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
 	}
 
 	/**

@@ -29,6 +29,8 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		server.use(
 			rest.get( '/wc/store/v1/order/:id', ( req, res, ctx ) => {
 				return res(
+					// The order amount WooPayments adds to the order fetch.
+					ctx.set( 'X-WooPayments-Order-Total', '6510' ),
 					ctx.json( {
 						id: req.params.id,
 						status: 'pending',
@@ -381,5 +383,31 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 				expect.objectContaining( { amount: 7020 } )
 			)
 		);
+	} );
+
+	it( 'sends back the order amount from the order fetch when placing the order', async () => {
+		let sentOrderTotal;
+		server.use(
+			rest.post( '/wc/store/v1/checkout/:id', ( req, res, ctx ) => {
+				sentOrderTotal = req.headers.get( 'X-WooPayments-Order-Total' );
+				return res(
+					ctx.json( {
+						payment_result: { payment_status: 'success' },
+					} )
+				);
+			} )
+		);
+		let getCartApiHandler;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { getCartApiHandler } = await import( '../../event-handlers' ) );
+		} );
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalled()
+		);
+
+		await getCartApiHandler().placeOrder( { billing_address: {} } );
+
+		expect( sentOrderTotal ).toBe( '6510' );
 	} );
 } );
