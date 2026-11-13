@@ -1628,6 +1628,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			'_wcpay_payment_method_details' => '{"type":"card"}',
 			'_wcpay_transaction_fee'        => '1.23',
 			'_wcpay_net'                    => '8.77',
+			'_wcpay_card_declined_registry' => 1700000000,
 			'_payment_method_id'            => 'pm_reusable',
 			'_stripe_customer_id'           => 'cus_reusable',
 		];
@@ -1645,7 +1646,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$query = $this->wcpay_gateway->update_renewal_meta_data( 'WHERE post_id = 1', null, null );
 
 		$this->assertSame(
-			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net', '_wcpay_payment_details_removed', '_wcpay_superseded_intent_ids', '_wcpay_superseded_payment_succeeded')",
+			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net', '_wcpay_payment_details_removed', '_wcpay_superseded_intent_ids', '_wcpay_superseded_payment_succeeded', '_wcpay_card_declined_registry')",
 			$query
 		);
 	}

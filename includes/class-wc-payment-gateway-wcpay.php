@@ -1486,6 +1486,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		// A card change passes the subscription itself. It lasts for years, and reaching the limit would set it
+		// to failed in the catch below, so its declines count in the session only.
+		$rate_limited_order = function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ? null : $order;
+
 		try {
 			$is_request_composed_by_woopay = $this->is_request_composed_by_woopay();
 			// Reject an unverified dry run instead of turning it into a payment attempt.
@@ -1523,7 +1527,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			// Reserves an attempt, which bump() keeps for a counted decline and the `finally` below hands back otherwise.
-			if ( $this->failed_transaction_rate_limiter->is_limited_or_reserve() ) {
+			if ( $this->failed_transaction_rate_limiter->is_limited_or_reserve( $rate_limited_order ) ) {
 				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -1637,7 +1641,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
-				$this->failed_transaction_rate_limiter->bump();
+				$this->failed_transaction_rate_limiter->bump( $rate_limited_order );
 			}
 
 			// The server rejects an express checkout confirmation token minted without setup_future_usage

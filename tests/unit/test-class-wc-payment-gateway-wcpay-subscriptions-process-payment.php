@@ -12,6 +12,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\Session_Rate_Limiter;
@@ -597,6 +598,36 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
 		$payment_tokens = $order->get_payment_tokens();
 		$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+	}
+
+	public function test_card_change_counts_declines_in_the_session_only() {
+		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
+
+		$_GET = [ 'change_payment_method' => 10 ];
+
+		$this->mock_wcs_order_contains_subscription( false );
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Your card was declined.', 'card_declined', 402 ) );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited_or_reserve' )
+			->with( null );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'bump' )
+			->with( null );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_card_is_saved_when_updating_subscription_using_saved_payment_method() {
