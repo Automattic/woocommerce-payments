@@ -45,6 +45,7 @@ For feature-specific investigations, the architecture reference indexes payment 
 - PHP tests require Docker. Read the development reference for commands and use the E2E skill when an E2E check is needed. Confirm tested code and built assets match the intended revision; run `pnpm run watch` when testing local frontend/admin edits.
 - Check `.env` for the WordPress port. Preserve existing data, unrelated containers and user processes. Do not reset the local admin password unless explicitly requested; the default development login is `admin` / `admin`.
 - Never remove a worktree that is the current working directory; perform any authorised cleanup from the main clone.
+- Track temporary containers, background processes and generated resources created during the current session, and clean up only those when no longer needed. Preserve persistent data and anything needed for the requested handoff.
 
 ## Git and delivery
 

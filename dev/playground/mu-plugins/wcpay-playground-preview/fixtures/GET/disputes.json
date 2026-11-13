@@ -1,0 +1,38 @@
+{
+	"data": [
+		{
+			"wcpay_disputes_cache_id": 2,
+			"stripe_account_id": "acct_playground_demo",
+			"dispute_id": "dp_demo_2",
+			"charge_id": "ch_demo_2",
+			"amount": 3600,
+			"currency": "usd",
+			"reason": "product_not_received",
+			"source": "visa",
+			"order_number": null,
+			"customer_name": "Owen Blake",
+			"customer_email": "owen.blake@example.com",
+			"customer_country": "US",
+			"status": "needs_response",
+			"created": "@datetime:-5 days",
+			"due_by": "@datetime:+9 days"
+		},
+		{
+			"wcpay_disputes_cache_id": 1,
+			"stripe_account_id": "acct_playground_demo",
+			"dispute_id": "dp_demo_1",
+			"charge_id": "ch_demo_0",
+			"amount": 2400,
+			"currency": "usd",
+			"reason": "fraudulent",
+			"source": "mastercard",
+			"order_number": null,
+			"customer_name": "Ethan Wright",
+			"customer_email": "ethan.wright@example.com",
+			"customer_country": "US",
+			"status": "won",
+			"created": "@datetime:-40 days",
+			"due_by": "@datetime:-26 days"
+		}
+	]
+}

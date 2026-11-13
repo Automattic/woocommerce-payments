@@ -197,11 +197,13 @@ describe( 'Charge utilities', () => {
 		);
 
 		test( 'returns authorized when payment intent requires capture', () => {
+			const pendingCharge = {
+				status: 'pending',
+				paid: false,
+				captured: false,
+			};
 			expect(
-				utils.getChargeStatus(
-					authorizedCharge,
-					authorizedPaymentIntent
-				)
+				utils.getChargeStatus( pendingCharge, authorizedPaymentIntent )
 			).toEqual( 'authorized' );
 		} );
 
@@ -819,6 +821,366 @@ describe( 'Charge utilities / get channel string', () => {
 				},
 			} );
 			expect( result ).toBe( null );
+		} );
+	} );
+} );
+
+// €26.00 authorized, €13.00 captured, settled in USD. Stripe releases the
+// other €13.00 as a refund whose balance transaction is a
+// `partial_capture_reversal`.
+describe( 'Charge utilities / partial capture', () => {
+	const AUTHORIZED_AMOUNT = 2600;
+	const CAPTURED_AMOUNT = 1300;
+	const RELEASED_TRANSACTION_ID = 'txn_released';
+	const releasedRefund = {
+		amount: 1300,
+		status: 'succeeded',
+		balance_transaction: {
+			id: RELEASED_TRANSACTION_ID,
+			amount: -1455,
+			currency: 'usd',
+			reporting_category: 'partial_capture_reversal',
+		},
+	};
+	const merchantRefund = {
+		amount: 500,
+		status: 'succeeded',
+		balance_transaction: {
+			id: 'txn_refund',
+			amount: -560,
+			currency: 'usd',
+			reporting_category: 'refund',
+		},
+	};
+	const buildCharge = ( {
+		refunds = [ releasedRefund ],
+		...overrides
+	} ) => ( {
+		...paidCharge,
+		amount: AUTHORIZED_AMOUNT,
+		amount_captured: CAPTURED_AMOUNT,
+		amount_refunded: AUTHORIZED_AMOUNT - CAPTURED_AMOUNT,
+		refunded: false,
+		currency: 'eur',
+		application_fee_amount: 77,
+		balance_transaction: {
+			id: 'txn_charge',
+			amount: 2910,
+			currency: 'usd',
+			fee: 86,
+		},
+		refunds: { data: refunds },
+		...overrides,
+	} );
+	const withEnvelope = ( charge, { gross, net, fee = 86 } ) => ( {
+		...charge,
+		fee_breakdown_v1: {
+			rows: [],
+			totals: {
+				fee: { amount: fee, currency: 'usd' },
+				tax: { amount: 0, currency: 'usd' },
+				fee_plus_tax: { amount: fee, currency: 'usd' },
+				gross: { amount: gross, currency: 'usd' },
+				net: { amount: net, currency: 'usd' },
+			},
+		},
+	} );
+
+	test( 'is paid, not partially refunded', () => {
+		const charge = buildCharge( {} );
+
+		expect( utils.getUncapturedAmount( charge ) ).toBe( 1300 );
+		expect( utils.getChargeRefundedAmount( charge ) ).toBe( 0 );
+		expect( utils.isChargeRefunded( charge ) ).toBe( false );
+		expect( utils.isChargePartiallyRefunded( charge ) ).toBe( false );
+		expect( utils.getChargeStatus( charge ) ).toBe( 'paid' );
+	} );
+
+	test( 'is paid when the refund list is missing', () => {
+		const charge = { ...buildCharge( {} ), refunds: null };
+
+		expect( utils.getChargeStatus( charge ) ).toBe( 'paid' );
+	} );
+
+	// Known limitation: without the reversal in `refunds`, the settlement
+	// amount and net stay at the authorized values.
+	test( 'reports the authorized settlement amounts when the reversal is not listed', () => {
+		const charge = { ...buildCharge( {} ), refunds: null };
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			currency: 'usd',
+			amount: 2910,
+			fee: 86,
+			refunded: 0,
+			net: 2824,
+		} );
+	} );
+
+	test.each( [
+		[ 'nothing was refunded', AUTHORIZED_AMOUNT - CAPTURED_AMOUNT, 1300 ],
+		[ 'part was refunded', AUTHORIZED_AMOUNT - CAPTURED_AMOUNT + 500, 800 ],
+		[ 'everything was refunded', AUTHORIZED_AMOUNT, 0 ],
+	] )(
+		'leaves the captured amount less refunds to refund when %s',
+		( _, amountRefunded, expected ) => {
+			const charge = buildCharge( { amount_refunded: amountRefunded } );
+
+			expect( utils.getRefundableAmount( charge ) ).toBe( expected );
+		}
+	);
+
+	test( 'is paid when the released amount is not reported as refunded', () => {
+		const charge = buildCharge( { amount_refunded: 0, refunds: [] } );
+
+		expect( utils.getChargeRefundedAmount( charge ) ).toBe( 0 );
+		expect( utils.getChargeStatus( charge ) ).toBe( 'paid' );
+	} );
+
+	test( 'is partially refunded after a merchant refund', () => {
+		const charge = buildCharge( {
+			amount_refunded: AUTHORIZED_AMOUNT - CAPTURED_AMOUNT + 500,
+			refunds: [ merchantRefund, releasedRefund ],
+		} );
+
+		expect( utils.getChargeRefundedAmount( charge ) ).toBe( 500 );
+		expect( utils.getChargeStatus( charge ) ).toBe( 'refunded_partial' );
+	} );
+
+	test( 'is fully refunded after the captured amount is refunded', () => {
+		const charge = buildCharge( {
+			amount_refunded: AUTHORIZED_AMOUNT,
+			refunded: true,
+			refunds: [
+				{
+					...merchantRefund,
+					amount: 1300,
+					balance_transaction: {
+						...merchantRefund.balance_transaction,
+						amount: -1455,
+					},
+				},
+				releasedRefund,
+			],
+		} );
+
+		expect( utils.getChargeRefundedAmount( charge ) ).toBe( 1300 );
+		expect( utils.getChargeStatus( charge ) ).toBe( 'refunded_full' );
+	} );
+
+	test( 'reports a failed merchant refund as refund failed', () => {
+		const charge = buildCharge( {
+			refunds: [
+				{ ...merchantRefund, status: 'failed' },
+				releasedRefund,
+			],
+		} );
+
+		expect( utils.isChargeRefundFailed( charge ) ).toBe( true );
+		expect( utils.getChargeStatus( charge ) ).toBe( 'refund_failed' );
+	} );
+
+	test( 'does not treat an uncaptured authorization as partially captured', () => {
+		const charge = buildCharge( {
+			captured: false,
+			amount_captured: 0,
+			amount_refunded: 0,
+			refunds: [],
+		} );
+
+		expect( utils.getUncapturedAmount( charge ) ).toBe( 0 );
+	} );
+
+	test( 'lists the reversal balance transactions', () => {
+		const charge = buildCharge( {
+			refunds: [ merchantRefund, releasedRefund ],
+		} );
+
+		expect(
+			utils.getPartialCaptureReversalTransactionIds( charge )
+		).toEqual( [ 'txn_released' ] );
+	} );
+
+	describe( 'getChargeAmounts', () => {
+		test( 'reports the captured amount without a refund', () => {
+			expect( utils.getChargeAmounts( buildCharge( {} ) ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 0,
+				net: 1369,
+			} );
+		} );
+
+		test( 'keeps merchant refunds as refunded', () => {
+			const charge = buildCharge( {
+				amount_refunded: AUTHORIZED_AMOUNT - CAPTURED_AMOUNT + 500,
+				refunds: [ merchantRefund, releasedRefund ],
+			} );
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 560,
+				net: 809,
+			} );
+		} );
+
+		test( 'falls back to the charge amounts without a balance transaction', () => {
+			const charge = buildCharge( {
+				balance_transaction: null,
+				refunds: [],
+			} );
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'eur',
+				amount: 1300,
+				fee: 77,
+				refunded: 0,
+				net: 1223,
+			} );
+		} );
+
+		test( 'reports the captured amount from the fee breakdown', () => {
+			const charge = withEnvelope( buildCharge( {} ), {
+				gross: 2910,
+				net: 1369,
+			} );
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 0,
+				net: 1369,
+			} );
+		} );
+
+		test( 'keeps merchant refunds in the fee breakdown', () => {
+			const charge = withEnvelope(
+				buildCharge( {
+					amount_refunded: AUTHORIZED_AMOUNT - CAPTURED_AMOUNT + 500,
+					refunds: [ merchantRefund, releasedRefund ],
+				} ),
+				{ gross: 2910, net: 809 }
+			);
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 560,
+				net: 809,
+			} );
+		} );
+
+		test( 'reports a full refund of the captured amount', () => {
+			const charge = withEnvelope(
+				buildCharge( {
+					amount_refunded: AUTHORIZED_AMOUNT,
+					refunded: true,
+					refunds: [
+						{
+							...merchantRefund,
+							amount: CAPTURED_AMOUNT,
+							balance_transaction: {
+								...merchantRefund.balance_transaction,
+								amount: -1455,
+							},
+						},
+						releasedRefund,
+					],
+				} ),
+				{ gross: 2910, net: -86 }
+			);
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 1455,
+				net: -86,
+			} );
+		} );
+
+		test( 'keeps refunds of a captured gross as refunds', () => {
+			const charge = withEnvelope(
+				buildCharge( {
+					amount_refunded: AUTHORIZED_AMOUNT,
+					refunded: true,
+					refunds: [
+						{
+							...merchantRefund,
+							amount: CAPTURED_AMOUNT,
+							balance_transaction: {
+								...merchantRefund.balance_transaction,
+								amount: -1455,
+							},
+						},
+						releasedRefund,
+					],
+				} ),
+				{ gross: 1455, net: -86 }
+			);
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 1455,
+				net: -86,
+			} );
+		} );
+
+		test( 'reports nothing refunded when withdrawals do not cover the reversal', () => {
+			const charge = withEnvelope( buildCharge( {} ), {
+				gross: 2910,
+				net: 1500,
+			} );
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 0,
+				net: 1500,
+			} );
+		} );
+
+		// Known limitation: without the reversal in `refunds`, its settlement
+		// amount is unknown, so the gross and refunded amounts stay at the
+		// authorized values. The server's net is still right.
+		test( 'reports the authorized amounts when the reversal is not listed', () => {
+			const charge = withEnvelope(
+				{ ...buildCharge( {} ), refunds: null },
+				{
+					gross: 2910,
+					net: 1369,
+				}
+			);
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 2910,
+				fee: 86,
+				refunded: 1455,
+				net: 1369,
+			} );
+		} );
+
+		test( 'does not deduct the released amount twice from a captured gross', () => {
+			const charge = withEnvelope( buildCharge( {} ), {
+				gross: 1455,
+				net: 1369,
+			} );
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				currency: 'usd',
+				amount: 1455,
+				fee: 86,
+				refunded: 0,
+				net: 1369,
+			} );
 		} );
 	} );
 } );

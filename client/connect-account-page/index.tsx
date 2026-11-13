@@ -22,6 +22,7 @@ import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
 import SetupImg from 'assets/images/illustrations/setup.svg?asset';
 import strings from './strings';
+import { isTestDriveSetupDone } from './test-drive-setup';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentsMethodsLogos } from 'components/payment-method-logos';
@@ -98,10 +99,6 @@ const ConnectAccountPage: React.FC = () => {
 
 	// Use a timer to track the elapsed time for the test drive mode setup.
 	const testDriveSetupStartTimeRef = useRef< number >( 0 );
-	// The test drive setup will be forced finished after 40 seconds
-	// (10 seconds for the initial calls plus 30 for checking the account status in a loop).
-	const testDriveSetupMaxDuration = 40;
-
 	// Helper function to calculate the elapsed time in seconds.
 	const elapsed = ( time: number ) =>
 		Math.round( ( Date.now() - time ) / 1000 );
@@ -179,48 +176,47 @@ const ConnectAccountPage: React.FC = () => {
 		apiFetch( {
 			path: `/wc/v3/payments/accounts`,
 			method: 'GET',
-		} ).then( ( account ) => {
-			// Simulate the update of the loader progress bar by 4% per check.
-			// Limit to a maximum of 10 checks (6% progress per each request starting from 40% = max 10 checks).
-			updateLoaderProgress( 100, 6 );
+		} )
+			// A failed poll counts as no status yet, so the loop keeps going until the timeout.
+			.catch( () => undefined )
+			.then( ( account ) => {
+				// Simulate the update of the loader progress bar, holding below 100% until the account is ready.
+				updateLoaderProgress( 95, 3 );
 
-			// If the account status is not a pending one, the progress percentage is above 95,
-			// or we've exceeded the timeout, consider our work done and redirect the merchant.
-			// Otherwise, schedule another check after a 2.5 seconds wait.
-			if (
-				( account &&
-					( account as AccountData ).status &&
-					! ( account as AccountData ).status.includes(
-						'pending'
-					) ) ||
-				loaderProgressRef.current > 95 ||
-				elapsed( testDriveSetupStartTimeRef.current ) >
-					testDriveSetupMaxDuration
-			) {
-				setTestDriveLoaderProgress( 100 );
-				const queryArgs = {
-					test_drive: 'true',
-					'wcpay-sandbox-success': 'true',
-					source: determineTrackingSource(),
-					from: 'WCPAY_CONNECT',
-					redirect_to_settings_page:
-						urlParams.get( 'redirect_to_settings_page' ) || '',
-				};
+				// If the account status is not a pending one, or we've exceeded the timeout,
+				// consider our work done and redirect the merchant.
+				// Otherwise, schedule another check after a 2.5 seconds wait.
+				if (
+					isTestDriveSetupDone(
+						( account as AccountData | undefined )?.status,
+						elapsed( testDriveSetupStartTimeRef.current )
+					)
+				) {
+					setTestDriveLoaderProgress( 100 );
+					const queryArgs = {
+						test_drive: 'true',
+						'wcpay-sandbox-success': 'true',
+						source: determineTrackingSource(),
+						from: 'WCPAY_CONNECT',
+						redirect_to_settings_page:
+							urlParams.get( 'redirect_to_settings_page' ) || '',
+					};
 
-				// Redirect to the Connect URL and let it figure it out where to point the merchant.
-				redirectTo(
-					addQueryArgs( connectUrl, {
-						...queryArgs,
-						...extraQueryArgs,
-					} )
-				);
-			} else {
-				// Schedule another check after 2.5 seconds.
-				// 2.5 seconds plus 0.5 seconds for the fetch request is 3 seconds.
-				// With a maximum of 10 checks, we will wait for 30 seconds before ending the process normally.
-				setTimeout( () => checkAccountStatus( extraQueryArgs ), 2500 );
-			}
-		} );
+					// Redirect to the Connect URL and let it figure it out where to point the merchant.
+					redirectTo(
+						addQueryArgs( connectUrl, {
+							...queryArgs,
+							...extraQueryArgs,
+						} )
+					);
+				} else {
+					// Schedule another check after 2.5 seconds.
+					setTimeout(
+						() => checkAccountStatus( extraQueryArgs ),
+						2500
+					);
+				}
+			} );
 	};
 
 	const handleSetupTestDriveMode = async () => {

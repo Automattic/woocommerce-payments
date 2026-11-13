@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep shoppers' saved SEPA, Link and Amazon Pay methods when the merchant turns those methods off.

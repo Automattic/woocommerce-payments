@@ -3,13 +3,15 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import ConnectAccountPage from '..';
+import { redirectTo } from 'wcpay/utils';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -220,6 +222,49 @@ describe( 'ConnectAccountPage', () => {
 			expect( window.fetch ).toHaveBeenCalledWith(
 				expect.stringContaining( 'test_drive=true' ),
 				expect.any( Object )
+			);
+		} );
+	} );
+
+	describe( 'test-drive account status polling', () => {
+		const originalFetch = window.fetch;
+
+		beforeEach( () => {
+			// The loader animates with a zero-delay setInterval, which fake timers would spin on.
+			jest.useFakeTimers( {
+				doNotFake: [ 'setInterval', 'clearInterval' ],
+			} );
+			global.wcpaySettings.autoStartTestDriveOnboarding = true;
+			window.fetch = jest.fn().mockResolvedValue( {
+				json: () =>
+					Promise.resolve( {
+						success: true,
+						data: {
+							redirect_to:
+								'/wp-admin/admin.php?page=wc-admin&wcpay-connection-success=1',
+						},
+					} ),
+			} );
+		} );
+
+		afterEach( () => {
+			jest.useRealTimers();
+			window.fetch = originalFetch;
+		} );
+
+		test( 'keeps polling after a failed request and redirects once the account is complete', async () => {
+			( apiFetch as unknown as jest.Mock )
+				.mockRejectedValueOnce( new Error( 'Internal Server Error' ) )
+				.mockResolvedValueOnce( { status: 'complete' } );
+
+			render( <ConnectAccountPage /> );
+			await act( async () => {
+				await jest.advanceTimersByTimeAsync( 2500 );
+			} );
+
+			expect( apiFetch ).toHaveBeenCalledTimes( 2 );
+			expect( redirectTo ).toHaveBeenCalledWith(
+				expect.stringContaining( 'wcpay-sandbox-success=true' )
 			);
 		} );
 	} );

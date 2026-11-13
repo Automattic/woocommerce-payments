@@ -2640,7 +2640,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		try {
 			if ( ! $this->settings_changed( $stripe_account_settings ) ) {
 				Logger::info( 'Skip updating account settings. Nothing is changed.' );
-				return;
+				return null;
 			}
 
 			$request         = Update_Account::from_account_settings( $stripe_account_settings );
@@ -2658,6 +2658,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			return new WP_Error( 'wcpay_failed_to_update_stripe_account', $e->getMessage(), $error_data );
 		}
+
+		return null;
 	}
 
 	/**
