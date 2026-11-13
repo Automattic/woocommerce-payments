@@ -145,6 +145,12 @@ export default class ExpressCheckoutOrderApi {
 			// The shipping address has no email field.
 			delete shippingAddress.email;
 		}
+		// An order saved from a one-word wallet name (e.g. a failed express checkout draft) has no
+		// shipping last name, which WooCommerce requires. Mirrors the cart checkout fallback. Blank
+		// addresses (no country) are left alone, so orders that don't ship don't store a "-".
+		if ( shippingAddress?.country && ! shippingAddress.last_name?.trim() ) {
+			shippingAddress = { ...shippingAddress, last_name: '-' };
+		}
 
 		const sentBillingEmail = billingAddress?.email;
 		// Placing the order persists what was sent, so a later attempt (a retry, or switching express
