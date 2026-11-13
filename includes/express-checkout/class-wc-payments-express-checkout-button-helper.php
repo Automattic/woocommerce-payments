@@ -779,6 +779,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
+		// The cart checks below need a cart, and there is nothing to pay for without one.
+		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_cart() ) {
+			return false;
+		}
+
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( Express Checkout Element button disabled )' );
@@ -876,11 +881,29 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Whether this request has a cart. Pages with a cart or checkout block can be rendered
+	 * without one, e.g. when the block editor loads the page through the REST API.
+	 *
+	 * @return bool
+	 */
+	private function has_cart(): bool {
+		// WooCommerce types the property as WC_Cart, but only loads the cart for frontend requests.
+		/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+		$cart = WC()->cart;
+
+		return null !== $cart;
+	}
+
+	/**
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return boolean
 	 */
 	public function has_allowed_items_in_cart() {
+		if ( ! $this->has_cart() ) {
+			return false;
+		}
+
 		/**
 		 * Pre Orders compatbility where we don't support charge upon release.
 		 */
