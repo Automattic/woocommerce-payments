@@ -1001,8 +1001,11 @@ class WooPay_Session {
 			$response_body_json = wp_remote_retrieve_body( $response );
 		}
 
-		Logger::log( $response_body_json );
-		wp_send_json( json_decode( $response_body_json ) );
+		$response_body = json_decode( $response_body_json );
+		$result        = $response_body->result ?? null;
+
+		Logger::log( 'WooPay init result: ' . ( is_string( $result ) ? $result : 'unexpected response' ) );
+		wp_send_json( $response_body );
 	}
 
 	/**

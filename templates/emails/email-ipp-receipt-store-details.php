@@ -12,6 +12,11 @@
  * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Payments\Templates\Emails
  * @version 1.0.0
+ *
+ * @var string $business_name
+ * @var array  $support_address
+ * @var string $support_phone
+ * @var string $support_email
  */
 
 defined( 'ABSPATH' ) || exit;

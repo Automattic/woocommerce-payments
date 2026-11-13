@@ -1152,8 +1152,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for payment transaction id.
 	 *
-	 * @param  mixed  $order The order.
-	 * @param  string $payment_transaction_id The value to be set.
+	 * @param  mixed       $order The order.
+	 * @param  string|null $payment_transaction_id The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -1169,8 +1169,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the payment metadata for risk level.
 	 *
-	 * @param  mixed  $order      The order.
-	 * @param  string $risk_level The value to be set.
+	 * @param  mixed       $order      The order.
+	 * @param  string|null $risk_level The value to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */

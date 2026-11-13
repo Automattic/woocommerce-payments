@@ -61,12 +61,6 @@ parameters:
 			path: includes/admin/class-wc-rest-payments-onboarding-controller.php
 
 		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Type::SINGLE().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/admin/class-wc-rest-payments-payment-intents-controller.php
-
-		-
 			rawMessage: Instanceof between WC_Order_Refund|false|null and WC_Order will always evaluate to false.
 			identifier: instanceof.alwaysFalse
 			count: 1
@@ -105,12 +99,6 @@ parameters:
 		-
 			rawMessage: Left side of && is always true.
 			identifier: booleanAnd.leftAlwaysTrue
-			count: 1
-			path: includes/admin/class-wc-rest-payments-settings-controller.php
-
-		-
-			rawMessage: 'Method WC_REST_Payments_Settings_Controller::schedule_stripe_billing_migration() should return WP_REST_Response|null but return statement is missing.'
-			identifier: return.missing
 			count: 1
 			path: includes/admin/class-wc-rest-payments-settings-controller.php
 
@@ -181,12 +169,6 @@ parameters:
 			path: includes/class-duplicates-detection-service.php
 
 		-
-			rawMessage: Cannot access property $id on class-string|object.
-			identifier: property.nonObject
-			count: 1
-			path: includes/class-duplicates-detection-service.php
-
-		-
 			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -197,36 +179,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: includes/class-onboarding-experiment.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Capture_Type::AUTOMATIC().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-payment-information.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Capture_Type::MANUAL().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-payment-information.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Initiated_By::CUSTOMER().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-payment-information.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Initiated_By::MERCHANT().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-payment-information.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Type::SINGLE().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-payment-information.php
 
 		-
 			rawMessage: 'Parameter #1 $token_id of static method WC_Payment_Tokens::get() expects int, array|string given.'
@@ -250,36 +202,6 @@ parameters:
 			rawMessage: Action callback returns array but should not return anything.
 			identifier: return.void
 			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Capture_Type::AUTOMATIC().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Capture_Type::MANUAL().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Initiated_By::CUSTOMER().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Type::RECURRING().'
-			identifier: staticMethod.notFound
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Type::SINGLE().'
-			identifier: staticMethod.notFound
-			count: 2
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
@@ -328,12 +250,6 @@ parameters:
 			rawMessage: Left side of && is always true.
 			identifier: booleanAnd.leftAlwaysTrue
 			count: 3
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: 'Method WC_Payment_Gateway_WCPay::create_token_from_setup_intent() should return WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA|null but return statement is missing.'
-			identifier: return.missing
-			count: 1
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
@@ -387,19 +303,19 @@ parameters:
 		-
 			rawMessage: Ternary operator condition is always true.
 			identifier: ternary.alwaysTrue
-			count: 3
+			count: 4
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Variable $intent in empty() always exists and is not falsy.'
+			identifier: empty.variable
+			count: 1
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
 			rawMessage: Variable $response might not be defined.
 			identifier: variable.undefined
 			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
-			rawMessage: Variable $setup_intent in PHPDoc tag @var does not match assigned variable $intent.
-			identifier: varTag.differentVariable
-			count: 2
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
@@ -453,18 +369,6 @@ parameters:
 		-
 			rawMessage: Instanceof between WC_Payment_Gateway_WCPay and WC_Payment_Gateway_WCPay will always evaluate to true.
 			identifier: instanceof.alwaysTrue
-			count: 1
-			path: includes/class-wc-payments-account.php
-
-		-
-			rawMessage: 'Method WC_Payments_Account::update_stripe_account() should return WP_Error|null but empty return statement found.'
-			identifier: return.empty
-			count: 1
-			path: includes/class-wc-payments-account.php
-
-		-
-			rawMessage: 'Method WC_Payments_Account::update_stripe_account() should return WP_Error|null but return statement is missing.'
-			identifier: return.missing
 			count: 1
 			path: includes/class-wc-payments-account.php
 
@@ -673,12 +577,6 @@ parameters:
 			path: includes/class-wc-payments-order-service.php
 
 		-
-			rawMessage: Result of || is always false.
-			identifier: booleanOr.alwaysFalse
-			count: 2
-			path: includes/class-wc-payments-order-service.php
-
-		-
 			rawMessage: 'Strict comparison using !== between null and string will always evaluate to true.'
 			identifier: notIdentical.alwaysTrue
 			count: 2
@@ -699,18 +597,6 @@ parameters:
 		-
 			rawMessage: Variable $intent_id on left side of ?? always exists and is not nullable.
 			identifier: nullCoalesce.variable
-			count: 1
-			path: includes/class-wc-payments-order-service.php
-
-		-
-			rawMessage: 'Variable $payment_transaction_id in isset() always exists and is not nullable.'
-			identifier: isset.variable
-			count: 1
-			path: includes/class-wc-payments-order-service.php
-
-		-
-			rawMessage: 'Variable $risk_level in isset() always exists and is not nullable.'
-			identifier: isset.variable
 			count: 1
 			path: includes/class-wc-payments-order-service.php
 
@@ -839,6 +725,12 @@ parameters:
 			identifier: booleanNot.alwaysFalse
 			count: 1
 			path: includes/class-wc-payments-tasks.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Data_Store::set_default_status().'
+			identifier: method.notFound
+			count: 1
+			path: includes/class-wc-payments-token-service.php
 
 		-
 			rawMessage: 'Call to an undefined method WC_Payment_Token::get_email().'
@@ -1357,18 +1249,6 @@ parameters:
 			path: includes/fraud-prevention/class-fraud-prevention-service.php
 
 		-
-			rawMessage: Variable $gateway on left side of ?? always exists and is always null.
-			identifier: nullCoalesce.variable
-			count: 1
-			path: includes/fraud-prevention/class-fraud-prevention-service.php
-
-		-
-			rawMessage: Variable $session on left side of ?? always exists and is always null.
-			identifier: nullCoalesce.variable
-			count: 1
-			path: includes/fraud-prevention/class-fraud-prevention-service.php
-
-		-
 			rawMessage: 'Variable $default_currency in empty() always exists and is not falsy.'
 			identifier: empty.variable
 			count: 1
@@ -1585,12 +1465,6 @@ parameters:
 			path: includes/multi-currency/MultiCurrency.php
 
 		-
-			rawMessage: 'Method WCPay\MultiCurrency\MultiCurrency::instance() should return WCPay\MultiCurrency\MultiCurrency|null but return statement is missing.'
-			identifier: return.missing
-			count: 1
-			path: includes/multi-currency/MultiCurrency.php
-
-		-
 			rawMessage: 'Parameter #1 $text of function esc_html expects string, int given.'
 			identifier: argument.type
 			count: 1
@@ -1744,18 +1618,6 @@ parameters:
 			rawMessage: 'Strict comparison using === between null and string will always evaluate to false.'
 			identifier: identical.alwaysFalse
 			count: 3
-			path: includes/wc-payment-api/class-wc-payments-api-client.php
-
-		-
-			rawMessage: 'Variable $address in isset() always exists and is not nullable.'
-			identifier: isset.variable
-			count: 1
-			path: includes/wc-payment-api/class-wc-payments-api-client.php
-
-		-
-			rawMessage: 'Variable $display_name in isset() always exists and is not nullable.'
-			identifier: isset.variable
-			count: 1
 			path: includes/wc-payment-api/class-wc-payments-api-client.php
 
 		-
@@ -2009,12 +1871,6 @@ parameters:
 			identifier: function.impossibleType
 			count: 2
 			path: src/Internal/Service/DisputeService.php
-
-		-
-			rawMessage: 'Method WCPay\Internal\Service\ExampleServiceWithDependencies::handle_exception() should return bool|null but return statement is missing.'
-			identifier: return.missing
-			count: 1
-			path: src/Internal/Service/ExampleServiceWithDependencies.php
 
 		-
 			rawMessage: 'Property WCPay\Internal\Service\ExampleServiceWithDependencies::$plugin_util is never read, only written.'
