@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop asking the server again for a missing card's details while showing a failed order.

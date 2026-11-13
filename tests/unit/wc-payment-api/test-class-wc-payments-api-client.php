@@ -186,6 +186,55 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->get_transaction( $transaction_id );
 	}
 
+	public function test_get_payment_method_does_not_request_a_missing_payment_method_again() {
+		$payment_method_id = 'pm_missing';
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn( $this->build_http_error_response( 404, 'resource_missing', "No such PaymentMethod: '$payment_method_id'" ) );
+
+		$this->get_payment_method_exception( $payment_method_id );
+		$exception = $this->get_payment_method_exception( $payment_method_id );
+
+		$this->assertSame( 'resource_missing', $exception->get_error_code() );
+		$this->assertSame( 404, $exception->get_http_code() );
+		$this->assertSame( "Error: No such PaymentMethod: 'pm_missing'", $exception->getMessage() );
+	}
+
+	public function test_get_payment_method_requests_again_after_other_errors() {
+		$payment_method_id = 'pm_123';
+		$this->mock_http_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'remote_request' )
+			->willReturnOnConsecutiveCalls(
+				$this->build_http_error_response( 500, 'api_error', 'Server error' ),
+				$this->build_http_response( 200, [ 'id' => $payment_method_id ] )
+			);
+
+		$exception      = $this->get_payment_method_exception( $payment_method_id );
+		$payment_method = $this->payments_api_client->get_payment_method( $payment_method_id );
+
+		$this->assertSame( 'api_error', $exception->get_error_code() );
+		$this->assertSame( [ 'id' => 'pm_123' ], $payment_method );
+	}
+
+	public function test_get_payment_method_requests_other_payment_methods_after_a_missing_one() {
+		$missing_payment_method_id = 'pm_missing';
+		$payment_method_id         = 'pm_123';
+		$this->mock_http_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'remote_request' )
+			->willReturnOnConsecutiveCalls(
+				$this->build_http_error_response( 404, 'resource_missing', "No such PaymentMethod: '$missing_payment_method_id'" ),
+				$this->build_http_response( 200, [ 'id' => $payment_method_id ] )
+			);
+
+		$this->get_payment_method_exception( $missing_payment_method_id );
+		$payment_method = $this->payments_api_client->get_payment_method( $payment_method_id );
+
+		$this->assertSame( [ 'id' => 'pm_123' ], $payment_method );
+	}
+
 	/**
 	 * Test that a % in a site-specific path survives the HTTP client inserting the blog ID.
 	 *
@@ -1480,6 +1529,65 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$result = $this->payments_api_client->send_store_setup( $store_setup_data );
 
 		$this->assertSame( 'success', $result['result'] );
+	}
+
+	/**
+	 * Calls get_payment_method() and returns the exception it throws.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 *
+	 * @return API_Exception
+	 */
+	private function get_payment_method_exception( string $payment_method_id ): API_Exception {
+		try {
+			$this->payments_api_client->get_payment_method( $payment_method_id );
+		} catch ( API_Exception $e ) {
+			return $e;
+		}
+
+		$this->fail( 'Expected API_Exception was not thrown.' );
+	}
+
+	/**
+	 * Builds a response in the shape the HTTP client returns.
+	 *
+	 * @param int   $status_code The HTTP status code.
+	 * @param array $body        The decoded response body.
+	 *
+	 * @return array
+	 */
+	private function build_http_response( int $status_code, array $body ): array {
+		return [
+			'headers'  => [],
+			'body'     => wp_json_encode( $body ),
+			'response' => [
+				'code'    => $status_code,
+				'message' => 'OK',
+			],
+			'cookies'  => [],
+			'filename' => null,
+		];
+	}
+
+	/**
+	 * Builds an error response in the shape the server returns.
+	 *
+	 * @param int    $status_code The HTTP status code.
+	 * @param string $error_code  The error code.
+	 * @param string $message     The error message.
+	 *
+	 * @return array
+	 */
+	private function build_http_error_response( int $status_code, string $error_code, string $message ): array {
+		return $this->build_http_response(
+			$status_code,
+			[
+				'error' => [
+					'code'    => $error_code,
+					'message' => $message,
+				],
+			]
+		);
 	}
 
 	/**

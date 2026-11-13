@@ -191,6 +191,16 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	private $wcpay_db;
 
 	/**
+	 * Errors for payment methods the server reported as missing, keyed by payment method ID.
+	 *
+	 * WooCommerce reads the card details of a failed order several times per page, and each read
+	 * would otherwise ask the server again for a payment method that will never exist.
+	 *
+	 * @var API_Exception[]
+	 */
+	private $missing_payment_method_errors = [];
+
+	/**
 	 * WC_Payments_API_Client constructor.
 	 *
 	 * @param string           $user_agent  - User agent string to report in requests.
@@ -1810,11 +1820,24 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			);
 		}
 
-		return $this->request(
-			[],
-			self::PAYMENT_METHODS_API . '/' . $payment_method_id,
-			self::GET
-		);
+		if ( isset( $this->missing_payment_method_errors[ $payment_method_id ] ) ) {
+			throw $this->missing_payment_method_errors[ $payment_method_id ];
+		}
+
+		try {
+			return $this->request(
+				[],
+				self::PAYMENT_METHODS_API . '/' . $payment_method_id,
+				self::GET
+			);
+		} catch ( API_Exception $e ) {
+			// Only "No such PaymentMethod" is final. Timeouts, rate limits and server errors may pass on a retry.
+			if ( 'resource_missing' === $e->get_error_code() ) {
+				$this->missing_payment_method_errors[ $payment_method_id ] = $e;
+			}
+
+			throw $e;
+		}
 	}
 
 	/**
