@@ -278,6 +278,8 @@ window.addEventListener( 'load', async () => {
 
 	// The hooks above only fire from the React cart and product button. These events also cover
 	// the Interactivity API cart (WC 9.8+), classic add-to-cart buttons and the classic mini-cart.
+	// `wc-blocks_store_sync_required` also fires on any other cart data change, such as a coupon or
+	// shipping rate. Those change the totals in the prefetched session too, so it isn't filtered by type.
 	document.body.addEventListener(
 		'wc-blocks_added_to_cart',
 		handleCartChange
