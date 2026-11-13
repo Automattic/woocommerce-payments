@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop showing a later payment as held for review when only an earlier attempt on the order was reviewed.

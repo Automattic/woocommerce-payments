@@ -2119,17 +2119,16 @@ class WC_Payments_Order_Service {
 	 * Removes the fraud data of an earlier blocked or reviewed attempt when a later payment has no fraud outcome.
 	 *
 	 * Without a new fraud outcome, the earlier attempt's warning would remain on the order after payment.
-	 * Only warning states are cleared; other box types don't warn the merchant. `allow` doesn't prove an earlier
-	 * payment succeeded, though: a card payment that fails with `card_error` sets it too.
+	 * Check the outcome status as well as the box type: a card payment that fails with `card_error` sets the
+	 * box type to `allow` but keeps the earlier outcome, and the capture handlers still read that outcome.
 	 *
 	 * @param WC_Order $order Order object.
 	 *
 	 * @return void
 	 */
 	private function clear_stale_fraud_data_for_order( $order ) {
-		$meta_box_type = $this->get_fraud_meta_box_type_for_order( $order );
-		if ( ! in_array(
-			$meta_box_type,
+		$shows_warning       = in_array(
+			$this->get_fraud_meta_box_type_for_order( $order ),
 			[
 				Fraud_Meta_Box_Type::BLOCK,
 				Fraud_Meta_Box_Type::REVIEW,
@@ -2138,7 +2137,13 @@ class WC_Payments_Order_Service {
 				Fraud_Meta_Box_Type::REVIEW_FAILED,
 			],
 			true
-		) ) {
+		);
+		$has_warning_outcome = in_array(
+			$this->get_fraud_outcome_status_for_order( $order ),
+			[ Rule::FRAUD_OUTCOME_BLOCK, Rule::FRAUD_OUTCOME_REVIEW ],
+			true
+		);
+		if ( ! $shows_warning && ! $has_warning_outcome ) {
 			return;
 		}
 
