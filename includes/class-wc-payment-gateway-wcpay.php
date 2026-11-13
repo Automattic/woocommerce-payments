@@ -885,6 +885,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 		}
+
+		return null;
 	}
 
 	/**
@@ -976,6 +978,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function is_request_composed_by_woopay(): bool {
 		return WooPay_Session::is_request_vouched_by_woopay() || WooPay_Session::is_authenticated_by_blog_token_signature();
+	}
+
+	/**
+	 * Records that the order was completed through WooPay, only when WooPay proved it composed this
+	 * attempt. Any other payment attempt clears the meta, so it reflects the attempt that actually
+	 * paid the order rather than an earlier or unrelated one.
+	 *
+	 * @param WC_Order $order                         The order being paid.
+	 * @param bool     $is_request_composed_by_woopay Whether the request carries WooPay's proof.
+	 */
+	private function update_woopay_order_flag( WC_Order $order, bool $is_request_composed_by_woopay ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST['is_woopay'] ) && $is_request_composed_by_woopay ) {
+			$order->add_meta_data( 'is_woopay', '1', true );
+			$order->save_meta_data();
+		} elseif ( $order->meta_exists( 'is_woopay' ) ) {
+			$order->delete_meta_data( 'is_woopay' );
+			$order->save_meta_data();
+		}
 	}
 
 	/**
@@ -1467,6 +1488,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		// A card change passes the subscription itself. It lasts for years, and reaching the limit would set it
+		// to failed in the catch below, so its declines count in the session only.
+		$rate_limited_order = function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ? null : $order;
+
 		try {
 			$is_request_composed_by_woopay = $this->is_request_composed_by_woopay();
 			// Reject an unverified dry run instead of turning it into a payment attempt.
@@ -1503,7 +1528,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			if ( $this->failed_transaction_rate_limiter->is_limited( $rate_limited_order ) ) {
 				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -1549,6 +1574,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_order_paid;
 			}
 
+			$this->update_woopay_order_flag( $order, $is_request_composed_by_woopay );
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -1616,7 +1642,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
-				$this->failed_transaction_rate_limiter->bump();
+				$this->failed_transaction_rate_limiter->bump( $rate_limited_order );
 			}
 
 			// The server rejects an express checkout confirmation token minted without setup_future_usage
@@ -2230,7 +2256,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( ! empty( $woopay_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
 				$setup_intent_request = Get_Setup_Intention::create( $woopay_intent_id );
-				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
 
 				$intent_metadata          = $intent->get_metadata();
@@ -4682,7 +4708,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
-				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
 				$this->ensure_intent_belongs_to_order( $intent, $order );
 				$status = $intent->get_status();

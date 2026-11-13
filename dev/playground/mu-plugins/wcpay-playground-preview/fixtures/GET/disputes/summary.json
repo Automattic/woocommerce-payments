@@ -1,0 +1,10 @@
+{
+	"count": 2,
+	"currencies": [
+		"usd"
+	],
+	"amount_by_currency": {
+		"usd": 3600
+	},
+	"earliest_due_by": "@datetime:+9 days"
+}

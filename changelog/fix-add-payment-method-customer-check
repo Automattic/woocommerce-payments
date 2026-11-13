@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Only save a card from My Account when it was set up for the signed-in customer.

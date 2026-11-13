@@ -13,6 +13,15 @@
  * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Payments\Templates\Emails
  * @version 1.0.0
+ *
+ * @var WC_Order                      $order
+ * @var array                         $merchant_settings
+ * @var array                         $charge
+ * @var string                        $email_heading
+ * @var string                        $additional_content
+ * @var bool                          $sent_to_admin
+ * @var bool                          $plain_text
+ * @var WC_Payments_Email_IPP_Receipt $email
  */
 
 defined( 'ABSPATH' ) || exit;

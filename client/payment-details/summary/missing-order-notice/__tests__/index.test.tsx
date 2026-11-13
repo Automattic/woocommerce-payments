@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react';
-import { chargeMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
+import { chargeMock } from 'wcpay/data/payment-intents/__fixtures__';
 
 /**
  * Internal dependencies

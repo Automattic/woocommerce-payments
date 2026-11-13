@@ -1,3 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Follow-up to the unreleased BNPL failure note change: avoid duplicate failure notes when the webhook and the redirect return both record a declined payment.

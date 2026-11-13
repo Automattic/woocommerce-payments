@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "10916d8266df106eb7e65a7f188fa167",
+    "content-hash": "869a249d5fec275836f303aeed3b075f",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -964,16 +964,16 @@
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "v7.0.5",
+            "version": "v7.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-changelogger.git",
-                "reference": "9a71296eeab91596a032a3bad09898827011b218"
+                "reference": "033d725b5f53ab4d5baa0f4f27e499202a5f2276"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/9a71296eeab91596a032a3bad09898827011b218",
-                "reference": "9a71296eeab91596a032a3bad09898827011b218",
+                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/033d725b5f53ab4d5baa0f4f27e499202a5f2276",
+                "reference": "033d725b5f53ab4d5baa0f4f27e499202a5f2276",
                 "shasum": ""
             },
             "require": {
@@ -1025,9 +1025,9 @@
                 "keepachangelog"
             ],
             "support": {
-                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v7.0.5"
+                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v7.0.6"
             },
-            "time": "2026-10-20T16:01:37+00:00"
+            "time": "2026-11-02T18:04:56+00:00"
         },
         {
             "name": "clue/stdio-react",
@@ -2491,11 +2491,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.1",
+            "version": "2.3.5",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
-                "reference": "6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/645a1bd6bead15fc1b8474137467961d0fa30a79",
+                "reference": "645a1bd6bead15fc1b8474137467961d0fa30a79",
                 "shasum": ""
             },
             "require": {
@@ -2551,7 +2551,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-08T21:09:11+00:00"
+            "time": "2026-11-03T12:14:22+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

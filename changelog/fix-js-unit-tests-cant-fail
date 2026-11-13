@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Make JS unit tests fail when the behaviour they cover breaks, and remove duplicated ones.

@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import { getPaymentIntent, getPaymentIntentError } from '../selectors';
-import { paymentIntentId, paymentIntentMock } from './hooks.test';
+import { paymentIntentId, paymentIntentMock } from '../__fixtures__';
 
 const paymentIntentStateMock = {
 	id: paymentIntentId,

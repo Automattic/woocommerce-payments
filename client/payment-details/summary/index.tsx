@@ -33,6 +33,9 @@ import {
 	getChargeChannel,
 	isOnHoldByFraudTools,
 	getBankName,
+	getRefundableAmount,
+	getUncapturedAmount,
+	isChargeRefunded,
 } from 'utils/charge';
 import CardNotice from 'wcpay/components/card-notice';
 import isValueTruthy from 'utils/is-value-truthy';
@@ -376,7 +379,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// present, partial refund is not possible.
 	const isPartiallyRefundable = charge.order && charge.order.number;
 
-	const isPartiallyRefunded = charge.amount_refunded > 0;
+	const isPartiallyRefunded = isChargeRefunded( charge );
 
 	// Control menu only shows refund actions for now. In the future, it may show other actions.
 	const showControlMenu =
@@ -443,8 +446,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		},
 	} );
 
+	// A partially captured charge reads at the captured amount, with the
+	// authorized amount shown alongside it.
+	const uncapturedAmount = getUncapturedAmount( charge );
 	const formattedAmount = formatCurrency(
-		charge.amount,
+		charge.amount - uncapturedAmount,
+		charge.currency,
+		balance.currency
+	);
+	const formattedRefundableAmount = formatCurrency(
+		getRefundableAmount( charge ),
 		charge.currency,
 		balance.currency
 	);
@@ -518,6 +529,18 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								) }
 							</div>
 							<div className="payment-details-summary__breakdown">
+								{ uncapturedAmount > 0 ? (
+									<p>
+										{ `${ __(
+											'Authorized',
+											'woocommerce-payments'
+										) }: ` }
+										{ formatExplicitCurrency(
+											charge.amount,
+											charge.currency
+										) }
+									</p>
+								) : null }
 								{ renderStorePrice ? (
 									<p className="payment-details-summary__breakdown__settlement-currency">
 										{ formatExplicitCurrency(
@@ -880,7 +903,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<RefundModal
 					charge={ charge }
 					dispute={ refundTarget.dispute }
-					formattedAmount={ formattedAmount }
+					formattedAmount={ formattedRefundableAmount }
 					orderUrl={ charge.order?.url }
 					onModalClose={ () => {
 						setRefundTarget( null );

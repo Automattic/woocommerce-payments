@@ -296,6 +296,9 @@ describe( 'Stripe Payment Element mounting', () => {
 				checked: true,
 			},
 		};
+		getFingerprint.mockImplementation( () => 'fingerprint' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+		await mountStripePaymentElement( apiMock, mockDomElement );
 		getUPEConfig.mockImplementation( ( argument ) => {
 			if ( argument === 'currency' ) {
 				return 'eur';
@@ -385,6 +388,61 @@ describe( 'Stripe Payment Element mounting', () => {
 				wallets: expect.objectContaining( { link: 'auto' } ),
 			} )
 		);
+	} );
+
+	describe( 'with a cart total over the payment amount limit', () => {
+		const cartTotalOverLimit = 180000000;
+
+		beforeEach( () => {
+			getFingerprint.mockImplementation( () => 'fingerprint' );
+			__resetGatewayUPEComponentsElement( 'card' );
+			mockDomElement.dataset.paymentMethodType = 'card';
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'paymentMethodsConfig' ) {
+					return {
+						card: {
+							label: 'Card',
+							forceNetworkSavedCards: true,
+						},
+					};
+				}
+
+				if ( argument === 'currency' ) {
+					return 'usd';
+				}
+
+				if ( argument === 'cartTotal' ) {
+					return cartTotalOverLimit;
+				}
+			} );
+		} );
+
+		test( 'creates the elements in setup mode with a zero amount on the add_payment_method page', async () => {
+			await mountStripePaymentElement(
+				apiMock,
+				mockDomElement,
+				'add_payment_method'
+			);
+
+			expect( mockElements ).toHaveBeenCalledWith(
+				expect.objectContaining( { mode: 'setup', amount: 0 } )
+			);
+		} );
+
+		test( 'creates the elements in payment mode with the cart total on the shortcode_checkout page', async () => {
+			await mountStripePaymentElement(
+				apiMock,
+				mockDomElement,
+				'shortcode_checkout'
+			);
+
+			expect( mockElements ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					mode: 'payment',
+					amount: 180000000,
+				} )
+			);
+		} );
 	} );
 
 	describe( 'updateLinkEmail', () => {

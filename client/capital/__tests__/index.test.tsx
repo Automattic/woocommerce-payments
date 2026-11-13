@@ -121,6 +121,10 @@ describe( 'CapitalPage', () => {
 			loans: [],
 			isLoading: true,
 		} );
+		( useActiveLoanSummary as jest.Mock ).mockReturnValue( {
+			summary: undefined,
+			isLoading: true,
+		} );
 
 		render( <CapitalPage /> );
 

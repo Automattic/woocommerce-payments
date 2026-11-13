@@ -20,8 +20,6 @@ import {
 
 import { getDeposit, getDeposits, getDepositsSummary } from '../resolvers';
 
-jest.mock( '@wordpress/data-controls' );
-
 const depositsResponse = {
 	data: [
 		{
@@ -99,12 +97,11 @@ describe( 'getDeposit resolver', () => {
 		const invalidId = '..';
 
 		test( 'should encode characters that would change the request', () => {
-			// `apiFetch` is auto-mocked here, so assert on the call rather than the yielded value.
-			getDeposit( traversalId ).next();
-
-			expect( apiFetch ).toHaveBeenCalledWith( {
-				path: '/wc/v3/payments/deposits/..%2Fpath%3Fa%3Db%26c%3Dd',
-			} );
+			expect( getDeposit( traversalId ).next().value ).toEqual(
+				apiFetch( {
+					path: '/wc/v3/payments/deposits/..%2Fpath%3Fa%3Db%26c%3Dd',
+				} )
+			);
 		} );
 
 		test( 'should show an error for an invalid ID without a request', () => {
@@ -132,9 +129,6 @@ describe( 'getDeposits resolver', () => {
 		'page=1&pagesize=25&match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=paid&status_is_not=failed';
 
 	beforeEach( () => {
-		apiFetch.mockImplementation( () => {
-			return 'something';
-		} );
 		generator = getDeposits( query );
 		expect( generator.next().value ).toEqual(
 			apiFetch( {

@@ -4599,7 +4599,24 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'on-hold', $order->get_status() );
 		$this->assertSame( $stored_charge_id, $order->get_meta( '_charge_id' ) );
 		$this->assertSame( 'canceled', $order->get_meta( '_intention_status' ) );
-		$this->assertStringContainsString( 'This order now uses another payment method, so its status was not changed.', $this->get_order_notes_text( $order ) );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_expired" target="_blank" rel="noopener noreferrer">pi_expired</a>) expired. This order now uses another payment method, so its status was not changed.', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * WooPayments took no money for an order paid another way, so its fee from the authorization goes.
+	 */
+	public function test_charge_expired_removes_fee_from_order_paid_with_another_gateway() {
+		$order = $this->create_order_for_charge_expired( Order_Status::ON_HOLD, 'bacs', self::EXPIRED_CHARGE_ID );
+		$order->update_meta_data( '_wcpay_transaction_fee', 0.59 );
+		$order->update_meta_data( '_wcpay_net', 9.41 );
+		$order->save();
+		$this->set_up_charge_expired_event( $order, true );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( '', $order->get_meta( '_wcpay_transaction_fee' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_net' ) );
 	}
 
 	/**
