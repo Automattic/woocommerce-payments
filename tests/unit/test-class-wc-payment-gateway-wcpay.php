@@ -1591,17 +1591,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $mock_token, $this->card_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
-	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
-		$order = WC_Helper_Order::create_order();
-		$order->set_billing_phone( '+1123456789123456789123' );
-		$order->save();
-		$result = $this->card_gateway->process_payment( $order->get_id() );
-		$this->assertEquals( 'fail', $result['result'] );
-		$error_notices = WC()->session->get( 'wc_notices' );
-		$this->assertNotEmpty( $error_notices );
-		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
-	}
-
 	public function test_remove_link_payment_method_if_card_disabled() {
 		$link_gateway = $this->get_gateway( Payment_Method::LINK );
 		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];

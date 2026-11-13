@@ -30,7 +30,6 @@ use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	API_Exception,
 	Invalid_Address_Exception,
 	Fraud_Prevention_Enabled_Exception,
-	Invalid_Phone_Number_Exception,
 	Rate_Limiter_Enabled_Exception,
 	Order_ID_Mismatch_Exception,
 	Order_Not_Found_Exception};
@@ -1501,12 +1500,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			if ( 20 < strlen( $order->get_billing_phone() ) ) {
-				throw new Invalid_Phone_Number_Exception(
-					__( 'Invalid phone number.', 'woocommerce-payments' ),
-					'invalid_phone_number'
-				);
-			}
 			// Check if session exists and we're currently not processing a WooPay request before
 			// instantiating `Fraud_Prevention_Service`.
 			//

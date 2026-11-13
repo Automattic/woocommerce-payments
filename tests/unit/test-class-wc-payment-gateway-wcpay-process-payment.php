@@ -1922,6 +1922,45 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_gateway->process_payment( $current_order_id );
 	}
 
+	public function test_process_payment_with_a_billing_phone_over_20_characters_creates_the_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '555-555-5555 or 555-555-5566' );
+		$order->save();
+
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'success', $result['result'] );
+	}
+
+	public function test_process_payment_with_a_billing_phone_over_20_characters_creates_the_customer_without_the_phone() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '555-555-5555 or 555-555-5566' );
+		$order->save();
+
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->with(
+				$this->anything(),
+				$this->callback(
+					function ( $customer_data ) {
+						return ! array_key_exists( 'phone', $customer_data );
+					}
+				)
+			)
+			->willReturn( 'cus_mock' );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
 	/**
 	 * The attached PaymentIntent has invalid info (status or order_id) with the order, so payment_process continues.
 	 */
