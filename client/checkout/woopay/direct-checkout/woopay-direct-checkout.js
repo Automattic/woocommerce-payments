@@ -17,8 +17,9 @@ class WooPayDirectCheckout {
 	static userConnect;
 	static sessionConnect;
 	static encryptedSessionDataPromise;
-	static elementsWithRedirectListener = new WeakSet();
-	static checkoutButtonObserver;
+	static checkoutClickListener = null;
+	static checkoutRedirectUserIsLoggedIn = null;
+	static isRedirectingToWooPay = false;
 	static redirectElements = {
 		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout .checkout-button',
 		BLOCKS_CART_PROCEED_BUTTON:
@@ -68,8 +69,13 @@ class WooPayDirectCheckout {
 	 * Teardown WooPayDirectCheckout.
 	 */
 	static teardown() {
-		this.checkoutButtonObserver?.disconnect();
-		this.checkoutButtonObserver = null;
+		if ( this.checkoutClickListener ) {
+			document.removeEventListener( 'click', this.checkoutClickListener );
+		}
+		this.checkoutClickListener = null;
+		this.checkoutRedirectUserIsLoggedIn = null;
+		this.isRedirectingToWooPay = false;
+
 		this.sessionConnect?.detachMessageListener();
 		this.userConnect?.detachMessageListener();
 
@@ -234,110 +240,16 @@ class WooPayDirectCheckout {
 	}
 
 	/**
-	 * Gets the checkout redirect elements.
+	 * Adds a click-event listener that redirects checkout button clicks to the WooPay checkout page, including
+	 * buttons WooCommerce renders later. Calling it again only updates the login state used for the next click.
 	 *
-	 * @return {*[]} The checkout redirect elements.
-	 */
-	static getCheckoutButtonElements() {
-		const elements = [];
-		const addElementBySelector = ( selector ) => {
-			const element = document.querySelector( selector );
-			if ( element ) {
-				elements.push( element );
-			}
-		};
-
-		// For every new element added here, ensure the selector is added to the redirectElements object.
-		addElementBySelector(
-			this.redirectElements.CLASSIC_CART_PROCEED_BUTTON
-		);
-		addElementBySelector(
-			this.redirectElements.BLOCKS_CART_PROCEED_BUTTON
-		);
-		addElementBySelector(
-			this.redirectElements.CLASSIC_MINI_CART_PROCEED_BUTTON
-		);
-
-		return elements;
-	}
-
-	/**
-	 * Gets the classic 'Proceed to Checkout' button.
-	 *
-	 * @return {Element} The classic 'Proceed to Checkout' button.
-	 */
-	static getClassicProceedToCheckoutButton() {
-		return document.querySelector(
-			this.redirectElements.CLASSIC_CART_PROCEED_BUTTON
-		);
-	}
-
-	/**
-	 * Gets the mini cart 'Go to checkout' button.
-	 *
-	 * @return {Element} The mini cart 'Go to checkout' button.
-	 */
-	static getMiniCartProceedToCheckoutButton() {
-		return document.querySelector(
-			this.redirectElements.BLOCKS_MINI_CART_PROCEED_BUTTON
-		);
-	}
-
-	/**
-	 * Gets the footer mini cart 'Proceed to checkout' button.
-	 *
-	 * @return {Element} The footer mini cart 'Proceed to checkout' button.
-	 */
-	static getFooterMiniCartProceedToCheckoutButton() {
-		return document.querySelector(
-			this.redirectElements.BLOCKS_FOOTER_MINI_CART_PROCEED_BUTTON
-		);
-	}
-
-	/**
-	 * Adds a click-event listener to the given elements that redirects to the WooPay checkout page.
-	 *
-	 * @param {*[]}     elements       The elements to add a click-event listener to.
 	 * @param {boolean} userIsLoggedIn True if we determined the user is already logged in, false otherwise.
 	 */
-	static addRedirectToWooPayEventListener(
-		elements,
-		userIsLoggedIn = false
-	) {
-		// Cart synchronization can render buttons after the debounced session refresh.
-		// Bind on insertion without prefetching again or repeating the login check.
-		if ( ! this.checkoutButtonObserver ) {
-			const selector = Object.values( this.redirectElements ).join(
-				', '
-			);
-			this.checkoutButtonObserver = new MutationObserver(
-				( mutations ) => {
-					const newButtons = [];
-					for ( const { addedNodes } of mutations ) {
-						for ( const node of addedNodes ) {
-							if ( node.nodeType !== Node.ELEMENT_NODE ) {
-								continue;
-							}
-							if ( node.matches( selector ) ) {
-								newButtons.push( node );
-							}
-							newButtons.push(
-								...node.querySelectorAll( selector )
-							);
-						}
-					}
-					if ( newButtons.length ) {
-						this.addRedirectToWooPayEventListener(
-							newButtons,
-							userIsLoggedIn
-						);
-					}
-				}
-			);
-			this.checkoutButtonObserver.observe( document.body, {
-				childList: true,
-				subtree: true,
-			} );
+	static addRedirectToWooPayEventListener( userIsLoggedIn = false ) {
+		this.checkoutRedirectUserIsLoggedIn = userIsLoggedIn;
+
+		if ( this.checkoutClickListener ) {
+			return;
 		}
 
 		/**
@@ -402,74 +314,81 @@ class WooPayDirectCheckout {
 			return isCheckoutButton && isParentProceedToCheckout;
 		};
 
-		elements.forEach( ( element ) => {
-			// Callers pass every button they find after a cart change, including ones bound earlier.
-			if ( this.elementsWithRedirectListener.has( element ) ) {
+		const selector = Object.values( this.redirectElements ).join( ', ' );
+		this.checkoutClickListener = async ( event ) => {
+			const element =
+				event.target instanceof Element
+					? event.target.closest( selector )
+					: null;
+			if ( ! element ) {
 				return;
 			}
-			this.elementsWithRedirectListener.add( element );
 
-			const elementState = {
-				is_loading: false,
-			};
-
-			element.addEventListener( 'click', async ( event ) => {
-				if ( elementState.is_loading ) {
-					event.preventDefault();
-					return;
-				}
-
-				elementState.is_loading = true;
-
-				if ( shouldAddLoadingSpinner( element ) ) {
-					addLoadingSpinner( element );
-				}
-
-				// Store href before the async call to not lose the reference.
-				let currTargetHref;
-				const isAElement = element.tagName.toLowerCase() === 'a';
-				if ( isAElement ) {
-					currTargetHref = element.href;
-				} else {
-					currTargetHref = element.querySelector( 'a' )?.href;
-				}
-
-				// If there's no link where to redirect the user, do not break the expected behavior.
-				if ( ! currTargetHref ) {
-					this.teardown();
-					return;
-				}
-
+			if ( this.isRedirectingToWooPay ) {
 				event.preventDefault();
+				return;
+			}
 
-				try {
-					let woopayRedirectUrl = '';
-					if ( userIsLoggedIn ) {
-						woopayRedirectUrl = await this.getWooPayCheckoutUrl();
-					} else {
-						// Ensure WooPay is reachable before redirecting.
-						if ( ! ( await this.isWooPayReachable() ) ) {
-							throw new Error(
-								'WooPay is currently not available.'
-							);
-						}
+			// WooCommerce blocks checkout like this, e.g. the Mini-Cart while the cart is updating.
+			// The Cart block selector matches a wrapper, so its link is checked for aria-disabled too.
+			if (
+				event.defaultPrevented ||
+				element.matches( '[aria-disabled="true"]' ) ||
+				element.querySelector( '[aria-disabled="true"]' )
+			) {
+				return;
+			}
 
-						woopayRedirectUrl =
-							await this.getWooPayMinimumSessionUrl();
+			// Store href before the async call to not lose the reference.
+			let currTargetHref;
+			const isAElement = element.tagName.toLowerCase() === 'a';
+			if ( isAElement ) {
+				currTargetHref = element.href;
+			} else {
+				currTargetHref = element.querySelector( 'a' )?.href;
+			}
+
+			// If there's no link where to redirect the user, do not break the expected behavior.
+			if ( ! currTargetHref ) {
+				return;
+			}
+
+			event.preventDefault();
+			this.isRedirectingToWooPay = true;
+			const isLoggedIn = this.checkoutRedirectUserIsLoggedIn;
+
+			if ( shouldAddLoadingSpinner( element ) ) {
+				addLoadingSpinner( element );
+			}
+
+			try {
+				let woopayRedirectUrl = '';
+				if ( isLoggedIn ) {
+					woopayRedirectUrl = await this.getWooPayCheckoutUrl();
+				} else {
+					// Ensure WooPay is reachable before redirecting.
+					if ( ! ( await this.isWooPayReachable() ) ) {
+						throw new Error( 'WooPay is currently not available.' );
 					}
 
-					this.teardown();
-					// TODO: Add telemetry as to _how long_ it took to get to this step.
-					redirectTo( woopayRedirectUrl );
-				} catch ( error ) {
-					// TODO: Add telemetry as to _why_ we've short-circuited the WooPay checkout flow.
-					console.warn( error ); // eslint-disable-line no-console
-
-					this.teardown();
-					redirectTo( currTargetHref );
+					woopayRedirectUrl = await this.getWooPayMinimumSessionUrl();
 				}
-			} );
-		} );
+
+				this.teardown();
+				// TODO: Add telemetry as to _how long_ it took to get to this step.
+				redirectTo( woopayRedirectUrl );
+			} catch ( error ) {
+				// TODO: Add telemetry as to _why_ we've short-circuited the WooPay checkout flow.
+				console.warn( error ); // eslint-disable-line no-console
+
+				this.teardown();
+				redirectTo( currTargetHref );
+			}
+		};
+
+		// Bubbling phase, so WooCommerce can block checkout first: the Mini-Cart prevents it while
+		// the cart is updating, and a disabled Cart block button stops the click from propagating.
+		document.addEventListener( 'click', this.checkoutClickListener );
 	}
 
 	/**

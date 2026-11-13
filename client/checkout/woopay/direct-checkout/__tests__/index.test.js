@@ -43,20 +43,10 @@ jest.mock(
 		init: jest.fn(),
 		isWooPayThirdPartyCookiesEnabled: jest.fn(),
 		initPostMessageTimeout: jest.fn(),
-		getCheckoutButtonElements: jest.fn(),
 		isUserLoggedIn: jest.fn(),
 		maybePrefetchEncryptedSessionData: jest.fn(),
-		getClassicProceedToCheckoutButton: jest.fn(),
-		getMiniCartProceedToCheckoutButton: jest.fn(),
-		getFooterMiniCartProceedToCheckoutButton: jest.fn(),
 		addRedirectToWooPayEventListener: jest.fn(),
 		setEncryptedSessionDataAsNotPrefetched: jest.fn(),
-		redirectElements: {
-			BLOCKS_MINI_CART_PROCEED_BUTTON:
-				'a.wp-block-woocommerce-mini-cart-checkout-button-block',
-			BLOCKS_FOOTER_MINI_CART_PROCEED_BUTTON:
-				'a.wc-block-mini-cart__footer-checkout',
-		},
 	} )
 );
 
@@ -109,12 +99,11 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'calls `addRedirectToWooPayEventListener` method if third-party cookies are enabled and user is logged-in', async () => {
+	it( 'prefetches and enables the logged-in redirect if third-party cookies are enabled and user is logged-in', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 
@@ -130,14 +119,13 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		).toHaveBeenCalled();
 		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( expect.any( Array ), true );
+		).toHaveBeenCalledWith( true );
 	} );
 
-	it( 'calls `addRedirectToWooPayEventListener` method with "checkout_redirect" if third-party cookies are disabled', async () => {
+	it( 'enables the "checkout_redirect" redirect if third-party cookies are disabled', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 
@@ -153,63 +141,72 @@ describe( 'WooPay direct checkout window "load" event listener', () => {
 		).not.toHaveBeenCalled();
 		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( expect.any( Array ), false );
+		).toHaveBeenCalledWith( false );
 	} );
 } );
 
 describe( 'WooPay direct checkout "updated_cart_totals" jQuery event listener', () => {
-	const CLASSIC_PROCEED_BUTTON = document.createElement( 'a' );
-
 	beforeEach( () => {
 		jest.clearAllMocks();
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
-		WooPayDirectCheckout.getClassicProceedToCheckoutButton.mockReturnValue(
-			CLASSIC_PROCEED_BUTTON
-		);
+		jest.useFakeTimers();
 	} );
 
-	it( 're-attaches the logged-in redirect to the classic button if third-party cookies are enabled and user is logged-in', async () => {
+	afterEach( () => {
+		jest.useRealTimers();
+	} );
+
+	it( 'drops the prefetched session at once and prefetches again after the classic cart settles', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
 		fireEvent.load( window );
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
+		await flushPromises();
 		jest.clearAllMocks();
 
-		await $( document.body ).trigger( 'updated_cart_totals' );
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
+		$( document.body ).trigger( 'updated_cart_totals' );
+
+		expect(
+			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
+		).toHaveBeenCalled();
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).not.toHaveBeenCalled();
+
+		await settleCart();
 
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
-		).toHaveBeenCalled();
+		).toHaveBeenCalledTimes( 1 );
 		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( [ CLASSIC_PROCEED_BUTTON ], true );
+		).toHaveBeenCalledWith( true );
 	} );
 
-	it( 're-attaches the "checkout_redirect" redirect to the classic button if third-party cookies are disabled', async () => {
+	it( 'keeps the "checkout_redirect" redirect without checking the login if third-party cookies are disabled', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
 		fireEvent.load( window );
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
+		await flushPromises();
 		jest.clearAllMocks();
 
-		await $( document.body ).trigger( 'updated_cart_totals' );
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
+		$( document.body ).trigger( 'updated_cart_totals' );
+		await settleCart();
 
 		expect( WooPayDirectCheckout.isUserLoggedIn ).not.toHaveBeenCalled();
 		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).not.toHaveBeenCalled();
+		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( [ CLASSIC_PROCEED_BUTTON ], false );
+		).toHaveBeenCalledWith( false );
 	} );
 } );
 
 describe( 'WooPay direct checkout cart item listeners', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 		jest.useFakeTimers();
 	} );
 
@@ -223,7 +220,6 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 		await flushPromises();
@@ -246,7 +242,6 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 		await flushPromises();
@@ -267,7 +262,6 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 		await flushPromises();
@@ -293,7 +287,6 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 		await flushPromises();
@@ -391,7 +384,6 @@ describe( 'WooPay direct checkout cart change listeners', () => {
 			true
 		);
 		WooPayDirectCheckout.isUserLoggedIn.mockResolvedValue( true );
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 
 		fireEvent.load( window );
 		await flushPromises();
@@ -481,28 +473,26 @@ describe( 'WooPay direct checkout cart change listeners', () => {
 		).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'binds a checkout button that WooCommerce renders after a cart change', async () => {
-		const newButton = document.createElement( 'a' );
+	it( 'enables the redirect with the login state checked after a cart change', async () => {
 		await loadAsLoggedInShopper();
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [
-			newButton,
-		] );
 
 		document.body.dispatchEvent(
 			new CustomEvent( 'wc-blocks_added_to_cart' )
 		);
 		await settleCart();
 
+		expect( WooPayDirectCheckout.isUserLoggedIn ).toHaveBeenCalledTimes(
+			1
+		);
 		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( [ newButton ], true );
+		).toHaveBeenCalledWith( true );
 	} );
 
 	it( 'does not prefetch after a cart change when third-party cookies are disabled', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			false
 		);
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
 		fireEvent.load( window );
 		await flushPromises();
 		jest.clearAllMocks();
@@ -515,69 +505,5 @@ describe( 'WooPay direct checkout cart change listeners', () => {
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).not.toHaveBeenCalled();
-	} );
-} );
-
-describe( 'WooPay direct checkout iAPI mini-cart', () => {
-	let miniCartWidget;
-	let miniCartButton;
-	let footerButton;
-
-	beforeEach( () => {
-		jest.clearAllMocks();
-
-		// Set up iAPI mini-cart widget element.
-		miniCartWidget = document.createElement( 'div' );
-		miniCartWidget.setAttribute(
-			'data-wp-interactive',
-			'woocommerce/mini-cart'
-		);
-		document.body.appendChild( miniCartWidget );
-
-		// Set up SSR'd checkout button inside the overlay.
-		miniCartButton = document.createElement( 'a' );
-		miniCartButton.classList.add(
-			'wp-block-woocommerce-mini-cart-checkout-button-block'
-		);
-		document.body.appendChild( miniCartButton );
-
-		// Set up SSR'd footer checkout button.
-		footerButton = document.createElement( 'a' );
-		footerButton.classList.add( 'wc-block-mini-cart__footer-checkout' );
-		document.body.appendChild( footerButton );
-	} );
-
-	afterEach( () => {
-		miniCartWidget.remove();
-		miniCartButton.remove();
-		footerButton.remove();
-	} );
-
-	it( "attaches event listeners directly to SSR'd mini-cart buttons on window load", async () => {
-		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
-			false
-		);
-		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
-		WooPayDirectCheckout.getMiniCartProceedToCheckoutButton.mockReturnValue(
-			miniCartButton
-		);
-		WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton.mockReturnValue(
-			footerButton
-		);
-
-		fireEvent.load( window );
-
-		await new Promise( ( resolve ) => setImmediate( resolve ) );
-
-		// All buttons (checkout + iAPI mini-cart) are merged into a single call
-		// to avoid concurrent isUserLoggedIn races via postMessage.
-		expect(
-			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledTimes( 1 );
-
-		// Verify both mini-cart buttons are included in the single call.
-		expect(
-			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( [ miniCartButton, footerButton ], false );
 	} );
 } );
