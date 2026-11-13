@@ -598,8 +598,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 		$this->add_token_to_order( $subscription, $renewal_token );
 
-		// The renewal just charged this token with this customer, so they belong together. Renewals
-		// inherit the subscription's customer, so keeping a stale one would fail every later renewal.
+		// Copy the customer along with the token: Stripe charges a saved card only with the customer that owns it,
+		// and later renewals inherit the subscription's customer, so a stale one would fail every renewal from now on.
 		$renewal_customer_id = $this->order_service->get_customer_id_for_order( $renewal_order );
 		if ( ! empty( $renewal_customer_id ) ) {
 			$this->order_service->set_customer_id_for_order( $subscription, $renewal_customer_id );
