@@ -1597,7 +1597,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// A subscription's card change runs against the subscription, which keeps the succeeded intent of
 			// an earlier change. That stored status describes this attempt only when this attempt attached a
 			// new intent; a declined change throws before attaching one, leaving the intent id unchanged.
-			$is_earlier_card_change_intent = $this->is_changing_payment_method_for_subscription()
+			$is_earlier_card_change_intent = $this->is_changing_payment_method_for_subscription( $order )
 				&& $previous_intent_id === $this->order_service->get_intent_id_for_order( $order );
 
 			if ( ! $is_earlier_card_change_intent && Intent_Status::SUCCEEDED === $this->order_service->get_intention_status_for_order( $order ) ) {
