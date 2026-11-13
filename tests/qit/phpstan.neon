@@ -1,0 +1,16 @@
+# QIT's PHPStan run reads this file from the root of the release zip, so
+# `tasks/release.js` copies it there as `phpstan.neon`. Paths are relative to
+# the zip root. It has no effect at runtime. The dev config is the repo-root
+# phpstan.neon.
+parameters:
+    excludePaths:
+        analyse:
+            # Built on the bundled subscriptions-core, which QIT can't see
+            # because it skips vendor/. Our dev config excludes them too.
+            - includes/subscriptions
+            - includes/compat/subscriptions
+
+    ignoreErrors:
+        # Defined at runtime by WooPayments, WordPress, WooCommerce or an
+        # optional integration, so a static scan can't find them.
+        - '#^Constant (WCPAY_VERSION_NUMBER|WC_VERSION|WC_ADMIN_VERSION_NUMBER|WC_SESSION_CACHE_GROUP|LOGGED_IN_COOKIE|MAILPOET_VERSION|WC_DEPOSITS_VERSION) not found\.$#'

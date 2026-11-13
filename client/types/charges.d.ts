@@ -31,7 +31,7 @@ interface Level3Data {
 	line_items: Level3LineItem[];
 }
 
-interface ChargeRefund {
+export interface ChargeRefund {
 	balance_transaction: BalanceTransaction;
 	status?: string | null;
 }

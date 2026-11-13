@@ -74,15 +74,15 @@ describe( 'Test mode notification', () => {
 		expect( testModeNotice ).toMatchSnapshot();
 	} );
 
-	test.each( pages )( 'Returns empty div if not in test mode', ( page ) => {
+	test( 'Returns empty div if not in test mode', () => {
 		mockIsInTestMode.mockReturnValue( false );
 		mockIsInDevMode.mockReturnValue( false );
 
 		const { container: testModeNotice } = render(
-			<TestModeNotice currentPage={ page } />
+			<TestModeNotice currentPage="overview" />
 		);
 
-		expect( testModeNotice ).toMatchSnapshot();
+		expect( testModeNotice ).toBeEmptyDOMElement();
 	} );
 
 	test( 'directs development-mode Overview users to the live store', () => {

@@ -2044,9 +2044,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Updates an existing terminal location.
 	 *
-	 * @param string $location_id The id of the terminal location.
-	 * @param string $display_name The display name of the terminal location.
-	 * @param array  $address {
+	 * @param string      $location_id The id of the terminal location.
+	 * @param string|null $display_name The display name of the terminal location.
+	 * @param array|null  $address {
 	 *     Address partials.
 	 *
 	 *     @type string $country     Two-letter country code.
