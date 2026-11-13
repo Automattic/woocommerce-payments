@@ -166,8 +166,8 @@ class LoggerContext {
 		$this->set_value( 'HTTP_USER_AGENT', sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) ) );
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$this->set_value( 'REQUEST_URI', sanitize_text_field( $this->redact_url_query( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) ) ) );
-		$this->set_value( 'DOING_AJAX', defined( 'DOING_AJAX' ) && DOING_AJAX );
-		$this->set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
+		$this->set_value( 'DOING_AJAX', wp_doing_ajax() );
+		$this->set_value( 'DOING_CRON', wp_doing_cron() );
 		$this->set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
 
 		/**

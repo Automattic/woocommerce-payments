@@ -2920,7 +2920,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway = WC_Payments::get_gateway();
 		// If the gateway is not available, return an empty array.
 		// This should never happen, but better safe than sorry.
-		if ( empty( $gateway ) || ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
+		if ( ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
 			return [];
 		}
 
