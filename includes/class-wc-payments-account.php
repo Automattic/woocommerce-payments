@@ -1755,7 +1755,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					if ( $auto_start_test_drive_onboarding ) {
 						// Issue a one-time token so the Connect page only auto-starts onboarding when the server resumed setup here.
 						$auto_start_token = wp_generate_password( 32, false );
-						set_transient( self::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT, $auto_start_token, 5 * MINUTE_IN_SECONDS );
+						set_transient( $this->get_test_drive_auto_start_token_transient_key(), $auto_start_token, 5 * MINUTE_IN_SECONDS );
 
 						$this->redirect_service->redirect_to_connect_page(
 							null,
@@ -1919,14 +1919,26 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- validated against the one-time token below.
 		$provided_token = isset( $_GET['test_drive_token'] ) ? sanitize_text_field( wp_unslash( $_GET['test_drive_token'] ) ) : '';
-		$stored_token   = get_transient( self::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT );
+		$transient_key  = $this->get_test_drive_auto_start_token_transient_key();
+		$stored_token   = get_transient( $transient_key );
 		if ( empty( $provided_token ) || empty( $stored_token ) || ! hash_equals( (string) $stored_token, $provided_token ) ) {
 			return false;
 		}
 
-		delete_transient( self::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT );
+		delete_transient( $transient_key );
 
 		return true;
+	}
+
+	/**
+	 * Gets the transient key for the current user's test-drive auto-start token.
+	 *
+	 * The token is per user so that admins setting up test drive at the same time don't replace each other's token.
+	 *
+	 * @return string
+	 */
+	private function get_test_drive_auto_start_token_transient_key(): string {
+		return self::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT . '_' . get_current_user_id();
 	}
 
 	/**

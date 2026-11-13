@@ -81,6 +81,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	private $onboarding_experiment_backup;
 
 	/**
+	 * ID of a second admin created by a test, so its token transient can be cleaned up.
+	 *
+	 * @var int
+	 */
+	private $other_admin_id = 0;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -110,7 +117,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		delete_transient( WC_Payments_Account::ONBOARDING_DISABLED_TRANSIENT );
-		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT );
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT . '_1' );
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT . '_' . $this->other_admin_id );
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 		unset( $_GET );
 		unset( $_REQUEST );
@@ -125,6 +133,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_consume_test_drive_auto_start_token_requires_valid_one_time_token() {
+		wp_set_current_user( 1 );
+
 		// No flag at all: never auto-starts.
 		$this->assertFalse( $this->wcpay_account->consume_test_drive_auto_start_token() );
 
@@ -134,7 +144,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// A token that does not match the stored one does not auto-start.
 		$server_token = 'server-token';
-		set_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT, $server_token, 100 );
+		set_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT . '_1', $server_token, 100 );
 		$_GET['test_drive_token'] = 'other-token';
 		$this->assertFalse( $this->wcpay_account->consume_test_drive_auto_start_token() );
 
@@ -142,6 +152,28 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['test_drive_token'] = $server_token;
 		$this->assertTrue( $this->wcpay_account->consume_test_drive_auto_start_token() );
 		$this->assertFalse( $this->wcpay_account->consume_test_drive_auto_start_token() );
+	}
+
+	public function test_consume_test_drive_auto_start_token_is_per_user() {
+		$first_admin_token    = 'first-admin-token';
+		$other_admin_token    = 'other-admin-token';
+		$this->other_admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		set_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT . '_1', $first_admin_token, 100 );
+		set_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT . '_' . $this->other_admin_id, $other_admin_token, 100 );
+		$_GET['auto_start_test_drive_onboarding'] = 'true';
+
+		// Another admin can't use the first admin's token.
+		wp_set_current_user( $this->other_admin_id );
+		$_GET['test_drive_token'] = $first_admin_token;
+		$this->assertFalse( $this->wcpay_account->consume_test_drive_auto_start_token() );
+
+		// Each admin's own token still works, so a later setup does not replace an earlier one.
+		wp_set_current_user( 1 );
+		$this->assertTrue( $this->wcpay_account->consume_test_drive_auto_start_token() );
+
+		wp_set_current_user( $this->other_admin_id );
+		$_GET['test_drive_token'] = $other_admin_token;
+		$this->assertTrue( $this->wcpay_account->consume_test_drive_auto_start_token() );
 	}
 
 	public function test_maybe_handle_onboarding_test_drive_auto_start_redirect_carries_matching_token() {
@@ -185,7 +217,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// The redirect must carry the exact token the server stored, so the Connect page can validate it.
 		$this->assertSame(
 			$query['test_drive_token'],
-			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT )
+			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT . '_1' )
 		);
 	}
 
