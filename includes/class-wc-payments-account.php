@@ -2285,7 +2285,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		if ( get_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) ) {
 			$gateway = WC_Payments::get_gateway();
 
-			// WooPay and Link by Stripe are mutually exclusive. When a merchant already opted into Link
+			// WooPay and Link are mutually exclusive. When a merchant already opted into Link
 			// (e.g. in sandbox before going live), Link wins: the enable-by-default activation keeps WooPay
 			// off rather than overriding that choice. See #9404.
 			$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $gateway->get_upe_enabled_payment_method_ids(), true );
