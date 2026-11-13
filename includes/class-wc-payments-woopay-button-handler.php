@@ -292,7 +292,10 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Pages with a cart or checkout block can be rendered without a cart, e.g. by the block editor's REST request.
-		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! isset( WC()->cart ) ) {
+		// WooCommerce types the property as WC_Cart, but only loads the cart for frontend requests.
+		/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+		$cart = WC()->cart;
+		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && null === $cart ) {
 			return false;
 		}
 

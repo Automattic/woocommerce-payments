@@ -779,9 +779,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Pages with a cart or checkout block can be rendered without a cart, e.g. by the block editor's REST request.
-		// The cart checks below need one, and there is nothing to pay for without it.
-		if ( ( $this->is_checkout() || $this->is_cart() ) && ! isset( WC()->cart ) ) {
+		// The cart checks below need a cart, and there is nothing to pay for without one.
+		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_cart() ) {
 			return false;
 		}
 
@@ -882,12 +881,26 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Whether this request has a cart. Pages with a cart or checkout block can be rendered
+	 * without one, e.g. when the block editor loads the page through the REST API.
+	 *
+	 * @return bool
+	 */
+	private function has_cart(): bool {
+		// WooCommerce types the property as WC_Cart, but only loads the cart for frontend requests.
+		/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+		$cart = WC()->cart;
+
+		return null !== $cart;
+	}
+
+	/**
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return boolean
 	 */
 	public function has_allowed_items_in_cart() {
-		if ( ! isset( WC()->cart ) ) {
+		if ( ! $this->has_cart() ) {
 			return false;
 		}
 
