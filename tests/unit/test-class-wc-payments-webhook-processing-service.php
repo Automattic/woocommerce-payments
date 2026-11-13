@@ -777,17 +777,22 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * An order on hold waits on the payment it names. A retry with the same saved card shares its payment
 	 * method with the earlier, declined attempt, whose failure can arrive after the retry was authorized.
+	 * A note names both payments, so the merchant can tell why the failure was ignored.
 	 */
 	public function test_payment_intent_failed_leaves_an_order_on_hold_for_another_payment() {
 		$order = $this->create_order_waiting_on_a_payment( Order_Status::ON_HOLD, Intent_Status::REQUIRES_CAPTURE );
 		$this->set_up_payment_intent_failed( $order, self::LATE_INTENT_ID );
 
 		$this->webhook_processing_service->process( $this->event_body );
+		// Stripe can deliver the same event again.
+		$this->webhook_processing_service->process( $this->event_body );
 
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'on-hold', $order->get_status() );
 		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
-		$this->assertStringNotContainsString( 'pi_late_payment', $this->get_order_notes_text( $order ) );
+		$notes = $this->get_order_notes_text( $order );
+		$this->assertSame( 1, substr_count( $notes, 'A WooPayments payment <code>pi_late_payment</code> failed, but this order is on hold for payment <code>pi_order_payment</code>, so the order was not updated.' ) );
+		$this->assertStringNotContainsString( 'failed</strong>', $notes );
 	}
 
 	/**
@@ -829,7 +834,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->webhook_processing_service->process( $this->event_body );
 
-		$this->assertSame( 'on-hold', wc_get_order( $order->get_id() )->get_status() );
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertStringContainsString( 'A WooPayments payment <code>pi_late_payment</code> failed, but this order is not on hold for it, so the order was not updated.', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
