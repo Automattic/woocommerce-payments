@@ -602,7 +602,18 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// and later renewals inherit the subscription's customer, so a stale one would fail every renewal from now on.
 		$renewal_customer_id = $this->order_service->get_customer_id_for_order( $renewal_order );
 		if ( ! empty( $renewal_customer_id ) ) {
+			$subscription_customer_id = $this->order_service->get_customer_id_for_order( $subscription );
 			$this->order_service->set_customer_id_for_order( $subscription, $renewal_customer_id );
+			if ( $subscription_customer_id !== $renewal_customer_id ) {
+				$subscription->add_order_note(
+					sprintf(
+						/* translators: %1$s: previous Stripe customer ID, %2$s: new Stripe customer ID. */
+						__( 'WooPayments changed this subscription\'s Stripe customer ID from %1$s to %2$s to match its payment method.', 'woocommerce-payments' ),
+						esc_html( '' === $subscription_customer_id ? __( '(none)', 'woocommerce-payments' ) : $subscription_customer_id ),
+						esc_html( $renewal_customer_id )
+					)
+				);
+			}
 		}
 	}
 
