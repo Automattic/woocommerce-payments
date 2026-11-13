@@ -28,7 +28,7 @@ class Session_Rate_Limiter {
 	 *
 	 * @type string
 	 */
-	const ORDER_META_KEY_DECLINED_CARD_REGISTRY = '_' . self::SESSION_KEY_DECLINED_CARD_REGISTRY;
+	const DECLINED_CARD_REGISTRY_META_KEY = '_' . self::SESSION_KEY_DECLINED_CARD_REGISTRY;
 
 	/**
 	 * Seconds an event stays in an order's registry.
@@ -98,11 +98,14 @@ class Session_Rate_Limiter {
 		// The order keeps its own count, so attempts to pay it are counted across sessions. Each decline gets
 		// a row of its own: parallel attempts each add a row, where rewriting one list would drop the others' declines.
 		$order->add_meta_data( $this->get_order_meta_key(), (string) time() );
-		$order->save();
+		$order->save_meta_data();
 	}
 
 	/**
 	 * Checks if the rate limiter is enabled for the current session or, when given, for the order.
+	 *
+	 * With an order, it reloads the order's meta from the database, so pass one without unsaved meta changes.
+	 * It also deletes the order's expired declines, and clears its registry once the delay is over.
 	 *
 	 * @param WC_Order|null $order The order being paid, if any.
 	 *
@@ -167,7 +170,7 @@ class Session_Rate_Limiter {
 		}
 
 		$order->delete_meta_data( $this->get_order_meta_key() );
-		$order->save();
+		$order->save_meta_data();
 		return false;
 	}
 
