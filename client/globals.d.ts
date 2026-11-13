@@ -48,6 +48,7 @@ declare global {
 		devMode: boolean;
 		devModeReason?: string;
 		isJetpackConnected: boolean;
+		autoStartTestDriveOnboarding: boolean;
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;

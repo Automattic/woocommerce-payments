@@ -179,6 +179,19 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 		$this->assertTrue( isset( $context['WP_CLI'] ) );
 	}
 
+	public function test_logger_context_records_ajax_and_cron_requests() {
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_doing_cron', '__return_true' );
+
+		$context = $this->sut->get_context();
+
+		remove_filter( 'wp_doing_ajax', '__return_true' );
+		remove_filter( 'wp_doing_cron', '__return_true' );
+
+		$this->assertSame( '1', $context['DOING_AJAX'] );
+		$this->assertSame( '1', $context['DOING_CRON'] );
+	}
+
 	public function test_logger_context_logs_user_id_instead_of_login() {
 		$user_id = self::factory()->user->create( [ 'user_login' => 'jane.doe' ] );
 		wp_set_current_user( $user_id );

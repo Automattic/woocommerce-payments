@@ -31,6 +31,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
 	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
 	const ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT       = 'test_drive_account_settings_for_live_account';
+	const ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT      = 'wcpay_test_drive_auto_start_token';
 	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
@@ -1752,19 +1753,24 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					// If we have the auto_start_test_drive_onboarding flag, we redirect to the Connect page
 					// to let the JS logic take control and orchestrate things.
 					if ( $auto_start_test_drive_onboarding ) {
+						// Issue a one-time token so the Connect page only auto-starts onboarding when the server resumed setup here.
+						$auto_start_token = wp_generate_password( 32, false );
+						set_transient( $this->get_test_drive_auto_start_token_transient_key(), $auto_start_token, 5 * MINUTE_IN_SECONDS );
+
 						$this->redirect_service->redirect_to_connect_page(
 							null,
 							$from, // Carry over `from` since we are doing a short-circuit.
 							[
-								'promo'        => ! empty( $incentive_id ) ? $incentive_id : false,
-								'test_drive'   => 'true',
+								'promo'            => ! empty( $incentive_id ) ? $incentive_id : false,
+								'test_drive'       => 'true',
 								'auto_start_test_drive_onboarding' => 'true', // This is critical.
+								'test_drive_token' => $auto_start_token,
 								// These are starting capabilities for the account.
 								// They are collected by the payment method step of the
 								// WC Payments settings page native onboarding experience.
-								'capabilities' => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
-								'test_mode'    => $should_onboard_in_test_mode ? 'true' : false,
-								'source'       => $onboarding_source,
+								'capabilities'     => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
+								'test_mode'        => $should_onboard_in_test_mode ? 'true' : false,
+								'source'           => $onboarding_source,
 								'redirect_to_settings_page' => $redirect_to_settings_page ? 'true' : false,
 							]
 						);
@@ -1894,6 +1900,45 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			return;
 		}
+	}
+
+	/**
+	 * Consumes the one-time token that lets the Connect page auto-start test-drive onboarding.
+	 *
+	 * The server issues the token when it redirects back to the Connect page to resume setup, so
+	 * auto-start depends on a validated server-issued token rather than the URL parameter by itself.
+	 * A valid token is deleted on use, so only the first call that presents it returns true.
+	 *
+	 * @return bool Whether the request carried a valid token, which this call consumed.
+	 */
+	public function consume_test_drive_auto_start_token(): bool {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- validated against the one-time token below.
+		if ( empty( $_GET['auto_start_test_drive_onboarding'] ) || 'true' !== $_GET['auto_start_test_drive_onboarding'] ) {
+			return false;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- validated against the one-time token below.
+		$provided_token = isset( $_GET['test_drive_token'] ) ? sanitize_text_field( wp_unslash( $_GET['test_drive_token'] ) ) : '';
+		$transient_key  = $this->get_test_drive_auto_start_token_transient_key();
+		$stored_token   = get_transient( $transient_key );
+		if ( empty( $provided_token ) || empty( $stored_token ) || ! hash_equals( (string) $stored_token, $provided_token ) ) {
+			return false;
+		}
+
+		delete_transient( $transient_key );
+
+		return true;
+	}
+
+	/**
+	 * Gets the transient key for the current user's test-drive auto-start token.
+	 *
+	 * The token is per user so that admins setting up test drive at the same time don't replace each other's token.
+	 *
+	 * @return string
+	 */
+	private function get_test_drive_auto_start_token_transient_key(): string {
+		return self::ONBOARDING_TEST_DRIVE_AUTO_START_TOKEN_TRANSIENT . '_' . get_current_user_id();
 	}
 
 	/**
@@ -2875,7 +2920,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway = WC_Payments::get_gateway();
 		// If the gateway is not available, return an empty array.
 		// This should never happen, but better safe than sorry.
-		if ( empty( $gateway ) || ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
+		if ( ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
 			return [];
 		}
 

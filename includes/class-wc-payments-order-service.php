@@ -1153,12 +1153,12 @@ class WC_Payments_Order_Service {
 	 * Set the payment metadata for payment transaction id.
 	 *
 	 * @param  mixed       $order The order.
-	 * @param  string|null $payment_transaction_id The value to be set.
+	 * @param  string|null $payment_transaction_id The value to be set. Null leaves the order unchanged.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_payment_transaction_id_for_order( $order, $payment_transaction_id ) {
-		if ( ! isset( $payment_transaction_id ) || null === $payment_transaction_id ) {
+		if ( null === $payment_transaction_id ) {
 			return;
 		}
 		$order = $this->get_order( $order );
@@ -1170,12 +1170,12 @@ class WC_Payments_Order_Service {
 	 * Set the payment metadata for risk level.
 	 *
 	 * @param  mixed       $order      The order.
-	 * @param  string|null $risk_level The value to be set.
+	 * @param  string|null $risk_level The value to be set. Null leaves the order unchanged.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_charge_risk_level_for_order( $order, $risk_level ) {
-		if ( ! isset( $risk_level ) || null === $risk_level ) {
+		if ( null === $risk_level ) {
 			return;
 		}
 		$order = $this->get_order( $order );
@@ -2818,7 +2818,7 @@ class WC_Payments_Order_Service {
 			),
 			$formatted_amount,
 			'WooPayments',
-			$intent_id ?? $charge_id,
+			$intent_id,
 			$transaction_url
 		);
 
