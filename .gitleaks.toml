@@ -1,0 +1,11 @@
+title = "Gitleaks configuration for woocommerce-payments"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "REST API docs use placeholder consumer_key:consumer_secret credentials in curl examples"
+targetRules = ["curl-auth-user"]
+paths = [
+  '''(^|/)docs/rest-api/source/includes/wp-api-v3/.*\.md$''',
+]

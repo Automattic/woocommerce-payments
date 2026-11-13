@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improve how WooPayments handles the WooPay flag on orders and the order confirmation page.

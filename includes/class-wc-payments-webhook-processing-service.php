@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Get_Intention;
@@ -230,7 +231,7 @@ class WC_Payments_Webhook_Processing_Service {
 				$this->process_webhook_payment_intent_succeeded( $event_body );
 				break;
 			case 'payment_intent.canceled':
-				$this->process_webhook_payment_intent_canceled( $event_body );
+				$this->process_webhook_payment_intent_canceled();
 				break;
 			case 'payment_intent.amount_capturable_updated':
 				$this->process_webhook_payment_intent_amount_capturable_updated( $event_body );
@@ -371,6 +372,10 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_expired_authorization( $event_body ) {
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
@@ -379,6 +384,13 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+		if ( ! $order ) {
+			$order = $this->wcpay_db->order_from_intent_id( (string) ( $event_object['payment_intent'] ?? '' ) );
+			// Nothing for this webhook to change, and an error would only make the server send it again.
+			if ( $order instanceof WC_Order && ! $this->is_order_waiting_for_expired_authorization( $order ) ) {
+				return;
+			}
+		}
 		if ( ! $order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
@@ -390,8 +402,29 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		// Get the intent_id and then its status.
 		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
+
+		if ( 0 !== strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
+			$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+			$note            = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the ID of a WooPayments payment, %2: payment details URL. */
+					__( 'A WooPayments authorization (<a>%1$s</a>) expired. This order now uses another payment method, so its status was not changed.', 'woocommerce-payments' ),
+					[ 'a' => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>' ]
+				),
+				esc_html( WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ) ),
+				$transaction_url
+			);
+			if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
+				$order->add_order_note( $note );
+			}
+			// WooPayments took no money, but the order screen shows the fee once the status leaves requires_capture.
+			$order->delete_meta_data( WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY );
+			$order->delete_meta_data( '_wcpay_net' );
+			// Stripe cancels a payment when its authorization expires. Storing that spares a request when the order is completed.
+			$this->order_service->set_intention_status_for_order( $order, Intent_Status::CANCELED );
+			return;
+		}
 
 		$request = Get_Intention::create( $intent_id );
 		$request->set_hook_args( $order );
@@ -399,22 +432,37 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$intent_status = $intent->get_status();
 
+		// Stored only after the request: if it fails, the retry must still find the order by its intent and check it.
+		if ( '' === $this->order_service->get_charge_id_for_order( $order ) ) {
+			$this->order_service->set_charge_id_for_order( $order, $charge_id );
+		}
+
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
 		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
+	}
 
-		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+	/**
+	 * Checks whether an order found by its intent still waits for the payment whose authorization expired.
+	 *
+	 * @param WC_Order $order The order found by the intent of the expired charge.
+	 *
+	 * @return bool
+	 */
+	private function is_order_waiting_for_expired_authorization( WC_Order $order ): bool {
+		// The charge lookup already failed, so a stored charge ID belongs to another payment.
+		if ( '' !== $this->order_service->get_charge_id_for_order( $order ) ) {
+			return false;
+		}
+
+		return $order->has_status( [ Order_Status::ON_HOLD, Order_Status::PENDING ] );
 	}
 
 	/**
 	 * Process webhook for a payment intent canceled event.
 	 *
-	 * @param array $_unused_event_body The event that triggered the webhook.
-	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_canceled( $_unused_event_body ) {
+	private function process_webhook_payment_intent_canceled() {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
@@ -423,14 +471,85 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent amount capturable updated event.
 	 *
-	 * @param array $_unused_event_body The event that triggered the webhook.
+	 * Puts a pending order on hold once its payment is authorized. After 3DS, the browser
+	 * may never report the result, and Hold stock would then cancel the order and void the authorization.
+	 * A failed order is retried without leaving that status on the classic checkout and the order-pay page,
+	 * so it is put on hold too, as the succeeded webhook completes it with automatic capture.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
 	 *
 	 * @return void
+	 *
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
-	private function process_webhook_payment_intent_amount_capturable_updated( $_unused_event_body ) {
+	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		if ( Intent_Status::REQUIRES_CAPTURE !== ( $event_object['status'] ?? null ) ) {
+			return;
+		}
+
+		// In-person payments are always captured manually and their own flow updates the order.
+		$payment_method_type = $event_object['charges']['data'][0]['payment_method_details']['type'] ?? null;
+		if ( Payment_Method::CARD_PRESENT === $payment_method_type || Payment_Method::INTERAC_PRESENT === $payment_method_type ) {
+			return;
+		}
+
+		// Authorizations without an order, such as ones created outside of WooCommerce, only need the cache cleared.
+		try {
+			$order = $this->get_order_from_event_body( $event_body );
+		} catch ( Invalid_Payment_Method_Exception $e ) {
+			return;
+		}
+
+		if ( ! $order ) {
+			return;
+		}
+
+		if ( $this->skip_superseded_attempt(
+			$order,
+			$event_object,
+			! $order->is_paid()
+				/* translators: %1: the ID of a WooPayments payment. */
+				? __( 'A WooPayments payment <code>%1$s</code> was authorized after this order was switched to another payment method, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
+				/* translators: %1: the ID of a WooPayments payment. */
+				: __( 'A WooPayments payment <code>%1$s</code> was authorized after this order was paid with another payment method, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
+		) ) {
+			return;
+		}
+
+		if ( ! $order->has_status( [ Order_Status::PENDING, Order_Status::FAILED ] ) ) {
+			return;
+		}
+
+		// Only the payment the order is waiting on moves it on, as when the browser reports it. An earlier attempt's
+		// 3DS completed after a retry would otherwise replace that payment, whose own return would then fail.
+		// A retry's event can also arrive before the checkout request saves the retry on the order, which then
+		// updates the order itself, so the note does not claim the authorization is lost.
+		$intent_id         = (string) ( $event_object['id'] ?? '' );
+		$current_intent_id = $this->order_service->get_intent_id_for_order( $order );
+		if ( '' !== $current_intent_id && $current_intent_id !== $intent_id ) {
+			$order->add_order_note(
+				sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the ID of the authorized WooPayments payment, %2: the ID of the payment the order is waiting on. */
+						__( 'A WooPayments payment <code>%1$s</code> was authorized, but this order is waiting on payment <code>%2$s</code>, so the order was not updated. Unless the order is later updated with payment <code>%1$s</code>, its authorization is not captured and expires on its own.', 'woocommerce-payments' ),
+						[ 'code' => '<code>' ]
+					),
+					$intent_id,
+					$current_intent_id
+				)
+			);
+			return;
+		}
+
+		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+		$this->order_service->attach_intent_info_to_order( $order, $payment_intent );
+		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 	}
 
 	/**
@@ -457,9 +576,11 @@ class WC_Payments_Webhook_Processing_Service {
 		];
 
 		// BNPL methods are not actionable here: their failures are handled when the customer
-		// returns from the payment provider's page, and the order is left pending for a retry.
-		// But if the customer abandons the payment (e.g. the provider's session expires), no
-		// other flow records the failure, so note it without changing the order status.
+		// returns from the payment provider's page, which leaves the order pending for a retry
+		// or marks it failed, recording the same note unless one exists. For non-retryable declines
+		// that flow adds no note to an already failed order, and no other flow records the failure if
+		// the customer abandons the payment (e.g. the provider's session expires), so note it without
+		// changing the order status.
 		if ( in_array( $payment_method_type, Payment_Method::BNPL_PAYMENT_METHODS, true ) ) {
 			$this->maybe_add_bnpl_payment_failure_note( $event_body, $last_payment_error, $charge_id );
 		}
@@ -494,10 +615,10 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Adds an order note for a failed BNPL payment, without changing the order status.
 	 *
-	 * BNPL payment methods leave the order pending so the customer can retry with a different
-	 * payment method, and their failures are otherwise only handled when the customer returns
-	 * from the payment provider's page. If the customer abandons the payment (e.g. the
-	 * provider's session expires), this note is the only record of the failure.
+	 * BNPL failures are otherwise only handled when the customer returns from the payment
+	 * provider's page, which leaves the order pending for a retry or fails it for other
+	 * declines. If the customer abandons the payment (e.g. the provider's session expires),
+	 * this note is the only record of the failure.
 	 *
 	 * @param array  $event_body         The event that triggered the webhook.
 	 * @param array  $last_payment_error The last payment error of the intent.
@@ -557,6 +678,30 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$payment_method_id = $this->get_webhook_payment_method_id( $charges_data[0]['payment_method'] ?? $event_object['payment_method'] ?? null );
 		if ( ! $order ) {
+			return;
+		}
+
+		// The takeover cancels a superseded attempt still waiting for 3DS, but that fails once the shopper finishes
+		// 3DS. The order keeps its status, since the other gateway may still be taking its own payment, and some,
+		// such as WooCommerce Stripe, don't record a payment on an order on hold. Instead, the order is kept out of
+		// WooCommerce's unpaid order cancel, which would otherwise leave this payment on a cancelled order.
+		// A redelivered event for a payment already recorded on the order would only repeat its note.
+		if ( $intent_id === (string) $order->get_meta( WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY ) ) {
+			return;
+		}
+
+		if ( $this->skip_superseded_attempt(
+			$order,
+			$event_object,
+			! $order->is_paid()
+				/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
+				? __( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was switched to another payment method, so the order was not updated. If that payment method has paid or authorized this order, refund this payment. If not, this is the only payment for this order: keep or refund it.', 'woocommerce-payments' )
+				/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
+				: __( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was paid with another payment method, so the order was not updated. Check whether the payment needs a refund.', 'woocommerce-payments' ),
+			$charge_id
+		) ) {
+			$order->update_meta_data( WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY, $intent_id );
+			$order->save_meta_data();
 			return;
 		}
 
@@ -630,9 +775,12 @@ class WC_Payments_Webhook_Processing_Service {
 			$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
 		}
 
-		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
-		$this->ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id );
-		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
+		// The invoice.paid handler settles Stripe Billing renewal orders, after checking the invoice covers the order total.
+		if ( empty( $event_object['invoice'] ) ) {
+			$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+			$this->ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id );
+			$this->order_service->update_order_status_from_intent( $order, $payment_intent );
+		}
 
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		// Send the customer a card reader receipt if it's an in person payment type.
@@ -1014,6 +1162,27 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function has_webhook_property( $items, $key ) {
 		return isset( $items[ $key ] );
+	}
+
+	/**
+	 * Leaves the order alone when the event's intent belongs to a WooPayments attempt from before another
+	 * gateway took the order over, and notes why. Payments started later, such as in person, go through.
+	 *
+	 * @param WC_Order $order        The order the event resolved to.
+	 * @param array    $event_object The intent in the event.
+	 * @param string   $message      The translated note, with the intent ID in `<code>%1$s</code>`.
+	 * @param string   ...$note_args More IDs the note names, from `%2$s` on.
+	 *
+	 * @return bool Whether the event was skipped.
+	 */
+	private function skip_superseded_attempt( WC_Order $order, array $event_object, string $message, string ...$note_args ): bool {
+		$intent_id = (string) ( $event_object['id'] ?? '' );
+		if ( ! $this->order_service->is_intent_from_superseded_attempt( $order, $intent_id, (int) ( $event_object['created'] ?? 0 ) ) ) {
+			return false;
+		}
+
+		$order->add_order_note( sprintf( WC_Payments_Utils::esc_interpolated_html( $message, [ 'code' => '<code>' ] ), $intent_id, ...$note_args ) );
+		return true;
 	}
 
 	/**

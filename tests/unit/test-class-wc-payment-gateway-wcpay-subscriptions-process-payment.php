@@ -12,6 +12,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\Session_Rate_Limiter;
@@ -599,6 +600,36 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 	}
 
+	public function test_card_change_counts_declines_in_the_session_only() {
+		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
+
+		$_GET = [ 'change_payment_method' => 10 ];
+
+		$this->mock_wcs_order_contains_subscription( false );
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Your card was declined.', 'card_declined', 402 ) );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->with( null );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'bump' )
+			->with( null );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
 	public function test_card_is_saved_when_updating_subscription_using_saved_payment_method() {
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
@@ -626,7 +657,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		// A card change saves the card but must not complete the order, so it stays pending.
+		$this->assertEquals( 'pending', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
 		// Expect add token to order to be called, so it can be reused in renewals.
 		// This is an integration test, different scenarios for add_token_to_order method

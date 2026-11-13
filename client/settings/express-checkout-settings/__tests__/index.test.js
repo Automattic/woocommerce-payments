@@ -60,7 +60,7 @@ PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 jest.mock( '@stripe/react-stripe-js', () => ( {
 	Elements: jest.fn().mockReturnValue( null ),
 } ) );
-jest.mock( '@stripe/stripe-js', () => ( {
+jest.mock( '@stripe/stripe-js/pure', () => ( {
 	loadStripe: jest.fn().mockReturnValue( null ),
 } ) );
 
@@ -193,7 +193,7 @@ describe( 'ExpressCheckoutSettings', () => {
 		);
 
 		expect(
-			screen.queryByRole( 'heading', {
+			screen.queryByRole( 'combobox', {
 				name: 'Call to action',
 			} )
 		).not.toBeInTheDocument();

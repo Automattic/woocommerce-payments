@@ -18,7 +18,11 @@ import PaymentTransactionBreakdown from '../transaction-breakdown';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
-import { getBankName, getDisputeOrdinals } from 'wcpay/utils/charge';
+import {
+	getBankName,
+	getDisputeOrdinals,
+	getPartialCaptureReversalTransactionIds,
+} from 'wcpay/utils/charge';
 import { getKlarnaLossReasons } from 'wcpay/disputes/utils';
 
 interface PaymentDetailsProps {
@@ -43,7 +47,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	// The refund modal (and the charge-derived props it needs) lives in the
 	// summary card; the summary registers an opener here so the timeline's
 	// early-fraud-warning "Refund this payment" CTA can trigger it.
-	const refundModalOpener = useRef< () => void >();
+	const refundModalOpener = useRef< ( () => void ) | undefined >( undefined );
 	const registerRefundOpener = useCallback( ( open: () => void ) => {
 		refundModalOpener.current = open;
 	}, [] );
@@ -98,6 +102,9 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 						disputeOrder={ disputeOrder }
 						onRefund={ () => refundModalOpener.current?.() }
 						klarnaLossReasons={ klarnaLossReasons }
+						releasedTransactionIds={ getPartialCaptureReversalTransactionIds(
+							charge
+						) }
 					/>
 				</ErrorBoundary>
 			) }

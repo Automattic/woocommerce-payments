@@ -16,6 +16,7 @@ use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
@@ -145,7 +146,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * For credit cards, returns "{title} ending in {last4}".
 	 * For Amazon Pay, returns "{title} ({redacted_email})".
-	 * For Stripe Link, returns "{title} ({redacted_email})".
+	 * For Link, returns "{title} ({redacted_email})".
 	 * For other tokens, returns the default title.
 	 *
 	 * @param WC_Payment_Token|null $token   The payment token.
@@ -184,8 +185,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			// Avoid duplication if the title already contains the email.
 			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
 				// Link uses the card gateway, so $default_title is "Card". Use the Link brand name instead,
-				// which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
-				// translators: 1: payment method (Stripe Link or Onelink), 2: redacted customer email.
+				// which is country-aware ("Onelink" for GB, "Link" elsewhere).
+				// translators: 1: payment method (Link or Onelink), 2: redacted customer email.
 				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), LinkDefinition::get_title( $this->get_account_country() ), $email );
 			}
 		}
@@ -597,6 +598,24 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 		$this->add_token_to_order( $subscription, $renewal_token );
+
+		// Copy the customer along with the token: Stripe charges a saved card only with the customer that owns it,
+		// and later renewals inherit the subscription's customer, so a stale one would fail every renewal from now on.
+		$renewal_customer_id = $this->order_service->get_customer_id_for_order( $renewal_order );
+		if ( ! empty( $renewal_customer_id ) ) {
+			$subscription_customer_id = $this->order_service->get_customer_id_for_order( $subscription );
+			$this->order_service->set_customer_id_for_order( $subscription, $renewal_customer_id );
+			if ( $subscription_customer_id !== $renewal_customer_id ) {
+				$subscription->add_order_note(
+					sprintf(
+						/* translators: %1$s: previous Stripe customer ID, %2$s: new Stripe customer ID. */
+						__( 'WooPayments changed this subscription\'s Stripe customer ID from %1$s to %2$s to match its payment method.', 'woocommerce-payments' ),
+						esc_html( '' === $subscription_customer_id ? __( '(none)', 'woocommerce-payments' ) : $subscription_customer_id ),
+						esc_html( $renewal_customer_id )
+					)
+				);
+			}
+		}
 	}
 
 	/**
@@ -773,8 +792,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Override the payment method display for Link subscriptions in all contexts.
 	 *
-	 * Stripe Link uses the card gateway (woocommerce_payments), so the gateway title is "Card".
-	 * This replaces it with the Link token's display name (e.g. "Stripe Link (r***@r***.com)").
+	 * Link uses the card gateway (woocommerce_payments), so the gateway title is "Card".
+	 * This replaces it with the Link token's display name (e.g. "Link (r***@r***.com)").
 	 *
 	 * @param string          $payment_method_to_display Default payment method to display.
 	 * @param WC_Subscription $subscription              Subscription object.
@@ -1089,8 +1108,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				}
 				if ( ! empty( $payment_method['link']['email'] ) ) {
 					// Link uses the card gateway, so $new_payment_method_title is "Card". Use the Link brand name
-					// instead, which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
-					// translators: 1: payment method (Stripe Link or Onelink), 2: customer email.
+					// instead, which is country-aware ("Onelink" for GB, "Link" elsewhere).
+					// translators: 1: payment method (Link or Onelink), 2: customer email.
 					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), LinkDefinition::get_title( $this->get_account_country() ), $payment_method['link']['email'] );
 				}
 			} catch ( Exception $e ) {
@@ -1119,6 +1138,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		if ( is_null( $order ) ) {
 			$order = wc_get_order( $order_id );
+		}
+
+		// An order paid with another gateway can still have cards attached by an earlier WooPayments attempt.
+		// Copying one back would undo WC_Payments_Order_Service::maybe_remove_payment_details_for_other_gateway().
+		if ( ! $order || 0 !== strpos( (string) $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
+			return;
 		}
 
 		$payment_token = $this->get_payment_token( $order );
@@ -1227,6 +1252,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY,
 			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
 			'_wcpay_net',
+			// These describe one takeover of this order by another gateway, not a payment to carry to a
+			// subscription or its renewals.
+			WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY,
+			WC_Payments_Order_Service::SUPERSEDED_INTENT_IDS_META_KEY,
+			WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY,
+			// Declines count against the order they happened on. Copied, they would limit renewals after one decline.
+			Session_Rate_Limiter::DECLINED_CARD_REGISTRY_META_KEY,
 		];
 	}
 

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Sync the Stripe customer ID from the successful renewal back to the subscription when updating the failing payment method, keeping the subscription's token owner in sync.

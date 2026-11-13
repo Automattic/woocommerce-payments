@@ -532,7 +532,9 @@ class WC_Payments_Order_Success_Page {
 		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		$order     = wc_get_order( $order_id );
 
-		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+		// The flag can outlive the attempt that set it, so also require a WooPayments charge or authorization.
+		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) || $order->needs_payment()
+			|| ! in_array( $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ), [ Intent_Status::SUCCEEDED, Intent_Status::REQUIRES_CAPTURE ], true ) ) {
 			return $value;
 		}
 
@@ -553,8 +555,8 @@ class WC_Payments_Order_Success_Page {
 	 * the express wallet at payment time, which stamps it on the order and trips core's guest email
 	 * verification even though the shopper just paid. We waive it only for the session that actually
 	 * completed the payment: at payment time we stored the paid intent id in the WC session, and here
-	 * we waive verification only when it matches the order's intent. A leaked order key in another
-	 * browser carries no such session, so it still has to verify.
+	 * we waive verification only when it matches the order's intent and was stored in this same session.
+	 * A leaked order key in another browser carries no such session, so it still has to verify.
 	 * See https://github.com/woocommerce/woocommerce/issues/48540
 	 *
 	 * @param bool|mixed     $required Whether email verification is required.
@@ -573,6 +575,11 @@ class WC_Payments_Order_Success_Page {
 
 		$session = WC()->session;
 		if ( null === $session ) {
+			return $required;
+		}
+
+		// The paid intent is only used in the session that stored it.
+		if ( $session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_OWNER_KEY ) !== (string) $session->get_customer_id() ) {
 			return $required;
 		}
 

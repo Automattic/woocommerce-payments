@@ -39,11 +39,18 @@ interface CurrencyConfig {
 	charm: number;
 }
 
+interface GeolocationNotice {
+	country_name: string;
+	currency_name: string;
+	id: string;
+}
+
 interface PublicConfig {
 	default_currency: string;
 	selected_currency: string;
 	charm_only_products: boolean;
 	currencies: Record< string, CurrencyConfig >;
+	geolocation_notice?: GeolocationNotice | null;
 }
 
 interface SessionCacheEntry {
@@ -139,6 +146,7 @@ class WCPayAsyncPriceRenderer {
 
 			this.convertAllPrices();
 			this.syncCurrencySwitchers();
+			this.showGeolocationNotice();
 			this.observeDynamicContent();
 			this.listenToWooCommerceEvents();
 		} catch ( error ) {
@@ -635,6 +643,60 @@ class WCPayAsyncPriceRenderer {
 				select.value = selectedCode;
 			}
 		} );
+	}
+
+	/**
+	 * Show the "We noticed you're visiting from…" notice.
+	 *
+	 * The cached page only carries a <template> with empty slots for the
+	 * country and currency names. WooCommerce's store notice script binds on
+	 * DOM ready, usually before the config arrives, so this handles show and
+	 * dismiss itself. It reuses WooCommerce's cookie, so a dismissal here also
+	 * hides the notice the server prints once the visitor has a session.
+	 */
+	showGeolocationNotice(): void {
+		const notice = this.config?.geolocation_notice;
+		const template = document.getElementById( 'wcpay-geolocation-notice' );
+		if ( ! notice || ! ( template instanceof HTMLTemplateElement ) ) {
+			return;
+		}
+
+		const cookieName = `store_notice${ notice.id }`;
+		const isDismissed = document.cookie
+			.split( ';' )
+			.some( ( cookie ) => cookie.trim() === `${ cookieName }=hidden` );
+		const element = template.content.firstElementChild?.cloneNode( true );
+		if ( isDismissed || ! ( element instanceof HTMLElement ) ) {
+			return;
+		}
+
+		element.dataset.noticeId = notice.id;
+		element
+			.querySelectorAll( '[data-wcpay-notice-country]' )
+			.forEach( ( slot ) => ( slot.textContent = notice.country_name ) );
+		element
+			.querySelectorAll( '[data-wcpay-notice-currency]' )
+			.forEach( ( slot ) => ( slot.textContent = notice.currency_name ) );
+
+		const dismiss = ( event: Event ) => {
+			event.preventDefault();
+			document.cookie = `${ cookieName }=hidden; path=/`;
+			element.style.display = 'none';
+		};
+		const dismissLink = element.querySelector(
+			'.woocommerce-store-notice__dismiss-link'
+		);
+		dismissLink?.addEventListener( 'click', dismiss );
+		dismissLink?.addEventListener( 'keydown', ( event ) => {
+			if ( [ 'Enter', ' ' ].includes( ( event as KeyboardEvent ).key ) ) {
+				dismiss( event );
+			}
+		} );
+
+		document.body.appendChild( element );
+		// WooCommerce's stylesheet hides the notice by default, so clearing
+		// the inline style isn't enough.
+		element.style.display = 'block';
 	}
 
 	/**

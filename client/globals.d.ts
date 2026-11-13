@@ -42,11 +42,13 @@ declare global {
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
+		stripeJsUrl?: string;
 		testMode: boolean;
 		testModeOnboarding: boolean;
 		devMode: boolean;
 		devModeReason?: string;
 		isJetpackConnected: boolean;
+		autoStartTestDriveOnboarding: boolean;
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;
@@ -121,13 +123,6 @@ declare global {
 		isMultiCurrencyEnabled: string;
 		errorMessage: string;
 		onBoardingDisabled: boolean;
-		connectIncentive?: {
-			id: string;
-			description: string;
-			tc_url: string;
-			task_header_content?: string;
-			task_badge?: string;
-		};
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
@@ -273,6 +268,7 @@ declare global {
 		initWooPayNonce: string;
 		genericErrorMessage: string;
 		fraudServices: unknown[];
+		stripeJsUrl: string;
 		features: string[];
 		forceNetworkSavedCards: boolean;
 		locale: string;
@@ -290,6 +286,7 @@ declare global {
 		wcpayVersionNumber: string;
 		woopaySignatureNonce: string;
 		woopaySessionNonce: string;
+		woopaySaveUserNonce: string;
 		woopayMerchantId: string;
 		icon: string;
 		woopayMinimumSessionData: Record< string, unknown >;

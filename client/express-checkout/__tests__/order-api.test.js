@@ -141,6 +141,69 @@ describe( 'ExpressCheckoutOrderApi', () => {
 		);
 	} );
 
+	describe( 'when the order has no shipping last name', () => {
+		const ORDER_BILLING_ADDRESS = {
+			first_name: 'Patrice',
+			last_name: '-',
+			address_1: '1 High Street',
+			city: 'London',
+			postcode: 'N1 1AA',
+			country: 'GB',
+			email: 'patrice@example.com',
+			phone: '5551234567',
+		};
+
+		const placeOrderWithShippingAddress = async ( shippingAddress ) => {
+			const api = new ExpressCheckoutOrderApi( {
+				orderId: '1',
+				key: 'key_123',
+			} );
+			apiFetch.mockResolvedValueOnce( {
+				billing_address: ORDER_BILLING_ADDRESS,
+				shipping_address: shippingAddress,
+			} );
+			await api.getCart();
+			await api.placeOrder( {} );
+
+			return apiFetch.mock.lastCall[ 0 ].data.shipping_address;
+		};
+
+		it.each( [
+			[ 'empty', '' ],
+			[ 'blank', '  ' ],
+		] )(
+			'sends "-" when the saved last name is %s',
+			async ( _, lastName ) => {
+				const shippingAddress = await placeOrderWithShippingAddress( {
+					first_name: 'Patrice',
+					last_name: lastName,
+					address_1: '1 High Street',
+					city: 'London',
+					postcode: 'N1 1AA',
+					country: 'GB',
+					phone: '5551234567',
+				} );
+
+				expect( shippingAddress.first_name ).toBe( 'Patrice' );
+				expect( shippingAddress.last_name ).toBe( '-' );
+			}
+		);
+
+		it( 'leaves a shipping address without a country unchanged', async () => {
+			const shippingAddress = await placeOrderWithShippingAddress( {
+				first_name: '',
+				last_name: '',
+				address_1: '',
+				city: '',
+				postcode: '',
+				country: '',
+				phone: '',
+			} );
+
+			expect( shippingAddress.last_name ).toBe( '' );
+		} );
+	} );
+
 	it( 'authorizes a later attempt (e.g. switching express method) once the order has been placed', async () => {
 		const api = new ExpressCheckoutOrderApi( {
 			orderId: '1',

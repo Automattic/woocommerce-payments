@@ -91,4 +91,26 @@ class SessionServiceTest extends WCPAY_UnitTestCase {
 
 		$this->sut->set( 'foo', 'bar' );
 	}
+
+	public function test_get_session_id_with_wc_session_returns_session_id() {
+		$mock_wc_session = $this->createMock( WC_Session::class );
+
+		$this->mock_legacy_proxy
+			->method( 'call_function' )
+			->with( 'WC' )
+			->willReturn( (object) [ 'session' => $mock_wc_session ] );
+
+		$mock_wc_session->method( 'get_customer_id' )->willReturn( 't_abc' );
+
+		$this->assertSame( 't_abc', $this->sut->get_session_id() );
+	}
+
+	public function test_get_session_id_without_wc_session_returns_empty_string() {
+		$this->mock_legacy_proxy
+			->method( 'call_function' )
+			->with( 'WC' )
+			->willReturn( (object) [ 'session' => null ] );
+
+		$this->assertSame( '', $this->sut->get_session_id() );
+	}
 }

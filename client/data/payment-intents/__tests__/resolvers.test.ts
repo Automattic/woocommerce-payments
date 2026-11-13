@@ -12,7 +12,7 @@ import { controls } from '@wordpress/data';
 import { updatePaymentIntent, updateErrorForPaymentIntent } from '../actions';
 import { getPaymentIntent } from '../resolvers';
 import { PaymentIntent } from 'wcpay/types/payment-intents';
-import { paymentIntentId, paymentIntentMock } from './hooks.test';
+import { paymentIntentId, paymentIntentMock } from '../__fixtures__';
 
 const errorResponse = { code: 'error' };
 
@@ -62,5 +62,40 @@ describe( 'getPaymentIntent resolver', () => {
 				updateErrorForPaymentIntent( paymentIntentId, errorResponse )
 			);
 		} );
+	} );
+} );
+
+describe( 'getPaymentIntent resolver with an invalid ID', () => {
+	const invalidId = '..';
+
+	test( 'should record an error without requesting another endpoint', () => {
+		const generator = getPaymentIntent( invalidId );
+
+		expect( generator.next().value ).toEqual(
+			controls.dispatch(
+				'core/notices',
+				'createErrorNotice',
+				expect.any( String )
+			)
+		);
+		expect( generator.next().value ).toEqual(
+			updateErrorForPaymentIntent(
+				'..',
+				expect.objectContaining( {
+					code: 'wcpay_invalid_path_segment',
+				} )
+			)
+		);
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	test( 'should encode characters that would change the request', () => {
+		const generator = getPaymentIntent( 'pi_1/refund?x=1' );
+
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: '/wc/v3/payments/payment_intents/pi_1%2Frefund%3Fx%3D1',
+			} )
+		);
 	} );
 } );

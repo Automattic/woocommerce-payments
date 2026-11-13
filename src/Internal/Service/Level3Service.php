@@ -144,6 +144,13 @@ class Level3Service {
 	 * @return \stdClass[]
 	 */
 	private function process_item( WC_Order_Item $item, string $currency ): array {
+		$quantity = ceil( $item->get_quantity() );
+		// A line with no units has no unit cost. Leaving it out is safe: if it still carries money,
+		// reconcile_with_order_total() covers a small gap with a rounding fix, or drops the Level 3 data.
+		if ( $quantity <= 0 ) {
+			return [];
+		}
+
 		// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
 		if ( $item instanceof WC_Order_Item_Product ) {
 			$subtotal     = $item->get_subtotal();
@@ -166,7 +173,6 @@ class Level3Service {
 			$description = __( 'Item', 'woocommerce-payments' );
 		}
 
-		$quantity   = ceil( $item->get_quantity() );
 		$tax_amount = $this->prepare_amount( $item->get_total_tax(), $currency );
 		if ( $subtotal >= 0 ) {
 			$unit_cost       = $this->prepare_amount( $subtotal / $quantity, $currency );

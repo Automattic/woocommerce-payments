@@ -143,6 +143,11 @@ tests_add_filter( 'setup_theme', 'wcpay_install_woocommerce_roles' );
 // Need those polyfills to run tests in CI.
 require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
+// WP 7.2+ deletes its own test uploads dir after plugins load (Trac #63532), so keep the classic one.
+if ( ! defined( 'UPLOADS' ) ) {
+	define( 'UPLOADS', 'wp-content/uploads' );
+}
+
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
 require __DIR__ . '/../WCPAY_UnitTestCase.php';

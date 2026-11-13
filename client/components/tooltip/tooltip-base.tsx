@@ -32,8 +32,8 @@ const isEventTriggeredWithin = (
 
 type UseHideDelayProps = {
 	hideDelayMs?: number;
-	triggerRef: React.RefObject< HTMLElement >;
-	tooltipRef: React.RefObject< HTMLElement >;
+	triggerRef: React.RefObject< HTMLElement | null >;
+	tooltipRef: React.RefObject< HTMLElement | null >;
 	parentElement: HTMLElement;
 	onHide?: () => void;
 };

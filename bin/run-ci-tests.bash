@@ -16,16 +16,8 @@ if ! [ -x "$(command -v svn)" ]; then
 	sudo apt-get install -y subversion
 fi
 
-# SVN is needed when installing WP.
 echo 'Starting MySQL service...'
 sudo systemctl start mysql.service
-
-# On GitHub actions, set MySQL authentication to mysql_native_password instead of caching_sha2_password
-# to prevent DB connection problems with PHP versions less than 7.4
-if [[ -n $CI ]]; then
-	echo "Configuring MySQL to use mysql_native_password"
-	mysql -uroot -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root'; FLUSH PRIVILEGES;"
-fi
 
 echo 'Setting up test environment...'
 bash bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false $GUTENBERG_VERSION

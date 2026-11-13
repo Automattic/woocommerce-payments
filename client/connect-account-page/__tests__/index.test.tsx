@@ -2,8 +2,8 @@
 /**
  * External dependencies
  */
-import React, { act } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 
@@ -23,13 +23,9 @@ declare const global: {
 			availableCountries: Record< string, string >;
 		};
 		onBoardingDisabled?: boolean;
-		connectIncentive?: {
-			id: string;
-			description: string;
-			tc_url: string;
-		};
 		isWooPayStoreCountryAvailable?: boolean;
 		isJetpackConnected: boolean;
+		autoStartTestDriveOnboarding?: boolean;
 		isAccountConnected?: boolean;
 		isAccountValid?: boolean;
 		accountStatus?: {
@@ -40,12 +36,6 @@ declare const global: {
 		devMode?: boolean;
 		devModeReason?: string;
 	};
-};
-
-const mockedIcentive = {
-	id: 'incentive-id',
-	description: 'incentive-description',
-	tc_url: 'incentive-tc-url',
 };
 
 // jsdom marks `window.location` unforgeable, so the page's redirects go
@@ -150,64 +140,6 @@ describe( 'ConnectAccountPage', () => {
 		expect( page ).toMatchSnapshot();
 	} );
 
-	test( 'should render correctly with an incentive', () => {
-		global.wcpaySettings.connectIncentive = mockedIcentive;
-		const { container: page } = render( <ConnectAccountPage /> );
-		expect( page ).toMatchSnapshot();
-	} );
-
-	test( 'should request promo activation with an incentive', async () => {
-		global.wcpaySettings.connectIncentive = mockedIcentive;
-		render( <ConnectAccountPage /> );
-
-		await act( async () => {
-			userEvent.click(
-				screen.getByRole( 'button', {
-					name: 'Verify business details',
-				} )
-			);
-		} );
-
-		await waitFor( () => {
-			expect( apiFetch ).toHaveBeenCalledWith( {
-				path: '/wc-analytics/admin/notes/experimental-activate-promo/incentive-id',
-				method: 'POST',
-			} );
-		} );
-
-		await waitFor( () => {
-			expect( redirectTo ).toHaveBeenCalledWith(
-				expect.stringContaining( 'wcpay-connect-url' )
-			);
-		} );
-	} );
-
-	test( 'should display error from request promo activation with an incentive', async () => {
-		global.wcpaySettings.connectIncentive = mockedIcentive;
-		render( <ConnectAccountPage /> );
-
-		// mockApiFetch.mockRejectedValueOnce( {} );
-		jest.mocked( apiFetch ).mockRejectedValueOnce( new Error() );
-
-		await act( async () => {
-			userEvent.click(
-				screen.getByRole( 'button', {
-					name: 'Verify business details',
-				} )
-			);
-		} );
-
-		await waitFor( () => {
-			expect( apiFetch ).toHaveBeenCalled();
-		} );
-
-		expect(
-			screen.queryAllByText(
-				/There was an error applying the promotion/
-			)[ 0 ]
-		).toBeInTheDocument();
-	} );
-
 	test( 'should display non supported country banner', () => {
 		global.wcpaySettings = {
 			connectUrl: '/wcpay-connect-url',
@@ -256,5 +188,84 @@ describe( 'ConnectAccountPage', () => {
 			// eslint-disable-next-line max-len
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
 		);
+	} );
+
+	describe( 'test-drive auto-start', () => {
+		afterEach( () => {
+			window.history.pushState( {}, '', '/' );
+		} );
+
+		test( 'does not auto-start from the URL parameter without the server flag', () => {
+			window.history.pushState(
+				{},
+				'',
+				'?auto_start_test_drive_onboarding=true'
+			);
+			window.fetch = jest
+				.fn()
+				.mockResolvedValue( { json: () => Promise.resolve( {} ) } );
+			global.wcpaySettings.autoStartTestDriveOnboarding = false;
+
+			render( <ConnectAccountPage /> );
+
+			expect( window.fetch ).not.toHaveBeenCalled();
+		} );
+
+		test( 'auto-starts when the server sets the flag', () => {
+			window.fetch = jest
+				.fn()
+				.mockResolvedValue( { json: () => Promise.resolve( {} ) } );
+			global.wcpaySettings.autoStartTestDriveOnboarding = true;
+
+			render( <ConnectAccountPage /> );
+
+			expect( window.fetch ).toHaveBeenCalledWith(
+				expect.stringContaining( 'test_drive=true' ),
+				expect.any( Object )
+			);
+		} );
+	} );
+
+	describe( 'test-drive account status polling', () => {
+		const originalFetch = window.fetch;
+
+		beforeEach( () => {
+			// The loader animates with a zero-delay setInterval, which fake timers would spin on.
+			jest.useFakeTimers( {
+				doNotFake: [ 'setInterval', 'clearInterval' ],
+			} );
+			global.wcpaySettings.autoStartTestDriveOnboarding = true;
+			window.fetch = jest.fn().mockResolvedValue( {
+				json: () =>
+					Promise.resolve( {
+						success: true,
+						data: {
+							redirect_to:
+								'/wp-admin/admin.php?page=wc-admin&wcpay-connection-success=1',
+						},
+					} ),
+			} );
+		} );
+
+		afterEach( () => {
+			jest.useRealTimers();
+			window.fetch = originalFetch;
+		} );
+
+		test( 'keeps polling after a failed request and redirects once the account is complete', async () => {
+			( apiFetch as unknown as jest.Mock )
+				.mockRejectedValueOnce( new Error( 'Internal Server Error' ) )
+				.mockResolvedValueOnce( { status: 'complete' } );
+
+			render( <ConnectAccountPage /> );
+			await act( async () => {
+				await jest.advanceTimersByTimeAsync( 2500 );
+			} );
+
+			expect( apiFetch ).toHaveBeenCalledTimes( 2 );
+			expect( redirectTo ).toHaveBeenCalledWith(
+				expect.stringContaining( 'wcpay-sandbox-success=true' )
+			);
+		} );
 	} );
 } );
