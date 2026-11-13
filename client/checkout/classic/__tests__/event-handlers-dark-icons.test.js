@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
+import { swapDarkIcons } from '../swap-dark-icons';
 
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getUPEConfig: jest.fn(),
@@ -74,45 +75,10 @@ describe( 'swapDarkIcons in classic checkout', () => {
 		jest.clearAllMocks();
 	} );
 
-	// Import the module dynamically so mocks are applied.
-	function getSwapDarkIcons() {
-		// We can't import swapDarkIcons directly since it's inside the
-		// jQuery ready block. Instead, replicate the logic to test it.
-		// This tests the same algorithm used in event-handlers.js.
-		const { getIconTheme } = require( 'wcpay/checkout/utils/icon-theme' );
-
-		return function swapDarkIcons() {
-			const useDark = getIconTheme( 'classic' ) === 'night';
-
-			document
-				.querySelectorAll( '.wcpay-upe-element' )
-				.forEach( ( el ) => {
-					const type = el.dataset.paymentMethodType;
-					if ( type === 'card' ) {
-						return;
-					}
-					const config = getUPEConfig( 'paymentMethodsConfig' )?.[
-						type
-					];
-					const targetIcon = useDark
-						? config?.darkIcon
-						: config?.icon;
-					if ( targetIcon ) {
-						el.closest( '.wc_payment_method' )
-							?.querySelectorAll( 'label img' )
-							.forEach( ( img ) => {
-								img.src = targetIcon;
-							} );
-					}
-				} );
-		};
-	}
-
 	test( 'swaps non-card icons when background is dark', () => {
 		const { container, imgs } = setupPaymentMethodDOM( 'giropay' );
 		containers.push( container );
 
-		const swapDarkIcons = getSwapDarkIcons();
 		swapDarkIcons();
 
 		expect( imgs[ 0 ].src ).toContain( '/dark-giropay.svg' );
@@ -126,7 +92,6 @@ describe( 'swapDarkIcons in classic checkout', () => {
 		] );
 		containers.push( container );
 
-		const swapDarkIcons = getSwapDarkIcons();
 		swapDarkIcons();
 
 		expect( imgs[ 0 ].src ).toContain( '/visa.svg' );
@@ -138,7 +103,6 @@ describe( 'swapDarkIcons in classic checkout', () => {
 		const { container, imgs } = setupPaymentMethodDOM( 'giropay' );
 		containers.push( container );
 
-		const swapDarkIcons = getSwapDarkIcons();
 		swapDarkIcons();
 		expect( imgs[ 0 ].src ).toContain( '/dark-giropay.svg' );
 

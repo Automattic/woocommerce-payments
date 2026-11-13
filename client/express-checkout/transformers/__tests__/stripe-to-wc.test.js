@@ -114,5 +114,57 @@ describe( 'stripe-to-wc transformers', () => {
 
 			expect( result.billing_address.postcode ).toBe( '新界' );
 		} );
+
+		describe( 'shipping name', () => {
+			const PAYMENT_CREDENTIAL_ID = 'pm_123';
+			const SHIPPING_ADDRESS = {
+				line1: '1 High Street',
+				city: 'London',
+				postal_code: 'N1 1AA',
+				country: 'GB',
+			};
+			const withShippingName = ( name ) => ( {
+				...basePaymentData( SHIPPING_ADDRESS ),
+				shippingAddress: { name, address: SHIPPING_ADDRESS },
+			} );
+
+			it.each( [
+				[ 'a one-word name', 'Patrice' ],
+				[ 'a one-word name with a trailing space', 'Patrice ' ],
+				[ 'a one-word name with two trailing spaces', 'Patrice  ' ],
+			] )(
+				'falls back to "-" for the shipping last name with %s',
+				( _, name ) => {
+					const result = transformStripePaymentMethodForStoreApi(
+						withShippingName( name ),
+						PAYMENT_CREDENTIAL_ID
+					);
+
+					expect( result.shipping_address.first_name ).toBe(
+						'Patrice'
+					);
+					expect( result.shipping_address.last_name ).toBe( '-' );
+				}
+			);
+
+			it( 'keeps every word after the first as the shipping last name', () => {
+				const result = transformStripePaymentMethodForStoreApi(
+					withShippingName( 'Jane van Doe' ),
+					PAYMENT_CREDENTIAL_ID
+				);
+
+				expect( result.shipping_address.first_name ).toBe( 'Jane' );
+				expect( result.shipping_address.last_name ).toBe( 'van Doe' );
+			} );
+
+			it( 'omits the shipping address when the wallet does not provide one', () => {
+				const result = transformStripePaymentMethodForStoreApi(
+					basePaymentData( SHIPPING_ADDRESS ),
+					PAYMENT_CREDENTIAL_ID
+				);
+
+				expect( result.shipping_address ).toBeUndefined();
+			} );
+		} );
 	} );
 } );

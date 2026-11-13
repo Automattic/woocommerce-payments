@@ -1505,23 +1505,42 @@ class WC_Payments_Utils {
 		// Not get_query_var(): a secondary WP_Query left unreset would hide the routed request's
 		// own order. `??` because $wp is unset off a routed request, e.g. cron and WP-CLI.
 		global $wp;
-		$order = wc_get_order( absint( $wp->query_vars['order-pay'] ?? 0 ) );
 
-		// The ID comes from the URL, so it can resolve to a refund, which has no order key.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
+		$key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : null;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		return self::get_authorized_pay_for_order( $wp->query_vars['order-pay'] ?? 0, $key );
+	}
+
+	/**
+	 * Returns the order a caller may pay, given the order ID and key from its payment link.
+	 *
+	 * For requests that carry the payment link's order ID and key in their own parameters
+	 * rather than in the routed URL. See get_authorized_order_from_payment_link() for why
+	 * the key is required.
+	 *
+	 * @param mixed $order_id The order ID from the payment link.
+	 * @param mixed $key      The order key from the payment link.
+	 *
+	 * @return WC_Order|null Null when the caller may not pay that order.
+	 */
+	public static function get_authorized_pay_for_order( $order_id, $key ): ?WC_Order {
+		// key_is_valid() fatals on anything but a string, and ?key[]=x arrives as an array.
+		if ( ! is_string( $key ) ) {
+			return null;
+		}
+
+		$order = wc_get_order( absint( $order_id ) );
+
+		// The ID comes from the caller, so it can resolve to a refund, which has no order key.
 		if ( ! $order instanceof WC_Order ) {
 			return null;
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
-		// is_string() first: wc_clean() hands back an array for ?key[]=x, and key_is_valid() fatals on one.
-		if ( ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
+		if ( ! $order->key_is_valid( $key ) ) {
 			return null;
 		}
-
-		if ( ! $order->key_is_valid( wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
-			return null;
-		}
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		return current_user_can( 'pay_for_order', $order->get_id() ) ? $order : null;
 	}

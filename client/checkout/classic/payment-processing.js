@@ -262,7 +262,13 @@ async function createStripePaymentElement(
 	paymentMethodType,
 	elementsLocation
 ) {
-	const amount = Number( getUPEConfig( 'cartTotal' ) );
+	// Nothing is charged when adding a payment method, so the cart total
+	// must not switch the element to payment mode or count towards
+	// Stripe's amount limits.
+	const amount =
+		elementsLocation === 'add_payment_method'
+			? 0
+			: Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
 	const appearance = initializeAppearance( elementsLocation );
 	document

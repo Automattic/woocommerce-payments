@@ -16,7 +16,7 @@ describe( 'isDueWithin', () => {
 	// 2021-01-01T00:00:00.000Z
 	const mockUnixTime = 1609459200;
 	const hourInSeconds = 60 * 60;
-	const now = Date.now();
+	const realDateNow = Date.now;
 
 	beforeAll( () => {
 		// Set current date to 2021-01-01.
@@ -24,8 +24,7 @@ describe( 'isDueWithin', () => {
 	} );
 
 	afterAll( () => {
-		// Reset current date.
-		Date.now = () => now;
+		Date.now = realDateNow;
 	} );
 
 	test( 'returns false if dueBy is not a valid date', () => {

@@ -12,7 +12,7 @@ import { controls } from '@wordpress/data';
 import { updatePaymentIntent, updateErrorForPaymentIntent } from '../actions';
 import { getPaymentIntent } from '../resolvers';
 import { PaymentIntent } from 'wcpay/types/payment-intents';
-import { paymentIntentId, paymentIntentMock } from './hooks.test';
+import { paymentIntentId, paymentIntentMock } from '../__fixtures__';
 
 const errorResponse = { code: 'error' };
 

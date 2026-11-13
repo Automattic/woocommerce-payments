@@ -46,6 +46,14 @@ export const transformStripePaymentMethodForStoreApi = (
 		paymentData.payerPhone?.replace( /[() -]/g, '' ) ??
 		'';
 
+	// in the case of pay-for-order, the shipping address property might not be present.
+	const shippingAddress = paymentData.shippingAddress
+		? transformStripeShippingAddressForStoreApi(
+				paymentData.shippingAddress.name || '',
+				paymentData.shippingAddress.address
+			)
+		: undefined;
+
 	return {
 		customer_note: paymentData.order_comments,
 		billing_address: {
@@ -62,13 +70,12 @@ export const transformStripePaymentMethodForStoreApi = (
 			phone: billingPhone,
 		},
 		// refreshing any shipping address data, now that the customer is placing the order.
-		// in the case of pay-for-order, the shipping address property might not be present.
-		shipping_address: paymentData.shippingAddress
+		shipping_address: shippingAddress
 			? {
-					...transformStripeShippingAddressForStoreApi(
-						paymentData.shippingAddress.name || '',
-						paymentData.shippingAddress.address
-					),
+					...shippingAddress,
+					// Wallets accept one-word contact names, but WooCommerce requires a
+					// shipping last name. Mirrors the billing fallback above.
+					last_name: shippingAddress.last_name.trim() || '-',
 					// adding the phone number, because it might be needed.
 					// Stripe doesn't provide us with a different phone number for shipping,
 					// so we're going to use the same phone used for billing.

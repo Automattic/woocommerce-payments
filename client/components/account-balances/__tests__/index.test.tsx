@@ -317,7 +317,7 @@ describe( 'AccountBalances', () => {
 		render( <AccountBalances /> );
 
 		expect(
-			screen.queryByRole( 'button', { name: 'Deposit available funds' } )
+			screen.queryByRole( 'button', { name: /^Get .* now$/ } )
 		).not.toBeInTheDocument();
 	} );
 
@@ -328,7 +328,7 @@ describe( 'AccountBalances', () => {
 		render( <AccountBalances /> );
 
 		expect(
-			screen.queryByRole( 'button', { name: 'Deposit available funds' } )
+			screen.queryByRole( 'button', { name: /^Get .* now$/ } )
 		).not.toBeInTheDocument();
 	} );
 

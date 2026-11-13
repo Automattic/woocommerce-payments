@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Count declined card attempts on the order being paid, as well as in the session.

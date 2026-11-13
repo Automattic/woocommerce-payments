@@ -247,6 +247,25 @@ class WC_Payments_Subscriptions_Event_Handler {
 			throw new Invalid_Webhook_Data_Exception( __( 'Cannot find subscription for the incoming "invoice.payment_failed" event.', 'woocommerce-payments' ) );
 		}
 
+		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
+
+		/*
+		 * A failure event can arrive after invoice.paid, through the failed-events fetch or a redelivery, and must not undo that payment.
+		 * invoice.paid leaves the order paid, or on hold when the amount collected doesn't match the order total.
+		 */
+		if ( $order && ( $order->is_paid() || $order->has_status( 'on-hold' ) ) ) {
+			Logger::info(
+				sprintf(
+					'invoice.payment_failed webhook processing for %s (attempt %d) was skipped because order #%d is %s.',
+					$wcpay_invoice_id,
+					$attempts,
+					$order->get_id(),
+					$order->get_status()
+				)
+			);
+			return;
+		}
+
 		$charge = null;
 		if ( isset( $event_object['charge'] ) ) {
 			try {
@@ -264,8 +283,6 @@ class WC_Payments_Subscriptions_Event_Handler {
 				$error_code    = $charge['failure_code'];
 			}
 		}
-
-		$order = wc_get_order( WC_Payments_Invoice_Service::get_order_id_by_invoice_id( $wcpay_invoice_id ) );
 
 		if ( ! $order ) {
 			$order = wcs_create_renewal_order( $subscription );

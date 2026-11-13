@@ -77,5 +77,7 @@ class ExampleServiceWithDependencies {
 			// Do nothing, this is fine.
 			return false;
 		}
+
+		return null;
 	}
 }

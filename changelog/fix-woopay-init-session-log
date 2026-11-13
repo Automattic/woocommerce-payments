@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Log a shorter entry when a WooPay checkout session starts.
