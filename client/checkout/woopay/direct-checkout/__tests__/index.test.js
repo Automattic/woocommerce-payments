@@ -9,6 +9,12 @@ import { fireEvent } from '@testing-library/react';
  */
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 
+// Must match the debounce waits and the pending-item polling in index.js.
+const CART_SETTLE_DELAY_MS = 400;
+const PENDING_POLL_INTERVAL_MS = 100;
+const MICROTASK_FLUSH_ROUNDS = 20;
+const CART_ITEM = { product: { key: 'cart-item-key' } };
+
 const wpHookCallbacks = {};
 
 jest.mock( '@wordpress/hooks', () => ( {
@@ -82,10 +88,17 @@ global.jQuery = jest.fn( ( selectorOrReadyCallback ) => {
 
 // Microtasks only, so it also works while timers are faked.
 const flushPromises = async () => {
-	for ( let i = 0; i < 20; i++ ) {
+	for ( let i = 0; i < MICROTASK_FLUSH_ROUNDS; i++ ) {
 		await Promise.resolve();
 	}
 };
+
+const advanceTimersAndFlush = async ( milliseconds ) => {
+	jest.advanceTimersByTime( milliseconds );
+	await flushPromises();
+};
+
+const settleCart = () => advanceTimersAndFlush( CART_SETTLE_DELAY_MS );
 
 require( '../index.js' );
 
@@ -199,6 +212,7 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 	} );
 
 	afterEach( () => {
+		mockIsItemPendingQuantity = false;
 		jest.useRealTimers();
 	} );
 
@@ -214,8 +228,7 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 		await wpHookCallbacks[
 			'experimental__woocommerce_blocks-cart-add-item'
 		]();
-		jest.advanceTimersByTime( 400 );
-		await flushPromises();
+		await settleCart();
 
 		expect(
 			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
@@ -239,8 +252,7 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 		await wpHookCallbacks[
 			'experimental__woocommerce_blocks-cart-add-item'
 		]();
-		jest.advanceTimersByTime( 400 );
-		await flushPromises();
+		await settleCart();
 
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
@@ -260,20 +272,20 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 
 		await wpHookCallbacks[
 			'experimental__woocommerce_blocks-cart-remove-item'
-		]( { product: { key: 'cart-item-key' } } );
+		]( CART_ITEM );
 		window.dispatchEvent(
 			new CustomEvent( 'wc-blocks_store_sync_required', {
 				detail: { type: 'from_@wordpress/data' },
 			} )
 		);
-		jest.advanceTimersByTime( 400 );
-		await flushPromises();
+		await settleCart();
 
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
 		).toHaveBeenCalledTimes( 1 );
 	} );
-	it( 'drops the prefetched session while a quantity change is still in flight', async () => {
+
+	it( 'drops the prefetched session while a quantity change is in flight and prefetches once it is done', async () => {
 		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
 			true
 		);
@@ -287,9 +299,8 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 
 		wpHookCallbacks[
 			'experimental__woocommerce_blocks-cart-set-item-quantity'
-		]( { product: { key: 'cart-item-key' } } );
-		jest.advanceTimersByTime( 400 );
-		await flushPromises();
+		]( CART_ITEM );
+		await settleCart();
 
 		expect(
 			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
@@ -299,10 +310,12 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 		).not.toHaveBeenCalled();
 
 		mockIsItemPendingQuantity = false;
-		jest.advanceTimersByTime( 100 );
-		await flushPromises();
-		jest.advanceTimersByTime( 400 );
-		await flushPromises();
+		await advanceTimersAndFlush( PENDING_POLL_INTERVAL_MS );
+		await settleCart();
+
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).toHaveBeenCalledTimes( 1 );
 	} );
 } );
 
@@ -317,11 +330,6 @@ describe( 'WooPay direct checkout cart change listeners', () => {
 		fireEvent.load( window );
 		await flushPromises();
 		jest.clearAllMocks();
-	};
-
-	const settleCart = async () => {
-		jest.advanceTimersByTime( 400 );
-		await flushPromises();
 	};
 
 	beforeEach( () => {
@@ -386,17 +394,21 @@ describe( 'WooPay direct checkout cart change listeners', () => {
 		}
 	);
 
-	it( 'prefetches once for a burst of events about the same change', async () => {
+	it( 'prefetches once, after the events about a change stop for the settle delay', async () => {
 		await loadAsLoggedInShopper();
 
 		jQueryCallbacks.added_to_cart();
+		await advanceTimersAndFlush( CART_SETTLE_DELAY_MS - 1 );
 		document.body.dispatchEvent(
 			new CustomEvent( 'wc-blocks_added_to_cart' )
 		);
-		document.body.dispatchEvent(
-			new CustomEvent( 'wc-blocks_added_to_cart' )
-		);
-		await settleCart();
+		await advanceTimersAndFlush( CART_SETTLE_DELAY_MS - 1 );
+
+		expect(
+			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
+		).not.toHaveBeenCalled();
+
+		await advanceTimersAndFlush( 1 );
 
 		expect(
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData
