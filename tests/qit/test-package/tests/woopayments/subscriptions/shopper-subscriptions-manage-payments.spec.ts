@@ -2,12 +2,11 @@
  * External dependencies
  */
 import { Page } from '@playwright/test';
-import qit from '@qit/helpers';
 
 /**
  * Internal dependencies
  */
-import { test, expect } from '../../../fixtures/auth';
+import { test, expect, recreateCustomer } from '../../../fixtures/auth';
 import { config } from '../../../config/default';
 import {
 	emptyCart,
@@ -40,7 +39,9 @@ const navigateToSubscriptionDetails = async (
 		} )
 	).toBeVisible();
 
-	await page.getByText( 'Choose a new payment method' ).isVisible();
+	await expect(
+		page.getByText( 'Choose a new payment method' )
+	).toBeVisible();
 };
 
 const customerBillingAddress =
@@ -52,17 +53,11 @@ test.describe(
 	() => {
 		let subscriptionId: string;
 
-		test.beforeAll( async ( { customerPage } ) => {
-			// Delete existing subscriptions customer if exists to ensure clean state
-			try {
-				await qit.wp(
-					`user delete $( wp user get ${ customerBillingAddress.email } --field=ID 2>/dev/null ) --yes 2>/dev/null || true`,
-					true
-				);
-			} catch ( e ) {
-				// User might not exist, continue
-			}
+		test.beforeAll( async () => {
+			await recreateCustomer();
+		} );
 
+		test.beforeAll( async ( { customerPage } ) => {
 			// Purchase a subscription.
 			await emptyCart( customerPage );
 			await setupProductCheckout(
@@ -98,9 +93,7 @@ test.describe(
 			await placeOrder( customerPage );
 
 			await expect(
-				customerPage.getByText(
-					'Payment method updated for all your current subscriptions.'
-				)
+				customerPage.getByText( 'Payment method updated.' )
 			).toBeVisible();
 
 			await expect(
@@ -117,9 +110,7 @@ test.describe(
 			await customerPage.locator( '#place_order' ).click();
 
 			await expect(
-				customerPage.getByText(
-					'Payment method updated for all your current subscriptions.'
-				)
+				customerPage.getByText( 'Payment method updated.' )
 			).toBeVisible();
 
 			await expect(
