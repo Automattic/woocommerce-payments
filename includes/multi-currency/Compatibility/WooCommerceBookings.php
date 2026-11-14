@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
+use Automattic\WooCommerce\Currency\ActiveCurrency;
+
 use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
@@ -43,7 +45,7 @@ class WooCommerceBookings extends BaseCompatibility {
 	public function init() {
 		// Add needed actions and filters if Bookings is active.
 		if ( class_exists( 'WC_Bookings' ) ) {
-			if ( ! is_admin() || wp_doing_ajax() ) {
+			if ( Utils::is_non_admin_request() || Utils::is_cron_request() || wp_doing_ajax() ) {
 				add_filter( 'woocommerce_bookings_calculated_booking_cost', [ $this, 'adjust_amount_for_calculated_booking_cost' ], 50, 1 );
 				add_filter( 'woocommerce_product_get_block_cost', [ $this, 'get_price' ], 50, 1 );
 				add_filter( 'woocommerce_product_get_cost', [ $this, 'get_price' ], 50, 1 );
@@ -75,7 +77,7 @@ class WooCommerceBookings extends BaseCompatibility {
 		 * overrides the cart item price with this calculated amount. To avoid interfering with this process,
 		 * this function skips any additional adjustments at this stage.
 		 */
-		if ( $this->utils->is_call_in_backtrace( [ 'WC_Cart->add_to_cart' ] ) ) {
+		if ( ActiveCurrency::is_in_operation( 'cart.add_to_cart' ) ) {
 			return $costs;
 		}
 
@@ -95,7 +97,7 @@ class WooCommerceBookings extends BaseCompatibility {
 		}
 
 		// Skip conversion during specific booking cost calculations to avoid double conversion.
-		if ( $this->utils->is_call_in_backtrace( [ 'WC_Cart->add_to_cart' ] ) && $this->utils->is_call_in_backtrace( [ 'WC_Bookings_Cost_Calculation::calculate_booking_cost' ] ) ) {
+		if ( ActiveCurrency::is_in_operation( 'cart.add_to_cart' ) && $this->utils->is_call_in_backtrace( [ 'WC_Bookings_Cost_Calculation::calculate_booking_cost' ] ) ) {
 			return $price;
 		}
 

@@ -39,22 +39,8 @@ class MultiCurrency {
 	 */
 	const RENDERING_MODE_OPTION = 'wcpay_multi_currency_rendering_mode';
 
-	/**
-	 * Session key that stores the currency the saved cart totals were calculated in.
-	 */
-	const CART_TOTALS_CURRENCY_SESSION_KEY = 'wcpay_cart_totals_currency';
 
-	/**
-	 * Session key of a hash of the saved cart totals the currency stamp was recorded for. Totals saved while
-	 * Multi-Currency didn't run (e.g. while the merchant had it switched off) no longer match it.
-	 */
-	const CART_TOTALS_HASH_SESSION_KEY = 'wcpay_cart_totals_hash';
 
-	/**
-	 * Session key of the stale cart totals state whose cached shipping rates were last dropped, so they are dropped
-	 * once per stale state rather than on every load.
-	 */
-	private const STALE_TOTALS_RATES_DROPPED_SESSION_KEY = 'wcpay_stale_totals_rates_dropped';
 
 	/**
 	 * Option flag marking that the one-time caching auto-detection has already run.
@@ -238,44 +224,6 @@ class MultiCurrency {
 	private $init_completed = false;
 
 	/**
-	 * Callbacks added for REST API requests that don't look like Store API requests, keyed by filter name, so they
-	 * can be removed if a Store API route ends up handling the request.
-	 *
-	 * @var array<string, callable>
-	 */
-	private $rest_api_overrides = [];
-
-	/**
-	 * The totals WC_Cart_Session::set_session() saved for the main cart during the calculation in progress, or null
-	 * if the main cart's totals haven't been saved in it.
-	 *
-	 * @var array|null
-	 */
-	private $main_cart_totals_saved_in_calculation = null;
-
-	/**
-	 * The main cart while its totals are being calculated, or null outside its calculation.
-	 *
-	 * @var \WC_Cart|null
-	 */
-	private $main_cart_in_calculation = null;
-
-	/**
-	 * Whether this request selected the currency before the cart loaded (a switch or a `?currency=` link), so the load
-	 * must recalculate stale totals.
-	 *
-	 * @var bool
-	 */
-	private $currency_changed_before_cart_load = false;
-
-	/**
-	 * The REST request that set the Store API flag, so only its own completion clears it, not a nested one's.
-	 *
-	 * @var \WP_REST_Request|null
-	 */
-	private $matched_store_api_request = null;
-
-	/**
 	 * Class constructor.
 	 *
 	 * @param MultiCurrencySettingsInterface     $settings_service     Settings service.
@@ -351,56 +299,13 @@ class MultiCurrency {
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
-		add_action( 'woocommerce_before_calculate_totals', [ $this, 'start_cart_totals_calculation' ], PHP_INT_MIN );
-		add_action( 'woocommerce_cart_updated', [ $this, 'note_cart_totals_saved' ], PHP_INT_MAX );
-		// Stamp saved totals with their currency in every context, so stale totals are detectable on load.
-		// Runs after WC_Cart_Session::set_session() (priority 1000) saves the totals.
-		add_action( 'woocommerce_after_calculate_totals', [ $this, 'record_cart_totals_currency' ], PHP_INT_MAX );
-		add_action( 'woocommerce_cart_emptied', [ $this, 'clear_cart_totals_currency' ] );
-
-		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request();
-
-		if ( $is_frontend_request || Utils::is_store_api_request() ) {
-			// Make sure that this runs after the main init function.
-			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
-			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
-			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
-			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
-			// get_woocommerce_currency() reflects the selected currency only here; the late priority runs after other cart-loaded callbacks.
-			add_action( 'woocommerce_cart_loaded_from_session', [ $this, 'maybe_recalculate_cart_for_currency' ], PHP_INT_MAX );
-		}
-
-		if ( WC()->is_rest_api_request() ) {
-			if ( ! Utils::is_store_batch_request() && ! Utils::is_store_api_request() ) {
-				$this->rest_api_overrides = isset( $_GET['currency'] ) // phpcs:ignore WordPress.Security.NonceVerification
-					? [
-						self::FILTER_PREFIX . 'override_selected_currency' => function () {
-							return strtoupper( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
-						},
-					]
-					: [
-						// Non-Store-API REST: default to the store currency, leave prices as-is.
-						self::FILTER_PREFIX . 'should_return_store_currency' => function () {
-							return true;
-						},
-						self::FILTER_PREFIX . 'should_convert_product_price' => function () {
-							return false;
-						},
-						self::FILTER_PREFIX . 'override_selected_currency' => function () {
-							return $this->get_default_currency()->get_code();
-						},
-					];
-				foreach ( $this->rest_api_overrides as $filter => $callback ) {
-					add_filter( $filter, $callback );
-				}
-			}
-		}
-
-		if ( WC()->is_rest_api_request() || ! empty( $_POST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			// The URL doesn't always name the route, so undo the overrides once a Store API route matches.
-			// Priority 9: before other hooks here read the currency.
-			add_filter( 'rest_request_before_callbacks', [ $this, 'maybe_restore_selected_currency_for_store_api_route' ], 9, 3 );
-		}
+		add_action( 'woocommerce_request_context', [ $this, 'select_request_currency_mode' ], 10, 2 );
+		add_filter( 'rest_request_before_callbacks', [ $this, 'enter_rest_route' ], 1, 3 );
+		add_filter( 'rest_request_after_callbacks', [ $this, 'leave_rest_route' ], 9999, 3 );
+		add_filter( self::FILTER_PREFIX . 'override_selected_currency', [ $this, 'filter_rest_route_selected_currency' ] );
+		add_filter( self::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'filter_rest_route_store_currency' ] );
+		add_filter( self::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'filter_rest_route_convert_product_price' ] );
+		add_action( 'woocommerce_store_api_before_load_cart_session', [ $this, 'select_currency_for_store_api_request' ] );
 
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_props_to_wcpay_js_config' ] );
 
@@ -408,102 +313,163 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Treats the request as a Store API request once WordPress has matched it, or a request batched in it, to a
-	 * Store API route, even though its URL didn't look like one (see `Utils::set_matched_store_api_route()`).
+	 * Registers what the request context makes known at init. Whether a REST request serves a shopper or the store is
+	 * not known yet: that is decided per route, see enter_rest_route().
 	 *
-	 * Store API routes load and save the shopper's cart, so they must run in the shopper's selected currency:
-	 * the store-currency overrides that `init_hooks()` sets up for other REST API requests are removed, and the
-	 * frontend price and currency hooks are registered as they would be for a Store API request.
+	 * - `frontend`: the URL, geolocation and simulation switches run once WordPress has parsed the query (`wp`), so
+	 *   the endpoint being viewed is known.
+	 * - `store_api` and shopper AJAX: the same switches run on `init`; there is no query to wait for.
 	 *
-	 * @param mixed           $response Result to send to the client.
-	 * @param mixed           $handler  Route handler used for the request.
-	 * @param WP_REST_Request $request  Request used to generate the response.
-	 *
-	 * @return mixed The unchanged response.
-	 */
-	public function maybe_restore_selected_currency_for_store_api_route( $response, $handler, $request ) {
-		// Namespace hard-coded (WC's Store API list isn't public API). Add `wc/ucp/` and any future Store API
-		// namespace here when it ships in a supported WC version.
-		if ( Utils::is_store_api_request() || 0 !== stripos( $request->get_route(), '/wc/store/' ) ) {
-			return $response;
-		}
-
-		// Set the flag before the hooks below, which read it.
-		Utils::set_matched_store_api_route( true );
-
-		// Clear the flag when this request finishes — a nested Store API request (e.g. WooPay building its session)
-		// must not leave the surrounding request reclassified. `rest_request_after_callbacks` also fires for nested
-		// requests, so remember which request set the flag and let only that one clear it.
-		$this->matched_store_api_request = $request;
-		add_filter( 'rest_request_after_callbacks', [ $this, 'reset_matched_store_api_route' ], 10, 3 );
-
-		// Remove by reference (not by name) the overrides this instance added.
-		foreach ( $this->rest_api_overrides as $filter => $callback ) {
-			remove_filter( $filter, $callback );
-		}
-		$this->rest_api_overrides = [];
-
-		add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
-
-		// Enable the frontend price/currency hooks `init_hooks()` skipped, and select the shopper's currency.
-		// `?currency=` isn't re-applied here: `update_selected_currency_by_url()` already saved it where it applies.
-		//
-		// Select twice, because the session that renders the response depends on the request type: a cookie-session
-		// request already has its session active, but a Cart-Token Store API request loads its session later, in the
-		// route callback (`AbstractCartRoute::load_cart_session()`). The inline call reaches the former;
-		// `woocommerce_cart_loaded_from_session` reaches the latter, after its cart items load. Geolocation no-ops once a
-		// currency is set, so running on both is harmless.
-		if ( $this->init_completed ) {
-			$this->enable_server_price_hooks();
-			$this->update_selected_currency_by_geolocation();
-			add_action( 'woocommerce_cart_loaded_from_session', [ $this, 'select_currency_for_matched_store_api_route' ] );
-			// `init_hooks()` skips this while the request still looks like an admin API one.
-			add_action( 'woocommerce_cart_loaded_from_session', [ $this, 'maybe_recalculate_cart_for_currency' ], PHP_INT_MAX );
-		}
-
-		return $response;
-	}
-
-	/**
-	 * Resets the "matched a Store API route" flag once the matched route's callbacks have run, so it does not
-	 * outlive the REST request that set it (see `maybe_restore_selected_currency_for_store_api_route()`).
-	 *
-	 * Only the flag is restored, by design: the shopper-currency hooks and removed overrides stay, so the rest of the
-	 * request (and later `batch/v1` sub-requests) keep using the shopper's currency rather than the store default.
-	 * Scoping the reset to restore per sub-request would instead run those later sub-requests in the store default.
-	 *
-	 * The deferred cart-load selection is also detached here so it does not outlive the route that armed it (for
-	 * example a route that never loads the cart).
-	 *
-	 * @param mixed                 $response Result to send to the client.
-	 * @param mixed                 $handler  Route handler used for the request.
-	 * @param \WP_REST_Request|null $request The request whose callbacks just ran.
-	 *
-	 * @return mixed The unchanged response.
-	 */
-	public function reset_matched_store_api_route( $response, $handler = null, $request = null ) {
-		// Only the request that set the flag clears it; a nested request completing inside it leaves it set.
-		if ( null !== $request && $request !== $this->matched_store_api_request ) {
-			return $response;
-		}
-
-		Utils::set_matched_store_api_route( false );
-		$this->matched_store_api_request = null;
-		remove_action( 'woocommerce_cart_loaded_from_session', [ $this, 'select_currency_for_matched_store_api_route' ] );
-		remove_filter( 'rest_request_after_callbacks', [ $this, 'reset_matched_store_api_route' ], 10 );
-		return $response;
-	}
-
-	/**
-	 * Re-selects the shopper's currency once the cart has loaded from its session, on the Cart-Token session that
-	 * renders the response. Armed by `maybe_restore_selected_currency_for_store_api_route()` (which explains the
-	 * two-step selection) and detached by `reset_matched_store_api_route()`.
+	 * @param string $type           Request context: `store_api`, `rest`, `cron`, `ajax`, `admin` or `frontend`.
+	 * @param bool   $_unused_has_cart_token Whether the request carries a Cart-Token session.
 	 *
 	 * @return void
 	 */
-	public function select_currency_for_matched_store_api_route() {
-		// The currency was resolved from the session before this one, and geolocation no-ops when this one has its own.
-		$this->frontend_currencies->selected_currency_changed();
+	public function select_request_currency_mode( string $type, bool $_unused_has_cart_token ) {
+		if ( 'frontend' === $type ) {
+			add_action( 'wp', [ $this, 'update_selected_currency_by_url' ], 11 );
+			add_action( 'wp', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
+			add_action( 'wp', [ $this, 'possible_simulation_activation' ], 13 );
+		} elseif ( 'store_api' === $type || ( 'ajax' === $type && Utils::is_frontend_request( $type ) ) ) {
+			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
+			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
+			add_action( 'init', [ $this, 'possible_simulation_activation' ], 13 );
+		} else {
+			return;
+		}
+
+		add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
+	}
+
+	/**
+	 * Decides, once the route is matched and the user authenticated, which currency a REST request is served in.
+	 *
+	 * - Routes under `/wc/store/` serve a shopper: the shopper's currency, as the frontend.
+	 * - Other routes serve the store: the store currency with product prices left as they are, unless `?currency=`
+	 *   names one. Users who can manage WooCommerce (the block editor, analytics) always get the store currency.
+	 *
+	 * The decision lasts until `rest_request_after_callbacks` of the same request, so an internal
+	 * `rest_do_request()` is decided by its own route and the outer request's is restored afterwards.
+	 *
+	 * @param mixed            $response Response so far, returned unchanged.
+	 * @param array            $handler  Route handler.
+	 * @param \WP_REST_Request $request  The request.
+	 *
+	 * @return mixed
+	 */
+	public function enter_rest_route( $response, $handler, $request ) {
+		if ( $request instanceof \WP_REST_Request ) {
+			$query    = $request->get_query_params();
+			$currency = isset( $query['currency'] ) && is_string( $query['currency'] ) && '' !== $query['currency']
+				? strtoupper( sanitize_text_field( $query['currency'] ) )
+				: null;
+
+			$is_store_api_route = 0 === strpos( $request->get_route(), '/wc/store/' );
+
+			Utils::enter_rest_route( $request, $is_store_api_route, current_user_can( 'manage_woocommerce' ), $currency );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Ends the decision made by enter_rest_route() for the request.
+	 *
+	 * @param mixed            $response Response, returned unchanged.
+	 * @param array            $handler  Route handler.
+	 * @param \WP_REST_Request $request  The request.
+	 *
+	 * @return mixed
+	 */
+	public function leave_rest_route( $response, $handler, $request ) {
+		if ( $request instanceof \WP_REST_Request ) {
+			Utils::leave_rest_route( $request );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * The `?currency=` of the REST route being dispatched, when it serves the store for a user who cannot manage
+	 * WooCommerce.
+	 *
+	 * @return string|null
+	 */
+	private function get_rest_route_currency_param(): ?string {
+		$route = Utils::get_rest_route();
+		if ( null === $route || $route['shopper'] || $route['admin'] ) {
+			return null;
+		}
+
+		return $route['currency'] ?? null;
+	}
+
+	/**
+	 * Filter callback: the currency of a REST route serving the store.
+	 *
+	 * @param mixed $currency Currency selected by earlier filters.
+	 *
+	 * @return mixed
+	 */
+	public function filter_rest_route_selected_currency( $currency ) {
+		$route = Utils::get_rest_route();
+		if ( null === $route || $route['shopper'] ) {
+			return $currency;
+		}
+
+		$param = $this->get_rest_route_currency_param();
+
+		return null !== $param ? $param : $this->get_default_currency()->get_code();
+	}
+
+	/**
+	 * Filter callback: whether a REST route serving the store without a `?currency=` returns the store currency.
+	 *
+	 * @param bool $value Value from earlier filters.
+	 *
+	 * @return bool
+	 */
+	public function filter_rest_route_store_currency( $value ) {
+		return $this->is_rest_route_store_only() ? true : $value;
+	}
+
+	/**
+	 * Filter callback: whether product prices are converted. Not on a REST route serving the store.
+	 *
+	 * @param bool $value Value from earlier filters.
+	 *
+	 * @return bool
+	 */
+	public function filter_rest_route_convert_product_price( $value ) {
+		return $this->is_rest_route_store_only() ? false : $value;
+	}
+
+	/**
+	 * Whether the REST route being dispatched serves the store with no `?currency=` to honour.
+	 *
+	 * @return bool
+	 */
+	private function is_rest_route_store_only(): bool {
+		$route = Utils::get_rest_route();
+
+		return null !== $route && ! $route['shopper'] && null === $this->get_rest_route_currency_param();
+	}
+
+	/**
+	 * Selects the shopper's currency for a Store API cart route, before its Cart-Token session loads, so the cart
+	 * loads in that currency. The session's own currency is applied once the cart has loaded, by the
+	 * `woocommerce_cart_loaded_from_session` hook that `FrontendCurrencies::init_hooks()` registers.
+	 *
+	 * @param \WP_REST_Request $_unused_request The Store API request.
+	 *
+	 * @return void
+	 */
+	public function select_currency_for_store_api_request( $_unused_request ) {
+		if ( ! $this->init_completed ) {
+			return;
+		}
+
+		$this->enable_server_price_hooks();
 		$this->update_selected_currency_by_geolocation();
 	}
 
@@ -692,10 +658,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function enqueue_admin_scripts() {
-		global $current_tab;
-
 		// Enqueue the settings JS and CSS only on the WCPay multi-currency settings page.
-		if ( 'wcpay_multi_currency' !== $current_tab ) {
+		if ( ! $this->is_multi_currency_settings_page() ) {
 			return;
 		}
 
@@ -1119,7 +1083,8 @@ class MultiCurrency {
 		$currency_changed = $this->get_stored_currency_code() !== $code;
 
 		if ( $currency_changed && $persist_change ) {
-			$this->frontend_currencies->clear_url_price_params();
+			// Redirects, so it waits for a page load; template_redirect never fires for REST, AJAX or cron.
+			add_action( 'template_redirect', [ $this->frontend_currencies, 'clear_url_price_params' ], 1 );
 		}
 
 		if ( 0 === $user_id && WC()->session ) {
@@ -1132,14 +1097,9 @@ class MultiCurrency {
 			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
 		}
 
-		// Recalculate now if the cart is already loaded; otherwise the currency stamp lets a later
-		// load detect the stale totals (e.g. Store API requests that load the cart later or not at all).
-		if ( $currency_changed ) {
-			if ( did_action( 'woocommerce_cart_loaded_from_session' ) ) {
-				$this->recalculate_cart();
-			} else {
-				$this->currency_changed_before_cart_load = true;
-			}
+		// Recalculate now if the cart is already loaded.
+		if ( $currency_changed && did_action( 'woocommerce_cart_loaded_from_session' ) ) {
+			$this->recalculate_cart();
 		}
 	}
 
@@ -1155,10 +1115,6 @@ class MultiCurrency {
 
 		$code = strtoupper( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$this->update_selected_currency( $code );
-
-		if ( isset( $this->get_enabled_currencies()[ $code ] ) && ! did_action( 'woocommerce_cart_loaded_from_session' ) ) {
-			$this->currency_changed_before_cart_load = true;
-		}
 	}
 
 	/**
@@ -1307,183 +1263,6 @@ class MultiCurrency {
 		if ( WC()->cart ) {
 			WC()->cart->calculate_totals();
 		}
-	}
-
-	/**
-	 * Records the currency the saved cart totals were calculated in, so a later load can detect
-	 * stale totals. Runs in every context, after WC_Cart_Session::set_session().
-	 *
-	 * @param \WC_Cart|null $cart The cart whose totals were calculated.
-	 *
-	 * @return void
-	 */
-	public function record_cart_totals_currency( $cart = null ) {
-		if ( ! $cart instanceof \WC_Cart || WC()->cart !== $cart || ! isset( WC()->session ) ) {
-			return;
-		}
-
-		$saved_totals                   = WC()->session->get( 'cart_totals' );
-		$this->main_cart_in_calculation = null;
-
-		// Requests that skip saving the cart (e.g. `woocommerce_cart_session_initialize` returning false) keep older totals
-		// in the session, which this calculation's currency doesn't describe. Without a stamp, the next load recalculates.
-		// Totals the main cart saved during this calculation are stamped even if a later callback (e.g. store credit or a
-		// fee plugin after priority 1000) changed its in-memory totals: they were calculated in this currency, and treating
-		// them as stale would recalculate the cart on every load. They count only while the session still holds exactly
-		// them, because another cart's session save fires the same action and can overwrite them.
-		$saved_by_main_cart = null !== $this->main_cart_totals_saved_in_calculation && $saved_totals === $this->main_cart_totals_saved_in_calculation;
-		if ( ! $saved_by_main_cart && $saved_totals !== $cart->get_totals() ) {
-			$this->clear_cart_totals_currency();
-			return;
-		}
-
-		WC()->session->set( self::CART_TOTALS_CURRENCY_SESSION_KEY, get_woocommerce_currency() );
-		WC()->session->set( self::CART_TOTALS_HASH_SESSION_KEY, $this->get_cart_totals_hash( $saved_totals ) );
-		WC()->session->__unset( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY );
-	}
-
-	/**
-	 * Starts tracking whether the main cart's totals are saved during this calculation.
-	 *
-	 * @param \WC_Cart|null $cart The cart about to be calculated.
-	 *
-	 * @return void
-	 */
-	public function start_cart_totals_calculation( $cart = null ) {
-		if ( $cart instanceof \WC_Cart && WC()->cart === $cart ) {
-			$this->main_cart_in_calculation              = $cart;
-			$this->main_cart_totals_saved_in_calculation = null;
-		}
-	}
-
-	/**
-	 * Notes the totals WC_Cart_Session::set_session() saved for the main cart during a cart calculation.
-	 *
-	 * `woocommerce_cart_updated` doesn't say which cart was saved, so a save counts as the main cart's only when the
-	 * session now holds the main cart's totals.
-	 *
-	 * @return void
-	 */
-	public function note_cart_totals_saved() {
-		if ( ! doing_action( 'woocommerce_after_calculate_totals' ) || null === $this->main_cart_in_calculation ) {
-			return;
-		}
-
-		// WC_Cart_Session::set_session() fires this right after writing to the session, so the session exists.
-		$saved_totals = WC()->session->get( 'cart_totals' );
-		if ( $this->main_cart_in_calculation->get_totals() === $saved_totals ) {
-			$this->main_cart_totals_saved_in_calculation = $saved_totals;
-		}
-	}
-
-	/**
-	 * Clears the cart totals currency stamp and totals hash: when the cart is emptied, so they don't keep an
-	 * otherwise empty session alive, and whenever the saved totals are not the ones just calculated.
-	 *
-	 * @return void
-	 */
-	public function clear_cart_totals_currency() {
-		if ( isset( WC()->session ) ) {
-			WC()->session->__unset( self::CART_TOTALS_CURRENCY_SESSION_KEY );
-			WC()->session->__unset( self::CART_TOTALS_HASH_SESSION_KEY );
-		}
-	}
-
-	/**
-	 * Returns a hash of saved cart totals, to tell whether they are the totals the currency stamp was recorded for.
-	 *
-	 * @param mixed $totals The cart totals.
-	 *
-	 * @return string
-	 */
-	private function get_cart_totals_hash( $totals ): string {
-		return md5( (string) wp_json_encode( $totals ) );
-	}
-
-	/**
-	 * Recalculates the loaded cart when its totals were calculated in a different currency than
-	 * the one now in effect, so stale totals cannot be reused under the new currency.
-	 *
-	 * @return void
-	 */
-	public function maybe_recalculate_cart_for_currency() {
-		// calculate_totals() returns before stamping an empty cart, so it would recalculate on every load. Removing the
-		// last item doesn't empty_cart(), so drop the stamp here too.
-		if ( WC()->cart->is_empty() ) {
-			$this->clear_cart_totals_currency();
-			WC()->session->__unset( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY );
-			return;
-		}
-
-		// Without saved totals (a new session or a restored persistent cart), WooCommerce calculates them right after this hook.
-		if ( null === WC()->session->get( 'cart_totals' ) ) {
-			return;
-		}
-
-		// Nothing stamps or clears the totals on requests where Multi-Currency doesn't run, so totals saved there (e.g.
-		// in the store currency while the merchant had it switched off) keep an older stamp. The hash tells them apart.
-		if ( get_woocommerce_currency() === WC()->session->get( self::CART_TOTALS_CURRENCY_SESSION_KEY )
-			&& $this->get_cart_totals_hash( WC()->session->get( 'cart_totals' ) ) === WC()->session->get( self::CART_TOTALS_HASH_SESSION_KEY ) ) {
-			return;
-		}
-
-		// Shipping rates cached with stale totals can be stale too, without WooCommerce's package hash showing it: code
-		// that doesn't mark packages with the currency (e.g. a release the store was rolled back to, or Multi-Currency
-		// switched off) caches a rate in one currency that an unmarked store-currency package can match. Dropping them
-		// costs no calculation here; the next one rebuilds them. They're dropped once per stale state: if something keeps
-		// the stamp from being recorded, the rates rebuilt for the same totals stay cached instead of being requested from
-		// live-rate carriers again on every calculation.
-		$stale_state = $this->get_cart_totals_hash(
-			[
-				get_woocommerce_currency(),
-				WC()->session->get( self::CART_TOTALS_CURRENCY_SESSION_KEY ),
-				WC()->session->get( self::CART_TOTALS_HASH_SESSION_KEY ),
-				WC()->session->get( 'cart_totals' ),
-			]
-		);
-		if ( WC()->session->get( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY ) !== $stale_state ) {
-			$this->clear_cached_shipping_rates();
-			WC()->session->set( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY, $stale_state );
-		}
-
-		// Only REST requests can use saved totals without calculating them. Elsewhere a throwing third-party calculation
-		// here would fail every page view, so only a request that selected the currency before the cart loaded recalculates.
-		if ( ! $this->currency_changed_before_cart_load && ! $this->is_rest_request() ) {
-			return;
-		}
-
-		$this->recalculate_cart();
-	}
-
-	/**
-	 * Drops the shipping rates WooCommerce cached in the session for the cart's packages.
-	 *
-	 * @return void
-	 */
-	private function clear_cached_shipping_rates() {
-		$session = WC()->session;
-		if ( ! method_exists( $session, 'get_session_data' ) ) {
-			return;
-		}
-
-		foreach ( array_keys( (array) $session->get_session_data() ) as $key ) {
-			if ( 0 === strpos( (string) $key, 'shipping_for_package_' ) ) {
-				$session->set( $key, null );
-			}
-		}
-	}
-
-	/**
-	 * Whether the cart is loading for a REST request, including one whose cart loads before `REST_REQUEST` is defined.
-	 *
-	 * @return bool
-	 */
-	private function is_rest_request(): bool {
-		if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ! empty( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return true;
-		}
-
-		return WC()->is_rest_api_request() || Utils::is_store_api_request();
 	}
 
 	/**
@@ -1682,7 +1461,7 @@ class MultiCurrency {
 	 */
 	public function add_woo_admin_notes() {
 		// Do not try to add notes on ajax requests to improve their performance.
-		if ( wp_doing_ajax() ) {
+		if ( 'ajax' === Utils::get_request_context() ) {
 			return;
 		}
 
@@ -2053,20 +1832,21 @@ class MultiCurrency {
 			return [];
 		}
 
-		$parameters = $_GET; // phpcs:ignore WordPress.Security.NonceVerification
-		// Check if we are in a preview session, don't interfere with the main session.
-		if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || ! (bool) $parameters['is_mc_onboarding_simulation'] ) {
-			// Check if the page referer has the variables.
-			$server = $_SERVER; // phpcs:ignore WordPress.Security.NonceVerification
-			// Check if we are coming from a simulation session (if we don't have the necessary query strings).
-			if ( isset( $server['HTTP_REFERER'] ) && 0 < strpos( $server['HTTP_REFERER'], 'is_mc_onboarding_simulation' ) ) {
-				wp_parse_str( wp_parse_url( $server['HTTP_REFERER'], PHP_URL_QUERY ), $parameters );
-				if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) || ! (bool) $parameters['is_mc_onboarding_simulation'] ) {
-					return [];
-				}
-			} else {
-				return [];
-			}
+		// The preview link carries the simulation in its query string, and the storefront pages it opens do not. The
+		// variables it sets are kept for the user for a while, instead of being read from the referer.
+		$transient_key = 'wcpay_mc_onboarding_simulation_' . get_current_user_id();
+		$parameters    = $_GET; // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( ! isset( $parameters['is_mc_onboarding_simulation'] ) ) {
+			$stored = get_transient( $transient_key );
+
+			return is_array( $stored ) ? $stored : [];
+		}
+
+		if ( ! (bool) $parameters['is_mc_onboarding_simulation'] ) {
+			delete_transient( $transient_key );
+
+			return [];
 		}
 
 		// Define variables which can be overridden inside the preview session, with their sanitization methods.
@@ -2091,9 +1871,11 @@ class MultiCurrency {
 				$values[ $possible_variable ] = $sanitization_callback( $parameters[ $possible_variable ] );
 			} else {
 				// Append the default, the param is missing in the querystring.
-				$values [ $possible_variable ] = $defaults[ $possible_variable ];
+				$values[ $possible_variable ] = $defaults[ $possible_variable ];
 			}
 		}
+
+		set_transient( $transient_key, $values, HOUR_IN_SECONDS );
 
 		return $values;
 	}
@@ -2105,13 +1887,15 @@ class MultiCurrency {
 	 * @return bool
 	 */
 	public function is_multi_currency_settings_page(): bool {
-		global $current_screen, $current_tab;
-		return (
-		is_admin()
-		&& $current_tab && $current_screen
-		&& 'wcpay_multi_currency' === $current_tab
-		&& 'woocommerce_page_wc-settings' === $current_screen->base
-		);
+		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+		// Same settings tab query argument WooCommerce reads.
+		$tab = sanitize_text_field( wp_unslash( $_GET['tab'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		return 'wcpay_multi_currency' === $tab && $screen && 'woocommerce_page_wc-settings' === $screen->base;
 	}
 
 	/**

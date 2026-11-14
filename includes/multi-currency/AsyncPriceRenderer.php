@@ -45,7 +45,8 @@ class AsyncPriceRenderer {
 			return;
 		}
 
-		if ( is_admin() || defined( 'DOING_CRON' ) || Utils::is_admin_api_request() ) {
+		// Async rendering is for pages; a REST response is never wrapped in skeletons.
+		if ( 'rest' === Utils::get_request_context() || ! Utils::is_frontend_request() ) {
 			return;
 		}
 

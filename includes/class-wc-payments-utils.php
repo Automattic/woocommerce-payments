@@ -35,27 +35,6 @@ class WC_Payments_Utils {
 	const FORCE_DISCONNECTED_FLAG_NAME = 'wcpaydev_force_disconnected';
 
 	/**
-	 * The Store API route patterns that should be handled by the WooPay session handler.
-	 */
-	const STORE_API_ROUTE_PATTERNS = [
-		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/add-item$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-item$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
-		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
-		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
-		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
-		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
-		// By adding it to this list, we're able to identify the user and load the correct session for this route.
-		'@^\/payments\/woopay\/session$@',
-	];
-
-	/**
 	 * Decode HTML entities consistently across supported PHP versions.
 	 *
 	 * PHP 8.1 changed the default flags. Specify those defaults explicitly so
@@ -1533,27 +1512,7 @@ class WC_Payments_Utils {
 	 * @return bool True if request is a Store API request, false otherwise.
 	 */
 	public static function is_store_api_request(): bool {
-		// @TODO We should move to a more robust way of getting to the route, like WC is doing in the StoreAPI library. https://github.com/woocommerce/woocommerce/blob/9ac48232a944baa2dbfaa7dd47edf9027cca9519/plugins/woocommerce/src/StoreApi/Authentication.php#L15-L15
-		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
-		} else {
-			$rest_route = self::extract_rest_route_from_url();
-		}
-
-		// Bail early if the rest route is empty.
-		if ( empty( $rest_route ) ) {
-			return false;
-		}
-
-		// Try to match the rest route against the store API route patterns.
-		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
-			if ( 1 === preg_match( $pattern, $rest_route ) ) {
-				return true;
-			}
-		}
-
-		// If no match was found, this is not a Store API request.
-		return false;
+		return 'store_api' === WC()->get_request_context();
 	}
 
 	/**
@@ -1615,36 +1574,5 @@ class WC_Payments_Utils {
 			$logger = wc_get_logger();
 			$logger->$level( $message, [ 'source' => 'woopayments' ] );
 		}
-	}
-
-	/**
-	 * Extract the REST route from the current request URL.
-	 *
-	 * @return string The REST route, or empty string if not found.
-	 */
-	private static function extract_rest_route_from_url(): string {
-		// Extract the request path from the request URL.
-		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		if ( empty( $url_parts['path'] ) ) {
-			return '';
-		}
-
-		$request_path = rtrim( $url_parts['path'], '/' );
-		if ( empty( $request_path ) ) {
-			return '';
-		}
-
-		// Remove the REST API prefix from the request path to end up with the route.
-		$rest_prefix = trailingslashit( rest_get_url_prefix() );
-
-		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
-		// Look for the wp-json prefix in the path and extract everything after it.
-		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
-		if ( false !== $wp_json_pos ) {
-			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
-		}
-
-		// Fallback: simple prefix replacement for non-multisite cases.
-		return str_replace( $rest_prefix, '', $request_path );
 	}
 }

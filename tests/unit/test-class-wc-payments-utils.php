@@ -1069,49 +1069,22 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card was declined.', 'card_declined', 402 ) ) );
 	}
 
-	public function test_is_store_api_request_with_store_api_request() {
-		$_SERVER['REQUEST_URI'] = '/index.php';
-		$_REQUEST['rest_route'] = '/wc/store/v1/checkout';
+	/**
+	 * @dataProvider store_api_request_context_provider
+	 */
+	public function test_is_store_api_request_follows_the_request_context( $context, $expected ) {
+		WCPay_Test_Request_Context::set( $context );
 
-		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
-
-		unset( $_REQUEST['rest_route'] );
+		$this->assertSame( $expected, WC_Payments_Utils::is_store_api_request() );
 	}
 
-	public function test_is_store_api_request_with_another_request() {
-		$_SERVER['REQUEST_URI'] = '/index.php';
-
-		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
-
-		unset( $_REQUEST['rest_route'] );
-	}
-
-	public function test_is_store_api_request_with_malformed_url() {
-		$_SERVER['REQUEST_URI'] = '///wp-json/wc/store/v1/checkout';
-
-		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
-	}
-
-	public function test_is_store_api_request_with_url_with_no_path() {
-		$_SERVER['REQUEST_URI'] = '?something';
-		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
-
-		$_SERVER['REQUEST_URI'] = '';
-		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
-	}
-
-	public function test_is_store_api_request_with_multisite_subdirectory() {
-		// Test multisite subdirectory setup where the path includes the site subdirectory.
-		$_SERVER['REQUEST_URI'] = '/child-1/wp-json/wc/store/v1/cart/add-item';
-		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
-
-		// Test multisite subdirectory with non-store API endpoint.
-		$_SERVER['REQUEST_URI'] = '/child-1/wp-json/wp/v2/posts';
-		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
-
-		// Test deeply nested subdirectory.
-		$_SERVER['REQUEST_URI'] = '/network/child-site/wp-json/wc/store/v1/cart';
-		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+	public function store_api_request_context_provider() {
+		return [
+			'store_api' => [ 'store_api', true ],
+			'rest'      => [ 'rest', false ],
+			'frontend'  => [ 'frontend', false ],
+			'unknown'   => [ null, false ],
+		];
 	}
 
 	public function test_is_any_bnpl_supporting_country() {

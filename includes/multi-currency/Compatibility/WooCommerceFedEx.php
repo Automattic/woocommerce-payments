@@ -15,19 +15,6 @@ use WCPay\MultiCurrency\MultiCurrency;
 class WooCommerceFedEx extends BaseCompatibility {
 
 	/**
-	 * Calls to look for in the backtrace when determining whether
-	 * to return store currency or skip converting product prices.
-	 */
-	private const WC_SHIPPING_FEDEX_CALLS = [
-		'WC_Shipping_Fedex->set_settings',
-		'WC_Shipping_Fedex->per_item_shipping',
-		'WC_Shipping_Fedex->box_shipping',
-		'WC_Shipping_Fedex->get_fedex_api_request',
-		'WC_Shipping_Fedex->get_fedex_requests',
-		'WC_Shipping_Fedex->process_result',
-	];
-
-	/**
 	 * Init the class.
 	 *
 	 * @return void
@@ -53,7 +40,7 @@ class WooCommerceFedEx extends BaseCompatibility {
 			return $should_convert;
 		}
 
-		if ( $this->utils->is_call_in_backtrace( self::WC_SHIPPING_FEDEX_CALLS ) ) {
+		if ( $this->utils->is_in_shipping_method_rates( 'WC_Shipping_Fedex' ) ) {
 			return false;
 		}
 
@@ -73,7 +60,7 @@ class WooCommerceFedEx extends BaseCompatibility {
 			return $should_return;
 		}
 
-		if ( $this->utils->is_call_in_backtrace( self::WC_SHIPPING_FEDEX_CALLS ) ) {
+		if ( $this->utils->is_in_shipping_method_rates( 'WC_Shipping_Fedex' ) ) {
 			return true;
 		}
 

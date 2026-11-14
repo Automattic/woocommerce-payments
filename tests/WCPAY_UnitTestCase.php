@@ -41,6 +41,9 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// A test that dispatched a REST request and bailed out must not leave its route behind for later tests.
+		\WCPay\MultiCurrency\Utils::reset_rest_routes();
+
 		$this->mode_backup                 = WC_Payments::mode() ? clone WC_Payments::mode() : null;
 		$this->wc_payments_services_backup = [
 			'account'                 => WC_Payments::get_account_service(),
@@ -63,6 +66,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	}
 
 	public function tear_down() {
+		\WCPay\MultiCurrency\Utils::reset_rest_routes();
 		remove_filter( 'pre_http_request', [ $this, 'filter_intercept_external_requests' ], 9, 3 );
 		remove_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
 		remove_filter( 'woocommerce_email_log_add_order_note', '__return_false', 9 );
