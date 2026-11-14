@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fixed the DataViews development build after a clean install
