@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Send checkout Tracks events after the shopper gets their order response, so a slow Tracks service can't delay placing an order.
