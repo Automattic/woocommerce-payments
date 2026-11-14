@@ -62,6 +62,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	const OTHER_STRIPE_GATEWAY_ID = 'stripe';
 
 	/**
+	 * A stored intent status that is not terminal and is not what a cancelled order ends up with.
+	 */
+	const STORED_STATUS_BEFORE_THE_CANCEL = 'requires_confirmation';
+
+	/**
+	 * Fee stored with an authorization.
+	 */
+	const AUTHORIZATION_FEE = '0.74';
+
+	/**
 	 * Customer ID another gateway stores under `_stripe_customer_id`.
 	 */
 	const OTHER_GATEWAY_CUSTOMER_ID = 'cus_test_other_gateway';
@@ -5214,6 +5224,214 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'Processing'              => [ Intent_Status::PROCESSING ],
 			'No cached status yet'    => [ '' ],
 		];
+	}
+
+	/**
+	 * A payment that is still open could be completed after its order was cancelled, so it is cancelled too.
+	 *
+	 * @dataProvider provider_open_payments_of_a_cancelled_order
+	 *
+	 * @param string   $intent_status      The intent's status.
+	 * @param callable $metadata_for_order Builds the intent's metadata from the order's ID.
+	 */
+	public function test_cancelling_an_order_cancels_a_payment_that_is_still_open( string $intent_status, callable $metadata_for_order ) {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, self::STORED_STATUS_BEFORE_THE_CANCEL );
+		$this->mock_intent_of_a_cancelled_order( $intent_status, $metadata_for_order( $order->get_id() ) );
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'canceled', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*was still open, and was cancelled because the order was cancelled/', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * Open payments of a cancelled order, by status and by how the intent names the order. Stripe returns
+	 * metadata values as strings, and an intent WooPay created names the store's order by its number.
+	 *
+	 * @return array
+	 */
+	public function provider_open_payments_of_a_cancelled_order(): array {
+		$by_order_id = function ( int $order_id ) {
+			return [ 'order_id' => (string) $order_id ];
+		};
+
+		return [
+			'waiting for the shopper, named by the order ID' => [ Intent_Status::REQUIRES_ACTION, $by_order_id ],
+			'waiting for the shopper, named by the order number, paid on WooPay' => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [
+						'paid_on_woopay' => 'true',
+						'order_number'   => (string) $order_id,
+						'order_id'       => (string) ( $order_id + 1 ),
+					];
+				},
+			],
+			'declined'           => [ Intent_Status::REQUIRES_PAYMENT_METHOD, $by_order_id ],
+			'awaiting a confirm' => [ Intent_Status::REQUIRES_CONFIRMATION, $by_order_id ],
+		];
+	}
+
+	/**
+	 * An open payment created for another order must stay payable, and one being processed can't be
+	 * cancelled, so neither costs a cancel request.
+	 *
+	 * @dataProvider provider_payments_a_cancelled_order_leaves_alone
+	 *
+	 * @param string   $intent_status      The intent's status.
+	 * @param callable $metadata_for_order Builds the intent's metadata from the order's ID.
+	 */
+	public function test_cancelling_an_order_leaves_a_payment_it_must_not_cancel( string $intent_status, callable $metadata_for_order ) {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, self::STORED_STATUS_BEFORE_THE_CANCEL );
+		$this->mock_intent_of_a_cancelled_order( $intent_status, $metadata_for_order( $order->get_id() ) );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( $intent_status, $order->get_meta( '_intention_status' ) );
+		$this->assertStringNotContainsString( 'was cancelled because the order was cancelled', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Payments of a cancelled order that are not cancelled: open ones not created for the order, by how
+	 * the intent names an order, and one being processed.
+	 *
+	 * @return array
+	 */
+	public function provider_payments_a_cancelled_order_leaves_alone(): array {
+		return [
+			'open, for another order ID'                  => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [ 'order_id' => (string) ( $order_id + 1 ) ];
+				},
+			],
+			'open, with no metadata'                      => [
+				Intent_Status::REQUIRES_ACTION,
+				function () {
+					return [];
+				},
+			],
+			'open, with an order ID that is not a number' => [
+				Intent_Status::REQUIRES_ACTION,
+				function () {
+					return [ 'order_id' => 'abc' ];
+				},
+			],
+			'open, with an order ID followed by text'     => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [ 'order_id' => $order_id . 'abc' ];
+				},
+			],
+			'open, with the order number but not paid on WooPay' => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [
+						'order_number' => (string) $order_id,
+						'order_id'     => (string) ( $order_id + 1 ),
+					];
+				},
+			],
+			'open, paid on WooPay for another order number' => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [
+						'paid_on_woopay' => 'true',
+						'order_number'   => (string) ( $order_id + 1 ),
+					];
+				},
+			],
+			'being processed, for this order'             => [
+				Intent_Status::PROCESSING,
+				function ( int $order_id ) {
+					return [ 'order_id' => (string) $order_id ];
+				},
+			],
+		];
+	}
+
+	/**
+	 * When the cancel fails the payment may still be completed, so the merchant is told. Any failure
+	 * counts, and the note about a failed authorization cancel is not the one to show.
+	 *
+	 * @dataProvider provider_cancel_failures_of_an_open_payment
+	 *
+	 * @param Throwable $failure What the cancel request throws.
+	 */
+	public function test_cancelling_an_order_notes_an_open_payment_it_could_not_cancel( Throwable $failure ) {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, self::STORED_STATUS_BEFORE_THE_CANCEL );
+		$this->mock_intent_of_a_cancelled_order( Intent_Status::REQUIRES_ACTION, [ 'order_id' => (string) $order->get_id() ] );
+		$this->expect_cancel_of_earlier_attempt( $failure );
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'requires_action', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*could not be cancelled.*If the shopper completes it/', $this->order_note_contents( $order ) ) );
+		$this->assertStringNotContainsString( 'Canceling authorization', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Ways the cancel of an open payment can fail.
+	 *
+	 * @return array
+	 */
+	public function provider_cancel_failures_of_an_open_payment(): array {
+		return [
+			'the server refuses the cancel' => [ new API_Exception( 'test exception', 'server_error', 500 ) ],
+			'an error that is no exception' => [ new Error( 'test error' ) ],
+		];
+	}
+
+	/**
+	 * An uncaptured authorization is still voided when its order is cancelled, with one cancel request.
+	 */
+	public function test_cancelling_an_order_still_voids_an_uncaptured_authorization() {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_wcpay_transaction_fee', self::AUTHORIZATION_FEE );
+		$order->save();
+		$this->mock_intent_of_a_cancelled_order( Intent_Status::REQUIRES_CAPTURE, [ 'order_id' => (string) $order->get_id() ], [ 'charge' => [ 'captured' => false ] ] );
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'canceled', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_transaction_fee' ) );
+		$this->assertStringNotContainsString( 'was still open', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Mocks the fetch of the intent a cancelled order names.
+	 *
+	 * @param string $intent_status The intent's status.
+	 * @param array  $metadata      The intent's metadata.
+	 * @param array  $more_args     Further arguments for the intent, such as its charge.
+	 */
+	private function mock_intent_of_a_cancelled_order( string $intent_status, array $metadata, array $more_args = [] ): void {
+		$this->mock_wcpay_request( Get_Intention::class, 1, self::PAYMENT_DETAILS_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					array_merge(
+						[
+							'id'       => self::PAYMENT_DETAILS_INTENT_ID,
+							'status'   => $intent_status,
+							'metadata' => $metadata,
+						],
+						$more_args
+					)
+				)
+			);
 	}
 
 	/**

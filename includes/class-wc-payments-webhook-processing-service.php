@@ -608,7 +608,53 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( Payment_Method::CARD_PRESENT === $payment_method_type ) {
 			$this->order_service->mark_terminal_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
 		} else {
+			// An order on hold waits on the payment it names: an authorization to capture, a bank debit to
+			// clear, a dispute. A retry with the same saved card passes the payment method check above, so the
+			// failure of the earlier attempt, arriving late, would otherwise fail the order the retry put on hold.
+			if ( $order->has_status( Order_Status::ON_HOLD ) ) {
+				$current_intent_id = (string) $this->order_service->get_intent_id_for_order( $order );
+				if ( $current_intent_id !== $intent_id ) {
+					$this->add_skipped_late_failure_note( $order, $intent_id, $current_intent_id );
+					return;
+				}
+			}
+
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+		}
+	}
+
+	/**
+	 * Notes that the failure of a payment was ignored because the order is on hold for another payment.
+	 * The note is added once, as Stripe can deliver the same event again.
+	 *
+	 * @param WC_Order $order             The order on hold.
+	 * @param string   $intent_id         The ID of the payment that failed.
+	 * @param string   $current_intent_id The ID of the payment the order names, or an empty string when it names none.
+	 *
+	 * @return void
+	 */
+	private function add_skipped_late_failure_note( WC_Order $order, string $intent_id, string $current_intent_id ): void {
+		$note = '' !== $current_intent_id
+			? sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the ID of the WooPayments payment that failed, %2: the ID of the payment the order is on hold for. */
+					__( 'A WooPayments payment <code>%1$s</code> failed, but this order is on hold for payment <code>%2$s</code>, so the order was not updated.', 'woocommerce-payments' ),
+					[ 'code' => '<code>' ]
+				),
+				$intent_id,
+				$current_intent_id
+			)
+			: sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the ID of the WooPayments payment that failed. */
+					__( 'A WooPayments payment <code>%1$s</code> failed, but this order is not on hold for it, so the order was not updated.', 'woocommerce-payments' ),
+					[ 'code' => '<code>' ]
+				),
+				$intent_id
+			);
+
+		if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
 		}
 	}
 

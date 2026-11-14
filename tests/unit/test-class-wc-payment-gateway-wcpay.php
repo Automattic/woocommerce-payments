@@ -2057,6 +2057,87 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' ) );
 	}
 
+	/**
+	 * A shopper can approve a redirect payment after the order was cancelled, which cancels its payment. The
+	 * shopper is told nothing was charged instead of seeing the order received page, and the order is left as is.
+	 */
+	public function test_process_redirect_payment_with_cancelled_intent_keeps_order_cancelled_and_tells_shopper() {
+		$intent_id = 'pi_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->set_status( Order_Status::CANCELLED );
+		$order->save();
+		$notes_before = $this->get_order_notes_text( $order->get_id() );
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'   => Intent_Status::CANCELED,
+						'metadata' => [ 'order_id' => (string) $order->get_id() ],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, false );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $result_order->get_status() );
+		$this->assertSame( $notes_before, $this->get_order_notes_text( $result_order->get_id() ) );
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertSame( 'This order was cancelled before its payment was completed, so you have not been charged.', $notices['error'][0]['notice'] );
+	}
+
+	/**
+	 * A payment cancelled while its order is still pending, for example from the Stripe dashboard,
+	 * cancels the order when the shopper returns, as before.
+	 */
+	public function test_process_redirect_payment_with_cancelled_intent_cancels_pending_order() {
+		$intent_id = 'pi_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		wp_get_current_user();
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'   => Intent_Status::CANCELED,
+						'metadata' => [ 'order_id' => (string) $order->get_id() ],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$this->card_gateway->process_redirect_payment( $order, $intent_id, false );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $result_order->get_status() );
+		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $this->get_order_notes_text( $result_order->get_id() ) );
+		$this->assertEmpty( WC()->session->get( 'wc_notices' )['error'] ?? [] );
+	}
+
 	public function test_process_redirect_payment_with_retryable_decline_keeps_order_pending() {
 		$error_code    = 'payment_intent_authentication_failure';
 		$error_message = 'The customer declined the payment.';
