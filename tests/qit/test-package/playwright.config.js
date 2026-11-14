@@ -11,6 +11,9 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig( {
 	testDir: './tests',
 
+	/* Tests tagged @todo are placeholders; they must not count as passes. */
+	grepInvert: /@todo/,
+
 	/* Run tests sequentially for stability */
 	fullyParallel: false,
 

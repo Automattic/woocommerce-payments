@@ -52,6 +52,15 @@ test.describe( 'Merchant deposits', { tag: '@merchant' }, () => {
 		await adminPage.evaluate( () => {
 			window.scrollTo( 0, 0 );
 		} );
+
+		// Apply the filter and confirm it drives the filtered list via the URL query.
+		await adminPage
+			.getByRole( 'link', { name: 'Filter', exact: true } )
+			.click();
+		await expect( adminPage ).toHaveURL( /status_is=/ );
+		await expect(
+			adminPage.locator( '.woocommerce-table__table.is-loading' )
+		).toHaveCount( 0 );
 		// TODO: This visual regression test is not flaky, but we should revisit the approach.
 		// await expect(
 		// 	adminPage.locator( '.woocommerce-filters' ).last()
