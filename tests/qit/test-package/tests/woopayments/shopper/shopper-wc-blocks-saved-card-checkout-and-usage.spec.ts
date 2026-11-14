@@ -1,7 +1,12 @@
 /**
  * External dependencies
  */
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import {
+	test,
+	expect,
+	getAuthState,
+	recreateCustomer,
+} from '../../../fixtures/auth';
 import type { BrowserContext, Page } from '@playwright/test';
 
 /**
@@ -32,6 +37,7 @@ test.describe(
 		const card = config.cards.basic;
 
 		test.beforeAll( async ( { browser } ) => {
+			await recreateCustomer();
 			shopperContext = await browser.newContext( {
 				storageState: await getAuthState( browser, 'customer' ),
 			} );

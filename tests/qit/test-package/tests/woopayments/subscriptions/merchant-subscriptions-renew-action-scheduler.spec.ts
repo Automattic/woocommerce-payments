@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { test, expect } from '../../../fixtures/auth';
+import { test, expect, recreateCustomer } from '../../../fixtures/auth';
 import { config } from '../../../config/default';
 import {
 	addSubscriptionToCart,
@@ -24,6 +24,10 @@ test.describe(
 
 		const customerBillingConfig =
 			config.addresses[ 'subscriptions-customer' ].billing;
+
+		test.beforeAll( async () => {
+			await recreateCustomer();
+		} );
 
 		test.beforeAll( async ( { customerPage } ) => {
 			await emptyCart( customerPage );

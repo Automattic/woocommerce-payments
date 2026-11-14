@@ -108,5 +108,26 @@ export const test = base.extend< Fixtures >( {
 
 export const expect = test.expect;
 
+/**
+ * Deletes and recreates the customer, so a spec starts with no saved cards, orders or subscriptions.
+ * Call it before the customer fixtures are used: in its own `beforeAll`, ahead of any hook that takes them.
+ */
+export const recreateCustomer = async () => {
+	const { username, password, email } = config.users.customer;
+	const exists = await qit.wp( `user get ${ username } --field=ID`, true ).then(
+		() => true,
+		() => false
+	);
+	if ( exists ) {
+		await qit.wp( `user delete ${ username } --yes`, true );
+	}
+	await qit.wp(
+		`user create ${ username } ${ email } --role=customer --user_pass=${ password } --first_name=Jane --last_name=Smith`,
+		true
+	);
+	// The cached session belongs to the deleted user.
+	stateCache.delete( 'customer' );
+};
+
 export const getAuthState = ( browser: Browser, role: Role ) =>
 	getState( browser, role );

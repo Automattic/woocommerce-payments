@@ -7,7 +7,7 @@ export const users = {
 	customer: {
 		username: 'customer',
 		password: 'password',
-		email: 'e2e-qit-wcpay-customer@woocommerce.com',
+		email: 'customer@woocommercecoree2etestsuite.com',
 	},
 	'subscriptions-customer': {
 		username: 'subscriptions-customer',

@@ -1,12 +1,7 @@
 /**
- * External dependencies
- */
-import qit from '@qit/helpers';
-
-/**
  * Internal dependencies
  */
-import { test, expect } from '../../../fixtures/auth';
+import { test, expect, recreateCustomer } from '../../../fixtures/auth';
 import { config } from '../../../config/default';
 import {
 	emptyCart,
@@ -35,17 +30,11 @@ test.describe(
 	() => {
 		let wasMulticurrencyEnabled = false;
 
-		test.beforeAll( async ( { adminPage, customerPage } ) => {
-			// Delete existing subscriptions customer if exists to ensure clean state
-			try {
-				await qit.wp(
-					`user delete $( wp user get ${ configBillingAddress.email } --field=ID 2>/dev/null ) --yes 2>/dev/null || true`,
-					true
-				);
-			} catch ( e ) {
-				// User might not exist, continue
-			}
+		test.beforeAll( async () => {
+			await recreateCustomer();
+		} );
 
+		test.beforeAll( async ( { adminPage, customerPage } ) => {
 			wasMulticurrencyEnabled = await activateMulticurrency( adminPage );
 			await restoreCurrencies( adminPage );
 		} );
