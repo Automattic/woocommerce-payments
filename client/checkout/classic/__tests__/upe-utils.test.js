@@ -3,6 +3,7 @@
  */
 import {
 	generateCheckoutEventNames,
+	getPageLinkEmail,
 	getUpeSettings,
 	getSelectedUPEGatewayPaymentMethod,
 	hasPaymentMethodCountryRestrictions,
@@ -550,6 +551,24 @@ describe( 'Classic checkout UPE utils', () => {
 				} );
 			} );
 
+			it( 'should withhold the checkout and prefilled emails until visible', () => {
+				mockLinkEnabled( true );
+				window.wcpayCustomerData = {
+					name: 'Test Person',
+					email: 'old@example.com',
+					billing_country: 'US',
+				};
+
+				const upeSettings = getUpeSettings( 'card', false );
+
+				expect( upeSettings.defaultValues ).toEqual( {
+					billingDetails: {
+						name: 'Test Person',
+						address: { country: 'US' },
+					},
+				} );
+			} );
+
 			it( 'should keep wcpayCustomerData defaults and prefer the checkout email', () => {
 				mockLinkEnabled( true );
 				window.wcpayCustomerData = {
@@ -564,6 +583,33 @@ describe( 'Classic checkout UPE utils', () => {
 					billingDetails: {
 						name: 'Test Person',
 						email: 'shopper@example.com',
+						address: { country: 'US' },
+					},
+				} );
+			} );
+
+			it( 'should use the order email on pay-for-order pages once visible', () => {
+				mockLinkEnabled( true );
+				emailForm.remove();
+				window.wcpayCustomerData = {
+					name: 'Order Person',
+					email: 'order@example.com',
+					billing_country: 'US',
+				};
+
+				const hiddenSettings = getUpeSettings( 'card', false );
+				const visibleSettings = getUpeSettings( 'card' );
+
+				expect( hiddenSettings.defaultValues ).toEqual( {
+					billingDetails: {
+						name: 'Order Person',
+						address: { country: 'US' },
+					},
+				} );
+				expect( visibleSettings.defaultValues ).toEqual( {
+					billingDetails: {
+						name: 'Order Person',
+						email: 'order@example.com',
 						address: { country: 'US' },
 					},
 				} );
@@ -604,6 +650,39 @@ describe( 'Classic checkout UPE utils', () => {
 
 			document.body.appendChild( checkboxElement );
 		}
+	} );
+
+	describe( 'getPageLinkEmail', () => {
+		afterEach( () => {
+			document.getElementById( 'billing_email' )?.remove();
+			delete window.wcpayCustomerData;
+		} );
+
+		it( 'should use the checkout email field when present', () => {
+			buildForm( [
+				{ id: 'billing_email', value: ' shopper@example.com ' },
+			] );
+			window.wcpayCustomerData = { email: 'account@example.com' };
+
+			expect( getPageLinkEmail() ).toBe( 'shopper@example.com' );
+		} );
+
+		it( 'should not fall back to another email when the checkout field is invalid', () => {
+			buildForm( [ { id: 'billing_email', value: 'shopper@' } ] );
+			window.wcpayCustomerData = { email: 'account@example.com' };
+
+			expect( getPageLinkEmail() ).toBeUndefined();
+		} );
+
+		it( 'should use the order email when there is no checkout email field', () => {
+			window.wcpayCustomerData = { email: 'order@example.com' };
+
+			expect( getPageLinkEmail() ).toBe( 'order@example.com' );
+		} );
+
+		it( 'should return undefined without any email', () => {
+			expect( getPageLinkEmail() ).toBeUndefined();
+		} );
 	} );
 
 	describe( 'generateCheckoutEventNames', () => {

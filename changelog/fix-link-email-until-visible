@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Only provide the checkout or order email to Stripe Link while the payment form is in view, so Link doesn't prompt shoppers before they can see it.

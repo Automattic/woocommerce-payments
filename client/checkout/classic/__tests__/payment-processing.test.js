@@ -24,6 +24,7 @@ import {
 	appendFraudPreventionTokenInputToForm,
 	appendPaymentMethodErrorDataToForm,
 	appendPaymentMethodIdToForm,
+	getPageLinkEmail,
 	getSelectedUPEGatewayPaymentMethod,
 	getUpeSettings,
 	isUsingSavedPaymentMethod,
@@ -449,16 +450,20 @@ describe( 'Stripe Payment Element mounting', () => {
 		beforeEach( async () => {
 			isLinkEnabled.mockReturnValue( true );
 			getLinkEmail.mockImplementation( ( email ) =>
-				email.includes( '@' ) ? email : undefined
+				email?.includes( '@' ) ? email : undefined
 			);
-			getUpeSettings.mockImplementation( () => ( {
-				defaultValues: {
-					billingDetails: {
-						email: document.getElementById( 'billing_email' )
-							?.value,
+			getPageLinkEmail.mockImplementation(
+				jest.requireActual( '../upe-utils' ).getPageLinkEmail
+			);
+			getUpeSettings.mockImplementation(
+				( paymentMethodType, isVisible = true ) => ( {
+					defaultValues: {
+						billingDetails: {
+							email: isVisible ? getPageLinkEmail() : undefined,
+						},
 					},
-				},
-			} ) );
+				} )
+			);
 			getFingerprint.mockImplementation( () => 'fingerprint' );
 			__resetGatewayUPEComponentsElement( 'card' );
 			mockDomElement.dataset.paymentMethodType = 'card';
@@ -473,8 +478,10 @@ describe( 'Stripe Payment Element mounting', () => {
 		afterEach( () => {
 			isLinkEnabled.mockReset();
 			getLinkEmail.mockReset();
+			getPageLinkEmail.mockReset();
 			getUpeSettings.mockImplementation( () => ( {} ) );
 			document.getElementById( 'billing_email' )?.remove();
+			delete window.wcpayCustomerData;
 		} );
 
 		const setCheckoutEmail = ( email ) => {
@@ -506,7 +513,7 @@ describe( 'Stripe Payment Element mounting', () => {
 			expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
 		} );
 
-		test( 'does not update the element for the email it was created with', async () => {
+		test( 'does not update the element again for the email it already has', async () => {
 			__resetGatewayUPEComponentsElement( 'card' );
 			setCheckoutEmail( 'prefilled@example.com' );
 			await mountStripePaymentElement(
@@ -533,6 +540,204 @@ describe( 'Stripe Payment Element mounting', () => {
 			await updateLinkEmail( setCheckoutEmail( 'shopper' ) );
 
 			expect( mockUpdateFunction ).not.toHaveBeenCalled();
+		} );
+
+		describe( 'with an IntersectionObserver', () => {
+			const originalIO = window.IntersectionObserver;
+			let observers;
+
+			const setVisible = ( isVisible ) =>
+				observers[ observers.length - 1 ].setVisible( isVisible );
+
+			const mountCardElement = async () => {
+				await mountStripePaymentElement(
+					apiMock,
+					mockDomElement,
+					'shortcode_checkout'
+				);
+				mockUpdateFunction.mockClear();
+			};
+
+			beforeEach( async () => {
+				observers = [];
+				window.IntersectionObserver = jest.fn( ( callback ) => {
+					const observer = {
+						observe: jest.fn(),
+						disconnect: jest.fn(),
+						setVisible: ( isVisible ) =>
+							callback( [
+								{
+									isIntersecting: isVisible,
+									intersectionRatio: isVisible ? 1 : 0,
+								},
+							] ),
+					};
+					observers.push( observer );
+					return observer;
+				} );
+				__resetGatewayUPEComponentsElement( 'card' );
+			} );
+
+			afterEach( () => {
+				window.IntersectionObserver = originalIO;
+			} );
+
+			test( 'creates the element without the email', async () => {
+				setCheckoutEmail( 'prefilled@example.com' );
+				await mountCardElement();
+
+				expect( getUpeSettings ).toHaveBeenCalledWith( 'card', false );
+				const [ , createOptions ] = mockCreateFunction.mock.calls[ 0 ];
+				const { email } = createOptions.defaultValues.billingDetails;
+				expect( email ).toBeUndefined();
+			} );
+
+			test( 'withholds the email while hidden, then delivers the latest one', async () => {
+				await mountCardElement();
+				setVisible( false );
+
+				await updateLinkEmail(
+					setCheckoutEmail( 'first@example.com' )
+				);
+				expect( mockUpdateFunction ).not.toHaveBeenCalled();
+
+				setCheckoutEmail( 'latest@example.com' );
+				setVisible( true );
+
+				expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+				expect( mockUpdateFunction ).toHaveBeenCalledWith( {
+					defaultValues: {
+						billingDetails: { email: 'latest@example.com' },
+					},
+				} );
+			} );
+
+			test( 'withholds edits made after the element leaves the view', async () => {
+				setCheckoutEmail( 'first@example.com' );
+				await mountCardElement();
+				setVisible( true );
+				expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+				mockUpdateFunction.mockClear();
+
+				setVisible( false );
+				await updateLinkEmail(
+					setCheckoutEmail( 'second@example.com' )
+				);
+				expect( mockUpdateFunction ).not.toHaveBeenCalled();
+
+				setVisible( true );
+				expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+				expect( mockUpdateFunction ).toHaveBeenCalledWith( {
+					defaultValues: {
+						billingDetails: { email: 'second@example.com' },
+					},
+				} );
+			} );
+
+			test( 'does not resend the same email when the element comes back into view', async () => {
+				setCheckoutEmail( 'same@example.com' );
+				await mountCardElement();
+
+				setVisible( true );
+				setVisible( false );
+				setVisible( true );
+
+				expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+			} );
+
+			test( 'delivers the order email on pay-for-order pages only while visible', async () => {
+				window.wcpayCustomerData = { email: 'order@example.com' };
+				await mountCardElement();
+				setVisible( false );
+				expect( mockUpdateFunction ).not.toHaveBeenCalled();
+
+				setVisible( true );
+
+				expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+				expect( mockUpdateFunction ).toHaveBeenCalledWith( {
+					defaultValues: {
+						billingDetails: { email: 'order@example.com' },
+					},
+				} );
+			} );
+
+			test( 'delivers the email when the element is already visible at mount', async () => {
+				window.IntersectionObserver = jest.fn( ( callback ) => ( {
+					observe: jest.fn( () =>
+						callback( [
+							{ isIntersecting: true, intersectionRatio: 1 },
+						] )
+					),
+					disconnect: jest.fn(),
+				} ) );
+				setCheckoutEmail( 'visible@example.com' );
+				await mountStripePaymentElement(
+					apiMock,
+					mockDomElement,
+					'shortcode_checkout'
+				);
+
+				expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+				expect( mockUpdateFunction ).toHaveBeenCalledWith( {
+					defaultValues: {
+						billingDetails: { email: 'visible@example.com' },
+					},
+				} );
+			} );
+
+			test( 'does not deliver the email when Link is disabled', async () => {
+				isLinkEnabled.mockReturnValue( false );
+				setCheckoutEmail( 'shopper@example.com' );
+				await mountCardElement();
+
+				setVisible( true );
+
+				expect( mockUpdateFunction ).not.toHaveBeenCalled();
+			} );
+
+			test( 'tracks the new mount point when the element is mounted again', async () => {
+				await mountCardElement();
+				const first = observers[ observers.length - 1 ];
+				first.setVisible( true );
+
+				await mountCardElement();
+				expect( first.disconnect ).toHaveBeenCalled();
+				expect( observers ).toHaveLength( 2 );
+
+				await updateLinkEmail(
+					setCheckoutEmail( 'remount@example.com' )
+				);
+				expect( mockUpdateFunction ).not.toHaveBeenCalled();
+
+				setVisible( true );
+				expect( mockUpdateFunction ).toHaveBeenCalledWith( {
+					defaultValues: {
+						billingDetails: { email: 'remount@example.com' },
+					},
+				} );
+			} );
+
+			test( 'does not observe non-card payment methods', async () => {
+				__resetGatewayUPEComponentsElement( 'giropay' );
+				mockDomElement.dataset.paymentMethodType = 'giropay';
+				await mountStripePaymentElement(
+					apiMock,
+					mockDomElement,
+					'shortcode_checkout'
+				);
+				mockDomElement.dataset.paymentMethodType = 'card';
+
+				expect( window.IntersectionObserver ).not.toHaveBeenCalled();
+			} );
+
+			test( 'disconnects the observer when the element is reset', async () => {
+				await mountCardElement();
+				const first = observers[ observers.length - 1 ];
+
+				__resetGatewayUPEComponentsElement( 'card' );
+
+				expect( first.disconnect ).toHaveBeenCalled();
+			} );
 		} );
 	} );
 } );

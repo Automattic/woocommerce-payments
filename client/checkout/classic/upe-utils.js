@@ -105,10 +105,11 @@ function shouldIncludeTerms( paymentMethodType ) {
  * Generates payment method specific settings object for the Stripe Payment Elements.
  * Includes terms visibility, billing fields configuration, and default customer values.
  *
- * @param {string} paymentMethodType The type of payment method being configured (e.g. card, bancontact)
+ * @param {string}  paymentMethodType The type of payment method being configured (e.g. card, bancontact)
+ * @param {boolean} isVisible         Whether the element is in view. While it isn't, the email is left out for Link.
  * @return {Object} Settings object for Payment Elements
  */
-export const getUpeSettings = ( paymentMethodType ) => {
+export const getUpeSettings = ( paymentMethodType, isVisible = true ) => {
 	const upeSettings = {};
 	const showTerms = shouldIncludeTerms( paymentMethodType )
 		? 'always'
@@ -144,9 +145,18 @@ export const getUpeSettings = ( paymentMethodType ) => {
 		};
 	}
 
-	const linkEmail =
+	const isLinkCard =
 		paymentMethodType === 'card' &&
-		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) );
+
+	// Withhold any email from the Link-capable element until it is in view,
+	// otherwise Link may prompt the shopper before they can see the form.
+	if ( isLinkCard && ! isVisible && upeSettings.defaultValues ) {
+		delete upeSettings.defaultValues.billingDetails.email;
+	}
+
+	const linkEmail =
+		isLinkCard && isVisible
 			? getLinkEmail( document.querySelector( '#billing_email' )?.value )
 			: undefined;
 
@@ -161,6 +171,24 @@ export const getUpeSettings = ( paymentMethodType ) => {
 	}
 
 	return upeSettings;
+};
+
+/**
+ * Returns the email Link should recognize on the current page.
+ *
+ * Checkout reads the billing email field. Pay-for-order and change payment
+ * method pages have no such field, so they use the billing email of the order
+ * being paid, which the server provides in `wcpayCustomerData`.
+ *
+ * @return {string|undefined} The email, or undefined when there isn't a valid one.
+ */
+export const getPageLinkEmail = () => {
+	const checkoutEmailField = document.querySelector( '#billing_email' );
+	return getLinkEmail(
+		checkoutEmailField
+			? checkoutEmailField.value
+			: window.wcpayCustomerData?.email
+	);
 };
 
 /**

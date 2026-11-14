@@ -19,6 +19,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 import { getLinkEmail } from 'wcpay/checkout/utils/upe';
+import { observeElementVisibility } from 'wcpay/checkout/utils/element-visibility';
 import { CardSkeleton } from './components/card-skeleton';
 import { ApmSkeleton } from './components/apm-skeleton';
 import SkeletonContext from './components/skeleton-context';
@@ -141,23 +142,49 @@ const PaymentProcessor = ( {
 	const gatewayConfig = getPaymentMethods()[ gatewayId ];
 	const billingData = useCustomerData();
 
+	// Withhold the email from the Payment Element while it is out of view,
+	// otherwise Link may prompt the shopper before they can see the form.
+	const [ isElementVisible, setIsElementVisible ] = useState( false );
+	// Read by the debounce callback, which may fire before the effect that
+	// would cancel it runs.
+	const isElementVisibleRef = useRef( false );
+	useEffect( () => {
+		if ( ! isCardMethod || ! wrapperRef.current ) {
+			return;
+		}
+		return observeElementVisibility( wrapperRef.current, ( isVisible ) => {
+			isElementVisibleRef.current = isVisible;
+			setIsElementVisible( isVisible );
+		} );
+	}, [ isCardMethod ] );
+
 	const checkoutLinkEmail = isCardMethod
 		? getLinkEmail( billingData.email )
 		: undefined;
-	const [ linkEmail, setLinkEmail ] = useState( checkoutLinkEmail );
+	const [ linkEmail, setLinkEmail ] = useState( undefined );
+	const wasVisibleRef = useRef( false );
 
 	// The store updates on every keystroke, and each Payment Element update
 	// re-renders the Link section, so wait until the shopper stops typing.
 	useEffect( () => {
-		if ( ! checkoutLinkEmail ) {
+		const justBecameVisible = isElementVisible && ! wasVisibleRef.current;
+		wasVisibleRef.current = isElementVisible;
+		if ( ! isElementVisible || ! checkoutLinkEmail ) {
 			return;
 		}
-		const timeout = setTimeout(
-			() => setLinkEmail( checkoutLinkEmail ),
-			LINK_EMAIL_DEBOUNCE_MS
-		);
+		// Deliver the current email right away when the element comes into
+		// view; debounce every other change.
+		if ( justBecameVisible ) {
+			setLinkEmail( checkoutLinkEmail );
+			return;
+		}
+		const timeout = setTimeout( () => {
+			if ( isElementVisibleRef.current ) {
+				setLinkEmail( checkoutLinkEmail );
+			}
+		}, LINK_EMAIL_DEBOUNCE_MS );
 		return () => clearTimeout( timeout );
-	}, [ checkoutLinkEmail ] );
+	}, [ checkoutLinkEmail, isElementVisible ] );
 
 	useEffect(
 		() =>
