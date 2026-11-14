@@ -6767,6 +6767,24 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return $request;
 	}
 
+	public function test_process_payment_keeps_subscription_status_when_card_change_is_rate_limited() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::PROCESSING );
+
+		$_GET['change_payment_method'] = $order->get_id();
+		WC_Subscriptions::set_wcs_is_subscription( '__return_true' );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( true );
+
+		$result = $this->card_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
+		$this->assertSame( 'processing', wc_get_order( $order->get_id() )->get_status() );
+	}
+
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
 		$order = WC_Helper_Order::create_order();
 

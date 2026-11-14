@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep a subscription active when a payment method change is refused before the card is checked, for example after too many failed attempts.

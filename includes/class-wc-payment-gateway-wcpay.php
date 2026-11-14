@@ -1475,7 +1475,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		// A subscription only reaches the gateway to change its payment method; refuse any other pay-for-order
-		// request for one. Returned as a failure, not thrown: a subscription rejects update_status( 'failed' ) in the catch.
+		// request for one. Returned as a failure, not thrown, so the catch can't set the subscription to failed.
 		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) && ! $this->is_changing_payment_method_for_subscription() ) {
 			Logger::error( sprintf( 'Refused to process a payment for subscription #%d outside of the change payment method flow.', $order->get_id() ) );
 			wc_add_notice( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ), 'error' );
@@ -1486,8 +1486,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		// A card change passes the subscription itself. It lasts for years, and reaching the limit would set it
-		// to failed in the catch below, so its declines count in the session only.
+		// A card change passes the subscription itself. It lasts for years, so its declines count in the session only.
 		$rate_limited_order = function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ? null : $order;
 
 		// A subscription keeps the intent of its last successful card change, and nothing clears it. Remember
@@ -1643,7 +1642,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 */
 			if ( $e instanceof Process_Payment_Exception && 'duplicate_payment_amount_mismatch' === $e->get_error_code() ) {
 				$order->update_status( Order_Status::FAILED, $e->getMessage() );
-			} elseif ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+			} elseif ( ! $blocked_by_fraud_rules && ! $this->is_changing_payment_method_for_subscription( $order ) && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+				// A subscription has no failed status: WooCommerce would store it as pending, which stops its renewals.
 				$order->update_status( Order_Status::FAILED );
 			}
 
