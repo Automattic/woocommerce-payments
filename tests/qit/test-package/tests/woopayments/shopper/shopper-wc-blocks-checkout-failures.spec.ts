@@ -165,5 +165,21 @@ test.describe(
 				await assertCheckoutError( shopperPage, error );
 			} );
 		}
+
+		test( 'should successfully complete order after retrying with a valid card without refreshing the page', async () => {
+			// First attempt: declined card.
+			await fillCardDetailsWCB( shopperPage, config.cards.declined );
+			await placeOrderWCB( shopperPage, false );
+
+			await expect(
+				shopperPage
+					.locator( '.wc-block-checkout__form' )
+					.getByText( 'Your card was declined.' )
+			).toBeVisible();
+
+			// Second attempt: valid card, same page, no refresh.
+			await fillCardDetailsWCB( shopperPage, config.cards.basic );
+			await placeOrderWCB( shopperPage, true );
+		} );
 	}
 );
