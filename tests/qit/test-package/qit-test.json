@@ -41,7 +41,7 @@
             "tags": ["woopayments", "shopper", "checkout", "critical"],
             "test": {
                 "phases": {
-                    "run": ["npx playwright test --project=shopper"]
+                    "run": ["npx playwright test --project=default --project=shopper"]
                 }
             }
         },
@@ -50,7 +50,7 @@
             "tags": ["woopayments", "merchant", "admin"],
             "test": {
                 "phases": {
-                    "run": ["npx playwright test --project=merchant"]
+                    "run": ["npx playwright test --project=default --project=merchant"]
                 }
             }
         },
@@ -62,7 +62,7 @@
             },
             "test": {
                 "phases": {
-                    "run": ["npx playwright test --project=subscriptions"]
+                    "run": ["npx playwright test --project=default --project=subscriptions"]
                 }
             }
         }
