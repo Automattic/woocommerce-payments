@@ -170,6 +170,11 @@ if ! wp theme is-installed storefront > /dev/null 2>&1; then
 fi
 wp theme activate storefront
 
+# The site-editor checkout and currency switcher tests switch to a block theme.
+if ! wp theme is-installed twentytwentyfour > /dev/null 2>&1; then
+    wp theme install twentytwentyfour
+fi
+
 # WooCommerce only applies Storefront's 3x4 product grid on `after_switch_theme`, which never fires
 # when Storefront is already active, leaving the 4x4 default. Product page numbers in the config
 # assume 12 products per page.

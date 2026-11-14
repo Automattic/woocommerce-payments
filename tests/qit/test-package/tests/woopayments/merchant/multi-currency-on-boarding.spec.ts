@@ -33,26 +33,12 @@ test.describe(
 
 		test.beforeAll( async ( { adminPage } ) => {
 			wasMulticurrencyEnabled = await activateMulticurrency( adminPage );
-			try {
-				activeThemeSlug = await getActiveThemeSlug();
-			} catch ( error ) {
-				// Fallback if theme detection fails
-				activeThemeSlug = 'twentytwentyfour';
-			}
+			activeThemeSlug = await getActiveThemeSlug();
 		} );
 
 		test.afterAll( async ( { adminPage } ) => {
-			// Restore original theme (if we were able to detect it)
-			try {
-				if (
-					activeThemeSlug &&
-					activeThemeSlug !== 'twentytwentyfour'
-				) {
-					await activateTheme( activeThemeSlug );
-				}
-			} catch ( error ) {
-				// Theme restoration failed, but don't crash the cleanup
-			}
+			// Restore original theme.
+			await activateTheme( activeThemeSlug );
 			await restoreCurrencies( adminPage );
 			if ( ! wasMulticurrencyEnabled ) {
 				await deactivateMulticurrency( adminPage );
@@ -240,44 +226,21 @@ test.describe(
 			test( 'should offer the currency switcher widget while Storefront theme is active', async ( {
 				adminPage,
 			} ) => {
-				try {
-					await activateTheme( 'storefront' );
-				} catch ( error ) {
-					// Skip test if storefront theme cannot be activated
-					test.skip(
-						true,
-						'Storefront theme not available in QIT environment'
-					);
-					return;
-				}
+				await activateTheme( 'storefront' );
 				await goToMultiCurrencyOnboarding( adminPage );
 				await goToNextOnboardingStep( adminPage );
 
-				// Check if the storefront switcher option is available
 				const storefrontSwitcher = adminPage.getByTestId(
 					'enable_storefront_switcher'
 				);
-				const switcherCount = await storefrontSwitcher.count();
-				if ( switcherCount > 0 ) {
-					await storefrontSwitcher.check();
-					await expect( storefrontSwitcher ).toBeChecked();
-				} else {
-					// Skip if switcher not found (theme-dependent functionality)
-					test.skip(
-						true,
-						'Storefront switcher not available - theme may not support it'
-					);
-				}
+				await storefrontSwitcher.check();
+				await expect( storefrontSwitcher ).toBeChecked();
 			} );
 
 			test( 'should not offer the currency switcher widget when an unsupported theme is active', async ( {
 				adminPage,
 			} ) => {
-				try {
-					await activateTheme( 'twentytwentyfour' );
-				} catch ( error ) {
-					// Default theme should always be available, but be safe
-				}
+				await activateTheme( 'twentytwentyfour' );
 				await goToMultiCurrencyOnboarding( adminPage );
 				await goToNextOnboardingStep( adminPage );
 
@@ -287,12 +250,7 @@ test.describe(
 				);
 				await expect( storefrontSwitcher ).toBeHidden();
 
-				// Try to restore storefront theme (best effort)
-				try {
-					await activateTheme( 'storefront' );
-				} catch ( error ) {
-					// Theme restoration failed, but test is complete
-				}
+				await activateTheme( 'storefront' );
 			} );
 		} );
 	}
