@@ -25,6 +25,8 @@ test.describe(
 		const customerBillingConfig =
 			config.addresses[ 'subscriptions-customer' ].billing;
 
+		let subscriptionId: string;
+
 		test.beforeAll( async () => {
 			await recreateCustomer();
 		} );
@@ -41,6 +43,18 @@ test.describe(
 			await expect(
 				customerPage.getByRole( 'heading', { name: 'Order received' } )
 			).toBeVisible();
+
+			// Capture the subscription ID for the Action Scheduler lookup.
+			subscriptionId = (
+				( await customerPage
+					.getByRole( 'link', {
+						name: 'View subscription number',
+					} )
+					.textContent() ) ?? ''
+			)
+				.trim()
+				.replace( '#', '' );
+			expect( subscriptionId ).not.toBe( '' );
 		} );
 
 		test( 'should renew a subscription with action scheduler', async ( {
@@ -57,15 +71,14 @@ test.describe(
 
 			await adminPage.locator( '#search-submit' ).click();
 
-			// The pending-actions list can contain more than one "Run" link; scope to
-			// the first so the click is deterministic instead of throwing a strict-mode
-			// violation when an extra scheduled payment is queued.
-			const runAction = adminPage
-				.getByRole( 'link', { name: 'Run' } )
+			// Find the action row matching our subscription ID in the args column.
+			const actionRow = adminPage
+				.locator( 'tr' )
+				.filter( { hasText: subscriptionId } )
 				.first();
 			// WP keeps row actions off-screen until the row is hovered.
-			await adminPage.locator( 'tr', { has: runAction } ).first().hover();
-			await runAction.click();
+			await actionRow.hover();
+			await actionRow.getByRole( 'link', { name: 'Run' } ).click();
 
 			await expect(
 				adminPage.getByText( actionSchedulerHook, { exact: true } )
