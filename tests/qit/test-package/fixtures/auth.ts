@@ -114,11 +114,12 @@ export const expect = test.expect;
  */
 export const recreateCustomer = async () => {
 	const { username, password, email } = config.users.customer;
-	const exists = await qit.wp( `user get ${ username } --field=ID`, true ).then(
-		() => true,
-		() => false
+	// `user list` exits 0 with no output when the user is missing, so a failed request is never read as "missing".
+	const { stdout } = await qit.wp(
+		`user list --login=${ username } --field=ID`,
+		true
 	);
-	if ( exists ) {
+	if ( stdout.trim() ) {
 		await qit.wp( `user delete ${ username } --yes`, true );
 	}
 	await qit.wp(
