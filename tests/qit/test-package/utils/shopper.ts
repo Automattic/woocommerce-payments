@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Locator, Page, expect } from 'playwright/test';
+import { Page, expect } from 'playwright/test';
 /**
  * Internal dependencies
  */
@@ -173,89 +173,11 @@ export const placeOrder = async ( page: Page ) => {
 	}
 };
 
-const orderConfirmationTimeout = 30_000;
-
-const isLocatorVisible = async ( locator: Locator ) => {
-	try {
-		return await locator.isVisible();
-	} catch ( _error ) {
-		return false;
-	}
-};
-
 export const waitForOrderConfirmationWCB = async ( page: Page ) => {
-	const orderReceivedHeading = page
-		.getByRole( 'heading', { name: 'Order received' } )
-		.first();
-	const orderConfirmationHeading = page
-		.getByRole( 'heading', { name: 'Order confirmation' } )
-		.first();
-	const thankYouNotice = page
-		.locator( '.woocommerce-notice.woocommerce-notice--success' )
-		.first();
-
-	await new Promise< void >( ( resolve, reject ) => {
-		let settled = false;
-		const timer = setTimeout( () => {
-			if ( settled ) {
-				return;
-			}
-			settled = true;
-			reject(
-				new Error(
-					'Timed out waiting for the Blocks checkout confirmation view.'
-				)
-			);
-		}, orderConfirmationTimeout );
-
-		const handleSuccess = () => {
-			if ( settled ) {
-				return;
-			}
-			settled = true;
-			clearTimeout( timer );
-			resolve();
-		};
-
-		page.waitForURL( /\/order-received\//, {
-			timeout: orderConfirmationTimeout,
-		} )
-			.then( handleSuccess )
-			.catch( () => undefined );
-		orderReceivedHeading
-			.waitFor( {
-				state: 'visible',
-				timeout: orderConfirmationTimeout,
-			} )
-			.then( handleSuccess )
-			.catch( () => undefined );
-		orderConfirmationHeading
-			.waitFor( {
-				state: 'visible',
-				timeout: orderConfirmationTimeout,
-			} )
-			.then( handleSuccess )
-			.catch( () => undefined );
-		thankYouNotice
-			.waitFor( {
-				state: 'visible',
-				timeout: orderConfirmationTimeout,
-			} )
-			.then( handleSuccess )
-			.catch( () => undefined );
-	} );
-
-	if ( await isLocatorVisible( orderReceivedHeading ) ) {
-		await expect( orderReceivedHeading ).toBeVisible();
-		return;
-	}
-
-	if ( await isLocatorVisible( orderConfirmationHeading ) ) {
-		await expect( orderConfirmationHeading ).toBeVisible();
-		return;
-	}
-
-	await expect( thankYouNotice ).toBeVisible();
+	await page.waitForURL( /\/order-received\// );
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
 };
 
 export const placeOrderWCB = async (
@@ -267,7 +189,12 @@ export const placeOrderWCB = async (
 	} );
 
 	await placeOrderButton.focus();
-	await waitForUiRefresh( page );
+	await expect( placeOrderButton ).toBeEnabled();
+	// Payment methods without fields (e.g. Alipay) give the test nothing to
+	// wait on, so it can click before Stripe's Payment Element is ready.
+	await expect(
+		page.locator( '.wcpay-payment-element-skeleton:not(.is-hidden)' )
+	).toHaveCount( 0 );
 
 	await placeOrderButton.click();
 
