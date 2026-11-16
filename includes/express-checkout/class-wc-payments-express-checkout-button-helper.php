@@ -56,9 +56,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	private $rejected_for_cart_state = false;
 
 	/**
-	 * Whether the Store API can take the express checkout payment, keyed by Pay for Order order ID.
+	 * Whether the Store API can take the payment, keyed by Pay for Order order ID, then by whether a
+	 * wallet fills the missing details (express checkout) or not (WooPay).
 	 *
-	 * @var array<int, bool>
+	 * @var array<int, array<int, bool>>
 	 */
 	private $pay_for_order_support = [];
 
@@ -1118,9 +1119,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * The order is only read with the key from the payment link: scripts load before WooCommerce
 	 * checks the key, and the answer depends on the order's address.
 	 *
+	 * @param bool $wallet_fills_details Whether a wallet fills an empty email, phone and shipping
+	 *                                   last name, as the express checkout does.
+	 *
 	 * @return bool
 	 */
-	private function is_pay_for_order_supported() {
+	private function is_pay_for_order_supported( bool $wallet_fills_details = true ) {
 		$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 		if ( null === $order ) {
 			return false;
@@ -1128,28 +1132,45 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Asked several times per page load; the answer can't change within the request.
 		$order_id = $order->get_id();
-		if ( ! isset( $this->pay_for_order_support[ $order_id ] ) ) {
-			$this->pay_for_order_support[ $order_id ] = $this->can_store_api_pay_for_order( $order );
+		$flow     = (int) $wallet_fills_details;
+		if ( ! isset( $this->pay_for_order_support[ $order_id ][ $flow ] ) ) {
+			$this->pay_for_order_support[ $order_id ][ $flow ] = $this->can_store_api_pay_for_order( $order, $wallet_fills_details );
 		}
 
-		return $this->pay_for_order_support[ $order_id ];
+		return $this->pay_for_order_support[ $order_id ][ $flow ];
 	}
 
 	/**
-	 * Whether the Store API will accept the express checkout payment for the order.
+	 * Determines whether the current Pay for Order page can be paid via the WooPay button.
 	 *
-	 * @param WC_Order $order The order to be paid.
+	 * WooPay pays the order through the same Store API endpoint, sending the order's addresses as
+	 * the Store API returned them. On Pay for Order the shopper can't change them in WooPay, and
+	 * nothing fills an empty email, phone or shipping last name, so the order must already have them.
 	 *
 	 * @return bool
 	 */
-	private function can_store_api_pay_for_order( WC_Order $order ): bool {
+	public function is_pay_for_order_supported_by_woopay(): bool {
+		return $this->is_pay_for_order_supported( false );
+	}
+
+	/**
+	 * Whether the Store API will accept the payment for the order.
+	 *
+	 * @param WC_Order $order                The order to be paid.
+	 * @param bool     $wallet_fills_details Whether a wallet fills an empty email, phone and shipping last name.
+	 *
+	 * @return bool
+	 */
+	private function can_store_api_pay_for_order( WC_Order $order, bool $wallet_fills_details ): bool {
+		$button = $wallet_fills_details ? 'Express Checkout Element button' : 'WooPay button';
+
 		if ( $this->has_required_additional_checkout_fields() ) {
-			Logger::log( 'The store has required additional checkout fields, which Pay for Order does not send ( Express Checkout Element button disabled )' );
+			Logger::log( "The store has required additional checkout fields, which Pay for Order does not send ( $button disabled )" );
 			return false;
 		}
 
-		if ( ! $this->can_store_api_accept_order_addresses( $order ) ) {
-			Logger::log( 'The order address is incomplete or invalid for the Store API ( Express Checkout Element button disabled )' );
+		if ( ! $this->can_store_api_accept_order_addresses( $order, $wallet_fills_details ) ) {
+			Logger::log( "The order address is incomplete or invalid for the Store API ( $button disabled )" );
 			return false;
 		}
 
@@ -1169,18 +1190,19 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * The addresses go through the Store API's own address schemas: the response formatting the
 	 * express checkout receives, then the request validation and sanitization it is checked with.
 	 *
-	 * @param WC_Order $order The order to be paid.
+	 * @param WC_Order $order                The order to be paid.
+	 * @param bool     $wallet_fills_details Whether a wallet fills an empty email, phone and shipping last name.
 	 *
 	 * @return bool
 	 */
-	private function can_store_api_accept_order_addresses( WC_Order $order ): bool {
+	private function can_store_api_accept_order_addresses( WC_Order $order, bool $wallet_fills_details ): bool {
 		$schemas = $this->get_store_api_address_schemas();
 		if ( null === $schemas ) {
 			return false;
 		}
 
 		$request               = new WP_REST_Request( 'POST' );
-		$wallet_provides_phone = 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' );
+		$wallet_provides_phone = $wallet_fills_details && 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' );
 		// Validate a copy, so the order the page is rendering is left untouched.
 		$candidate = clone $order;
 		$addresses = [];
@@ -1193,7 +1215,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				$address = $schema->get_item_response( $order );
 
 				// The express checkout fills a blank shipping last name, which WooCommerce requires.
-				if ( 'shipping' === $type && '' !== (string) ( $address['country'] ?? '' ) && '' === trim( (string) ( $address['last_name'] ?? '' ) ) ) {
+				if ( $wallet_fills_details && 'shipping' === $type && '' !== (string) ( $address['country'] ?? '' ) && '' === trim( (string) ( $address['last_name'] ?? '' ) ) ) {
 					$address['last_name'] = '-';
 				}
 
@@ -1203,6 +1225,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				}
 
 				$address = (array) $schema->sanitize_callback( $address, $request, $param );
+
+				// The Store API requires a valid billing email before it takes the payment. Only a
+				// wallet provides one when the order has none.
+				if ( ! $wallet_fills_details && 'billing' === $type && ! is_email( (string) ( $address['email'] ?? '' ) ) ) {
+					return false;
+				}
+
 				if ( $wallet_provides_phone && '' === trim( (string) ( $address['phone'] ?? '' ) ) ) {
 					// Stands in for the wallet's phone. It must pass phone validation, because address
 					// validation hooks see it, e.g. woocommerce_blocks_validate_location_address_fields.

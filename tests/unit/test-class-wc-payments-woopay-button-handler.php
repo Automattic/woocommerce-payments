@@ -108,6 +108,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 					'is_product',
 					'is_express_checkout_method_enabled_at',
 					'is_product_purchasable',
+					'is_pay_for_order_page',
+					'is_pay_for_order_supported_by_woopay',
 				]
 			)
 			->getMock();
@@ -323,6 +325,32 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'enqueued' ) );
 		$this->assertFalse( wp_script_is( 'WCPAY_WOOPAY_COMMON_CONFIG', 'enqueued' ) );
+	}
+
+	/**
+	 * @dataProvider provider_pay_for_order_support
+	 */
+	public function test_should_show_woopay_button_on_pay_for_order_depends_on_the_order( bool $is_supported ) {
+		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
+		$this->mock_pr->method( 'is_woopay_enabled' )->willReturn( true );
+		$this->mock_woopay_utilities->method( 'is_country_available' )->willReturn( true );
+		$this->mock_express_checkout_helper->method( 'is_checkout' )->willReturn( true );
+		$this->mock_express_checkout_helper->method( 'is_express_checkout_method_enabled_at' )->willReturn( true );
+		$this->mock_express_checkout_helper->method( 'is_pay_for_order_page' )->willReturn( true );
+		$this->mock_express_checkout_helper->method( 'is_pay_for_order_supported_by_woopay' )->willReturn( $is_supported );
+
+		try {
+			$this->assertSame( $is_supported, $this->mock_pr->should_show_woopay_button() );
+		} finally {
+			remove_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
+		}
+	}
+
+	public function provider_pay_for_order_support(): array {
+		return [
+			'order the Store API accepts' => [ true ],
+			'order the Store API rejects' => [ false ],
+		];
 	}
 
 	public function test_should_show_woopay_button_unsupported_product_at_checkout() {

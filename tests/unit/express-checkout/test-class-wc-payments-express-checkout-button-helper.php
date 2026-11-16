@@ -1023,6 +1023,80 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		}
 	}
 
+	/**
+	 * WooPay sends the order's addresses as they are: nothing fills an empty email, phone or shipping
+	 * last name, unlike the express checkout's wallet.
+	 *
+	 * @dataProvider provider_pay_for_order_woopay_orders
+	 */
+	public function test_pay_for_order_woopay_needs_the_details_the_wallet_would_fill( array $billing_address, array $shipping_address, bool $expected_woopay ) {
+		update_option( 'woocommerce_checkout_phone_field', 'required' );
+		WC()->countries->locale = [];
+		$order                  = empty( $shipping_address ) ? $this->create_fee_only_order( $billing_address ) : WC_Helper_Order::create_order( 1, 100 );
+		if ( ! empty( $shipping_address ) ) {
+			$this->set_order_address( $order, 'billing', $billing_address );
+			$this->set_order_address( $order, 'shipping', $shipping_address );
+		}
+
+		try {
+			foreach ( [
+				'Store API validation' => false,
+				'Fallback validation'  => true,
+			] as $path => $use_fallback ) {
+				$helper = $this->make_helper_for_pay_for_order_page( $order, $use_fallback );
+				$this->assertSame( $expected_woopay, $helper->is_pay_for_order_supported_by_woopay(), "WooPay, $path" );
+				$this->assertTrue( $helper->should_show_express_checkout_button(), "Express checkout, $path" );
+			}
+		} finally {
+			delete_option( 'woocommerce_checkout_phone_field' );
+			WC()->countries->locale = [];
+		}
+	}
+
+	public function provider_pay_for_order_woopay_orders(): array {
+		$complete_billing = array_merge(
+			self::COMPLETE_GB_ADDRESS,
+			[
+				'email' => 'jane@example.com',
+				'phone' => '020 7946 0000',
+			]
+		);
+
+		// The shipping address needs its own phone when the phone is required.
+		$complete_shipping = array_merge( self::COMPLETE_US_ADDRESS, [ 'phone' => '212 555 0100' ] );
+
+		return [
+			'complete billing address'   => [ $complete_billing, [], true ],
+			'no email'                   => [ array_merge( $complete_billing, [ 'email' => '' ] ), [], false ],
+			'no phone'                   => [ array_merge( $complete_billing, [ 'phone' => '' ] ), [], false ],
+			'complete shipping address'  => [ $complete_billing, $complete_shipping, true ],
+			'shipping without last name' => [ $complete_billing, array_merge( $complete_shipping, [ 'last_name' => '' ] ), false ],
+		];
+	}
+
+	public function test_pay_for_order_woopay_is_hidden_when_the_order_address_is_rejected() {
+		$order = $this->create_fee_only_order( [ 'email' => 'jane@example.com' ] );
+
+		$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order )->is_pay_for_order_supported_by_woopay() );
+	}
+
+	public function test_pay_for_order_woopay_is_hidden_without_the_order_key() {
+		$order  = $this->create_fee_only_order(
+			array_merge(
+				self::COMPLETE_GB_ADDRESS,
+				[
+					'email' => 'jane@example.com',
+					'phone' => '020 7946 0000',
+				]
+			)
+		);
+		$helper = $this->make_helper_for_pay_for_order_page( $order );
+
+		$_GET['key'] = self::WRONG_ORDER_KEY;
+
+		$this->assertFalse( $helper->is_pay_for_order_supported_by_woopay() );
+	}
+
 	public function test_pay_for_order_button_is_hidden_when_validation_throws_an_error() {
 		$order = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
 		$throw = function () {
