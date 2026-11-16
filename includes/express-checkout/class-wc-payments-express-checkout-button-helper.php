@@ -7,6 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields;
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\StoreApi\Utilities\OrderController;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
@@ -1113,7 +1116,259 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
+		if ( $this->has_required_additional_checkout_fields() ) {
+			Logger::log( 'The store has required additional checkout fields, which Pay for Order does not send ( Express Checkout Element button disabled )' );
+			return false;
+		}
+
+		if ( ! $this->can_store_api_accept_order_addresses( $order ) ) {
+			Logger::log( 'The order address is incomplete or invalid for the Store API ( Express Checkout Element button disabled )' );
+			return false;
+		}
+
 		return true;
+	}
+
+	/**
+	 * Whether the Store API will accept the order's saved addresses when the express checkout
+	 * payment places the order.
+	 *
+	 * The payment sends the order's addresses as the Store API returned them, and fills only an
+	 * empty email or phone from the wallet (see `client/express-checkout/order-api.js`). The Store
+	 * API validates them like checkout input, so an order with a missing or invalid address (e.g. a
+	 * merchant-created order without a billing country) can't be paid this way. Card payment on the
+	 * same page doesn't need the address.
+	 *
+	 * @param WC_Order $order The order to be paid.
+	 *
+	 * @return bool
+	 */
+	private function can_store_api_accept_order_addresses( WC_Order $order ): bool {
+		$addresses = [
+			'billing'  => $this->get_order_address_as_sent( $order, 'billing' ),
+			'shipping' => $this->get_order_address_as_sent( $order, 'shipping' ),
+		];
+
+		// The request schema checks the format of both addresses, even when the order doesn't ship.
+		foreach ( $addresses as $address ) {
+			if ( ! $this->is_address_format_valid( $address ) ) {
+				return false;
+			}
+		}
+
+		// Validate a copy, so the order the page is rendering is left untouched.
+		$candidate             = clone $order;
+		$wallet_provides_phone = 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' );
+		foreach ( $addresses as $type => $address ) {
+			if ( $wallet_provides_phone && '' === trim( $address['phone'] ?? '' ) ) {
+				// Any non-empty value: the required-field check only needs to know a phone will be sent.
+				$address['phone'] = 'wallet';
+			}
+			// Only the fields changed above, so setters that validate (like the email's) can't throw.
+			foreach ( array_diff_assoc( $address, $order->get_address( $type ) ) as $key => $value ) {
+				$setter = "set_{$type}_{$key}";
+				if ( is_callable( [ $candidate, $setter ] ) ) {
+					$candidate->{$setter}( $value );
+				}
+			}
+		}
+
+		$order_controller = $this->get_store_api_order_controller();
+		if ( null === $order_controller ) {
+			return $this->are_order_addresses_complete( $candidate );
+		}
+
+		try {
+			$order_controller->validate_existing_order_before_update( $candidate );
+		} catch ( Exception $e ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns the Store API order controller when it can validate an existing order's addresses
+	 * (WooCommerce 11.0+), or null to use `are_order_addresses_complete()` instead.
+	 *
+	 * @return OrderController|null
+	 */
+	protected function get_store_api_order_controller() {
+		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '11.0.0', '<' ) ) {
+			return null;
+		}
+
+		try {
+			return new OrderController();
+		} catch ( Throwable $e ) {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns an order address as the Store API returns it to the express checkout, which sends it
+	 * back when placing the order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @param string   $type  Address type, 'billing' or 'shipping'.
+	 *
+	 * @return array
+	 */
+	private function get_order_address_as_sent( WC_Order $order, string $type ): array {
+		$address = array_map( 'strval', $order->get_address( $type ) );
+
+		// The Store API returns a state that isn't valid for the country as blank.
+		$states = '' !== $address['country'] ? array_filter( (array) WC()->countries->get_states( $address['country'] ) ) : [];
+		if ( '' !== $address['state'] && count( $states ) && ! in_array( wc_strtoupper( $address['state'] ), array_map( 'wc_strtoupper', array_keys( $states ) ), true ) ) {
+			$address['state'] = '';
+		}
+
+		// The express checkout fills a blank shipping last name, which WooCommerce requires.
+		if ( 'shipping' === $type && '' !== $address['country'] && '' === trim( $address['last_name'] ?? '' ) ) {
+			$address['last_name'] = '-';
+		}
+
+		return $address;
+	}
+
+	/**
+	 * Whether an address passes the Store API's request format checks. Blank values aren't checked
+	 * here; the required-field validation covers them.
+	 *
+	 * @param array $address The address.
+	 *
+	 * @return bool
+	 */
+	private function is_address_format_valid( array $address ): bool {
+		$country  = wc_strtoupper( $address['country'] ?? '' );
+		$postcode = trim( $address['postcode'] ?? '' );
+		$phone    = trim( $address['phone'] ?? '' );
+
+		if ( '' !== $country && ! array_key_exists( $country, WC()->countries->get_countries() ) ) {
+			return false;
+		}
+
+		if ( '' !== $postcode && ! WC_Validation::is_postcode( wc_format_postcode( $postcode, $country ), $country ) ) {
+			return false;
+		}
+
+		return '' === $phone || WC_Validation::is_phone( $phone, $country );
+	}
+
+	/**
+	 * Mirrors `OrderController::validate_addresses()` for WooCommerce versions before 11.0, whose
+	 * Store API has no public method to validate an existing order's addresses.
+	 *
+	 * The shipping country is checked unless the order ships only by local pickup. Upstream reads
+	 * that from the cart's shipping packages, which say nothing about this order.
+	 *
+	 * @param WC_Order $order The order, with the addresses that will be sent.
+	 *
+	 * @return bool
+	 */
+	private function are_order_addresses_complete( WC_Order $order ): bool {
+		$countries      = WC()->countries;
+		$needs_shipping = $order->needs_shipping();
+
+		if (
+			$needs_shipping &&
+			$order->needs_shipping_address() &&
+			! array_key_exists( $order->get_shipping_country(), (array) $countries->get_shipping_countries() )
+		) {
+			return false;
+		}
+
+		if ( ! array_key_exists( $order->get_billing_country(), (array) $countries->get_allowed_countries() ) ) {
+			return false;
+		}
+
+		$address_types = $needs_shipping ? [ 'shipping', 'billing' ] : [ 'billing' ];
+		foreach ( $address_types as $address_type ) {
+			if ( $this->has_missing_required_address_field( $order, $address_type ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Mirrors `OrderController::validate_address_fields()`: whether a field the address's country
+	 * requires is empty.
+	 *
+	 * @param WC_Order $order        The order.
+	 * @param string   $address_type Address type, 'billing' or 'shipping'.
+	 *
+	 * @return bool
+	 */
+	private function has_missing_required_address_field( WC_Order $order, string $address_type ): bool {
+		$countries      = WC()->countries;
+		$all_locales    = $countries->get_country_locale();
+		$address        = $order->get_address( $address_type );
+		$current_locale = $all_locales[ $address['country'] ] ?? [];
+		$default_locale = $all_locales['default'] ?? null;
+
+		if ( ! is_array( $default_locale ) ) {
+			$default_locale = $countries->get_default_address_fields();
+		}
+
+		foreach ( $default_locale as $key => $value ) {
+			$current_locale[ $key ] = ! empty( $current_locale[ $key ] )
+				? wp_parse_args( $current_locale[ $key ], $value )
+				: $value;
+		}
+
+		foreach ( $current_locale as $field_key => $field ) {
+			if (
+				true !== wc_string_to_bool( $field['required'] ?? false ) ||
+				true === wc_string_to_bool( $field['hidden'] ?? false )
+			) {
+				continue;
+			}
+
+			$value = $address[ $field_key ] ?? null;
+			if ( null === $value || ( is_string( $value ) && '' === trim( $value ) ) || ( is_array( $value ) && 0 === count( $value ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether the store has a required additional checkout field in the contact or order section.
+	 *
+	 * The Store API then requires `additional_fields` on every checkout request. The Pay for Order
+	 * express checkout doesn't send them, so its payments would always fail.
+	 *
+	 * @return bool
+	 */
+	private function has_required_additional_checkout_fields(): bool {
+		if ( ! class_exists( Package::class ) || ! class_exists( CheckoutFields::class ) ) {
+			return false;
+		}
+
+		try {
+			$checkout_fields = Package::container()->get( CheckoutFields::class );
+		} catch ( Throwable $e ) {
+			return false;
+		}
+
+		if ( ! is_object( $checkout_fields ) || ! method_exists( $checkout_fields, 'get_fields_for_location' ) ) {
+			return false;
+		}
+
+		foreach ( [ 'contact', 'order' ] as $location ) {
+			foreach ( (array) $checkout_fields->get_fields_for_location( $location ) as $field ) {
+				// Conditionally required fields aren't required by the request schema.
+				$is_conditional = method_exists( $checkout_fields, 'is_conditional_field' ) && $checkout_fields->is_conditional_field( $field );
+				if ( ! $is_conditional && true === ( $field['required'] ?? false ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

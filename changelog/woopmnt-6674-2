@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide Apple Pay and Google Pay on payment links when the order's address would make the payment fail.
