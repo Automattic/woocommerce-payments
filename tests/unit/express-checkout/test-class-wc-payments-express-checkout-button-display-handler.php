@@ -255,10 +255,42 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		ob_end_clean();
 	}
 
+	public function test_display_express_checkout_buttons_on_cart_block_page_with_cart() {
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id() );
+
+		try {
+			$output = $this->render_express_checkout_buttons_on_cart_block_page();
+		} finally {
+			WC()->cart->empty_cart();
+		}
+
+		$this->assertStringContainsString( 'wcpay-woopay-button', $output );
+	}
+
 	public function test_display_express_checkout_buttons_on_cart_block_page_without_cart() {
+		// The Add to Cart with Options block fires the display hook when the REST API renders a page with a Cart block, and REST requests have no cart.
+		$cart      = WC()->cart;
+		WC()->cart = null;
+
+		try {
+			$output = $this->render_express_checkout_buttons_on_cart_block_page();
+		} finally {
+			WC()->cart = $cart;
+		}
+
+		$this->assertSame( '', $output );
+	}
+
+	/**
+	 * Renders the express checkout buttons on a Cart block page through the real WooPay handler and helper,
+	 * with WooPay and Apple Pay / Google Pay enabled on the cart page.
+	 *
+	 * @return string The rendered markup.
+	 */
+	private function render_express_checkout_buttons_on_cart_block_page(): string {
 		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
-		WC_Payments::mode()->dev();
 		$this->mock_woopay_utilities->method( 'is_country_available' )->willReturn( true );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'payment_request', 'woopay' ] );
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
 			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
@@ -276,23 +308,18 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			$this->mock_express_checkout_ajax_handler,
 			$helper
 		);
-		// The Add to Cart with Options block fires the display hook when the REST API renders a page with a Cart block, and REST requests have no cart.
+		WC_Payments::mode()->dev();
 		$GLOBALS['post'] = $this->factory->post->create_and_get( [ 'post_content' => '<!-- wp:woocommerce/cart /-->' ] ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$cart            = WC()->cart;
-		WC()->cart       = null;
 
 		ob_start();
 		try {
 			$display_handler->display_express_checkout_buttons();
-			$output = ob_get_contents();
+			return (string) ob_get_contents();
 		} finally {
 			ob_end_clean();
-			WC()->cart = $cart;
 			unset( $GLOBALS['post'] );
 			WC_Payments::mode()->live();
 		}
-
-		$this->assertSame( '', $output );
 	}
 
 	public function test_display_express_checkout_buttons_only_woopay() {
