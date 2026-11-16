@@ -244,7 +244,7 @@ class WC_Payments_WooPay_Button_Handler {
 	 */
 	public function should_show_woopay_button() {
 		// WCPay is not available.
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$gateways = WC()->payment_gateways()->get_available_payment_gateways();
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
 			return false;
 		}

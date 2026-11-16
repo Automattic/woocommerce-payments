@@ -15,8 +15,7 @@ if [ -f ".env" ]; then
 	source .env
 fi
 
-# Generate unique test database name per worktree
-TEST_DB_NAME="wcpay_tests_${WORKTREE_ID}"
+TEST_DB_NAME=$("$(dirname "$0")/test-db-name.sh" "$WORKTREE_ID")
 PLUGIN_DIR=/var/www/html/wp-content/plugins/woocommerce-payments
 
 if [ -z "$(docker compose ps -q --status running wordpress)" ]; then

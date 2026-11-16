@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
@@ -81,6 +81,40 @@ describe( 'PaymentDetailsTimeline', () => {
 		);
 
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'shows a refund event for a reversal transaction as a release', () => {
+		const RELEASED_TRANSACTION_ID = 'txn_released';
+		useTimeline.mockReturnValue( {
+			timeline: [
+				{
+					amount_refunded: 1300,
+					currency: 'USD',
+					datetime: 1585940281,
+					deposit: null,
+					type: 'partial_refund',
+					transaction_id: RELEASED_TRANSACTION_ID,
+				},
+			],
+			timelineError: null,
+			isLoading: false,
+		} );
+
+		render(
+			<PaymentDetailsTimeline
+				chargeId="ch_test"
+				releasedTransactionIds={ [ RELEASED_TRANSACTION_ID ] }
+			/>
+		);
+
+		expect(
+			screen.getByText(
+				'The uncaptured $13.00 of the authorization was released to the customer.'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /successfully refunded/ )
+		).not.toBeInTheDocument();
 	} );
 
 	test( 'renders error', () => {

@@ -998,6 +998,7 @@ class WC_Payments_Admin {
 			'fraudServices'                      => $this->fraud_service->get_fraud_services_config(),
 			'stripeJsUrl'                        => WC_Payments_Utils::get_stripe_js_url(),
 			'isJetpackConnected'                 => $this->account->has_working_jetpack_connection(),
+			'autoStartTestDriveOnboarding'       => $this->account->consume_test_drive_auto_start_token(),
 			'isJetpackIdcActive'                 => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'isAccountConnected'                 => $this->account->has_account_data(),
 			'isAccountValid'                     => $account_is_valid,

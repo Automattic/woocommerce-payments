@@ -3,6 +3,20 @@
  * In Person Payments Receipt Template
  *
  * @package WooCommerce\Payments
+ *
+ * @var float|int   $amount_captured
+ * @var array       $coupon_lines
+ * @var array       $branding_logo
+ * @var string      $business_name
+ * @var array       $line_items
+ * @var array       $order
+ * @var array       $payment_method_details
+ * @var string|null $payment_method_display_name
+ * @var array       $receipt
+ * @var array       $support_address
+ * @var string      $support_email
+ * @var string      $support_phone
+ * @var array       $tax_lines
  */
 
 defined( 'ABSPATH' ) || exit;

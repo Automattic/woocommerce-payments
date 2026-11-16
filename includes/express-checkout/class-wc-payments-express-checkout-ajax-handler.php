@@ -64,7 +64,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			define( 'WOOCOMMERCE_CART', true );
 		}
 
-		WC()->shipping->reset_shipping();
+		WC()->shipping()->reset_shipping();
 
 		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
 		$product    = wc_get_product( $product_id );

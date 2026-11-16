@@ -25,6 +25,7 @@ declare const global: {
 		onBoardingDisabled?: boolean;
 		isWooPayStoreCountryAvailable?: boolean;
 		isJetpackConnected: boolean;
+		autoStartTestDriveOnboarding?: boolean;
 		isAccountConnected?: boolean;
 		isAccountValid?: boolean;
 		accountStatus?: {
@@ -189,6 +190,42 @@ describe( 'ConnectAccountPage', () => {
 		);
 	} );
 
+	describe( 'test-drive auto-start', () => {
+		afterEach( () => {
+			window.history.pushState( {}, '', '/' );
+		} );
+
+		test( 'does not auto-start from the URL parameter without the server flag', () => {
+			window.history.pushState(
+				{},
+				'',
+				'?auto_start_test_drive_onboarding=true'
+			);
+			window.fetch = jest
+				.fn()
+				.mockResolvedValue( { json: () => Promise.resolve( {} ) } );
+			global.wcpaySettings.autoStartTestDriveOnboarding = false;
+
+			render( <ConnectAccountPage /> );
+
+			expect( window.fetch ).not.toHaveBeenCalled();
+		} );
+
+		test( 'auto-starts when the server sets the flag', () => {
+			window.fetch = jest
+				.fn()
+				.mockResolvedValue( { json: () => Promise.resolve( {} ) } );
+			global.wcpaySettings.autoStartTestDriveOnboarding = true;
+
+			render( <ConnectAccountPage /> );
+
+			expect( window.fetch ).toHaveBeenCalledWith(
+				expect.stringContaining( 'test_drive=true' ),
+				expect.any( Object )
+			);
+		} );
+	} );
+
 	describe( 'test-drive account status polling', () => {
 		const originalFetch = window.fetch;
 
@@ -197,11 +234,7 @@ describe( 'ConnectAccountPage', () => {
 			jest.useFakeTimers( {
 				doNotFake: [ 'setInterval', 'clearInterval' ],
 			} );
-			window.history.pushState(
-				{},
-				'',
-				'?auto_start_test_drive_onboarding=true'
-			);
+			global.wcpaySettings.autoStartTestDriveOnboarding = true;
 			window.fetch = jest.fn().mockResolvedValue( {
 				json: () =>
 					Promise.resolve( {
@@ -216,7 +249,6 @@ describe( 'ConnectAccountPage', () => {
 
 		afterEach( () => {
 			jest.useRealTimers();
-			window.history.pushState( {}, '', '/' );
 			window.fetch = originalFetch;
 		} );
 
