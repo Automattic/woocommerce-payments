@@ -432,7 +432,8 @@ foreach ( $blocks as $num => $inst ) {
 		continue;
 	}
 	$rendered = is_array( $inst ) ? wp_json_encode( $inst ) : strval( $inst );
-	if ( strpos( $rendered, 'currency-switcher-holder' ) !== false ) {
+	// The option stores the block comment, not its rendered markup.
+	if ( strpos( $rendered, 'multi-currency-switcher' ) !== false ) {
 		$ids[] = 'block-' . $num;
 	}
 }
