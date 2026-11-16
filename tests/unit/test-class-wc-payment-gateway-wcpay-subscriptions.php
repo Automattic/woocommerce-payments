@@ -286,6 +286,54 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'new_payment_method_2', $token->get_token() );
 	}
 
+	public function test_update_failing_payment_method_copies_customer_id_from_renewal() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_stale' );
+		$subscription->save();
+		$renewal_order->update_meta_data( '_stripe_customer_id', 'cus_renewal' );
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID ) );
+		$renewal_order->save();
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( 'cus_renewal', wc_get_order( $subscription->get_id() )->get_meta( '_stripe_customer_id', true ) );
+		$this->assertContains(
+			'WooPayments changed this subscription\'s Stripe customer ID from cus_stale to cus_renewal to match its payment method.',
+			wp_list_pluck( wc_get_order_notes( [ 'order_id' => $subscription->get_id() ] ), 'content' )
+		);
+	}
+
+	public function test_update_failing_payment_method_does_not_add_note_when_customer_id_is_unchanged() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_same' );
+		$subscription->save();
+		$renewal_order->update_meta_data( '_stripe_customer_id', 'cus_same' );
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID ) );
+		$renewal_order->save();
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( [], wc_get_order_notes( [ 'order_id' => $subscription->get_id() ] ) );
+	}
+
+	public function test_update_failing_payment_method_keeps_customer_id_if_renewal_has_none() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_existing' );
+		$subscription->save();
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID ) );
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( 'cus_existing', wc_get_order( $subscription->get_id() )->get_meta( '_stripe_customer_id', true ) );
+		$this->assertSame( [], wc_get_order_notes( [ 'order_id' => $subscription->get_id() ] ) );
+	}
+
 	public function test_update_failing_payment_method_does_not_copy_method_if_renewal_has_no_method() {
 		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
 		$renewal_order = $this->createMock( WC_Order::class );

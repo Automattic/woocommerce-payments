@@ -572,7 +572,7 @@ class WC_Payments_Styles_Cache {
 			$path = explode( '.', $value['ref'] );
 			// Strip the leading 'styles' segment since $styles_context
 			// is already scoped to the styles subtree.
-			if ( ! empty( $path ) && 'styles' === $path[0] ) {
+			if ( 'styles' === $path[0] ) {
 				array_shift( $path );
 			}
 			$value = _wp_array_get( $styles_context, $path );

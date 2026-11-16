@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Apple Pay and Google Pay on payment links for orders without a billing address.
