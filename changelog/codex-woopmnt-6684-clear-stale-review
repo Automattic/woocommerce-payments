@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop showing stale fraud review warnings after a later payment is authorized or succeeds.

@@ -286,6 +286,54 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'new_payment_method_2', $token->get_token() );
 	}
 
+	public function test_update_failing_payment_method_copies_customer_id_from_renewal() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_stale' );
+		$subscription->save();
+		$renewal_order->update_meta_data( '_stripe_customer_id', 'cus_renewal' );
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID ) );
+		$renewal_order->save();
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( 'cus_renewal', wc_get_order( $subscription->get_id() )->get_meta( '_stripe_customer_id', true ) );
+		$this->assertContains(
+			'WooPayments changed this subscription\'s Stripe customer ID from cus_stale to cus_renewal to match its payment method.',
+			wp_list_pluck( wc_get_order_notes( [ 'order_id' => $subscription->get_id() ] ), 'content' )
+		);
+	}
+
+	public function test_update_failing_payment_method_does_not_add_note_when_customer_id_is_unchanged() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_same' );
+		$subscription->save();
+		$renewal_order->update_meta_data( '_stripe_customer_id', 'cus_same' );
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID ) );
+		$renewal_order->save();
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( [], wc_get_order_notes( [ 'order_id' => $subscription->get_id() ] ) );
+	}
+
+	public function test_update_failing_payment_method_keeps_customer_id_if_renewal_has_none() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_existing' );
+		$subscription->save();
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID ) );
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( 'cus_existing', wc_get_order( $subscription->get_id() )->get_meta( '_stripe_customer_id', true ) );
+		$this->assertSame( [], wc_get_order_notes( [ 'order_id' => $subscription->get_id() ] ) );
+	}
+
 	public function test_update_failing_payment_method_does_not_copy_method_if_renewal_has_no_method() {
 		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
 		$renewal_order = $this->createMock( WC_Order::class );
@@ -1628,6 +1676,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			'_wcpay_payment_method_details' => '{"type":"card"}',
 			'_wcpay_transaction_fee'        => '1.23',
 			'_wcpay_net'                    => '8.77',
+			'_wcpay_card_declined_registry' => 1700000000,
 			'_payment_method_id'            => 'pm_reusable',
 			'_stripe_customer_id'           => 'cus_reusable',
 		];
@@ -1645,7 +1694,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$query = $this->wcpay_gateway->update_renewal_meta_data( 'WHERE post_id = 1', null, null );
 
 		$this->assertSame(
-			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net', '_wcpay_payment_details_removed', '_wcpay_superseded_intent_ids', '_wcpay_superseded_payment_succeeded')",
+			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net', '_wcpay_payment_details_removed', '_wcpay_superseded_intent_ids', '_wcpay_superseded_payment_succeeded', '_wcpay_card_declined_registry')",
 			$query
 		);
 	}

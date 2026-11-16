@@ -48,6 +48,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	const LATE_PAYMENT_METHOD_ID = 'pm_late_payment';
 
 	/**
+	 * The intent and payment method of the payment an order is on hold for.
+	 */
+	const ORDER_INTENT_ID         = 'pi_order_payment';
+	const ORDER_PAYMENT_METHOD_ID = 'pm_order_payment';
+
+	/**
 	 * The intent of an authorization the `amount_capturable_updated` tests send.
 	 */
 	const AUTHORIZATION_INTENT_ID = 'pi_mock';
@@ -766,6 +772,142 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'pending', $order->get_status() );
 		$this->assertSame( 'pi_late_payment', $order->get_meta( '_wcpay_superseded_payment_succeeded' ) );
 		$this->assertSame( 1, substr_count( $this->get_order_notes_text( $order ), 'switched to another payment method' ) );
+	}
+
+	/**
+	 * An order on hold waits on the payment it names. A retry with the same saved card shares its payment
+	 * method with the earlier, declined attempt, whose failure can arrive after the retry was authorized.
+	 * A note names both payments, so the merchant can tell why the failure was ignored.
+	 */
+	public function test_payment_intent_failed_leaves_an_order_on_hold_for_another_payment() {
+		$order = $this->create_order_waiting_on_a_payment( Order_Status::ON_HOLD, Intent_Status::REQUIRES_CAPTURE );
+		$this->set_up_payment_intent_failed( $order, self::LATE_INTENT_ID );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		// Stripe can deliver the same event again.
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$notes = $this->get_order_notes_text( $order );
+		$this->assertSame( 1, substr_count( $notes, 'A WooPayments payment <code>pi_late_payment</code> failed, but this order is on hold for payment <code>pi_order_payment</code>, so the order was not updated.' ) );
+		$this->assertStringNotContainsString( 'failed</strong>', $notes );
+	}
+
+	/**
+	 * The failure of the payment an order is on hold for still fails it, as when a bank debit is returned.
+	 */
+	public function test_payment_intent_failed_fails_an_order_on_hold_for_that_payment() {
+		$order = $this->create_order_waiting_on_a_payment( Order_Status::ON_HOLD, Intent_Status::PROCESSING );
+		$this->set_up_payment_intent_failed( $order, self::ORDER_INTENT_ID );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'failed', $order->get_status() );
+		$this->assertStringContainsString( 'pi_order_payment', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * Records current behavior, not a requirement: only an order on hold ignores the failure of a payment it
+	 * no longer names, so a late failure of an earlier attempt still fails a pending order waiting on a
+	 * retry's 3DS. Extending the check to pending orders is left to WOOPMNT-6681.
+	 */
+	public function test_payment_intent_failed_still_fails_a_pending_order_that_names_another_payment() {
+		$order = $this->create_order_waiting_on_a_payment( Order_Status::PENDING, Intent_Status::REQUIRES_ACTION );
+		$this->set_up_payment_intent_failed( $order, self::LATE_INTENT_ID );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 'failed', wc_get_order( $order->get_id() )->get_status() );
+	}
+
+	/**
+	 * An order on hold that names no WooPayments payment is not waiting on one, so a failure leaves it alone.
+	 */
+	public function test_payment_intent_failed_leaves_an_order_on_hold_that_names_no_payment() {
+		$order = $this->create_order_waiting_on_a_payment( Order_Status::ON_HOLD, '' );
+		$order->update_meta_data( '_intent_id', '' );
+		$order->save();
+		$this->set_up_payment_intent_failed( $order, self::LATE_INTENT_ID );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertStringContainsString( 'A WooPayments payment <code>pi_late_payment</code> failed, but this order is not on hold for it, so the order was not updated.', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * A card reader payment's intent is not on the order beforehand, so its failure is handled whatever
+	 * payment an order on hold names.
+	 */
+	public function test_payment_intent_failed_still_handles_a_card_reader_failure_on_an_order_on_hold() {
+		$order = $this->create_order_waiting_on_a_payment( Order_Status::ON_HOLD, Intent_Status::REQUIRES_CAPTURE );
+		$this->set_up_payment_intent_failed( $order, self::LATE_INTENT_ID );
+		$this->event_body['data']['object']['last_payment_error']['payment_method']['type'] = Payment_Method::CARD_PRESENT;
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'mark_terminal_payment_failed' )
+			->with( $order, 'pi_late_payment', 'requires_payment_method', 'ch_late_payment', $this->anything() );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Creates a WooPayments order that names a payment.
+	 *
+	 * @param string $status        The order's status.
+	 * @param string $intent_status The stored status of the order's payment.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_waiting_on_a_payment( string $status, string $intent_status ): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_transaction_id( self::ORDER_INTENT_ID );
+		$order->set_status( $status );
+		$order->update_meta_data( '_intent_id', self::ORDER_INTENT_ID );
+		$order->update_meta_data( '_payment_method_id', self::ORDER_PAYMENT_METHOD_ID );
+		$order->update_meta_data( '_intention_status', $intent_status );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Sets up a payment failed event for a card payment made with the order's payment method.
+	 *
+	 * @param WC_Order $order     The order the event resolves to.
+	 * @param string   $intent_id The intent that failed.
+	 */
+	private function set_up_payment_intent_failed( WC_Order $order, string $intent_id ): void {
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => $intent_id,
+			'object'             => 'payment_intent',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+			'charges'            => [ 'data' => [ [ 'id' => self::LATE_CHARGE_ID ] ] ],
+			'last_payment_error' => [
+				'code'           => 'card_declined',
+				'message'        => 'Your card was declined.',
+				'payment_method' => [
+					'id'   => self::ORDER_PAYMENT_METHOD_ID,
+					'type' => 'card',
+				],
+			],
+			'metadata'           => [ 'order_id' => $order->get_id() ],
+		];
+
+		// The intent of an earlier attempt is not on the order, so the order resolves through its ID.
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->willReturn( null );
+		$this->mock_db_wrapper
+			->method( 'order_from_order_id' )
+			->willReturn( $order );
 	}
 
 	public function provider_unpaid_order_statuses(): array {
@@ -2216,9 +2358,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
+				[ 'on-hold' ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::FAILED ] ]
@@ -2288,9 +2431,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
+				[ 'on-hold' ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::FAILED ] ]
@@ -2376,9 +2520,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'has_status' )
 			->withConsecutive(
+				[ 'on-hold' ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::FAILED ] ]

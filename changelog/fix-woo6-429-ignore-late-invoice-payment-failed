@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop a late or repeated failed renewal attempt from marking a paid WooPayments Subscriptions renewal order as failed and putting its subscription on hold.

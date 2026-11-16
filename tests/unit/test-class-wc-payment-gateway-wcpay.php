@@ -2057,6 +2057,87 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' ) );
 	}
 
+	/**
+	 * A shopper can approve a redirect payment after the order was cancelled, which cancels its payment. The
+	 * shopper is told nothing was charged instead of seeing the order received page, and the order is left as is.
+	 */
+	public function test_process_redirect_payment_with_cancelled_intent_keeps_order_cancelled_and_tells_shopper() {
+		$intent_id = 'pi_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->set_status( Order_Status::CANCELLED );
+		$order->save();
+		$notes_before = $this->get_order_notes_text( $order->get_id() );
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'   => Intent_Status::CANCELED,
+						'metadata' => [ 'order_id' => (string) $order->get_id() ],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, false );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $result_order->get_status() );
+		$this->assertSame( $notes_before, $this->get_order_notes_text( $result_order->get_id() ) );
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertSame( 'This order was cancelled before its payment was completed, so you have not been charged.', $notices['error'][0]['notice'] );
+	}
+
+	/**
+	 * A payment cancelled while its order is still pending, for example from the Stripe dashboard,
+	 * cancels the order when the shopper returns, as before.
+	 */
+	public function test_process_redirect_payment_with_cancelled_intent_cancels_pending_order() {
+		$intent_id = 'pi_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		wp_get_current_user();
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'   => Intent_Status::CANCELED,
+						'metadata' => [ 'order_id' => (string) $order->get_id() ],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$this->card_gateway->process_redirect_payment( $order, $intent_id, false );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $result_order->get_status() );
+		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $this->get_order_notes_text( $result_order->get_id() ) );
+		$this->assertEmpty( WC()->session->get( 'wc_notices' )['error'] ?? [] );
+	}
+
 	public function test_process_redirect_payment_with_retryable_decline_keeps_order_pending() {
 		$error_code    = 'payment_intent_authentication_failure';
 		$error_message = 'The customer declined the payment.';
@@ -6046,6 +6127,87 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			}
 		);
 		$this->assertEmpty( $guard_note, 'Guard diagnostic note must not appear on the failure path.' );
+	}
+
+	/**
+	 * A subscription keeps the succeeded intent of an earlier card change, and nothing clears it. A later
+	 * card change that is declined must still fail and bump the failed-transaction limiter, rather than reuse
+	 * that stale succeeded status and report success. A real decline throws before a new setup intent is
+	 * attached, so the stored intent id is unchanged from before the attempt.
+	 */
+	public function test_process_payment_fails_when_declined_card_change_follows_an_earlier_succeeded_intent() {
+		$order = WC_Helper_Order::create_order();
+
+		// Stored state left by an earlier successful card change on the subscription.
+		$this->order_service->set_intent_id_for_order( $order, 'seti_earlier_change' );
+		$this->order_service->set_intention_status_for_order( $order, Intent_Status::SUCCEEDED );
+
+		$_GET['change_payment_method'] = $order->get_id();
+		WC_Subscriptions::set_wcs_is_subscription( '__return_true' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new API_Exception( 'Your card was declined.', 'card_declined', 402, 'card_error' ) );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'bump' );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
+	}
+
+	/**
+	 * Counterpart: the guard must still protect a genuine post-success downstream error on a subscription
+	 * card change. When this attempt attaches a new setup intent and a later hook throws, the order status is
+	 * preserved and the checkout completes as success.
+	 */
+	public function test_process_payment_preserves_success_when_subscription_card_change_attaches_new_intent_then_downstream_throws() {
+		$order = WC_Helper_Order::create_order();
+
+		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		// The subscription carries an earlier change's intent before the attempt; this attempt then attaches
+		// a new one, so the id read in the catch differs from the one captured before the try.
+		$mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturnOnConsecutiveCalls( 'seti_earlier_change', 'seti_new_change' );
+
+		$mock_order_service
+			->method( 'get_intention_status_for_order' )
+			->willReturn( Intent_Status::SUCCEEDED );
+
+		$_GET['change_payment_method'] = $order->get_id();
+		WC_Subscriptions::set_wcs_is_subscription( '__return_true' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway(
+			[ 'prepare_payment_information', 'process_payment_for_order', 'get_return_url' ],
+			[ WC_Payments_Order_Service::class => $mock_order_service ]
+		);
+
+		$mock_wcpay_gateway
+			->method( 'get_return_url' )
+			->willReturn( 'https://example.com/return' );
+
+		// The card change succeeds (new intent attached above), then a downstream hook throws.
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new Exception( 'Downstream hook failed after the card change succeeded' ) );
+
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'success', $result['result'] );
 	}
 
 	public function test_process_payment_continues_if_valid_fraud_prevention_token() {

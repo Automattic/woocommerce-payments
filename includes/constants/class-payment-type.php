@@ -15,6 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Enum used in WCPay\Payment_Information to determine whether a payment
  * is a single payment or a part of a recurring series.
  *
+ * @method static Payment_Type SINGLE()
+ * @method static Payment_Type RECURRING()
+ *
  * @phpstan-immutable
  */
 class Payment_Type extends Base_Constant {

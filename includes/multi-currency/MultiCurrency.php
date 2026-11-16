@@ -312,6 +312,8 @@ class MultiCurrency {
 		if ( function_exists( 'WC_Payments_Multi_Currency' ) ) {
 			return WC_Payments_Multi_Currency();
 		}
+
+		return null;
 	}
 
 	/**

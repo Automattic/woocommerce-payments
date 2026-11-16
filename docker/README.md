@@ -150,7 +150,7 @@ git worktree remove /path/to/worktree
 
 This will:
 - Stop the worktree's WordPress container
-- Drop the worktree's test database (`wcpay_tests_<WORKTREE_ID>`) from the shared DB
+- Drop the worktree's test database (`wcpay_tests_<WORKTREE_ID>`, shortened by `bin/test-db-name.sh` when over 64 characters) from the shared DB
 - Remove the `.env` file
 
 #### Customizing your worktree config

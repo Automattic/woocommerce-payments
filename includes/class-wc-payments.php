@@ -993,9 +993,9 @@ class WC_Payments {
 	 */
 	public static function hide_gateways_on_settings_page() {
 		$default_gateway = self::get_gateway();
-		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
+		foreach ( WC()->payment_gateways()->payment_gateways as $index => $payment_gateway ) {
 			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== $default_gateway ) {
-				unset( WC()->payment_gateways->payment_gateways[ $index ] );
+				unset( WC()->payment_gateways()->payment_gateways[ $index ] );
 			}
 		}
 	}
@@ -1920,7 +1920,7 @@ class WC_Payments {
 	 * Adds custom email field.
 	 */
 	public static function woopay_fields_before_billing_details() {
-		$checkout = WC()->checkout;
+		$checkout = WC()->checkout();
 
 		echo '<div class="woocommerce-billing-fields" id="contact_details">';
 
