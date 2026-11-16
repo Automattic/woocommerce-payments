@@ -36,6 +36,9 @@ test.describe(
 		let shopperPage: Page;
 		const card = config.cards.basic;
 
+		// A retry recreates the customer, so it must rerun the tests that saved the card.
+		test.describe.configure( { mode: 'serial' } );
+
 		test.beforeAll( async ( { browser } ) => {
 			await recreateCustomer();
 			shopperContext = await browser.newContext( {

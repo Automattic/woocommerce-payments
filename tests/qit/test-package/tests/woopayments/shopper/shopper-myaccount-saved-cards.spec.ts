@@ -101,6 +101,9 @@ test.describe( 'Shopper can save and delete cards', { tag: '@shopper' }, () => {
 
 	const cardTimingHelper = makeCardTimingHelper();
 
+	// A retry recreates the customer, so it must rerun the tests that saved the card.
+	test.describe.configure( { mode: 'serial' } );
+
 	test.beforeAll( async ( { browser } ) => {
 		await recreateCustomer();
 		shopperContext = await browser.newContext( {
