@@ -128,11 +128,9 @@ describe( 'expressCheckoutIframe', () => {
 			const STORE_MESSAGE =
 				'WooPay couldn’t load this order. Please reload the page and try again.';
 
-			const redirectToWooPay = async ( context ) => {
-				initWooPay.mockReturnValue(
-					Promise.resolve( { success: false, data: STORE_MESSAGE } )
-				);
-				expressCheckoutIframe( api, context, '#email' );
+			const redirectToWooPay = async ( refusal ) => {
+				initWooPay.mockReturnValue( Promise.resolve( refusal ) );
+				expressCheckoutIframe( api, 'pay_for_order', '#email' );
 				await waitFor( () =>
 					expect(
 						document.querySelector( '.woopay-otp-iframe' )
@@ -147,8 +145,12 @@ describe( 'expressCheckoutIframe', () => {
 				);
 			};
 
-			test( "shows the store's message on the pay-for-order page", async () => {
-				await redirectToWooPay( 'pay_for_order' );
+			test( "shows the store's message when WooPay can't load the order", async () => {
+				await redirectToWooPay( {
+					success: false,
+					data: STORE_MESSAGE,
+					code: 'woopay_pay_for_order_unavailable',
+				} );
 
 				await waitFor( () => {
 					expect( showErrorMessage ).toHaveBeenCalledWith(
@@ -158,12 +160,16 @@ describe( 'expressCheckoutIframe', () => {
 				} );
 			} );
 
-			test( 'shows the generic message elsewhere', async () => {
-				await redirectToWooPay( 'checkout' );
+			test( 'shows the generic message for other refusals', async () => {
+				await redirectToWooPay( {
+					success: false,
+					data: 'You aren’t authorized to do that.',
+					code: 'woopay_pay_for_order_not_authorized',
+				} );
 
 				await waitFor( () => {
 					expect( showErrorMessage ).toHaveBeenCalledWith(
-						'checkout',
+						'pay_for_order',
 						'WooPay is unavailable at this time. Sorry for the inconvenience.'
 					);
 				} );

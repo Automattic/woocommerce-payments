@@ -968,6 +968,25 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Sends a refused session request as a JSON error.
+	 *
+	 * Like wp_send_json_error(), plus the error code, so the button can tell which messages are
+	 * written for the shopper.
+	 *
+	 * @param \WP_Error $error The reason the session can't be created.
+	 */
+	private static function send_session_error( \WP_Error $error ): void {
+		wp_send_json(
+			[
+				'success' => false,
+				'data'    => $error->get_error_message(),
+				'code'    => $error->get_error_code(),
+			],
+			403
+		);
+	}
+
+	/**
 	 * Used to initialize woopay session.
 	 *
 	 * @return void
@@ -993,7 +1012,7 @@ class WooPay_Session {
 		$body = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance, $font_rules );
 
 		if ( is_wp_error( $body ) ) {
-			wp_send_json_error( $body->get_error_message(), 403 );
+			self::send_session_error( $body );
 		}
 
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
@@ -1053,7 +1072,7 @@ class WooPay_Session {
 		$session = self::get_frontend_init_session_request();
 
 		if ( is_wp_error( $session ) ) {
-			wp_send_json_error( $session->get_error_message(), 403 );
+			self::send_session_error( $session );
 		}
 
 		wp_send_json( $session );

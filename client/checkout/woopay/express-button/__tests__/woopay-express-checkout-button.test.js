@@ -317,6 +317,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			request.mockResolvedValueOnce( {
 				success: false,
 				data: STORE_MESSAGE,
+				code: 'woopay_pay_for_order_unavailable',
 			} );
 
 			await clickButton( 'pay_for_order' );
@@ -329,17 +330,17 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			} );
 		} );
 
-		test( "keeps the store's message off other pages", async () => {
+		test( 'keeps the generic message for other refusals, such as an expired nonce', async () => {
 			request.mockResolvedValueOnce( {
 				success: false,
 				data: 'You aren’t authorized to do that.',
 			} );
 
-			await clickButton( 'checkout' );
+			await clickButton( 'pay_for_order' );
 
 			await waitFor( () => {
 				expect( showErrorMessage ).toHaveBeenCalledWith(
-					'checkout',
+					'pay_for_order',
 					'Something went wrong. Please try again.'
 				);
 			} );

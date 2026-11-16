@@ -79,33 +79,47 @@ describe( 'showErrorMessage', () => {
 } );
 
 describe( 'getSessionErrorMessage', () => {
-	test( "returns the store's message from a refused pay-for-order request", () => {
+	test( "returns the store's message when WooPay can't load the order", () => {
 		expect(
-			getSessionErrorMessage( 'pay_for_order', {
+			getSessionErrorMessage( {
 				success: false,
 				data: STORE_MESSAGE,
+				code: 'woopay_pay_for_order_unavailable',
 			} )
 		).toBe( 'WooPay couldn’t load this order.' );
 	} );
 
 	test.each( [
 		[
-			'a refusal outside the pay-for-order page',
-			'checkout',
+			'an expired nonce',
 			{ success: false, data: 'You aren’t authorized to do that.' },
 		],
 		[
+			'a wrong order key',
+			{
+				success: false,
+				data: 'You aren’t authorized to do that.',
+				code: 'woopay_pay_for_order_not_authorized',
+			},
+		],
+		[
 			'a successful response',
-			'pay_for_order',
-			{ success: true, data: 'text' },
+			{
+				success: true,
+				data: 'text',
+				code: 'woopay_pay_for_order_unavailable',
+			},
 		],
 		[
 			'a non-text payload',
-			'pay_for_order',
-			{ success: false, data: { code: 'x' } },
+			{
+				success: false,
+				data: { session: 'x' },
+				code: 'woopay_pay_for_order_unavailable',
+			},
 		],
-		[ 'no response', 'pay_for_order', undefined ],
-	] )( 'returns an empty string for %s', ( _, context, response ) => {
-		expect( getSessionErrorMessage( context, response ) ).toBe( '' );
+		[ 'no response', undefined ],
+	] )( 'returns an empty string for %s', ( _, response ) => {
+		expect( getSessionErrorMessage( response ) ).toBe( '' );
 	} );
 } );

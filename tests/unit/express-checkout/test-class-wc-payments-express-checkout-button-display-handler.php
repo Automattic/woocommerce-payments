@@ -335,6 +335,40 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		$this->assertArrayNotHasKey( 'order_id', $js_config );
 	}
 
+	/**
+	 * @dataProvider provide_unusable_order_keys
+	 *
+	 * @param callable $make_key Returns the key the link carries, given the order.
+	 */
+	public function test_pay_for_order_config_is_not_added_without_the_exact_order_key( callable $make_key ) {
+		// Inside the grace period, so only the key check can keep the email back.
+		$order = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+
+		$js_config = $this->get_js_config_for_payment_link( $order->get_id(), $make_key( $order ) );
+
+		$this->assertArrayNotHasKey( 'billing_email', $js_config );
+		$this->assertArrayNotHasKey( 'order_id', $js_config );
+	}
+
+	public function provide_unusable_order_keys(): array {
+		return [
+			'empty key'               => [ fn() => '' ],
+			'array key'               => [ fn() => [ 'x' ] ],
+			'key in a different case' => [ fn( WC_Order $order ) => strtoupper( $order->get_order_key() ) ],
+		];
+	}
+
+	public function test_pay_for_order_config_is_not_added_for_a_deleted_order() {
+		$order    = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+		$order_id = $order->get_id();
+		$key      = $order->get_order_key();
+		$order->delete( true );
+
+		$js_config = $this->get_js_config_for_payment_link( $order_id, $key );
+
+		$this->assertArrayNotHasKey( 'order_id', $js_config );
+	}
+
 	public function test_pay_for_order_config_is_not_added_for_a_refund() {
 		$order = WC_Helper_Order::create_order( 0 );
 		$order->set_status( 'completed' );
@@ -417,12 +451,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	/**
 	 * Returns the JS config a payment link's page gets, for a browser session with no email.
 	 *
-	 * @param int    $order_id The order ID in the payment link.
-	 * @param string $key      The order key in the payment link.
+	 * @param int          $order_id The order ID in the payment link.
+	 * @param string|array $key      The order key in the payment link; `?key[]=` arrives as an array.
 	 *
 	 * @return array
 	 */
-	private function get_js_config_for_payment_link( int $order_id, string $key ): array {
+	private function get_js_config_for_payment_link( int $order_id, $key ): array {
 		global $wp, $wp_filter;
 
 		$original_hook      = isset( $wp_filter['wcpay_payment_fields_js_config'] ) ? clone $wp_filter['wcpay_payment_fields_js_config'] : null;

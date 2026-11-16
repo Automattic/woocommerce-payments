@@ -256,7 +256,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					} else {
 						// Set the notice text.
 						const errorMessage =
-							getSessionErrorMessage( context, response ) ||
+							getSessionErrorMessage( response ) ||
 							__(
 								'WooPay is unavailable at this time. Sorry for the inconvenience.',
 								'woocommerce-payments'

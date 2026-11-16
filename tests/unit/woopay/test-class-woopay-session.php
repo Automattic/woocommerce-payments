@@ -1223,6 +1223,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			[
 				'success' => false,
 				'data'    => 'WooPay couldn’t load this order. Please reload the page and try again.',
+				'code'    => 'woopay_pay_for_order_unavailable',
 			],
 			$response
 		);
@@ -1293,6 +1294,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			[
 				'success' => false,
 				'data'    => 'You aren’t authorized to do that.',
+				'code'    => 'woopay_pay_for_order_not_authorized',
 			],
 			$response
 		);
@@ -1946,6 +1948,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			[
 				'success' => false,
 				'data'    => 'You aren’t authorized to do that.',
+				'code'    => 'woopay_pay_for_order_not_authorized',
 			],
 			$response
 		);
