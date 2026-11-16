@@ -17,6 +17,11 @@ use WCPay\MultiCurrency\MultiCurrency;
  * WooPay_Session unit tests.
  */
 class WooPay_Session_Test extends WCPAY_UnitTestCase {
+	private const GUEST_BILLING_EMAIL  = 'guest-6691@example.com';
+	private const WRONG_BILLING_EMAIL  = 'someone-else@example.com';
+	private const INSIDE_GRACE_PERIOD  = MINUTE_IN_SECONDS;
+	private const OUTSIDE_GRACE_PERIOD = 15 * MINUTE_IN_SECONDS;
+
 	/**
 	 * @var Database_Cache|MockObject
 	 */
@@ -42,6 +47,13 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @var array
 	 */
 	private $original_server;
+
+	/**
+	 * Snapshot of the WC session's customer, restored on tear down.
+	 *
+	 * @var mixed
+	 */
+	private $original_session_customer;
 
 	public function set_up() {
 		parent::set_up();
@@ -83,6 +95,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->set_is_woopay_eligible( true );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
+		$this->original_session_customer = WC()->session->get( 'customer' );
+
 		$this->original_server      = $_SERVER;
 		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
 		$_SERVER['REQUEST_URI']     = '/wp-json/wc/store/v1/checkout';
@@ -117,6 +131,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		remove_all_filters( 'wcpay_woopay_session_allowed_origins' );
 
 		WC()->session->__unset( WooPay_Session::WOOPAY_SESSION_KEY );
+		WC()->session->set( 'customer', $this->original_session_customer );
 
 		// Here rather than after each assertion, so a failing test cannot leave every later
 		// one authenticated by a signature.
@@ -1209,6 +1224,60 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assert_pay_for_order_session_links_back_to( $order );
 	}
 
+	public function test_pay_for_order_session_loads_a_new_guest_order_with_its_own_billing_email() {
+		// WooCommerce shows the pay page without asking for the email, so the page has none to send.
+		$order           = $this->create_guest_order_for_a_new_browser( self::INSIDE_GRACE_PERIOD );
+		$received_emails = [];
+
+		[ , $sent ] = $this->post_pay_for_order_session( $order->get_id(), $order->get_order_key(), null, $this->guest_order_route( $order, $received_emails ) );
+
+		$this->assertSame( [ 'guest-6691@example.com' ], $received_emails );
+		$this->assertCount( 1, $sent );
+		$this->assertSame( [ 'id' => $order->get_id() ], $sent[0]['preloaded_requests']['cart'] );
+	}
+
+	public function test_pay_for_order_session_loads_a_guest_order_when_the_merchant_turns_email_verification_off() {
+		$order           = $this->create_guest_order_for_a_new_browser( self::OUTSIDE_GRACE_PERIOD );
+		$received_emails = [];
+		add_filter( 'woocommerce_order_email_verification_required', '__return_false' );
+
+		try {
+			[ , $sent ] = $this->post_pay_for_order_session( $order->get_id(), $order->get_order_key(), null, $this->guest_order_route( $order, $received_emails ) );
+		} finally {
+			remove_filter( 'woocommerce_order_email_verification_required', '__return_false' );
+		}
+
+		$this->assertSame( [ 'guest-6691@example.com' ], $received_emails );
+		$this->assertCount( 1, $sent );
+	}
+
+	public function test_pay_for_order_session_keeps_the_order_email_back_when_woocommerce_asks_the_visitor_for_it() {
+		$order           = $this->create_guest_order_for_a_new_browser( self::OUTSIDE_GRACE_PERIOD );
+		$received_emails = [];
+
+		[ $response, $sent ] = $this->post_pay_for_order_session( $order->get_id(), $order->get_order_key(), self::WRONG_BILLING_EMAIL, $this->guest_order_route( $order, $received_emails ) );
+
+		$this->assertSame( [ 'someone-else@example.com' ], $received_emails );
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'WooPay couldn’t load this order. Please reload the page and try again.',
+			],
+			$response
+		);
+		$this->assertSame( [], $sent );
+	}
+
+	public function test_pay_for_order_session_uses_the_billing_email_the_shopper_verified() {
+		$order           = $this->create_guest_order_for_a_new_browser( self::OUTSIDE_GRACE_PERIOD );
+		$received_emails = [];
+
+		[ , $sent ] = $this->post_pay_for_order_session( $order->get_id(), $order->get_order_key(), self::GUEST_BILLING_EMAIL, $this->guest_order_route( $order, $received_emails ) );
+
+		$this->assertSame( [ 'guest-6691@example.com' ], $received_emails );
+		$this->assertCount( 1, $sent );
+	}
+
 	public function test_get_init_session_request_returns_an_error_for_an_unauthorized_pay_for_order() {
 		$order = WC_Helper_Order::create_order( 0 );
 		$this->mock_customer_service->expects( $this->never() )->method( 'get_customer_id_by_user_id' );
@@ -1785,11 +1854,13 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param int         $order_id      The order ID the caller sends.
 	 * @param string|null $key           The order key the caller sends, or null to send none.
-	 * @param string|null $billing_email The billing email the caller sends.
+	 * @param string|null   $billing_email The billing email the caller sends.
+	 * @param callable|null $order_route   A `rest_pre_dispatch` callback to answer the Store API
+	 *                                     order route with, instead of an empty 200.
 	 *
 	 * @return array The decoded response, and the bodies of the session requests sent to WooPay.
 	 */
-	private function post_pay_for_order_session( int $order_id, ?string $key, ?string $billing_email = null ): array {
+	private function post_pay_for_order_session( int $order_id, ?string $key, ?string $billing_email = null, ?callable $order_route = null ): array {
 		$_SERVER['REQUEST_METHOD'] = 'POST';
 		$_SERVER['HTTP_ORIGIN']    = home_url();
 		$_REQUEST['_ajax_nonce']   = wp_create_nonce( 'wcpay_init_woopay_nonce' );
@@ -1819,8 +1890,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		add_filter( 'pre_http_request', $record, 1, 3 );
 
 		// A pay-for-order session preloads the order from the Store API, whose order route
-		// WooCommerce only has from 8.5. These tests are not about that preload.
-		$stub_order_route = function ( $result, $server, $request ) {
+		// WooCommerce only has from 8.5. Unless a test passes its own, it isn't about that preload.
+		$stub_order_route = $order_route ?? function ( $result, $server, $request ) {
 			return 0 === strpos( $request->get_route(), '/wc/store/v1/order/' ) ? new WP_REST_Response( [], 200 ) : $result;
 		};
 		add_filter( 'rest_pre_dispatch', $stub_order_route, 10, 3 );
@@ -1836,6 +1907,49 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		}
 
 		return [ $response, $sent ];
+	}
+
+	/**
+	 * Returns a stand-in for the Store API order route that applies WooCommerce's rule for guest
+	 * orders: answer only when the request carries the order's billing email.
+	 *
+	 * @param WC_Order $order           The order the route serves.
+	 * @param array    $received_emails Collects the billing email of each request to the route.
+	 *
+	 * @return callable A `rest_pre_dispatch` callback.
+	 */
+	private function guest_order_route( WC_Order $order, array &$received_emails ): callable {
+		return function ( $result, $server, $request ) use ( $order, &$received_emails ) {
+			if ( 0 !== strpos( $request->get_route(), '/wc/store/v1/order/' ) ) {
+				return $result;
+			}
+
+			$received_emails[] = $request->get_param( 'billing_email' );
+
+			if ( 0 !== strcasecmp( (string) $request->get_param( 'billing_email' ), $order->get_billing_email() ) ) {
+				return new WP_Error( 'woocommerce_rest_invalid_billing_email', 'Invalid billing email provided.', [ 'status' => 401 ] );
+			}
+
+			return new WP_REST_Response( [ 'id' => $order->get_id() ], 200 );
+		};
+	}
+
+	/**
+	 * Creates a guest order as a merchant would, with no shopper email in the browser session.
+	 *
+	 * @param int $age_in_seconds How long ago the order was created.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_guest_order_for_a_new_browser( int $age_in_seconds ): WC_Order {
+		$order = WC_Helper_Order::create_order( 0 );
+		$order->set_billing_email( self::GUEST_BILLING_EMAIL );
+		$order->set_date_created( time() - $age_in_seconds );
+		$order->save();
+
+		WC()->session->set( 'customer', [ 'email' => '' ] );
+
+		return $order;
 	}
 
 	/**

@@ -1657,12 +1657,6 @@ parameters:
 			path: includes/woopay/class-woopay-session.php
 
 		-
-			rawMessage: 'Parameter #1 $str of function rawurlencode expects string, int|null given.'
-			identifier: argument.type
-			count: 2
-			path: includes/woopay/class-woopay-session.php
-
-		-
 			rawMessage: 'Parameter #2 $value of method WC_Data::add_meta_data() expects array|string, int given.'
 			identifier: argument.type
 			count: 1

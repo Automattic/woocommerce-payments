@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+WooPay now opens on a guest order's payment page when WooCommerce doesn't ask the shopper to confirm their email, and shows an error if it can't load the order.
