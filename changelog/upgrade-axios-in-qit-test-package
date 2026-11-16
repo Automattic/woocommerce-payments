@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Upgrade `axios` from 1.15.2 to 1.21.1 in the QIT test package to resolve known vulnerabilities.
