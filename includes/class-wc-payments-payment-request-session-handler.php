@@ -65,12 +65,11 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 			throw new Exception( __( 'Invalid token: cookie and session customer mismatch', 'woocommerce-payments' ) );
 		}
 
-		// saving the session and sending new cookies only when we're not dealing with an ephemeral cart.
-		if ( ! $this->is_ephemeral_cart() ) {
+		if ( $this->is_ephemeral_cart() ) {
+			add_filter( 'woocommerce_set_cookie_enabled', [ $this, 'disable_cart_cookies' ], 10, 2 );
+		} else {
 			add_action( 'shutdown', [ $this, 'save_data' ], 20 );
 			add_action( 'woocommerce_set_cart_cookies', [ $this, 'set_customer_session_cookie' ] );
-		} else {
-			add_filter( 'woocommerce_set_cookie_enabled', [ $this, 'disable_cart_cookies' ], 10, 2 );
 		}
 	}
 
