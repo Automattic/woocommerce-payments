@@ -42,6 +42,10 @@ overrides:
   'd3-interpolate': '^3.0.1'
   'd3-scale': '^4.0.2'
   'd3-scale-chromatic': '^3.1.0'
+  '@woocommerce/sanitize>dompurify': '3.4.17'
+  'storybook': '8.6.19'
+  '@storybook/core': '8.6.19'
+  'handlebars': '4.7.10'
   # Run tests on one React 19 copy ahead of WordPress core, which still ships React 18.
   # ESLint cannot catch ref props on function components; keep using forwardRef.
   'react': '19.2.9'
