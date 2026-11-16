@@ -10,7 +10,6 @@ namespace WCPay\WooPay;
 use Automattic\Jetpack\Connection\Rest_Authentication;
 use Automattic\WooCommerce\StoreApi\RoutesController;
 use Automattic\WooCommerce\StoreApi\StoreApi;
-use Automattic\WooCommerce\Internal\Utilities\Users;
 use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
 use Jetpack_Options;
 use WCPay\Blocks_Data_Extractor;
@@ -508,37 +507,6 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Returns the billing email to load a pay-for-order order from the Store API with.
-	 *
-	 * The Store API wants a guest order's billing email on every request. WooCommerce's pay page
-	 * doesn't always ask for it: not in the first minutes after the order is created, nor when
-	 * the merchant turns email verification off. Then the page has no email to pass on, so the
-	 * order's own email is used when WooCommerce wouldn't ask this visitor for one. The email
-	 * goes only to the Store API and the encrypted session, never back to the browser.
-	 *
-	 * @param \WC_Order   $order         The order, already authorized by its key.
-	 * @param string|null $billing_email The billing email the caller sent.
-	 *
-	 * @return string|null The billing email to send to the Store API.
-	 */
-	private static function get_pay_for_order_billing_email( \WC_Order $order, $billing_email ) {
-		$order_email = $order->get_billing_email();
-
-		if ( '' === $order_email || ( is_string( $billing_email ) && 0 === strcasecmp( $billing_email, $order_email ) ) ) {
-			return $billing_email;
-		}
-
-		try {
-			$verification_required = Users::should_user_verify_order_email( $order->get_id(), null, 'order-pay' );
-		} catch ( \Error $e ) {
-			// Users is internal to WooCommerce and may change. Assume the visitor still has to prove the email.
-			$verification_required = true;
-		}
-
-		return $verification_required ? $billing_email : $order_email;
-	}
-
-	/**
 	 * Retrieves checkout data from the current session.
 	 *
 	 * If the request doesn't come from WooPay, this uses the same strategy in
@@ -709,10 +677,6 @@ class WooPay_Session {
 
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
-
-		if ( $is_pay_for_order ) {
-			$billing_email = self::get_pay_for_order_billing_email( $order, $billing_email );
-		}
 
 		$cart_data = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 
