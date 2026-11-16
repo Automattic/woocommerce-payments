@@ -277,6 +277,28 @@ describe( 'WooPayPreview', () => {
 		);
 	} );
 
+	it( 'renders formatting and policy links without accepting injected HTML', () => {
+		const customMessage =
+			'<em>Welcome</em> <a href="javascript:alert(1)">Terms</a>' +
+			' [terms] [terms_of_service_link] [privacy_policy] [privacy_policy_link]' +
+			' <<img src=x onerror=alert(1)>img src=x onerror=alert(1)>';
+		const { container } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo=""
+				customMessage={ customMessage }
+				appearance={ null }
+			/>
+		);
+
+		const textBox = container.querySelector( '.preview-layout__text-box' );
+		expect( textBox.querySelector( 'em' ) ).toHaveTextContent( 'Welcome' );
+		expect( textBox.querySelector( 'a, img' ) ).toBeNull();
+		expect(
+			textBox.querySelectorAll( '.preview-layout__shortcode-link' )
+		).toHaveLength( 5 );
+	} );
+
 	it( 'handles appearance with empty variables and rules', () => {
 		const appearance = {
 			variables: {},

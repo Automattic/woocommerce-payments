@@ -6,6 +6,7 @@ import {
 	shouldSkipWooPay,
 	isShortcodeCheckout,
 	isSupportedThemeEntrypoint,
+	validateEmail,
 } from 'wcpay/checkout/woopay/utils';
 
 jest.mock( 'wcpay/utils/checkout', () => ( {
@@ -14,6 +15,19 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 
 describe( 'WooPay Utils', () => {
 	const originalDocumentCookie = window.document.cookie;
+
+	it.each( [
+		[ 'user@example.com', true ],
+		[ 'user+tag@sub.example.co.uk', true ],
+		[ 'user@example.co.', true ],
+		[ 'user@example.c', false ],
+		[ 'user@example.com-', false ],
+		[ 'user@example', false ],
+		[ '用户@example.com', false ],
+		[ '!@' + '0.0.'.repeat( 14 ) + '!', false ],
+	] )( 'validates WooPay email %s', ( email, expected ) => {
+		expect( validateEmail( email ) ).toBe( expected );
+	} );
 
 	afterEach( () => {
 		Object.defineProperty( window.document, 'cookie', {
