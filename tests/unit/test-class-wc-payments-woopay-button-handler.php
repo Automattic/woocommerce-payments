@@ -227,7 +227,10 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
 	}
 
-	public function test_should_not_show_woopay_button_at_cart_without_cart() {
+	/**
+	 * @dataProvider provider_cart_and_checkout_pages
+	 */
+	public function test_should_not_show_woopay_button_without_cart( string $page ) {
 		$this->mock_pr
 			->method( 'is_woopay_enabled' )
 			->willReturn( true );
@@ -238,7 +241,11 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
-			->willReturn( true );
+			->willReturn( 'cart' === $page );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_checkout' )
+			->willReturn( 'checkout' === $page );
 
 		$this->mock_express_checkout_helper
 			->method( 'is_express_checkout_method_enabled_at' )
@@ -250,6 +257,26 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		try {
 			$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+		} finally {
+			WC()->cart = $cart;
+		}
+	}
+
+	public function provider_cart_and_checkout_pages(): array {
+		return [
+			'cart page'     => [ 'cart' ],
+			'checkout page' => [ 'checkout' ],
+		];
+	}
+
+	public function test_has_allowed_items_in_cart_returns_false_without_cart() {
+		$has_allowed_items_in_cart = new ReflectionMethod( $this->mock_pr, 'has_allowed_items_in_cart' );
+		$has_allowed_items_in_cart->setAccessible( true );
+		$cart      = WC()->cart;
+		WC()->cart = null;
+
+		try {
+			$this->assertFalse( $has_allowed_items_in_cart->invoke( $this->mock_pr ) );
 		} finally {
 			WC()->cart = $cart;
 		}

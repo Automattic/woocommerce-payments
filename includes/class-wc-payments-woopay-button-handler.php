@@ -291,11 +291,8 @@ class WC_Payments_WooPay_Button_Handler {
 			return false;
 		}
 
-		// Pages with a cart or checkout block can be rendered without a cart, e.g. by the block editor's REST request.
-		// WooCommerce types the property as WC_Cart, but only loads the cart for frontend requests.
-		/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-		$cart = WC()->cart;
-		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && null === $cart ) {
+		// The cart checks below need a cart, and there is nothing to pay for without one.
+		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->has_cart() ) {
 			return false;
 		}
 
@@ -415,6 +412,20 @@ class WC_Payments_WooPay_Button_Handler {
 	}
 
 	/**
+	 * Whether this request has a cart. Pages with a cart or checkout block can be rendered
+	 * without one, e.g. when the block editor loads the page through the REST API.
+	 *
+	 * @return bool
+	 */
+	private function has_cart(): bool {
+		// WooCommerce types the property as WC_Cart, but only loads the cart for frontend requests.
+		/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+		$cart = WC()->cart;
+
+		return null !== $cart;
+	}
+
+	/**
 	 * Checks the cart to see if the WooPay Express button supports all of its items.
 	 *
 	 * @todo Abstract this. This is a copy of the same method in the `WC_Payments_Payment_Request_Button_Handler` class.
@@ -422,6 +433,10 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return boolean
 	 */
 	private function has_allowed_items_in_cart() {
+		if ( ! $this->has_cart() ) {
+			return false;
+		}
+
 		$is_supported = true;
 
 		// We don't support pre-order products to be paid upon release.

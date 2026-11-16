@@ -897,7 +897,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
-	 * @return boolean
+	 * @return boolean False when an item isn't allowed, or when the request has no cart.
 	 */
 	public function has_allowed_items_in_cart() {
 		if ( ! $this->has_cart() ) {

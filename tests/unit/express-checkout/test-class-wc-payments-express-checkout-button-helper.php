@@ -928,6 +928,32 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		}
 	}
 
+	public function test_should_show_express_checkout_button_on_product_page_without_cart() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$product = WC_Helper_Product::create_simple_product();
+		$helper  = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'get_enabled_express_checkout_methods_for_context', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+		$helper->method( 'get_product' )->willReturn( $product );
+		// Product pages don't read the cart, so they still show the button without one.
+		$cart      = WC()->cart;
+		WC()->cart = null;
+
+		try {
+			$this->assertTrue( $helper->should_show_express_checkout_button() );
+		} finally {
+			WC()->cart = $cart;
+			WC_Payments::mode()->live();
+		}
+	}
+
 	public function test_has_allowed_items_in_cart_returns_false_without_cart() {
 		$cart      = WC()->cart;
 		WC()->cart = null;
