@@ -32,6 +32,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( $this->previous_user_id );
 		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] );
 		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'] );
+		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] );
 		unset( $_SERVER['REQUEST_URI'] );
 		unset( $_REQUEST['rest_route'] );
 		// we need to manually unset the session, otherwise it'll linger between test cases.
@@ -100,6 +101,53 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$session->init();
 
 		$this->assertNotSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+	}
+
+	/**
+	 * A page cache can serve the product page after its nonce expired.
+	 * The first price lookup then reaches Multi-Currency's `?currency=` switch before the Store API rejects it.
+	 */
+	public function test_does_not_send_session_cookie_for_ephemeral_cart_on_invalid_nonce() {
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] = '1';
+
+		$this->assertNotContains( 'wp_woocommerce_session_' . COOKIEHASH, $this->get_cookies_sent_on_invalid_nonce() );
+	}
+
+	public function test_sends_session_cookie_on_invalid_nonce_when_cart_is_not_ephemeral() {
+		$this->assertContains( 'wp_woocommerce_session_' . COOKIEHASH, $this->get_cookies_sent_on_invalid_nonce() );
+	}
+
+	/**
+	 * Starts a guest's Store API session with an invalid nonce, then asks for the session cookie like Multi-Currency does.
+	 *
+	 * @return string[] Names of the cookies that would have been sent.
+	 */
+	private function get_cookies_sent_on_invalid_nonce() {
+		wp_set_current_user( 0 );
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = 'invalid-nonce';
+		$_SERVER['REQUEST_URI']                                     = '/index.php';
+		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart/add-item';
+		$sent_cookies = [];
+		add_filter(
+			'woocommerce_set_cookie_enabled',
+			function ( $enabled, $name ) use ( &$sent_cookies ) {
+				if ( $enabled ) {
+					$sent_cookies[] = $name;
+				}
+
+				return false;
+			},
+			PHP_INT_MAX,
+			2
+		);
+
+		$session = new WC_Payments_Payment_Request_Session();
+		$session->init();
+		WC()->session = null;
+		WC()->initialize_session();
+		WC()->session->set_customer_session_cookie( true );
+
+		return $sent_cookies;
 	}
 
 	public function test_uses_custom_session_handler() {

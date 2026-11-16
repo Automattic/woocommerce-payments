@@ -176,6 +176,13 @@ class WC_Payments_Payment_Request_Session {
 	public function add_payment_request_store_api_session_handler( $default_session_handler ) {
 		$nonce = wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] ?? null ) );
 		if ( ! wp_verify_nonce( $nonce, self::TOKENIZED_CART_SESSION_NONCE_ACTION ) ) {
+			// A page cache can serve the product page after its nonce expired. The Store API rejects the request,
+			// but code that runs first, like Multi-Currency's `?currency=` switch, can still ask for a session cookie.
+			// That cookie would take the shopper off the page cache.
+			if ( '1' === wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] ?? '' ) ) ) {
+				add_filter( 'woocommerce_set_cookie_enabled', '__return_false' );
+			}
+
 			return $default_session_handler;
 		}
 
