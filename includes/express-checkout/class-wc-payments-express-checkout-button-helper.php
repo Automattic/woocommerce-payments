@@ -1211,8 +1211,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// rest of the page.
 		try {
 			foreach ( $schemas as $type => $schema ) {
-				$param   = "{$type}_address";
-				$address = $schema->get_item_response( $order );
+				$param = "{$type}_address";
+				// An object before WooCommerce 8.2.
+				$address = (array) $schema->get_item_response( $order );
 
 				// The express checkout fills a blank shipping last name, which WooCommerce requires.
 				if ( $wallet_fills_details && 'shipping' === $type && '' !== (string) ( $address['country'] ?? '' ) && '' === trim( (string) ( $address['last_name'] ?? '' ) ) ) {

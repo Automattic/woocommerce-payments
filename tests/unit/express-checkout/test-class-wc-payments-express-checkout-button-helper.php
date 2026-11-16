@@ -834,7 +834,12 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 *
 	 * @dataProvider provider_pay_for_order_billing_addresses
 	 */
-	public function test_pay_for_order_button_depends_on_the_billing_address( array $billing_address, bool $expected ) {
+	public function test_pay_for_order_button_depends_on_the_billing_address( array $billing_address, bool $expected, string $checked_since = '' ) {
+		// Older WooCommerce versions don't check it, so the payment goes through there.
+		if ( '' !== $checked_since && version_compare( WC_VERSION, $checked_since, '<' ) ) {
+			$expected = true;
+		}
+
 		$order = $this->create_fee_only_order( $billing_address );
 
 		$this->assertSame( $expected, $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button(), 'Store API validation' );
@@ -852,7 +857,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			'state that is not valid for the country'    => [ array_merge( self::COMPLETE_US_ADDRESS, [ 'state' => 'XX' ] ), false ],
 			'postcode that is not valid for the country' => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'postcode' => '123' ] ), false ],
 			'phone that is not valid'                    => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'phone' => 'not a phone' ] ), false ],
-			'phone longer than the Store API allows'     => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'phone' => str_repeat( '1', 101 ) ] ), false ],
+			// The address schema limits the phone to 100 characters from WooCommerce 11.3.
+			'phone longer than the Store API allows'     => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'phone' => str_repeat( '1', 101 ) ] ), false, '11.3.0-dev' ],
 			'lowercase country the Store API normalises' => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'country' => 'gb' ] ), true ],
 		];
 	}
@@ -1029,7 +1035,12 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 *
 	 * @dataProvider provider_pay_for_order_woopay_orders
 	 */
-	public function test_pay_for_order_woopay_needs_the_details_the_wallet_would_fill( array $billing_address, array $shipping_address, bool $expected_woopay ) {
+	public function test_pay_for_order_woopay_needs_the_details_the_wallet_would_fill( array $billing_address, array $shipping_address, bool $expected_woopay, string $checked_since = '' ) {
+		// Older WooCommerce versions don't check the field, so WooPay can pay the order there.
+		if ( '' !== $checked_since && version_compare( WC_VERSION, $checked_since, '<' ) ) {
+			$expected_woopay = true;
+		}
+
 		update_option( 'woocommerce_checkout_phone_field', 'required' );
 		WC()->countries->locale = [];
 		$order                  = empty( $shipping_address ) ? $this->create_fee_only_order( $billing_address ) : WC_Helper_Order::create_order( 1, 100 );
@@ -1068,9 +1079,12 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		return [
 			'complete billing address'   => [ $complete_billing, [], true ],
 			'no email'                   => [ array_merge( $complete_billing, [ 'email' => '' ] ), [], false ],
-			'no phone'                   => [ array_merge( $complete_billing, [ 'phone' => '' ] ), [], false ],
+			// The Store API requires the phone the store requires from WooCommerce 9.6.
+			'no phone'                   => [ array_merge( $complete_billing, [ 'phone' => '' ] ), [], false, '9.6.0-dev' ],
 			'complete shipping address'  => [ $complete_billing, $complete_shipping, true ],
-			'shipping without last name' => [ $complete_billing, array_merge( $complete_shipping, [ 'last_name' => '' ] ), false ],
+			// Before WooCommerce 9.9 the Store API checks the shipping address only when the visitor's
+			// cart needs shipping, and a payment link visitor's cart is empty.
+			'shipping without last name' => [ $complete_billing, array_merge( $complete_shipping, [ 'last_name' => '' ] ), false, '9.9.0-dev' ],
 		];
 	}
 
