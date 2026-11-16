@@ -432,12 +432,8 @@ class Fraud_Risk_Tools {
 		$target_currency = $base_currency;
 
 		if ( function_exists( 'WC_Payments_Multi_Currency' ) ) {
-			$default_currency = WC_Payments_Multi_Currency()->get_default_currency();
-
-			if ( ! empty( $default_currency ) ) {
-				$target_currency = $default_currency->get_code();
-				$amount          = self::get_converted_amount( $amount, $base_currency, $target_currency );
-			}
+			$target_currency = WC_Payments_Multi_Currency()->get_default_currency()->get_code();
+			$amount          = self::get_converted_amount( $amount, $base_currency, $target_currency );
 		}
 
 		return implode( '|', [ $amount, strtolower( $target_currency ) ] );

@@ -883,6 +883,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 		}
+
+		return null;
 	}
 
 	/**
@@ -1484,7 +1486,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		// A card change passes the subscription itself. It lasts for years, and reaching the limit would set it
+		// to failed in the catch below, so its declines count in the session only.
+		$rate_limited_order = function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ? null : $order;
+
+		// A subscription keeps the intent of its last successful card change, and nothing clears it. Remember
+		// which intent is attached before this attempt so the catch block can tell that earlier succeeded
+		// intent from one this attempt actually created.
+		$previous_intent_id = '';
+
 		try {
+			$previous_intent_id = $this->order_service->get_intent_id_for_order( $order );
+
 			$is_request_composed_by_woopay = $this->is_request_composed_by_woopay();
 			// Reject an unverified dry run instead of turning it into a payment attempt.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1520,7 +1533,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			if ( $this->failed_transaction_rate_limiter->is_limited( $rate_limited_order ) ) {
 				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -1580,7 +1593,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Failed or surface a failure to the customer who has already been
 			// charged. Preserve the post-payment order status, record a
 			// diagnostic note, and complete the checkout normally.
-			if ( Intent_Status::SUCCEEDED === $this->order_service->get_intention_status_for_order( $order ) ) {
+			//
+			// A subscription's card change runs against the subscription, which keeps the succeeded intent of
+			// an earlier change. That stored status describes this attempt only when this attempt attached a
+			// new intent; a declined change throws before attaching one, leaving the intent id unchanged.
+			$is_earlier_card_change_intent = $this->is_changing_payment_method_for_subscription( $order )
+				&& $previous_intent_id === $this->order_service->get_intent_id_for_order( $order );
+
+			if ( ! $is_earlier_card_change_intent && Intent_Status::SUCCEEDED === $this->order_service->get_intention_status_for_order( $order ) ) {
 				$order->add_order_note(
 					sprintf(
 						/* translators: %s: error message from the downstream exception */
@@ -1634,7 +1654,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
-				$this->failed_transaction_rate_limiter->bump();
+				$this->failed_transaction_rate_limiter->bump( $rate_limited_order );
 			}
 
 			// The server rejects an express checkout confirmation token minted without setup_future_usage
@@ -2248,7 +2268,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( ! empty( $woopay_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
 				$setup_intent_request = Get_Setup_Intention::create( $woopay_intent_id );
-				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
 
 				$intent_metadata          = $intent->get_metadata();
@@ -4685,7 +4705,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
-				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
 				$this->ensure_intent_belongs_to_order( $intent, $order );
 				$status = $intent->get_status();
