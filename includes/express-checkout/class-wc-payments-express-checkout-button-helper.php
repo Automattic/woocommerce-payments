@@ -1204,8 +1204,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 				$address = (array) $schema->sanitize_callback( $address, $request, $param );
 				if ( $wallet_provides_phone && '' === trim( (string) ( $address['phone'] ?? '' ) ) ) {
-					// Any non-empty value: the required-field check only needs to know a phone will be sent.
-					$address['phone'] = 'wallet';
+					// Stands in for the wallet's phone. It must pass phone validation, because address
+					// validation hooks see it, e.g. woocommerce_blocks_validate_location_address_fields.
+					$address['phone'] = '+10000000000';
 				}
 
 				$addresses[ $type ] = $address;

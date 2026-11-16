@@ -1006,6 +1006,23 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		}
 	}
 
+	public function test_pay_for_order_button_is_shown_when_an_address_validator_checks_the_phone_the_wallet_provides() {
+		$this->skip_without_additional_checkout_fields();
+		$order     = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
+		$validator = function ( WP_Error $errors, array $fields ) {
+			if ( isset( $fields['phone'] ) && ! WC_Validation::is_phone( $fields['phone'] ) ) {
+				$errors->add( 'invalid_phone', 'Invalid phone' );
+			}
+		};
+		add_action( 'woocommerce_blocks_validate_location_address_fields', $validator, 10, 2 );
+
+		try {
+			$this->assertTrue( $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button() );
+		} finally {
+			remove_action( 'woocommerce_blocks_validate_location_address_fields', $validator, 10 );
+		}
+	}
+
 	public function test_pay_for_order_button_is_hidden_when_validation_throws_an_error() {
 		$order = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
 		$throw = function () {
