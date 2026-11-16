@@ -37,8 +37,10 @@ test.describe(
 		} );
 
 		test.afterAll( async ( { adminPage } ) => {
-			// Restore original theme.
-			await activateTheme( activeThemeSlug );
+			// Unset when beforeAll failed; the rest of the cleanup must still run.
+			if ( activeThemeSlug ) {
+				await activateTheme( activeThemeSlug );
+			}
 			await restoreCurrencies( adminPage );
 			if ( ! wasMulticurrencyEnabled ) {
 				await deactivateMulticurrency( adminPage );
