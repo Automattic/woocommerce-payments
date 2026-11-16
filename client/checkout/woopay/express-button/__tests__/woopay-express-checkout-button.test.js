@@ -294,13 +294,13 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		const STORE_MESSAGE =
 			'WooPay couldn’t load this order. Please reload the page and try again.';
 
-		const clickPayForOrderButton = async () => {
+		const clickButton = async ( context ) => {
 			render(
 				<WoopayExpressCheckoutButton
 					isPreview={ false }
 					buttonSettings={ {
 						...buttonSettings,
-						context: 'pay_for_order',
+						context,
 					} }
 					api={ api }
 					isProductPage={ false }
@@ -319,7 +319,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				data: STORE_MESSAGE,
 			} );
 
-			await clickPayForOrderButton();
+			await clickButton( 'pay_for_order' );
 
 			await waitFor( () => {
 				expect( showErrorMessage ).toHaveBeenCalledWith(
@@ -329,10 +329,26 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			} );
 		} );
 
+		test( "keeps the store's message off other pages", async () => {
+			request.mockResolvedValueOnce( {
+				success: false,
+				data: 'You aren’t authorized to do that.',
+			} );
+
+			await clickButton( 'checkout' );
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'checkout',
+					'Something went wrong. Please try again.'
+				);
+			} );
+		} );
+
 		test( 'shows a generic message when the store sends none', async () => {
 			request.mockResolvedValueOnce( {} );
 
-			await clickPayForOrderButton();
+			await clickButton( 'pay_for_order' );
 
 			await waitFor( () => {
 				expect( showErrorMessage ).toHaveBeenCalledWith(

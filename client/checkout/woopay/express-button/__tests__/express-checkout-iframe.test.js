@@ -10,9 +10,20 @@ import { waitFor } from '@testing-library/react';
 import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
 import { getConfig } from 'utils/checkout';
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
+} ) );
+
+jest.mock( 'wcpay/checkout/woopay/init-woopay', () => ( {
+	initWooPay: jest.fn(),
+} ) );
+
+jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
+	...jest.requireActual( 'wcpay/checkout/woopay/express-button/utils' ),
+	showErrorMessage: jest.fn(),
 } ) );
 
 jest.mock( 'tracks', () => ( {
@@ -29,9 +40,9 @@ describe( 'expressCheckoutIframe', () => {
 	} );
 
 	afterEach( () => {
-		document.body.removeChild(
-			document.querySelector( '.woopay-otp-iframe-wrapper' )
-		);
+		// A failed WooPay init closes the iframe itself.
+		document.querySelector( '.woopay-otp-iframe-wrapper' )?.remove();
+		jest.clearAllMocks();
 	} );
 
 	test( 'should open the iframe', async () => {
@@ -110,6 +121,52 @@ describe( 'expressCheckoutIframe', () => {
 				expect( woopayIframe.src ).toContain(
 					'email=payfororder%40example.com'
 				);
+			} );
+		} );
+
+		describe( 'when the store refuses to start WooPay', () => {
+			const STORE_MESSAGE =
+				'WooPay couldn’t load this order. Please reload the page and try again.';
+
+			const redirectToWooPay = async ( context ) => {
+				initWooPay.mockReturnValue(
+					Promise.resolve( { success: false, data: STORE_MESSAGE } )
+				);
+				expressCheckoutIframe( api, context, '#email' );
+				await waitFor( () =>
+					expect(
+						document.querySelector( '.woopay-otp-iframe' )
+					).not.toBeNull()
+				);
+
+				window.dispatchEvent(
+					new MessageEvent( 'message', {
+						origin: 'http://example.com',
+						data: { action: 'redirect_to_woopay' },
+					} )
+				);
+			};
+
+			test( "shows the store's message on the pay-for-order page", async () => {
+				await redirectToWooPay( 'pay_for_order' );
+
+				await waitFor( () => {
+					expect( showErrorMessage ).toHaveBeenCalledWith(
+						'pay_for_order',
+						'WooPay couldn’t load this order. Please reload the page and try again.'
+					);
+				} );
+			} );
+
+			test( 'shows the generic message elsewhere', async () => {
+				await redirectToWooPay( 'checkout' );
+
+				await waitFor( () => {
+					expect( showErrorMessage ).toHaveBeenCalledWith(
+						'checkout',
+						'WooPay is unavailable at this time. Sorry for the inconvenience.'
+					);
+				} );
 			} );
 		} );
 

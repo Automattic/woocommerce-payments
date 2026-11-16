@@ -211,16 +211,15 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$pay_for_order = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- get_authorized_order_from_payment_link() returns null without a key.
-		$key = sanitize_text_field( wp_unslash( $_GET['key'] ) );
 		// phpcs:enable WordPress.Security.NonceVerification
 
 		add_filter(
 			'wcpay_payment_fields_js_config',
-			function ( $js_config ) use ( $order, $pay_for_order, $key, $billing_email ) {
+			function ( $js_config ) use ( $order, $pay_for_order, $billing_email ) {
 				$js_config['order_id']      = $order->get_id();
 				$js_config['pay_for_order'] = $pay_for_order;
-				$js_config['key']           = $key;
+				// The link's key matched this exactly.
+				$js_config['key']           = $order->get_order_key();
 				$js_config['billing_email'] = $billing_email;
 
 				return $js_config;
@@ -236,7 +235,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * for it: not in the first minutes after the order is created, nor when the merchant turns
 	 * email verification off. In those cases WooCommerce already shows a visitor holding the key
 	 * the pay form, and its order-received page shows them the billing details under the same
-	 * rule, so the email is given. Orders that can't be paid get no pay form, so no email.
+	 * rule, so the email is given. Orders that no longer need payment get no pay form, so no email.
 	 *
 	 * @param WC_Order $order The order, already authorized by its key.
 	 *

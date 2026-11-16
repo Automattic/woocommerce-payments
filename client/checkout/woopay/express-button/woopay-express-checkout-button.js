@@ -328,8 +328,10 @@ export const WoopayExpressCheckoutButton = ( {
 							);
 						} else {
 							onClickCallbackRef.current = onClickOtpFlow;
-							sessionErrorMessage =
-								getSessionErrorMessage( response );
+							sessionErrorMessage = getSessionErrorMessage(
+								context,
+								response
+							);
 							throw new Error( response?.data );
 						}
 					} )

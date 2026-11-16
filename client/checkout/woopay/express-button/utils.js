@@ -57,13 +57,19 @@ export const showErrorMessage = ( context, errorMessage ) => {
 };
 
 /**
- * Returns the message the store sent with a refused WooPay session request, if any.
+ * Returns the message the store sent with a refused pay-for-order WooPay session, if any.
  *
+ * Only on the pay-for-order page: elsewhere the session endpoint's errors (an expired nonce,
+ * a missing blog ID) aren't written for shoppers.
+ *
+ * @param {string} context  The context for where the button is being displayed.
  * @param {Object} response The parsed response of the session request.
  *
  * @return {string} The store's translated message, or an empty string.
  */
-export const getSessionErrorMessage = ( response ) =>
-	response?.success === false && typeof response.data === 'string'
+export const getSessionErrorMessage = ( context, response ) =>
+	context === 'pay_for_order' &&
+	response?.success === false &&
+	typeof response.data === 'string'
 		? response.data
 		: '';
