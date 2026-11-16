@@ -115,6 +115,46 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'apple_pay_google_pay', array_keys( $result )[0] );
 	}
 
+	public function test_woopayments_wallets_only_are_not_duplicates() {
+		$apple_pay_gateway          = new Test_Gateway();
+		$apple_pay_gateway->id      = 'woocommerce_payments_apple_pay';
+		$apple_pay_gateway->enabled = 'yes';
+
+		$google_pay_gateway          = new Test_Gateway();
+		$google_pay_gateway->id      = 'woocommerce_payments_google_pay';
+		$google_pay_gateway->enabled = 'yes';
+
+		$this->woopayments_gateway->id                               = 'woocommerce_payments';
+		$this->woopayments_gateway->enabled                          = 'yes';
+		$this->woopayments_gateway->is_payment_request_enabled_value = true;
+
+		WC()->payment_gateways()->payment_gateways = [ $this->woopayments_gateway, $apple_pay_gateway, $google_pay_gateway ];
+
+		$result = $this->service->find_duplicates();
+
+		$this->assertArrayNotHasKey( 'apple_pay_google_pay', $result );
+	}
+
+	public function test_woopayments_wallet_and_stripe_prb_are_duplicates() {
+		$apple_pay_gateway          = new Test_Gateway();
+		$apple_pay_gateway->id      = 'woocommerce_payments_apple_pay';
+		$apple_pay_gateway->enabled = 'yes';
+
+		$this->woopayments_gateway->id                               = 'woocommerce_payments';
+		$this->woopayments_gateway->enabled                          = 'yes';
+		$this->woopayments_gateway->is_payment_request_enabled_value = true;
+
+		$this->gateway_from_another_plugin->id       = 'stripe';
+		$this->gateway_from_another_plugin->enabled  = 'yes';
+		$this->gateway_from_another_plugin->settings = [ 'payment_request' => 'yes' ];
+
+		WC()->payment_gateways()->payment_gateways = [ $this->woopayments_gateway, $apple_pay_gateway, $this->gateway_from_another_plugin ];
+
+		$result = $this->service->find_duplicates();
+
+		$this->assertArrayHasKey( 'apple_pay_google_pay', $result );
+	}
+
 	public function test_prb_detection_excludes_disabled_stripe_gateway() {
 		// WCPay gateway enabled with PRB.
 		$this->woopayments_gateway->id                               = 'woocommerce_payments';

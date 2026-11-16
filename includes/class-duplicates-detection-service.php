@@ -155,11 +155,7 @@ class Duplicates_Detection_Service {
 		 * @return Duplicates_Detection_Service
 		 */
 	private function keep_gateways_enabled_in_woopayments() {
-		$woopayments_gateway_ids = array_map(
-			function ( $gateway ) {
-				return $gateway->id; },
-			array_values( WC_Payments::get_payment_gateway_map() )
-		);
+		$woopayments_gateway_ids = $this->get_woopayments_gateway_ids();
 
 		foreach ( $this->gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
 			if ( empty( array_intersect( $gateway_ids, $woopayments_gateway_ids ) ) ) {
@@ -173,16 +169,36 @@ class Duplicates_Detection_Service {
 	/**
 	 * Filter payment methods found to keep duplicates only.
 	 *
+	 * WooPayments registers several gateways for one payment method (e.g. the card gateway and the
+	 * Apple Pay / Google Pay gateways all qualify for express checkouts), so a payment method is only
+	 * a duplicate when a gateway outside WooPayments also offers it.
+	 *
 	 * @return Duplicates_Detection_Service
 	 */
 	private function keep_duplicates_only() {
+		$woopayments_gateway_ids = $this->get_woopayments_gateway_ids();
+
 		foreach ( $this->gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
-			if ( count( $gateway_ids ) < 2 ) {
+			if ( empty( array_diff( $gateway_ids, $woopayments_gateway_ids ) ) ) {
 				unset( $this->gateways_qualified_by_duplicates_detector[ $gateway_id ] );
 			}
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Get the IDs of all gateways registered by WooPayments.
+	 *
+	 * @return string[] Gateway IDs.
+	 */
+	private function get_woopayments_gateway_ids() {
+		return array_map(
+			function ( $gateway ) {
+				return $gateway->id;
+			},
+			array_values( WC_Payments::get_payment_gateway_map() )
+		);
 	}
 
 	/**
