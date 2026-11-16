@@ -2,7 +2,12 @@
  * Internal dependencies
  */
 import { test, expect } from '../../../fixtures/auth';
-import { goToOrder, goToPaymentDetails } from '../../../utils/merchant';
+import {
+	deactivateMulticurrency,
+	goToOrder,
+	goToPaymentDetails,
+	isMulticurrencyEnabled,
+} from '../../../utils/merchant';
 import { submitFullRefund } from '../../../utils/merchant-orders';
 import { placeOrderWithCurrency } from '../../../utils/shopper';
 
@@ -11,7 +16,15 @@ test.describe(
 	{ tag: '@merchant' },
 	() => {
 		let orderId: string;
+		let orderAmount: string;
 		let paymentIntentId: string;
+
+		test.beforeAll( async ( { adminPage } ) => {
+			// The timeline amount carries a currency code when multi-currency is on.
+			if ( await isMulticurrencyEnabled( adminPage ) ) {
+				await deactivateMulticurrency( adminPage );
+			}
+		} );
 
 		test(
 			'should process a full refund for an order',
@@ -19,6 +32,14 @@ test.describe(
 			async ( { adminPage, customerPage } ) => {
 				// Place an order to refund later and get the order ID so we can open it in the merchant view
 				orderId = await placeOrderWithCurrency( customerPage, 'USD' );
+
+				// Get the order total so we can verify the refund amount
+				orderAmount =
+					( await customerPage
+						.locator(
+							'.woocommerce-order-overview__total .woocommerce-Price-amount'
+						)
+						.textContent() ) ?? '';
 
 				// Open the order
 				await goToOrder( adminPage, orderId );
@@ -41,17 +62,20 @@ test.describe(
 			// Navigate to payment details using the payment intent ID from the previous test
 			await goToPaymentDetails( adminPage, paymentIntentId );
 
-			// Verify timeline events - use regex to match optional currency code suffix
+			// Verify timeline events
+			expect( orderAmount ).not.toBe( '' );
 			await expect(
 				adminPage.getByText(
-					new RegExp(
-						`A payment of \\$\\d+\\.\\d{2}(?: USD)? was successfully refunded\\.`
-					)
+					`A payment of ${ orderAmount } was successfully refunded.`
 				)
 			).toBeVisible();
 
 			await expect(
 				adminPage.getByText( 'Payment status changed to Refunded.' )
+			).toBeVisible();
+
+			await expect(
+				adminPage.getByText( 'Reason: No longer wanted' )
 			).toBeVisible();
 		} );
 	}
