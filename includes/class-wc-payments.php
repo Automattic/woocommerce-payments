@@ -1788,7 +1788,7 @@ class WC_Payments {
 			'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
-		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', false, [], WCPAY_VERSION_NUMBER, false );
 		wp_add_inline_script(
 			'WCPAY_WOOPAY_COMMON_CONFIG',
 			'var wcpayConfig = Object.assign( wcpayConfig || {}, ' . wp_json_encode( $common_config ) . ' );',
@@ -2095,7 +2095,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function enqueue_assets_script() {
-		wp_register_script( 'WCPAY_ASSETS', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_register_script( 'WCPAY_ASSETS', false, [], WCPAY_VERSION_NUMBER, false );
 		wp_enqueue_script( 'WCPAY_ASSETS' );
 		wp_localize_script(
 			'WCPAY_ASSETS',
