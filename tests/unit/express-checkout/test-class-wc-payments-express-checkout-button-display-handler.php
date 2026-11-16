@@ -255,6 +255,46 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		ob_end_clean();
 	}
 
+	public function test_display_express_checkout_buttons_on_cart_block_page_without_cart() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->mock_woopay_utilities->method( 'is_country_available' )->willReturn( true );
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+		$woopay_button_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->mock_woopay_utilities, $helper ] )
+			->onlyMethods( [ 'is_woopay_enabled' ] )
+			->getMock();
+		$woopay_button_handler->method( 'is_woopay_enabled' )->willReturn( true );
+		$display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler(
+			$this->mock_wcpay_gateway,
+			$woopay_button_handler,
+			$this->mock_express_checkout_ece_button_handler,
+			$this->mock_express_checkout_ajax_handler,
+			$helper
+		);
+		// The Add to Cart with Options block fires the display hook when the REST API renders a page with a Cart block, and REST requests have no cart.
+		$GLOBALS['post'] = $this->factory->post->create_and_get( [ 'post_content' => '<!-- wp:woocommerce/cart /-->' ] ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$cart            = WC()->cart;
+		WC()->cart       = null;
+
+		ob_start();
+		try {
+			$display_handler->display_express_checkout_buttons();
+			$output = ob_get_contents();
+		} finally {
+			ob_end_clean();
+			WC()->cart = $cart;
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+
+		$this->assertSame( '', $output );
+	}
+
 	public function test_display_express_checkout_buttons_only_woopay() {
 		$this->mock_woopay_button_handler
 			->method( 'should_show_woopay_button' )

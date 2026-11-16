@@ -433,10 +433,6 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return boolean
 	 */
 	private function has_allowed_items_in_cart() {
-		if ( ! $this->has_cart() ) {
-			return false;
-		}
-
 		$is_supported = true;
 
 		// We don't support pre-order products to be paid upon release.

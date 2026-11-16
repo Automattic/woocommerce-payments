@@ -269,19 +269,6 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
-	public function test_has_allowed_items_in_cart_returns_false_without_cart() {
-		$has_allowed_items_in_cart = new ReflectionMethod( $this->mock_pr, 'has_allowed_items_in_cart' );
-		$has_allowed_items_in_cart->setAccessible( true );
-		$cart      = WC()->cart;
-		WC()->cart = null;
-
-		try {
-			$this->assertFalse( $has_allowed_items_in_cart->invoke( $this->mock_pr ) );
-		} finally {
-			WC()->cart = $cart;
-		}
-	}
-
 	public function test_should_show_woopay_button_all_good_at_checkout() {
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
 
