@@ -210,10 +210,12 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 						.getByLabel( 'COVER LETTER' )
 						.waitFor( { state: 'visible', timeout: 5000 } );
 
-					// Check existing content - QIT environment may have different store name
+					// Check existing content
 					await expect(
 						adminPage.getByLabel( 'COVER LETTER' )
-					).not.toBeEmpty( { timeout: 5000 } );
+					).toContainText( 'WooPayments', {
+						timeout: 5000,
+					} );
 
 					await adminPage
 						.getByLabel( 'COVER LETTER' )
@@ -389,10 +391,12 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 						.getByLabel( 'COVER LETTER' )
 						.waitFor( { state: 'visible', timeout: 5000 } );
 
-					// Check existing content - QIT environment may have different store name
+					// Check existing content
 					await expect(
 						adminPage.getByLabel( 'COVER LETTER' )
-					).not.toBeEmpty( { timeout: 5000 } );
+					).toContainText( 'WooPayments', {
+						timeout: 5000,
+					} );
 
 					await adminPage
 						.getByLabel( 'COVER LETTER' )
