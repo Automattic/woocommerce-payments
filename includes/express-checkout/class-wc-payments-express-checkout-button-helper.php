@@ -799,7 +799,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
+		// The order total doesn't matter on the Pay for Order page, but the order must be payable through the Store API.
 		if ( $this->is_pay_for_order_page() ) {
 			return $has_available_method && $this->is_pay_for_order_supported();
 		}
@@ -1183,6 +1183,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$wallet_provides_phone = 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' );
 		// Validate a copy, so the order the page is rendering is left untouched.
 		$candidate = clone $order;
+		$addresses = [];
 
 		// A failure here (e.g. in a third-party filter) hides the buttons instead of breaking the
 		// rest of the page.
@@ -1207,6 +1208,19 @@ class WC_Payments_Express_Checkout_Button_Helper {
 					$address['phone'] = 'wallet';
 				}
 
+				$addresses[ $type ] = $address;
+			}
+
+			$order_controller = $this->get_store_api_order_controller();
+
+			// From WooCommerce 11.3 the Store API applies the addresses through this method, which also
+			// ships to billing on stores that ship to the billing address only.
+			if ( null !== $order_controller && method_exists( $order_controller, 'update_existing_order_addresses' ) ) {
+				$order_controller->update_existing_order_addresses( $candidate, $addresses['billing'], $addresses['shipping'] );
+				return true;
+			}
+
+			foreach ( $addresses as $type => $address ) {
 				foreach ( $address as $key => $value ) {
 					$setter = "set_{$type}_{$key}";
 					if ( is_callable( [ $candidate, $setter ] ) ) {
@@ -1215,7 +1229,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				}
 			}
 
-			$order_controller = $this->get_store_api_order_controller();
 			if ( null === $order_controller ) {
 				return $this->are_order_addresses_complete( $candidate );
 			}
@@ -1251,6 +1264,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * Returns the Store API order controller when it can validate an existing order's addresses
 	 * (WooCommerce 11.0+), or null to use `are_order_addresses_complete()` instead.
 	 *
+	 * From WooCommerce 11.3 its `update_existing_order_addresses()` is used, as the Store API does.
+	 *
 	 * @return OrderController|null
 	 */
 	protected function get_store_api_order_controller() {
@@ -1276,7 +1291,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * Where it can't match upstream, this errs towards hiding the button:
 	 * - Upstream 9.9+ reads local pickup from the visitor's cart packages, which say nothing about
 	 *   this order, and skips the shipping country check when the cart is empty. The order's
-	 *   shipping lines are used instead, so the country is checked unless the order is local pickup.
+	 *   shipping lines are used instead, so the country is checked unless every shipping line is
+	 *   local pickup, the order has no shipping lines, or shipping is disabled
+	 *   (`WC_Order::needs_shipping_address()`).
 	 * - Hidden required fields are skipped on every version; upstream skips them from 10.0.
 	 *
 	 * @param WC_Order $order The order, with the addresses that will be sent.

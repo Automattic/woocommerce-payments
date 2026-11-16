@@ -892,6 +892,34 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order, true )->should_show_express_checkout_button() );
 	}
 
+	public function test_pay_for_order_button_is_shown_for_a_shipped_order_without_a_shipping_address_when_the_store_ships_to_billing_only() {
+		$this->skip_before_wc_ships_existing_orders_to_billing();
+		update_option( 'woocommerce_ship_to_destination', 'billing_only' );
+		// Has a product that needs shipping, a billing address and no shipping address.
+		$order = WC_Helper_Order::create_order( 1, 100 );
+
+		try {
+			$this->assertTrue( $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button() );
+		} finally {
+			delete_option( 'woocommerce_ship_to_destination' );
+		}
+	}
+
+	public function test_pay_for_order_button_is_hidden_when_a_store_ships_to_billing_only_and_the_order_keeps_an_incomplete_shipping_address() {
+		$this->skip_before_wc_ships_existing_orders_to_billing();
+		update_option( 'woocommerce_ship_to_destination', 'billing_only' );
+		// The order already ships elsewhere, so the Store API keeps its shipping address as saved,
+		// without the express checkout's "-" for a blank last name.
+		$order = WC_Helper_Order::create_order( 1, 100 );
+		$this->set_order_address( $order, 'shipping', array_merge( self::COMPLETE_GB_ADDRESS, [ 'last_name' => '' ] ) );
+
+		try {
+			$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button() );
+		} finally {
+			delete_option( 'woocommerce_ship_to_destination' );
+		}
+	}
+
 	public function test_pay_for_order_button_is_hidden_before_wc_9_9_when_the_visitors_cart_needs_shipping() {
 		if ( version_compare( WC_VERSION, '9.9.0-dev', '>=' ) ) {
 			$this->markTestSkipped( 'From WooCommerce 9.9 the Store API reads shipping from the order, not the cart.' );
@@ -1095,6 +1123,16 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	private function skip_before_wc_validates_shipping_from_the_order() {
 		if ( version_compare( WC_VERSION, '9.9.0-dev', '<' ) ) {
 			$this->markTestSkipped( 'Before WooCommerce 9.9 the Store API reads shipping from the cart, not the order.' );
+		}
+	}
+
+	/**
+	 * From WooCommerce 11.3 the Store API ships an existing order to its billing address on stores
+	 * that ship to the billing address only.
+	 */
+	private function skip_before_wc_ships_existing_orders_to_billing() {
+		if ( ! method_exists( Automattic\WooCommerce\StoreApi\Utilities\OrderController::class, 'update_existing_order_addresses' ) ) {
+			$this->markTestSkipped( 'Needs WooCommerce 11.3.' );
 		}
 	}
 
