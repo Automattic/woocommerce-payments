@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "869a249d5fec275836f303aeed3b075f",
+    "content-hash": "60e623a69543b0bf71437efd064eabb1",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -57,16 +57,16 @@
         },
         {
             "name": "automattic/jetpack-admin-ui",
-            "version": "v0.14.8",
+            "version": "v0.14.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-admin-ui.git",
-                "reference": "d2d30d50940daf3e0155cd327fa5fcef16adb00b"
+                "reference": "3383c3f37c9a3943d1f8f2798299f3376d123c30"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-admin-ui/zipball/d2d30d50940daf3e0155cd327fa5fcef16adb00b",
-                "reference": "d2d30d50940daf3e0155cd327fa5fcef16adb00b",
+                "url": "https://api.github.com/repos/Automattic/jetpack-admin-ui/zipball/3383c3f37c9a3943d1f8f2798299f3376d123c30",
+                "reference": "3383c3f37c9a3943d1f8f2798299f3376d123c30",
                 "shasum": ""
             },
             "require": {
@@ -112,22 +112,22 @@
             ],
             "description": "Generic Jetpack wp-admin UI elements",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.14.8"
+                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.14.14"
             },
-            "time": "2026-10-20T16:03:21+00:00"
+            "time": "2026-11-09T16:45:57+00:00"
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v5.0.14",
+            "version": "v5.0.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "e78e8b4ad01add1208abb1401debd589cba369cc"
+                "reference": "6749d7a375121e82a0d549f478bacf9d1fa86d07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/e78e8b4ad01add1208abb1401debd589cba369cc",
-                "reference": "e78e8b4ad01add1208abb1401debd589cba369cc",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/6749d7a375121e82a0d549f478bacf9d1fa86d07",
+                "reference": "6749d7a375121e82a0d549f478bacf9d1fa86d07",
                 "shasum": ""
             },
             "require": {
@@ -169,9 +169,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v5.0.14"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v5.0.19"
             },
-            "time": "2026-10-20T16:03:11+00:00"
+            "time": "2026-11-04T18:42:25+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -301,22 +301,22 @@
         },
         {
             "name": "automattic/jetpack-connection",
-            "version": "v9.13.0",
+            "version": "v9.16.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-connection.git",
-                "reference": "e3d20434de7f74d0b0a97d14eddece2608d692bb"
+                "reference": "2cdf67c9216f18a10e8bb442be98c40f4d822def"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/e3d20434de7f74d0b0a97d14eddece2608d692bb",
-                "reference": "e3d20434de7f74d0b0a97d14eddece2608d692bb",
+                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/2cdf67c9216f18a10e8bb442be98c40f4d822def",
+                "reference": "2cdf67c9216f18a10e8bb442be98c40f4d822def",
                 "shasum": ""
             },
             "require": {
                 "automattic/jetpack-a8c-mc-stats": "^4.0.1",
-                "automattic/jetpack-admin-ui": "^0.14.8",
-                "automattic/jetpack-assets": "^5.0.14",
+                "automattic/jetpack-admin-ui": "^0.14.13",
+                "automattic/jetpack-assets": "^5.0.19",
                 "automattic/jetpack-constants": "^4.0.1",
                 "automattic/jetpack-ip": "^0.7.1",
                 "automattic/jetpack-redirect": "^4.0.1",
@@ -338,7 +338,7 @@
                 "textdomain": "jetpack-connection",
                 "mirror-repo": "Automattic/jetpack-connection",
                 "branch-alias": {
-                    "dev-trunk": "9.13.x-dev"
+                    "dev-trunk": "9.16.x-dev"
                 },
                 "changelogger": {
                     "link-template": "https://github.com/Automattic/jetpack-connection/compare/v${old}...v${new}"
@@ -370,9 +370,9 @@
             ],
             "description": "Everything needed to connect to the Jetpack infrastructure",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-connection/tree/v9.13.0"
+                "source": "https://github.com/Automattic/jetpack-connection/tree/v9.16.2"
             },
-            "time": "2026-10-20T16:03:36+00:00"
+            "time": "2026-11-04T18:42:40+00:00"
         },
         {
             "name": "automattic/jetpack-constants",
