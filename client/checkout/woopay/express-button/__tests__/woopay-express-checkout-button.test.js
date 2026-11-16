@@ -14,12 +14,14 @@ import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ) )
 );
 jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
-	showErrorMessage: () => null,
+	...jest.requireActual( 'wcpay/checkout/woopay/express-button/utils' ),
+	showErrorMessage: jest.fn(),
 } ) );
 jest.mock( 'wcpay/checkout/woopay/connect/woopay-connect-iframe', () => ( {
 	WooPayConnectIframe: () => null,
@@ -285,6 +287,59 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				appearance: null,
 			} );
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'when the store refuses the session', () => {
+		const STORE_MESSAGE =
+			'WooPay couldn’t load this order. Please reload the page and try again.';
+
+		const clickPayForOrderButton = async () => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ {
+						...buttonSettings,
+						context: 'pay_for_order',
+					} }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+				/>
+			);
+
+			await userEvent.click(
+				screen.queryByRole( 'link', { name: 'WooPay' } )
+			);
+		};
+
+		test( "shows the store's message", async () => {
+			request.mockResolvedValueOnce( {
+				success: false,
+				data: STORE_MESSAGE,
+			} );
+
+			await clickPayForOrderButton();
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'pay_for_order',
+					'WooPay couldn’t load this order. Please reload the page and try again.'
+				);
+			} );
+		} );
+
+		test( 'shows a generic message when the store sends none', async () => {
+			request.mockResolvedValueOnce( {} );
+
+			await clickPayForOrderButton();
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'pay_for_order',
+					'Something went wrong. Please try again.'
+				);
+			} );
 		} );
 	} );
 

@@ -13,7 +13,7 @@
 namespace Automattic\WooCommerce\Internal\Utilities;
 
 /**
- * Stub of WooCommerce's user utilities, from WooCommerce 8.0.
+ * Stub of WooCommerce's user utilities. should_user_verify_order_email() exists from WooCommerce 8.6.
  */
 class Users {
 	/**

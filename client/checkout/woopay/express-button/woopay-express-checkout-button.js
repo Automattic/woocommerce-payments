@@ -16,7 +16,10 @@ import useExpressCheckoutProductHandler, {
 } from './use-express-checkout-product-handler';
 import { recordUserEvent } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
-import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
+import {
+	getSessionErrorMessage,
+	showErrorMessage,
+} from 'wcpay/checkout/woopay/express-button/utils';
 import interpolateComponents from '@automattic/interpolate-components';
 import {
 	appendRedirectionParams,
@@ -295,6 +298,8 @@ export const WoopayExpressCheckoutButton = ( {
 						} );
 				} );
 			} else {
+				let sessionErrorMessage = '';
+
 				WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
 					order_id: getConfig( 'order_id' ),
@@ -323,14 +328,18 @@ export const WoopayExpressCheckoutButton = ( {
 							);
 						} else {
 							onClickCallbackRef.current = onClickOtpFlow;
+							sessionErrorMessage =
+								getSessionErrorMessage( response );
 							throw new Error( response?.data );
 						}
 					} )
 					?.catch( () => {
-						const errorMessage = __(
-							'Something went wrong. Please try again.',
-							'woocommerce-payments'
-						);
+						const errorMessage =
+							sessionErrorMessage ||
+							__(
+								'Something went wrong. Please try again.',
+								'woocommerce-payments'
+							);
 						showErrorMessage( context, errorMessage );
 						isLoadingRef.current = false;
 						setIsLoading( false );

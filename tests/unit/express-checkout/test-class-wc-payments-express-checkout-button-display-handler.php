@@ -20,6 +20,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	private const ORDER_BILLING_EMAIL  = 'guest-6691@example.com';
 	private const INSIDE_GRACE_PERIOD  = MINUTE_IN_SECONDS;
 	private const OUTSIDE_GRACE_PERIOD = 15 * MINUTE_IN_SECONDS;
+	private const WRONG_ORDER_KEY      = 'wc_order_not-this-one';
 
 	/**
 	 * Mock WC_Payments_API_Client.
@@ -314,12 +315,74 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		$this->assertSame( 'guest-6691@example.com', $this->get_pay_for_order_js_config( $order )['billing_email'] );
 	}
 
+	public function test_pay_for_order_config_gives_the_billing_email_to_the_customer_who_owns_the_order() {
+		$owner_id = self::factory()->user->create( [ 'role' => 'customer' ] );
+		$order    = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
+		$order->set_customer_id( $owner_id );
+		$order->save();
+		wp_set_current_user( $owner_id );
+
+		$this->assertSame( 'guest-6691@example.com', $this->get_pay_for_order_js_config( $order )['billing_email'] );
+	}
+
+	public function test_pay_for_order_config_is_not_added_for_a_wrong_order_key() {
+		// Inside the grace period WooCommerce would not ask for the email, but only after the key passes.
+		$order = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+
+		$js_config = $this->get_js_config_for_payment_link( $order->get_id(), self::WRONG_ORDER_KEY );
+
+		$this->assertArrayNotHasKey( 'billing_email', $js_config );
+		$this->assertArrayNotHasKey( 'order_id', $js_config );
+	}
+
+	public function test_pay_for_order_config_is_not_added_for_a_refund() {
+		$order = WC_Helper_Order::create_order( 0 );
+		$order->set_status( 'completed' );
+		$order->save();
+		$refund = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 1,
+			]
+		);
+
+		$js_config = $this->get_js_config_for_payment_link( $refund->get_id(), self::WRONG_ORDER_KEY );
+
+		$this->assertArrayNotHasKey( 'order_id', $js_config );
+	}
+
+	public function test_pay_for_order_config_keeps_the_billing_email_back_for_an_order_that_needs_no_payment() {
+		$order = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+		$order->set_status( 'completed' );
+		$order->save();
+
+		$this->assertSame( '', $this->get_pay_for_order_js_config( $order )['billing_email'] );
+	}
+
+	public function test_pay_for_order_config_keeps_the_billing_email_back_when_the_woocommerce_check_fails() {
+		$this->skip_without_woocommerce_email_verification();
+
+		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
+		$throw = function () {
+			throw new Exception( 'A third-party callback failed.' );
+		};
+		add_filter( 'woocommerce_order_email_verification_required', $throw );
+
+		try {
+			$billing_email = $this->get_pay_for_order_js_config( $order )['billing_email'];
+		} finally {
+			remove_filter( 'woocommerce_order_email_verification_required', $throw );
+		}
+
+		$this->assertSame( '', $billing_email );
+	}
+
 	/**
-	 * Skips a test that needs WooCommerce's pay-page email verification check, added in WooCommerce 8.0.
+	 * Skips a test that needs WooCommerce's pay-page email verification check, public from WooCommerce 8.6.
 	 */
 	private function skip_without_woocommerce_email_verification(): void {
 		if ( ! is_callable( [ 'Automattic\WooCommerce\Internal\Utilities\Users', 'should_user_verify_order_email' ] ) ) {
-			$this->markTestSkipped( 'WooCommerce has no pay-page email verification check before 8.0.' );
+			$this->markTestSkipped( 'WooCommerce has no callable pay-page email verification check before 8.6.' );
 		}
 	}
 
@@ -348,14 +411,28 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	 * @return array
 	 */
 	private function get_pay_for_order_js_config( WC_Order $order ): array {
+		return $this->get_js_config_for_payment_link( $order->get_id(), $order->get_order_key() );
+	}
+
+	/**
+	 * Returns the JS config a payment link's page gets, for a browser session with no email.
+	 *
+	 * @param int    $order_id The order ID in the payment link.
+	 * @param string $key      The order key in the payment link.
+	 *
+	 * @return array
+	 */
+	private function get_js_config_for_payment_link( int $order_id, string $key ): array {
 		global $wp, $wp_filter;
 
-		$original_hook     = isset( $wp_filter['wcpay_payment_fields_js_config'] ) ? clone $wp_filter['wcpay_payment_fields_js_config'] : null;
-		$original_customer = WC()->session->get( 'customer' );
+		$original_hook      = isset( $wp_filter['wcpay_payment_fields_js_config'] ) ? clone $wp_filter['wcpay_payment_fields_js_config'] : null;
+		$original_customer  = WC()->session->get( 'customer' );
+		$original_get       = $_GET;
+		$original_query_var = $wp->query_vars['order-pay'] ?? null;
 
-		$wp->query_vars['order-pay'] = $order->get_id();
+		$wp->query_vars['order-pay'] = $order_id;
 		$_GET['pay_for_order']       = 'true';
-		$_GET['key']                 = $order->get_order_key();
+		$_GET['key']                 = $key;
 		WC()->session->set( 'customer', [ 'email' => '' ] );
 
 		try {
@@ -370,7 +447,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			} else {
 				$wp_filter['wcpay_payment_fields_js_config'] = $original_hook; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 			}
-			unset( $wp->query_vars['order-pay'], $_GET['pay_for_order'], $_GET['key'] );
+			$_GET = $original_get;
+			if ( null === $original_query_var ) {
+				unset( $wp->query_vars['order-pay'] );
+			} else {
+				$wp->query_vars['order-pay'] = $original_query_var;
+			}
 			WC()->session->set( 'customer', $original_customer );
 		}
 	}

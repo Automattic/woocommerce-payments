@@ -682,6 +682,8 @@ class WooPay_Session {
 
 		// WooPay rejects a session without the order, and would leave the shopper with no explanation.
 		if ( $is_pay_for_order && null === $cart_data ) {
+			Logger::log( sprintf( 'WooPay session refused: the Store API did not return order %d (billing email sent: %s).', $order_id, '' === (string) $billing_email ? 'no' : 'yes' ) );
+
 			return new \WP_Error(
 				'woopay_pay_for_order_unavailable',
 				__( 'WooPay couldn’t load this order. Please reload the page and try again.', 'woocommerce-payments' ),

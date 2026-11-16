@@ -10,10 +10,15 @@ import { getConfig } from 'wcpay/utils/checkout';
  * @param {string} errorMessage The error message to display.
  */
 export const showErrorMessage = ( context, errorMessage ) => {
-	// Handle Blocks Cart and Checkout notices.
+	// Handle Blocks Cart and Checkout notices. WooCommerce renders the pay-for-order page with
+	// its shortcode even on block themes, so nothing there shows the Blocks notice store.
 	const isBlocksCartOrCheckout =
 		'wcSettings' in window && wcSettings.wcBlocksConfig;
-	if ( isBlocksCartOrCheckout && context !== 'product' ) {
+	if (
+		isBlocksCartOrCheckout &&
+		context !== 'product' &&
+		context !== 'pay_for_order'
+	) {
 		// This handles adding the error notice to the cart page.
 		wp.data
 			.dispatch( 'core/notices' )
@@ -50,3 +55,15 @@ export const showErrorMessage = ( context, errorMessage ) => {
 			} );
 	}
 };
+
+/**
+ * Returns the message the store sent with a refused WooPay session request, if any.
+ *
+ * @param {Object} response The parsed response of the session request.
+ *
+ * @return {string} The store's translated message, or an empty string.
+ */
+export const getSessionErrorMessage = ( response ) =>
+	response?.success === false && typeof response.data === 'string'
+		? response.data
+		: '';
