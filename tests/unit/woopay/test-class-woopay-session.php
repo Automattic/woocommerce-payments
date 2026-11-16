@@ -1225,6 +1225,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_pay_for_order_session_loads_a_new_guest_order_with_its_own_billing_email() {
+		$this->skip_without_woocommerce_email_verification();
+
 		// WooCommerce shows the pay page without asking for the email, so the page has none to send.
 		$order           = $this->create_guest_order_for_a_new_browser( self::INSIDE_GRACE_PERIOD );
 		$received_emails = [];
@@ -1237,6 +1239,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_pay_for_order_session_loads_a_guest_order_when_the_merchant_turns_email_verification_off() {
+		$this->skip_without_woocommerce_email_verification();
+
 		$order           = $this->create_guest_order_for_a_new_browser( self::OUTSIDE_GRACE_PERIOD );
 		$received_emails = [];
 		add_filter( 'woocommerce_order_email_verification_required', '__return_false' );
@@ -1927,11 +1931,23 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			$received_emails[] = $request->get_param( 'billing_email' );
 
 			if ( 0 !== strcasecmp( (string) $request->get_param( 'billing_email' ), $order->get_billing_email() ) ) {
-				return new WP_Error( 'woocommerce_rest_invalid_billing_email', 'Invalid billing email provided.', [ 'status' => 401 ] );
+				// A response, as the REST server makes of the real route's error: WordPress 6.0's
+				// preload reads the status straight off whatever rest_pre_dispatch returns.
+				return rest_convert_error_to_response( new WP_Error( 'woocommerce_rest_invalid_billing_email', 'Invalid billing email provided.', [ 'status' => 401 ] ) );
 			}
 
 			return new WP_REST_Response( [ 'id' => $order->get_id() ], 200 );
 		};
+	}
+
+	/**
+	 * Skips a test that needs WooCommerce's pay-page email verification check, added in WooCommerce 8.0.
+	 * Without it, the session never uses the order's own email.
+	 */
+	private function skip_without_woocommerce_email_verification(): void {
+		if ( ! is_callable( [ 'Automattic\WooCommerce\Internal\Utilities\Users', 'should_user_verify_order_email' ] ) ) {
+			$this->markTestSkipped( 'WooCommerce has no pay-page email verification check before 8.0.' );
+		}
 	}
 
 	/**
