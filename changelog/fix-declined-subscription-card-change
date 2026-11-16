@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix a declined subscription payment method change being reported as successful after an earlier change succeeded

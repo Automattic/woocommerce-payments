@@ -47,7 +47,7 @@ class WooPay_Save_User {
 		}
 
 		// Don't enqueue checkout page scripts when WCPay isn't available.
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$gateways = WC()->payment_gateways()->get_available_payment_gateways();
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
 			return;
 		}

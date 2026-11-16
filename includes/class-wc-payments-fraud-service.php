@@ -148,7 +148,7 @@ class WC_Payments_Fraud_Service {
 	 *                   This means that the method is called before the `init` hook.
 	 */
 	public function link_session_if_user_just_logged_in() {
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+		if ( wp_doing_ajax() ) {
 			return;
 		}
 
