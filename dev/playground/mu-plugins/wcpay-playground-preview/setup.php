@@ -1,0 +1,36 @@
+<?php
+/**
+ * One-time store setup for the Playground previews. The preview Blueprint runs this once,
+ * after WooCommerce and WooPayments are installed.
+ *
+ * @package WooCommerce\Payments
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+if ( ! defined( 'WCPAY_PLAYGROUND_PREVIEW' ) || ! class_exists( 'WooCommerce' ) ) {
+	return;
+}
+
+// Land on the requested page instead of the WooCommerce setup wizard, with a storefront visitors can see.
+delete_transient( '_wc_activation_redirect' );
+update_option( 'woocommerce_onboarding_profile', [ 'skipped' => true ] );
+update_option( 'woocommerce_coming_soon', 'no' );
+
+// The demo fixture account is a US one settling in USD; a sensible default for a sandbox connection too.
+update_option( 'woocommerce_default_country', 'US:CA' );
+update_option( 'woocommerce_currency', 'USD' );
+
+// A blueprint-installed WooCommerce starts on the legacy order storage. Stores run on HPOS by default.
+// WooCommerce creates the HPOS tables when this option flips, and keeps it at `no` if it cannot.
+update_option( 'woocommerce_custom_orders_table_enabled', 'yes' );
+
+$wcpay_playground_gateway_settings            = get_option( 'woocommerce_woocommerce_payments_settings', [] );
+$wcpay_playground_gateway_settings['enabled'] = 'yes';
+update_option( 'woocommerce_woocommerce_payments_settings', $wcpay_playground_gateway_settings );
+
+$wcpay_playground_product = new WC_Product_Simple();
+$wcpay_playground_product->set_name( 'Demo beanie' );
+$wcpay_playground_product->set_regular_price( '18.00' );
+$wcpay_playground_product->set_status( 'publish' );
+$wcpay_playground_product->save();
