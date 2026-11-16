@@ -84,6 +84,7 @@ test.describe(
 			)
 				.trim()
 				.replace( '#', '' );
+			expect( subscriptionId ).not.toBe( '' );
 
 			// Follow the payment intent link the order screen renders.
 			const transactionPageLink = await adminPage
