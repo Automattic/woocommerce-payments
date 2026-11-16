@@ -1259,20 +1259,31 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * Mirrors `OrderController::validate_addresses()` for WooCommerce versions before 11.0, whose
 	 * Store API has no public method to validate an existing order's addresses.
 	 *
-	 * The shipping country is checked unless the order ships only by local pickup. Upstream reads
-	 * that from the cart's shipping packages, which say nothing about this order.
+	 * From WooCommerce 9.9 the order decides whether the shipping address is validated, and the
+	 * shipping country isn't checked for local pickup. Upstream reads local pickup from the cart's
+	 * shipping packages, which say nothing about this order, so the order's shipping lines are used.
+	 * Before 9.9 the visitor's cart decides, with no local pickup exception
+	 * (woocommerce/woocommerce#56645).
 	 *
 	 * @param WC_Order $order The order, with the addresses that will be sent.
 	 *
 	 * @return bool
 	 */
 	private function are_order_addresses_complete( WC_Order $order ): bool {
-		$countries      = WC()->countries;
-		$needs_shipping = $order->needs_shipping();
+		$countries = WC()->countries;
+
+		if ( version_compare( WC_VERSION, '9.9.0', '>=' ) ) {
+			$needs_shipping          = $order->needs_shipping();
+			$checks_shipping_country = $needs_shipping && $order->needs_shipping_address();
+		} else {
+			/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$cart                    = WC()->cart;
+			$needs_shipping          = null !== $cart && $cart->needs_shipping();
+			$checks_shipping_country = $needs_shipping;
+		}
 
 		if (
-			$needs_shipping &&
-			$order->needs_shipping_address() &&
+			$checks_shipping_country &&
 			! array_key_exists( $order->get_shipping_country(), (array) $countries->get_shipping_countries() )
 		) {
 			return false;

@@ -868,11 +868,23 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_pay_for_order_button_is_hidden_when_a_shipped_order_has_no_shipping_address() {
+		$this->skip_before_wc_validates_shipping_from_the_order();
 		// Has a product that needs shipping, a billing address and no shipping address.
 		$order = WC_Helper_Order::create_order( 1, 100 );
 
 		$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button() );
 		$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order, true )->should_show_express_checkout_button() );
+	}
+
+	public function test_pay_for_order_button_is_hidden_before_wc_9_9_when_the_visitors_cart_needs_shipping() {
+		if ( version_compare( WC_VERSION, '9.9.0', '>=' ) ) {
+			$this->markTestSkipped( 'From WooCommerce 9.9 the Store API reads shipping from the order, not the cart.' );
+		}
+		$order  = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
+		$helper = $this->make_helper_for_pay_for_order_page( $order );
+		WC()->cart->add_to_cart( $this->simple_product->get_id(), 1 );
+
+		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}
 
 	public function test_pay_for_order_button_ignores_the_shipping_address_of_an_order_that_does_not_ship() {
@@ -893,6 +905,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_pay_for_order_button_is_hidden_when_the_store_has_a_required_additional_checkout_field() {
+		$this->skip_without_additional_checkout_fields();
 		$order = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
 		woocommerce_register_additional_checkout_field(
 			[
@@ -911,6 +924,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_pay_for_order_button_is_shown_when_the_store_has_an_optional_additional_checkout_field() {
+		$this->skip_without_additional_checkout_fields();
 		$order = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
 		woocommerce_register_additional_checkout_field(
 			[
@@ -924,6 +938,25 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			$this->assertTrue( $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button() );
 		} finally {
 			__internal_woocommerce_blocks_deregister_checkout_field( self::ADDITIONAL_FIELD_ID );
+		}
+	}
+
+	/**
+	 * Before WooCommerce 9.9 the Store API validates the shipping address when the visitor's cart
+	 * needs shipping, whatever the order (woocommerce/woocommerce#56645).
+	 */
+	private function skip_before_wc_validates_shipping_from_the_order() {
+		if ( version_compare( WC_VERSION, '9.9.0', '<' ) ) {
+			$this->markTestSkipped( 'Before WooCommerce 9.9 the Store API reads shipping from the cart, not the order.' );
+		}
+	}
+
+	/**
+	 * Additional checkout fields can be registered from WooCommerce 8.9.
+	 */
+	private function skip_without_additional_checkout_fields() {
+		if ( ! function_exists( 'woocommerce_register_additional_checkout_field' ) ) {
+			$this->markTestSkipped( 'Additional checkout fields need WooCommerce 8.9.' );
 		}
 	}
 
@@ -948,6 +981,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$wp->query_vars        = [ 'order-pay' => strval( $order->get_id() ) ];
 		$wp_query->query_vars  = [ 'order-pay' => strval( $order->get_id() ) ];
 		add_filter( 'woocommerce_is_checkout', '__return_true' );
+		// Like a customer opening a payment link. Before WooCommerce 9.9 the cart decides whether
+		// the Store API validates the shipping address, so the set_up() product would require one.
+		WC()->cart->empty_cart();
 
 		$mocked_methods = [ 'get_enabled_express_checkout_methods_for_context' ];
 		if ( $use_fallback ) {
