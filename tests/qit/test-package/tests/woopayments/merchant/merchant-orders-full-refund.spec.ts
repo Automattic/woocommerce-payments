@@ -40,6 +40,7 @@ test.describe(
 							'.woocommerce-order-overview__total .woocommerce-Price-amount'
 						)
 						.textContent() ) ?? '';
+				expect( orderAmount ).not.toBe( '' );
 
 				// Open the order
 				await goToOrder( adminPage, orderId );
@@ -63,7 +64,6 @@ test.describe(
 			await goToPaymentDetails( adminPage, paymentIntentId );
 
 			// Verify timeline events
-			expect( orderAmount ).not.toBe( '' );
 			await expect(
 				adminPage.getByText(
 					`A payment of ${ orderAmount } was successfully refunded.`
