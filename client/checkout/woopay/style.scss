@@ -39,6 +39,25 @@
 	}
 }
 
+.woopay-email-continue-button {
+	padding: 8px 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+
+	&[hidden] {
+		display: none;
+	}
+
+	&:disabled {
+		cursor: wait;
+		opacity: 0.6;
+	}
+}
+
 .woopay-login-session-iframe {
 	width: 100%;
 	height: 100vh;

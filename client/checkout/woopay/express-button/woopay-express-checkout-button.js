@@ -267,20 +267,19 @@ export const WoopayExpressCheckoutButton = ( {
 										response
 									);
 
-								if ( sessionResponse?.is_error ) {
-									onClickOtpFlow( null );
-
-									onClickCallbackRef.current = onClickOtpFlow;
-									isLoadingRef.current = false;
-									setIsLoading( false );
-									return;
+								if (
+									! sessionResponse?.redirect_url ||
+									sessionResponse.is_error
+								) {
+									throw new Error(
+										'WooPay checkout unavailable'
+									);
 								}
 
 								window.location.href = appendRedirectionParams(
 									sessionResponse.redirect_url
 								);
 							} else {
-								onClickCallbackRef.current = onClickOtpFlow;
 								throw new Error( response?.data );
 							}
 						} )
@@ -309,20 +308,19 @@ export const WoopayExpressCheckoutButton = ( {
 									response
 								);
 
-							if ( sessionResponse?.is_error ) {
-								onClickOtpFlow( null );
-
-								onClickCallbackRef.current = onClickOtpFlow;
-								isLoadingRef.current = false;
-								setIsLoading( false );
-								return;
+							if (
+								! sessionResponse?.redirect_url ||
+								sessionResponse.is_error
+							) {
+								throw new Error(
+									'WooPay checkout unavailable'
+								);
 							}
 
 							window.location.href = appendRedirectionParams(
 								sessionResponse.redirect_url
 							);
 						} else {
-							onClickCallbackRef.current = onClickOtpFlow;
 							throw new Error( response?.data );
 						}
 					} )
@@ -343,7 +341,6 @@ export const WoopayExpressCheckoutButton = ( {
 			isPreview,
 			isProductPage,
 			listenForCartChanges,
-			onClickOtpFlow,
 		]
 	);
 

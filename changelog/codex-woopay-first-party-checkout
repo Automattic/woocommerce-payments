@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Route WooPay checkout sign-in through the first-party checkout page when available.

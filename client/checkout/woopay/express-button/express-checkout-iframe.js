@@ -7,16 +7,13 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { getConfig } from 'utils/checkout';
-import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
-import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
 } from '../utils';
 import { getTracksIdentity } from 'tracks';
-import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 const getEmailValue = async ( emailSelector ) => {
@@ -110,31 +107,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
-		const appearance = resolveWoopayAppearance();
-
-		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
-			request(
-				buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
-				{
-					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-					order_id: getConfig( 'order_id' ),
-					key: getConfig( 'key' ),
-					billing_email: getConfig( 'billing_email' ),
-					appearance: appearance,
-				}
-			).then( ( response ) => {
-				if ( response?.data?.session ) {
-					iframe.contentWindow.postMessage(
-						{
-							action: 'setSessionData',
-							value: response,
-						},
-						getConfig( 'woopayHost' )
-					);
-				}
-			} );
-		}
-
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
 
