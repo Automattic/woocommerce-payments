@@ -1656,6 +1656,45 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
 	}
 
+	public function test_authorized_retry_after_3ds_clears_stale_review_outcome() {
+		$review_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => 'pi_review',
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [ 'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW ],
+			]
+		);
+		$this->order_service->update_order_status_from_intent( $this->order, $review_intent );
+		$this->order_service->mark_payment_capture_expired( $this->order, 'pi_review', Intent_Status::CANCELED, $review_intent->get_charge()->get_id() );
+		$this->order->set_status( Order_Status::PENDING );
+		$this->order->save();
+
+		$three_ds_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'                     => 'pi_3ds',
+				'status'                 => Intent_Status::REQUIRES_ACTION,
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+		$this->order_service->update_order_status_from_intent( $this->order, $three_ds_intent );
+
+		$this->assertSame( 'payment_started', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertSame( 'review', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+
+		$retry_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'                     => 'pi_retry',
+				'status'                 => Intent_Status::REQUIRES_CAPTURE,
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+		$this->order_service->update_order_status_from_intent( $this->order, $retry_intent );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertSame( '', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( '', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+	}
+
 	/**
 	 * Method `mark_payment_authorized` should exit if the order status is already on-hold.
 	 */
