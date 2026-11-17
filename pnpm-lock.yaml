@@ -33,7 +33,6 @@ overrides:
   '@woocommerce/sanitize>dompurify': 3.4.17
   storybook: 8.6.19
   '@storybook/core': 8.6.19
-  handlebars: 4.7.10
   react: 19.2.9
   react-dom: 19.2.9
   react-is: 19.2.9
