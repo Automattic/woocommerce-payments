@@ -35,6 +35,7 @@ overrides:
   '@wordpress/scripts>@wordpress/eslint-plugin': '15.1.0'
   '@woocommerce/eslint-plugin>@wordpress/eslint-plugin': '15.1.0'
   'nwsapi': '2.2.12'
+  'handlebars': '4.7.10'
   'serialize-javascript': '^7.0.5'
   'i18n-calypso': '7.4.0'
   'markdownlint-cli>minimatch': '^3.1.3'
