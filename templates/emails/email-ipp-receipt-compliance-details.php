@@ -13,6 +13,10 @@
  * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Payments\Templates\Emails
  * @version 1.0.0
+ *
+ * @var array       $payment_method_details
+ * @var string|null $payment_method_display_name
+ * @var array       $receipt
  */
 
 defined( 'ABSPATH' ) || exit;

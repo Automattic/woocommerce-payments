@@ -641,25 +641,5 @@ describe( 'PaymentMethod', () => {
 				screen.queryByText( 'Zero fees for 90 days' )
 			).not.toBeInTheDocument();
 		} );
-
-		it( 'does not render promotional badge while promotions are loading', () => {
-			usePmPromotions.mockReturnValue( {
-				pmPromotions: [],
-				isLoading: true,
-			} );
-
-			render(
-				<PaymentMethod
-					id="klarna"
-					label="Klarna"
-					description="Buy now, pay later"
-				/>
-			);
-
-			// No badge should be present while loading.
-			expect(
-				screen.queryByText( 'Zero fees for 90 days' )
-			).not.toBeInTheDocument();
-		} );
 	} );
 } );

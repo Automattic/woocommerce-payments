@@ -53,6 +53,23 @@
 			}
 		],
 		"no-console": "warn",
+		"no-restricted-imports": [
+			"error",
+			{
+				"paths": [
+					{
+						"name": "react",
+						"importNames": [ "use", "useActionState", "useOptimistic" ],
+						"message": "WordPress still uses React 18; React 19-only APIs are not supported."
+					},
+					{
+						"name": "react-dom",
+						"importNames": [ "useFormStatus", "requestFormReset", "preload", "preinit" ],
+						"message": "WordPress still uses React 18; React 19-only APIs are not supported."
+					}
+				]
+			}
+		],
 		"react/no-danger": "off",
 		"react/react-in-jsx-scope": "off",
 		"wpcalypso/import-no-redux-combine-reducers": "off",

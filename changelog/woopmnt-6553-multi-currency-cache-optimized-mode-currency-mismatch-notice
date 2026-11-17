@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Show the local currency notice to shoppers on cached pages when Multi-Currency is optimized for caching.

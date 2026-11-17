@@ -5,7 +5,7 @@ import { useRef } from 'react';
 import { uniqueId } from 'lodash';
 
 export const useUniqueId = ( prefix = '' ): string => {
-	const ref = useRef< string >();
+	const ref = useRef< string | undefined >( undefined );
 	if ( ! ref.current ) {
 		ref.current = uniqueId( prefix );
 	}

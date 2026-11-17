@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Don't capture an open WooPayments authorization when completing an order that now uses another payment method; add an order note instead.

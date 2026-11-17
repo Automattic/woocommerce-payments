@@ -5,11 +5,13 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Mode;
 use WCPay\Constants\Payment_Method;
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
@@ -60,6 +62,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	const OTHER_STRIPE_GATEWAY_ID = 'stripe';
 
 	/**
+	 * A stored intent status that is not terminal and is not what a cancelled order ends up with.
+	 */
+	const STORED_STATUS_BEFORE_THE_CANCEL = 'requires_confirmation';
+
+	/**
+	 * Fee stored with an authorization.
+	 */
+	const AUTHORIZATION_FEE = '0.74';
+
+	/**
 	 * Customer ID another gateway stores under `_stripe_customer_id`.
 	 */
 	const OTHER_GATEWAY_CUSTOMER_ID = 'cus_test_other_gateway';
@@ -85,6 +97,21 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	const EARLIER_TAKEOVER_AT = '1700000000';
 
 	/**
+	 * Gateway ID of WooCommerce's direct bank transfer.
+	 */
+	const BANK_TRANSFER_GATEWAY_ID = 'bacs';
+
+	/**
+	 * Intent ID of a WooPayments authorization that hasn't been captured yet.
+	 */
+	const OPEN_AUTHORIZATION_INTENT_ID = 'pi_test_open_authorization';
+
+	/**
+	 * Charge ID of a WooPayments authorization that hasn't been captured yet.
+	 */
+	const OPEN_AUTHORIZATION_CHARGE_ID = 'ch_test_open_authorization';
+
+	/**
 	 * Amount, in cents, of an authorization taken before the merchant edited the order.
 	 */
 	const AUTHORIZED_AMOUNT = 1200;
@@ -93,6 +120,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Order total after the merchant removed an item from an authorized order.
 	 */
 	const REDUCED_ORDER_TOTAL = 10.00;
+
+	/**
+	 * Order total equal to AUTHORIZED_AMOUNT.
+	 */
+	const AUTHORIZED_ORDER_TOTAL = 12.00;
+
+	/**
+	 * Order total after the merchant added an item to an order while its payment was being authorized.
+	 */
+	const RAISED_ORDER_TOTAL = 15.00;
 
 	/**
 	 * Level 3 data built from the order when it is captured.
@@ -720,8 +757,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Completing the order no longer captures the earlier attempt: WooPayments captures on completion from the
-	 * intent on the order, with no check on the order's gateway, and the attempt's intent is gone.
+	 * Completing the order no longer captures the earlier attempt: the attempt's intent is gone from the order,
+	 * so WooPayments has nothing to look up.
 	 */
 	public function test_completing_an_order_paid_with_other_gateway_does_not_capture_the_earlier_attempt() {
 		$order = $this->create_order_with_payment_details( 'cod' );
@@ -1445,6 +1482,153 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A later payment that succeeds without a fraud outcome, like a scheduled renewal retry,
+	 * must not leave the order showing as blocked.
+	 *
+	 * @dataProvider clears_fraud_block_provider
+	 */
+	public function test_payment_without_fraud_outcome_clears_fraud_block( $intent_status ) {
+		$this->order_service->mark_order_blocked_for_fraud(
+			$this->order,
+			'pi_blocked',
+			Intent_Status::CANCELED,
+			[ Fraud_Risk_Tools::RULE_AVS_VERIFICATION => Rule::FRAUD_OUTCOME_BLOCK ]
+		);
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'status'                 => $intent_status,
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( '', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( '', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertSame( [], $this->order_service->get_fraud_ruleset_results_for_order( $this->order ) );
+	}
+
+	public function clears_fraud_block_provider() {
+		return [
+			'payment_completed'  => [ Intent_Status::SUCCEEDED ],
+			'payment_authorized' => [ Intent_Status::REQUIRES_CAPTURE ],
+		];
+	}
+
+	public function test_payment_held_for_amount_mismatch_clears_fraud_block() {
+		$this->order_service->mark_order_blocked_for_fraud(
+			$this->order,
+			'pi_blocked',
+			Intent_Status::CANCELED,
+			[ Fraud_Risk_Tools::RULE_AVS_VERIFICATION => Rule::FRAUD_OUTCOME_BLOCK ]
+		);
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'                 => 2267,
+				'status'                 => Intent_Status::SUCCEEDED,
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertSame( '', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( '', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertSame( [], $this->order_service->get_fraud_ruleset_results_for_order( $this->order ) );
+	}
+
+	public function test_payment_held_for_amount_mismatch_records_fraud_outcome() {
+		$this->order->set_total( 25.19 );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'                 => 2267,
+				'status'                 => Intent_Status::SUCCEEDED,
+				'metadata'               => [ 'fraud_outcome' => Rule::FRAUD_OUTCOME_ALLOW ],
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertSame( 'allow', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( 'allow', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+	}
+
+	public function test_successful_retry_clears_expired_review_fraud_data() {
+		$review_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => 'pi_review',
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'fraud_outcome'         => Rule::FRAUD_OUTCOME_REVIEW,
+					'fraud_ruleset_results' => wp_json_encode( [ Fraud_Risk_Tools::RULE_AVS_VERIFICATION => Rule::FRAUD_OUTCOME_REVIEW ] ),
+				],
+			]
+		);
+		$this->order_service->update_order_status_from_intent( $this->order, $review_intent );
+		$this->order_service->mark_payment_capture_expired( $this->order, 'pi_review', Intent_Status::CANCELED, $review_intent->get_charge()->get_id() );
+
+		$this->assertSame( 'failed', $this->order->get_status() );
+		$this->assertSame( 'review_expired', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+
+		$retry_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'                     => 'pi_retry',
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+		$this->order_service->update_order_status_from_intent( $this->order, $retry_intent );
+
+		$this->assertTrue( $this->order->has_status( wc_get_is_paid_statuses() ) );
+		$this->assertSame( '', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( '', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->assertSame( [], $this->order_service->get_fraud_ruleset_results_for_order( $this->order ) );
+	}
+
+	public function test_authorized_retry_clears_blocked_review_fraud_data() {
+		$review_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => 'pi_review',
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [ 'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW ],
+			]
+		);
+		$this->order_service->update_order_status_from_intent( $this->order, $review_intent );
+
+		$cancelled_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => 'pi_review',
+				'status'   => Intent_Status::CANCELED,
+				'metadata' => [ 'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW ],
+			]
+		);
+		$this->order_service->update_order_status_from_intent( $this->order, $cancelled_intent );
+
+		$this->assertSame( 'cancelled', $this->order->get_status() );
+		$this->assertSame( 'review_blocked', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+		$this->order->set_status( Order_Status::PENDING );
+		$this->order->save();
+
+		$retry_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'                     => 'pi_retry',
+				'status'                 => Intent_Status::REQUIRES_CAPTURE,
+				'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+			]
+		);
+		$this->order_service->update_order_status_from_intent( $this->order, $retry_intent );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertSame( '', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertSame( '', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+	}
+
+	/**
 	 * Method `mark_payment_authorized` should exit if the order status is already on-hold.
 	 */
 	public function test_mark_payment_authorized_exits_on_existing_order_status_on_hold() {
@@ -1463,6 +1647,115 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the order is not locked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	public function test_payment_authorized_note_warns_when_authorized_amount_is_below_order_total() {
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => self::AUTHORIZED_AMOUNT,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 was authorized', $note_text );
+		$this->assertStringContainsString( 'The order total, $15.00, is higher than the authorized amount', $note_text );
+	}
+
+	/**
+	 * @dataProvider payment_authorized_without_total_warning_provider
+	 */
+	public function test_payment_authorized_note_has_no_warning_when_authorized_amount_covers_order_total( $order_total ) {
+		$this->order->set_total( $order_total );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => self::AUTHORIZED_AMOUNT,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 was authorized', $note_text );
+		$this->assertStringNotContainsString( 'The order total', $note_text );
+	}
+
+	public function payment_authorized_without_total_warning_provider() {
+		return [
+			'authorized amount equals order total' => [ self::AUTHORIZED_ORDER_TOTAL ],
+			'authorized amount above order total'  => [ self::REDUCED_ORDER_TOTAL ],
+		];
+	}
+
+	public function test_payment_authorized_note_has_no_warning_when_intent_is_processing() {
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount' => self::AUTHORIZED_AMOUNT,
+				'status' => Intent_Status::PROCESSING,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertStringContainsString( 'A payment of $12.00 was authorized', $note_text );
+		$this->assertStringNotContainsString( 'The order total', $note_text );
+	}
+
+	public function test_payment_authorized_note_has_no_warning_when_currencies_differ() {
+		$this->order->set_currency( Currency_Code::CANADIAN_DOLLAR );
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'   => self::AUTHORIZED_AMOUNT,
+				'currency' => 'usd',
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 USD was authorized', $note_text );
+		$this->assertStringNotContainsString( 'The order total', $note_text );
+	}
+
+	public function test_held_for_review_note_warns_when_authorized_amount_is_below_order_total() {
+		$this->order->set_total( self::RAISED_ORDER_TOTAL );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'amount'   => self::AUTHORIZED_AMOUNT,
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'fraud_outcome' => Rule::FRAUD_OUTCOME_REVIEW,
+				],
+			]
+		);
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes     = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$note_text = wp_strip_all_tags( html_entity_decode( $notes[0]->content ) );
+
+		$this->assertSame( 'on-hold', $this->order->get_status() );
+		$this->assertStringContainsString( 'A payment of $12.00 was held for review', $note_text );
+		$this->assertStringContainsString( 'The order total, $15.00, is higher than the authorized amount', $note_text );
 	}
 
 	/**
@@ -1812,6 +2105,213 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected_notes, $updated_notes );
 
 		// Assert: Check that the order is not locked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests that a declined payment fails the order and records the provider's decline details.
+	 */
+	public function test_mark_payment_declined() {
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$error  = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $intent->get_charge()->get_id(), $error );
+
+		$this->assertSame( 'failed', $this->order->get_status() );
+		$this->assertEquals( 'requires_payment_method', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $notes[0]->content );
+		$this->assertStringContainsString( 'With the following message: <code>The customer has terminated the authorization flow.</code>. Decline code: <code>generic_decline</code>.', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests that a declined payment still fails the order when the same failure note was
+	 * already added, e.g. by the BNPL webhook, without duplicating the note.
+	 */
+	public function test_mark_payment_declined_with_existing_note_fails_order_without_duplicate_note() {
+		$intent    = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$charge_id = $intent->get_charge()->get_id();
+		$error     = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+		$this->order->add_order_note(
+			$this->order_service->get_payment_failure_note( $this->order, $intent->get_id(), $charge_id, $this->order_service->get_provider_decline_message( $error ) )
+		);
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), $charge_id, $error );
+
+		$this->assertSame( 'failed', $this->order->get_status() );
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'Pending payment to Failed', $notes[0]->content );
+		$this->assertStringContainsString( 'Decline code: <code>generic_decline</code>', $notes[1]->content );
+	}
+
+	/**
+	 * Tests that a declined payment does not change an order that another process is updating.
+	 */
+	public function test_mark_payment_declined_exits_if_order_locked() {
+		$intent         = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$transient_name = 'wcpay_processing_intent_' . $this->order->get_id();
+		set_transient( $transient_name, $intent->get_id(), 5 * MINUTE_IN_SECONDS );
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), '', [ 'message' => 'Declined.' ] );
+
+		$this->assertSame( 'pending', $this->order->get_status() );
+		$this->assertEquals( '', $this->order_service->get_intention_status_for_order( $this->order ) );
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+		$this->assertSame( $intent->get_id(), get_transient( $transient_name ) );
+	}
+
+	/**
+	 * Tests that a second request for the same declined payment, which loaded the order before
+	 * the first one failed it, does not fail the order again.
+	 */
+	public function test_mark_payment_declined_does_not_fail_a_stale_order_again() {
+		$intent      = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$error       = [
+			'message'      => 'The customer has terminated the authorization flow.',
+			'decline_code' => 'generic_decline',
+		];
+		$stale_order = wc_get_order( $this->order->get_id() );
+		// Another request fails the order in the database, leaving this request's caches untouched.
+		$this->set_stored_order_status_without_clearing_caches( $this->order->get_id(), 'wc-failed' );
+
+		$this->order_service->mark_payment_declined( $stale_order, $intent->get_id(), $intent->get_status(), '', $error );
+
+		$this->assertSame( 'failed', $this->get_stored_order_status( $this->order->get_id() ) );
+		$this->assertSame( [], wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Changes an order's status directly in the database, as another request would.
+	 *
+	 * @param int    $order_id The order ID.
+	 * @param string $status   The stored status, including the `wc-` prefix.
+	 */
+	private function set_stored_order_status_without_clearing_caches( int $order_id, string $status ): void {
+		global $wpdb;
+
+		$wpdb->update( $wpdb->posts, [ 'post_status' => $status ], [ 'ID' => $order_id ] );
+		if ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$wpdb->update( $this->get_orders_table(), [ 'status' => $status ], [ 'id' => $order_id ] );
+		}
+	}
+
+	/**
+	 * Reads an order's status from the database, bypassing the caches.
+	 *
+	 * @param int $order_id The order ID.
+	 *
+	 * @return string The status without the `wc-` prefix.
+	 */
+	private function get_stored_order_status( int $order_id ): string {
+		global $wpdb;
+
+		if ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$table  = $this->get_orders_table();
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$table} WHERE id = %d", $order_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		} else {
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT post_status FROM {$wpdb->posts} WHERE ID = %d", $order_id ) );
+		}
+
+		return str_replace( 'wc-', '', (string) $status );
+	}
+
+	/**
+	 * Gets the HPOS orders table name.
+	 *
+	 * @return string The table name.
+	 */
+	private function get_orders_table(): string {
+		global $wpdb;
+
+		// get_table_for_orders() only exists from WooCommerce 7.9, and the plugin supports 7.6.
+		return method_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class, 'get_table_for_orders' )
+			? \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders()
+			: $wpdb->prefix . 'wc_orders';
+	}
+
+	/**
+	 * Data provider for provider errors without a message.
+	 *
+	 * @return array[] Test cases with the provider error and the expected decline message.
+	 */
+	public function provider_errors_without_message_provider(): array {
+		return [
+			'error code only'         => [
+				[ 'code' => 'payment_intent_payment_attempt_failed' ],
+				'With the following message: <code>payment_intent_payment_attempt_failed</code>',
+			],
+			'no message and no code'  => [
+				[ 'decline_code' => 'generic_decline' ],
+				'With the following message: <code>We&#039;re not able to process this payment. Please try again later.</code>. Decline code: <code>generic_decline</code>.',
+			],
+			'empty message with code' => [
+				[
+					'code'    => 'card_declined',
+					'message' => '',
+				],
+				'With the following message: <code>card_declined</code>',
+			],
+		];
+	}
+
+	/**
+	 * Tests that a decline message is never empty when the provider error has no message.
+	 *
+	 * @dataProvider provider_errors_without_message_provider
+	 *
+	 * @param array  $error            The payment provider's error.
+	 * @param string $expected_message The expected decline message.
+	 */
+	public function test_get_provider_decline_message_without_provider_message( array $error, string $expected_message ) {
+		$this->assertSame( $expected_message, $this->order_service->get_provider_decline_message( $error ) );
+	}
+
+	/**
+	 * Tests that an overlong provider message is shortened so the failure note can be saved.
+	 */
+	public function test_get_provider_decline_message_shortens_long_provider_message() {
+		$long_message = str_repeat( 'a', 70000 );
+
+		$message = $this->order_service->get_provider_decline_message( [ 'message' => $long_message ] );
+
+		$this->assertSame( 'With the following message: <code>' . str_repeat( 'a', 1000 ) . '…</code>', $message );
+	}
+
+	/**
+	 * Tests that a provider message at the length limit is kept whole.
+	 */
+	public function test_get_provider_decline_message_keeps_message_at_length_limit() {
+		$message_at_limit = str_repeat( 'a', 1000 );
+
+		$message = $this->order_service->get_provider_decline_message( [ 'message' => $message_at_limit ] );
+
+		$this->assertSame( 'With the following message: <code>' . str_repeat( 'a', 1000 ) . '</code>', $message );
+	}
+
+	/**
+	 * Tests that a declined payment does not change an order that is already failed.
+	 */
+	public function test_mark_payment_declined_exits_on_existing_order_status_failed() {
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::FAILED );
+		$this->order->save();
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$this->order_service->mark_payment_declined( $this->order, $intent->get_id(), $intent->get_status(), '', [ 'message' => 'Declined.' ] );
+
+		$this->assertEquals( $expected_notes, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
 	}
 
@@ -4583,6 +5083,43 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Capturing an open authorization on an order moved to another payment method would charge the shopper twice,
+	 * so completing it only tells the merchant. Completing it again adds no second note.
+	 */
+	public function test_capture_authorization_on_order_status_change_does_not_capture_for_other_payment_method() {
+		$this->order->set_payment_method( self::BANK_TRANSFER_GATEWAY_ID );
+		$this->order->save();
+		$this->order_service->set_intent_id_for_order( $this->order, self::OPEN_AUTHORIZATION_INTENT_ID );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$open_authorization = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::OPEN_AUTHORIZATION_INTENT_ID,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+				'charge' => [
+					'id'       => self::OPEN_AUTHORIZATION_CHARGE_ID,
+					'captured' => false,
+				],
+			]
+		);
+		// Each mock serves one request, and the order is completed twice.
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_test_open_authorization' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $open_authorization );
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_test_open_authorization' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $open_authorization );
+		$this->mock_wcpay_request( Capture_Intention::class, 0 );
+
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		$this->assertSame( 1, substr_count( $this->order_note_contents(), '%2Fpayments%2Ftransactions%2Fdetails&id=pi_test_open_authorization" target="_blank" rel="noopener noreferrer">pi_test_open_authorization</a>) is still open' ) );
+		$this->assertSame( 'requires_capture', $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+	}
+
+	/**
 	 * A canceled intent the order never had an authorization for, such as an abandoned payment
 	 * on an order the merchant completes by hand, gets no note.
 	 */
@@ -4637,6 +5174,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Cancelling an order that no longer exists must not throw.
+	 */
+	public function test_cancel_authorizations_on_order_status_change_ignores_a_missing_order() {
+		$missing_order_id = PHP_INT_MAX;
+		$this->assertFalse( wc_get_order( $missing_order_id ), 'Precondition: the order id must not exist.' );
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $missing_order_id );
+	}
+
+	/**
 	 * Any cached intention status that isn't one of the proven-terminal statuses must fall back to
 	 * the regular flow and fetch the live intent - including `requires_capture` itself (the actual
 	 * cancellable case) and a never-cached/empty status, since neither can be assumed terminal.
@@ -4676,6 +5224,214 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'Processing'              => [ Intent_Status::PROCESSING ],
 			'No cached status yet'    => [ '' ],
 		];
+	}
+
+	/**
+	 * A payment that is still open could be completed after its order was cancelled, so it is cancelled too.
+	 *
+	 * @dataProvider provider_open_payments_of_a_cancelled_order
+	 *
+	 * @param string   $intent_status      The intent's status.
+	 * @param callable $metadata_for_order Builds the intent's metadata from the order's ID.
+	 */
+	public function test_cancelling_an_order_cancels_a_payment_that_is_still_open( string $intent_status, callable $metadata_for_order ) {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, self::STORED_STATUS_BEFORE_THE_CANCEL );
+		$this->mock_intent_of_a_cancelled_order( $intent_status, $metadata_for_order( $order->get_id() ) );
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'canceled', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*was still open, and was cancelled because the order was cancelled/', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * Open payments of a cancelled order, by status and by how the intent names the order. Stripe returns
+	 * metadata values as strings, and an intent WooPay created names the store's order by its number.
+	 *
+	 * @return array
+	 */
+	public function provider_open_payments_of_a_cancelled_order(): array {
+		$by_order_id = function ( int $order_id ) {
+			return [ 'order_id' => (string) $order_id ];
+		};
+
+		return [
+			'waiting for the shopper, named by the order ID' => [ Intent_Status::REQUIRES_ACTION, $by_order_id ],
+			'waiting for the shopper, named by the order number, paid on WooPay' => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [
+						'paid_on_woopay' => 'true',
+						'order_number'   => (string) $order_id,
+						'order_id'       => (string) ( $order_id + 1 ),
+					];
+				},
+			],
+			'declined'           => [ Intent_Status::REQUIRES_PAYMENT_METHOD, $by_order_id ],
+			'awaiting a confirm' => [ Intent_Status::REQUIRES_CONFIRMATION, $by_order_id ],
+		];
+	}
+
+	/**
+	 * An open payment created for another order must stay payable, and one being processed can't be
+	 * cancelled, so neither costs a cancel request.
+	 *
+	 * @dataProvider provider_payments_a_cancelled_order_leaves_alone
+	 *
+	 * @param string   $intent_status      The intent's status.
+	 * @param callable $metadata_for_order Builds the intent's metadata from the order's ID.
+	 */
+	public function test_cancelling_an_order_leaves_a_payment_it_must_not_cancel( string $intent_status, callable $metadata_for_order ) {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, self::STORED_STATUS_BEFORE_THE_CANCEL );
+		$this->mock_intent_of_a_cancelled_order( $intent_status, $metadata_for_order( $order->get_id() ) );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( $intent_status, $order->get_meta( '_intention_status' ) );
+		$this->assertStringNotContainsString( 'was cancelled because the order was cancelled', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Payments of a cancelled order that are not cancelled: open ones not created for the order, by how
+	 * the intent names an order, and one being processed.
+	 *
+	 * @return array
+	 */
+	public function provider_payments_a_cancelled_order_leaves_alone(): array {
+		return [
+			'open, for another order ID'                  => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [ 'order_id' => (string) ( $order_id + 1 ) ];
+				},
+			],
+			'open, with no metadata'                      => [
+				Intent_Status::REQUIRES_ACTION,
+				function () {
+					return [];
+				},
+			],
+			'open, with an order ID that is not a number' => [
+				Intent_Status::REQUIRES_ACTION,
+				function () {
+					return [ 'order_id' => 'abc' ];
+				},
+			],
+			'open, with an order ID followed by text'     => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [ 'order_id' => $order_id . 'abc' ];
+				},
+			],
+			'open, with the order number but not paid on WooPay' => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [
+						'order_number' => (string) $order_id,
+						'order_id'     => (string) ( $order_id + 1 ),
+					];
+				},
+			],
+			'open, paid on WooPay for another order number' => [
+				Intent_Status::REQUIRES_ACTION,
+				function ( int $order_id ) {
+					return [
+						'paid_on_woopay' => 'true',
+						'order_number'   => (string) ( $order_id + 1 ),
+					];
+				},
+			],
+			'being processed, for this order'             => [
+				Intent_Status::PROCESSING,
+				function ( int $order_id ) {
+					return [ 'order_id' => (string) $order_id ];
+				},
+			],
+		];
+	}
+
+	/**
+	 * When the cancel fails the payment may still be completed, so the merchant is told. Any failure
+	 * counts, and the note about a failed authorization cancel is not the one to show.
+	 *
+	 * @dataProvider provider_cancel_failures_of_an_open_payment
+	 *
+	 * @param Throwable $failure What the cancel request throws.
+	 */
+	public function test_cancelling_an_order_notes_an_open_payment_it_could_not_cancel( Throwable $failure ) {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, self::STORED_STATUS_BEFORE_THE_CANCEL );
+		$this->mock_intent_of_a_cancelled_order( Intent_Status::REQUIRES_ACTION, [ 'order_id' => (string) $order->get_id() ] );
+		$this->expect_cancel_of_earlier_attempt( $failure );
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'requires_action', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*could not be cancelled.*If the shopper completes it/', $this->order_note_contents( $order ) ) );
+		$this->assertStringNotContainsString( 'Canceling authorization', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Ways the cancel of an open payment can fail.
+	 *
+	 * @return array
+	 */
+	public function provider_cancel_failures_of_an_open_payment(): array {
+		return [
+			'the server refuses the cancel' => [ new API_Exception( 'test exception', 'server_error', 500 ) ],
+			'an error that is no exception' => [ new Error( 'test error' ) ],
+		];
+	}
+
+	/**
+	 * An uncaptured authorization is still voided when its order is cancelled, with one cancel request.
+	 */
+	public function test_cancelling_an_order_still_voids_an_uncaptured_authorization() {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, Intent_Status::REQUIRES_CAPTURE );
+		$order->update_meta_data( '_wcpay_transaction_fee', self::AUTHORIZATION_FEE );
+		$order->save();
+		$this->mock_intent_of_a_cancelled_order( Intent_Status::REQUIRES_CAPTURE, [ 'order_id' => (string) $order->get_id() ], [ 'charge' => [ 'captured' => false ] ] );
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->cancel_authorizations_on_order_status_change( $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'canceled', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_transaction_fee' ) );
+		$this->assertStringNotContainsString( 'was still open', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Mocks the fetch of the intent a cancelled order names.
+	 *
+	 * @param string $intent_status The intent's status.
+	 * @param array  $metadata      The intent's metadata.
+	 * @param array  $more_args     Further arguments for the intent, such as its charge.
+	 */
+	private function mock_intent_of_a_cancelled_order( string $intent_status, array $metadata, array $more_args = [] ): void {
+		$this->mock_wcpay_request( Get_Intention::class, 1, self::PAYMENT_DETAILS_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					array_merge(
+						[
+							'id'       => self::PAYMENT_DETAILS_INTENT_ID,
+							'status'   => $intent_status,
+							'metadata' => $metadata,
+						],
+						$more_args
+					)
+				)
+			);
 	}
 
 	/**

@@ -365,7 +365,7 @@ class WC_Payments_Checkout {
 		}
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
-			// Link by Stripe should be validated with available fees.
+			// Link should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {
 				if ( ! in_array( Payment_Method::LINK, array_keys( $this->account->get_fees() ), true ) ) {
 					continue;

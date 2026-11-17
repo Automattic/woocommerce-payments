@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Stop the block checkout from spinning forever when a shopper places an order before the payment details finish loading.

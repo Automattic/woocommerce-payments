@@ -26,6 +26,13 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 	private $key;
 
 	/**
+	 * Session in place before each test, restored by tear_down.
+	 *
+	 * @var WC_Session|null
+	 */
+	private $session;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -33,6 +40,7 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 
 		$this->key          = Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY;
 		$this->rate_limiter = new Session_Rate_Limiter( $this->key, 2, 600 );
+		$this->session      = WC()->session;
 	}
 
 	/**
@@ -40,7 +48,9 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
+		WC()->session = $this->session;
 		WC()->session->set( $this->key, [] );
+		delete_option( 'wcpay_session_rate_limiter_disabled_' . $this->key );
 	}
 
 	public function test_rate_limiter_stores_element_in_registry() {
@@ -65,5 +75,109 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 		WC()->session->set( $this->key, $registry );
 
 		$this->assertFalse( $this->rate_limiter->is_limited() );
+	}
+
+	public function test_bump_stores_the_decline_on_the_order() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->rate_limiter->bump( $order );
+
+		$this->assertCount( 1, wc_get_order( $order->get_id() )->get_meta( '_wcpay_card_declined_registry', false ) );
+	}
+
+	public function test_bump_keeps_declines_saved_by_a_parallel_attempt() {
+		$order_id       = WC_Helper_Order::create_order()->get_id();
+		$first_attempt  = wc_get_order( $order_id );
+		$second_attempt = wc_get_order( $order_id );
+		$this->rate_limiter->is_limited( $first_attempt );
+		$this->rate_limiter->is_limited( $second_attempt );
+
+		$this->rate_limiter->bump( $first_attempt );
+		$this->rate_limiter->bump( $second_attempt );
+		WC()->session->set( $this->key, [] );
+
+		$this->assertTrue( $this->rate_limiter->is_limited( wc_get_order( $order_id ) ) );
+	}
+
+	public function test_order_registry_limits_the_order_in_a_new_session() {
+		$order = WC_Helper_Order::create_order();
+		$this->rate_limiter->bump( $order );
+		$this->rate_limiter->bump( $order );
+		WC()->session->set( $this->key, [] );
+
+		$this->assertTrue( $this->rate_limiter->is_limited( wc_get_order( $order->get_id() ) ) );
+	}
+
+	public function test_order_registry_limits_the_order_without_a_session() {
+		$order = WC_Helper_Order::create_order();
+		$this->rate_limiter->bump( $order );
+		$this->rate_limiter->bump( $order );
+		WC()->session = null;
+
+		$this->assertTrue( $this->rate_limiter->is_limited( wc_get_order( $order->get_id() ) ) );
+	}
+
+	public function test_order_registry_does_not_limit_another_order() {
+		$order = WC_Helper_Order::create_order();
+		$this->rate_limiter->bump( $order );
+		$this->rate_limiter->bump( $order );
+		WC()->session->set( $this->key, [] );
+
+		$this->assertFalse( $this->rate_limiter->is_limited( WC_Helper_Order::create_order() ) );
+	}
+
+	public function test_order_registry_is_cleared_after_the_delay() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() - 5000 );
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() - 5000 );
+		$order->save();
+
+		$this->assertFalse( $this->rate_limiter->is_limited( $order ) );
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_meta( '_wcpay_card_declined_registry' ) );
+	}
+
+	public function test_order_registry_drops_declines_older_than_a_day() {
+		$order     = WC_Helper_Order::create_order();
+		$a_day_ago = time() - DAY_IN_SECONDS - MINUTE_IN_SECONDS;
+		$order->add_meta_data( '_wcpay_card_declined_registry', $a_day_ago );
+		$order->add_meta_data( '_wcpay_card_declined_registry', $a_day_ago );
+		$order->save();
+
+		$this->rate_limiter->bump( $order );
+
+		$this->assertFalse( $this->rate_limiter->is_limited( $order ) );
+	}
+
+	public function test_order_registry_removes_expired_rows_below_the_threshold() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() - DAY_IN_SECONDS - MINUTE_IN_SECONDS );
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() - DAY_IN_SECONDS - MINUTE_IN_SECONDS );
+		$order->add_meta_data( '_wcpay_card_declined_registry', time() );
+		$order->save();
+
+		$this->assertFalse( $this->rate_limiter->is_limited( $order ) );
+		$this->assertCount( 1, wc_get_order( $order->get_id() )->get_meta( '_wcpay_card_declined_registry', false ) );
+	}
+
+	public function test_order_check_refreshes_meta_loaded_before_the_previous_attempt() {
+		$order_id       = WC_Helper_Order::create_order()->get_id();
+		$first_attempt  = wc_get_order( $order_id );
+		$second_attempt = wc_get_order( $order_id );
+		$second_attempt->get_meta( '_wcpay_card_declined_registry', false );
+
+		$this->rate_limiter->bump( $first_attempt );
+		$this->rate_limiter->bump( $first_attempt );
+		WC()->session->set( $this->key, [] );
+
+		$this->assertTrue( $this->rate_limiter->is_limited( $second_attempt ) );
+	}
+
+	public function test_disabled_option_turns_off_the_order_registry() {
+		update_option( 'wcpay_session_rate_limiter_disabled_' . $this->key, 'yes' );
+		$order = WC_Helper_Order::create_order();
+		$this->rate_limiter->bump( $order );
+		$this->rate_limiter->bump( $order );
+
+		$this->assertFalse( $this->rate_limiter->is_limited( $order ) );
 	}
 }

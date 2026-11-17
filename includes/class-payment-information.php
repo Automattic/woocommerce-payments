@@ -281,10 +281,6 @@ class Payment_Information {
 		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
 		$fingerprint      = self::get_fingerprint_from_request( $request );
 
-		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
-			$order->add_meta_data( 'is_woopay', true, true );
-			$order->save_meta_data();
-		}
 		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
 
 		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {

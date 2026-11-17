@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Recreate the customer during a payment only when the error names the customer itself as the missing object.

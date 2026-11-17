@@ -976,6 +976,36 @@ const mapEventToTimelineItems = (
 					]
 				),
 			];
+		case 'partial_capture_reversal':
+			const formattedReleasedAmount = formatExplicitCurrency(
+				event.amount_refunded,
+				event.currency
+			);
+			return [
+				getDepositTimelineItem(
+					event,
+					isFXEvent( event )
+						? formatExplicitCurrency(
+								event.transaction_details.store_amount,
+								event.transaction_details.store_currency
+							)
+						: formattedReleasedAmount,
+					false
+				),
+				getMainTimelineItem(
+					event,
+					sprintf(
+						__(
+							/* translators: %s is a monetary amount */
+							'The uncaptured %s of the authorization was released to the customer.',
+							'woocommerce-payments'
+						),
+						formattedReleasedAmount
+					),
+					<InfoOutlineIcon />,
+					[ composeFXString( event ) ]
+				),
+			];
 		case 'refund_failed':
 			const formattedRefundFailureAmount = formatExplicitCurrency(
 				event.amount_refunded,
@@ -1457,13 +1487,31 @@ const mapEventToTimelineItems = (
 };
 
 /**
+ * Servers that predate the `partial_capture_reversal` event report the released
+ * remainder of a partial capture as a refund. The charge's reversal balance
+ * transactions identify those events.
+ *
+ * @param {Object}   event                  An event data
+ * @param {string[]} releasedTransactionIds Reversal balance transaction IDs
+ *
+ * @return {Object} The event, retyped when it is a partial-capture reversal
+ */
+const asPartialCaptureReversal = ( event, releasedTransactionIds ) =>
+	[ 'partial_refund', 'full_refund' ].includes( event.type ) &&
+	event.transaction_id &&
+	( releasedTransactionIds ?? [] ).includes( event.transaction_id )
+		? { ...event, type: 'partial_capture_reversal' }
+		: event;
+
+/**
  * Maps the timeline events coming from the server to items that can be used in Timeline component
  *
- * @param {Array}         timelineEvents    array of events
- * @param {string | null} bankName          The name of the bank
- * @param {Object}        disputeOrder      Shared "Dispute N of M" numbering ({ orderById, total })
- * @param {Function}      [onRefund]        Opens the payment details refund modal; when omitted, refund CTAs render as plain text
- * @param {Object}        klarnaLossReasons Klarna's loss reasons, keyed by dispute id
+ * @param {Array}         timelineEvents           array of events
+ * @param {string | null} bankName                 The name of the bank
+ * @param {Object}        disputeOrder             Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]               Opens the payment details refund modal; when omitted, refund CTAs render as plain text
+ * @param {Object}        klarnaLossReasons        Klarna's loss reasons, keyed by dispute id
+ * @param {string[]}      [releasedTransactionIds] Balance transactions that released the uncaptured part of a partial capture
  *
  * @return {Array} Array of view items
  */
@@ -1472,7 +1520,8 @@ export default (
 	bankName = null,
 	disputeOrder,
 	onRefund,
-	klarnaLossReasons
+	klarnaLossReasons,
+	releasedTransactionIds = []
 ) => {
 	if ( ! timelineEvents ) {
 		return [];
@@ -1480,7 +1529,7 @@ export default (
 
 	return flatMap( timelineEvents, ( event ) =>
 		mapEventToTimelineItems(
-			event,
+			asPartialCaptureReversal( event, releasedTransactionIds ),
 			bankName,
 			disputeOrder,
 			onRefund,

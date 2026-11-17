@@ -43,7 +43,7 @@ describe( 'Authorizations selectors', () => {
 	const emptySummaryErrorState = {
 		authorizations: {
 			summary: {
-				[ getResourceId( mockQuery ) ]: {
+				[ getResourceId( mockSummaryQuery ) ]: {
 					error: {},
 				},
 			},

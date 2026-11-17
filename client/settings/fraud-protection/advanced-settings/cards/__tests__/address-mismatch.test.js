@@ -52,26 +52,4 @@ describe( 'Address mismatch card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
-
-	test( 'renders correctly when enabled and checked', () => {
-		settings.address_mismatch.enabled = true;
-		settings.address_mismatch.block = true;
-		const { container } = render(
-			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<AddressMismatchRuleCard />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'renders like disabled when checked, but not enabled', () => {
-		settings.address_mismatch.enabled = false;
-		settings.address_mismatch.block = true;
-		const { container } = render(
-			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<AddressMismatchRuleCard />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
 } );

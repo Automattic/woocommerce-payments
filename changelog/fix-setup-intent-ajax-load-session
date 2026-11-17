@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Make sure the WooCommerce session is loaded when a shopper adds a payment method from My Account.

@@ -10,7 +10,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { Dispute } from 'types/disputes';
-import { Charge, ChargeAmounts, ChargeDispute } from 'types/charges';
+import {
+	Charge,
+	ChargeAmounts,
+	ChargeDispute,
+	ChargeRefund,
+} from 'types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
 
 // Prefer the array when the server sends it — it's authoritative and already
@@ -56,6 +61,80 @@ const unsuccessfulRefundStatuses = [ 'failed', 'canceled' ];
 const isUnsuccessfulRefund = ( refund: { status?: string | null } ): boolean =>
 	unsuccessfulRefundStatuses.includes( refund.status ?? '' );
 
+// Capturing less than was authorized makes Stripe release the remainder as a
+// refund on the charge: it counts towards `amount_refunded` and shows up in
+// `refunds`, but nobody refunded anything. Its balance transaction is the only
+// field that tells it apart from a refund the merchant issued.
+const isPartialCaptureReversal = ( refund: ChargeRefund ): boolean =>
+	refund.balance_transaction?.reporting_category ===
+	'partial_capture_reversal';
+
+const getMerchantRefunds = ( charge: Charge ): ChargeRefund[] =>
+	( charge.refunds?.data ?? [] ).filter(
+		( refund ) => ! isPartialCaptureReversal( refund )
+	);
+
+/**
+ * The part of the authorization that was released rather than captured, in
+ * the charge currency. Derived from the charge amounts rather than from
+ * `refunds`, which may be missing or truncated to its first page.
+ */
+export const getUncapturedAmount = (
+	charge: Charge = < Charge >{}
+): number => {
+	if ( ! charge.captured || typeof charge.amount_captured !== 'number' ) {
+		return 0;
+	}
+	return Math.max( 0, charge.amount - charge.amount_captured );
+};
+
+/**
+ * `amount_refunded` without the released remainder of a partial capture, in
+ * the charge currency.
+ */
+export const getChargeRefundedAmount = (
+	charge: Charge = < Charge >{}
+): number =>
+	Math.max(
+		0,
+		( charge.amount_refunded ?? 0 ) - getUncapturedAmount( charge )
+	);
+
+/**
+ * What is left to refund, in the charge currency: the captured amount less
+ * what the merchant already refunded.
+ */
+export const getRefundableAmount = ( charge: Charge = < Charge >{} ): number =>
+	Math.max(
+		0,
+		charge.amount -
+			getUncapturedAmount( charge ) -
+			getChargeRefundedAmount( charge )
+	);
+
+/**
+ * Settlement-currency amount released by partial-capture reversals, as a
+ * positive number. Only reversals listed in `refunds` count, so it is 0 when
+ * the list doesn't carry them.
+ */
+const getPartialCaptureReversalBalanceAmount = ( charge: Charge ): number =>
+	-sumBy(
+		( charge.refunds?.data ?? [] ).filter( isPartialCaptureReversal ),
+		'balance_transaction.amount'
+	);
+
+/**
+ * IDs of the balance transactions that released the uncaptured remainder of
+ * the charge, for telling them apart from refunds in the timeline.
+ */
+export const getPartialCaptureReversalTransactionIds = (
+	charge: Charge = < Charge >{}
+): string[] =>
+	( charge.refunds?.data ?? [] )
+		.filter( isPartialCaptureReversal )
+		.map( ( refund ) => refund.balance_transaction?.id )
+		.filter( ( id ): id is string => !! id );
+
 export const getDisputeStatus = (
 	dispute: null | Pick< Dispute, 'status' > = < Dispute >{}
 ): string => dispute?.status || '';
@@ -82,12 +161,12 @@ export const isChargeDisputed = ( charge: Charge = < Charge >{} ): boolean =>
 	charge.disputed === true;
 
 export const isChargeRefunded = ( charge: Charge = < Charge >{} ): boolean =>
-	charge.amount_refunded > 0;
+	getChargeRefundedAmount( charge ) > 0;
 
 export const isChargeRefundFailed = (
 	charge: Charge = < Charge >{}
 ): boolean => {
-	const refunds = charge.refunds?.data ?? [];
+	const refunds = getMerchantRefunds( charge );
 	return (
 		charge.refunded === false &&
 		refunds.length > 0 &&
@@ -220,6 +299,12 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	// derive opposite fields: the envelope is handed `net` and works out
 	// `refunded`, the legacy path accumulates `refunded` and works out
 	// `net`. A change to either needs checking against the other.
+	//
+	// Both paths report a partially captured charge at the captured amount:
+	// the released remainder is taken off `amount` rather than reported as
+	// `refunded`, as nothing was refunded.
+	const releasedBalanceAmount =
+		getPartialCaptureReversalBalanceAmount( charge );
 	const breakdown = charge.fee_breakdown_v1;
 	if (
 		canUseFeeBreakdownData( charge ) &&
@@ -241,15 +326,27 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		const totalFee =
 			breakdown.totals.fee_plus_tax?.amount ??
 			breakdown.totals.fee.amount + ( breakdown.totals.tax?.amount ?? 0 );
+		const withdrawn =
+			breakdown.totals.gross.amount -
+			breakdown.totals.net.amount -
+			totalFee;
+		// While `gross` is the charge's balance transaction, it still holds
+		// the released remainder that `net` already excludes, so move it out
+		// of the withdrawn amount. A `gross` reported at the captured amount
+		// no longer matches that transaction and needs no correction.
+		const released =
+			breakdown.totals.gross.amount === charge.balance_transaction?.amount
+				? releasedBalanceAmount
+				: 0;
 		return {
 			currency: breakdown.totals.fee.currency.toLowerCase(),
-			amount: breakdown.totals.gross.amount,
+			amount: breakdown.totals.gross.amount - released,
 			fee: totalFee,
 			net: breakdown.totals.net.amount,
+			// A breakdown whose withdrawals don't cover the reversal still
+			// has nothing refunded.
 			refunded:
-				breakdown.totals.gross.amount -
-				breakdown.totals.net.amount -
-				totalFee,
+				released > 0 ? Math.max( 0, withdrawn - released ) : withdrawn,
 		};
 	}
 
@@ -259,14 +356,15 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	const balance = charge.balance_transaction
 		? {
 				currency: charge.balance_transaction.currency,
-				amount: charge.balance_transaction.amount,
+				amount:
+					charge.balance_transaction.amount - releasedBalanceAmount,
 				fee: charge.balance_transaction.fee,
 				refunded: 0,
 				net: 0,
 			}
 		: {
 				currency: charge.currency,
-				amount: charge.amount,
+				amount: charge.amount - getUncapturedAmount( charge ),
 				fee: charge.application_fee_amount,
 				refunded: 0,
 				net: 0,
@@ -274,7 +372,7 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 
 	if ( isChargeRefunded( charge ) ) {
 		balance.refunded -= sumBy(
-			( charge.refunds?.data ?? [] ).filter(
+			getMerchantRefunds( charge ).filter(
 				( refund ) => ! isUnsuccessfulRefund( refund )
 			),
 			'balance_transaction.amount'

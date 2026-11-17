@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Stop a subscription renewal from being marked paid with a payment that belongs to another order.

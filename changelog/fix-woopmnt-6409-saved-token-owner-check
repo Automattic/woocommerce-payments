@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Only accept a saved payment method at checkout when it belongs to the logged-in customer paying with it.

@@ -1,7 +1,7 @@
 /** @format */
 
 import type { View } from '@wordpress/dataviews/wp';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();

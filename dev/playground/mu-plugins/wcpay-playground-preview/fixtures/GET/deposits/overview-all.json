@@ -1,0 +1,61 @@
+{
+	"deposit": {
+		"last_paid": [
+			{
+				"id": "po_demo_3",
+				"date": "@timestamp_ms:-3 days",
+				"type": "deposit",
+				"amount": 8920,
+				"currency": "usd",
+				"status": "paid",
+				"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
+				"automatic": true,
+				"fee": 0,
+				"fee_percentage": 0,
+				"bank_reference_key": "DEMO-REF-0003",
+				"created": "@timestamp:-3 days"
+			}
+		],
+		"last_manual_deposits": []
+	},
+	"balance": {
+		"pending": [
+			{
+				"amount": 21750,
+				"currency": "usd",
+				"source_types": {
+					"card": 21750
+				},
+				"deposits_count": 1
+			}
+		],
+		"available": [
+			{
+				"amount": 15430,
+				"currency": "usd",
+				"source_types": {
+					"card": 15430
+				}
+			}
+		],
+		"instant": []
+	},
+	"account": {
+		"default_currency": "usd",
+		"deposits_enabled": true,
+		"deposits_blocked": false,
+		"deposits_disabled": false,
+		"deposits_schedule": {
+			"delay_days": 2,
+			"interval": "daily",
+			"weekly_anchor": "",
+			"monthly_anchor": null
+		},
+		"default_external_accounts": [
+			{
+				"currency": "usd",
+				"status": "verified"
+			}
+		]
+	}
+}

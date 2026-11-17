@@ -16,6 +16,10 @@ export const displayType = {
 	payment_refund: __( 'Payment refund', 'woocommerce-payments' ),
 	refund: __( 'Refund', 'woocommerce-payments' ),
 	refund_failure: __( 'Refund failure', 'woocommerce-payments' ),
+	partial_capture_reversal: __(
+		'Uncaptured amount released',
+		'woocommerce-payments'
+	),
 	dispute: __( 'Dispute', 'woocommerce-payments' ),
 	dispute_reversal: __( 'Dispute reversal', 'woocommerce-payments' ),
 	card_reader_fee: __( 'Reader fee', 'woocommerce-payments' ),

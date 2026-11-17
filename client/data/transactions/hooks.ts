@@ -20,6 +20,7 @@ export type TransactionType =
 	| 'charge'
 	| 'payment'
 	| 'refund'
+	| 'partial_capture_reversal'
 	| 'card_reader_fee'
 	| 'financing_payout'
 	| 'financing_paydown'

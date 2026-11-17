@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Stop testing a WooCommerce beta in CI once its stable release ships.

@@ -326,6 +326,18 @@ function maybeTriggerCaptureAuthorizationModal(
 		return;
 	}
 
+	// The payment method is saved before the status changes, and the server
+	// only captures on completion while the order still uses WooPayments.
+	const paymentMethod = document.querySelector< HTMLSelectElement >(
+		'select#_payment_method'
+	)?.value;
+	if (
+		paymentMethod !== undefined &&
+		! paymentMethod.startsWith( 'woocommerce_payments' )
+	) {
+		return;
+	}
+
 	if ( getConfig( 'hasOpenAuthorization' ) ) {
 		triggerCaptureAuthorizationModal( orderStatus, newOrderStatus );
 	}

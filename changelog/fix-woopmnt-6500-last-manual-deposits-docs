@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Document the actual shape and date format of `last_manual_deposits` in the payouts overview REST API docs.

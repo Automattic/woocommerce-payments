@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Stop extra re-renders on the Payments Overview, payouts, disputes and payment details pages.
