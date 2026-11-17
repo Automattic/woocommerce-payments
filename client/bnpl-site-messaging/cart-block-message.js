@@ -1,3 +1,6 @@
+/**
+ * External dependencies
+ */
 import {
 	Elements,
 	PaymentMethodMessagingElement,
@@ -6,6 +9,9 @@ import { select } from '@wordpress/data';
 // eslint-disable-next-line import/no-unresolved
 import { ExperimentalOrderMeta } from '@woocommerce/blocks-checkout';
 
+/**
+ * Internal dependencies
+ */
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import {
 	getCachedAppearance,
@@ -19,6 +25,7 @@ import request from 'wcpay/checkout/utils/request';
 
 import { useEffect, useState } from 'react';
 
+// Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
 	{
 		publishableKey: getUPEConfig( 'publishableKey' ),
@@ -58,7 +65,12 @@ const BNPLCartBlockMessage = ( { cart, context } ) => {
 				getUPEConfig( 'stylesCacheVersion' ),
 				computed
 			);
-			// Sync the external appearance cache after the DOM is ready.
+			// Effect syncs an external module-level cache (localStorage +
+			// wcpay_elements_appearance CustomEvent) that must run post-commit,
+			// and mirrors the result into local state so <Elements> re-renders
+			// with the resolved appearance. The setState is intentional because
+			// the appearance is derived from a DOM read that isn't safe in
+			// render or in a lazy useState initializer.
 			// eslint-disable-next-line react-hooks/set-state-in-effect
 			setAppearance( computed );
 		}
@@ -100,7 +112,7 @@ const BNPLCartBlockMessage = ( { cart, context } ) => {
 		amount: amount,
 		currency: currencyCode || 'USD',
 		paymentMethodTypes: paymentMethods || [],
-		countryCode: country,
+		countryCode: country, // Customer's country or base country of the store.
 	};
 
 	return (

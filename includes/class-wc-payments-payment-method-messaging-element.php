@@ -147,6 +147,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			$script_data['shouldShowPMME'] = WC_Payments_Utils::is_any_bnpl_method_available( array_values( $bnpl_payment_methods ), $country, $currency_code, $product_price );
 		}
 
+		// Create a script tag with config.
 		wp_localize_script(
 			'WCPAY_BNPL_SITE_MESSAGING',
 			'wcpayStripeSiteMessaging',
