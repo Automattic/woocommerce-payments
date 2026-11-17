@@ -38,6 +38,30 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	const LATE_INTENT_ID = 'pi_late_payment';
 
 	/**
+	 * The intent, charge, mode and stored status of a WooPayments payment that went through after the takeover.
+	 */
+	const LATER_PAYMENT_INTENT_ID     = 'pi_later_payment';
+	const LATER_PAYMENT_CHARGE_ID     = 'ch_later_payment';
+	const LATER_PAYMENT_MODE          = 'prod';
+	const LATER_PAYMENT_INTENT_STATUS = 'succeeded';
+
+	/**
+	 * The stored status of a WooPayments payment authorized after the takeover, with manual capture on.
+	 */
+	const LATER_AUTHORIZATION_INTENT_STATUS = 'requires_capture';
+
+	/**
+	 * The intent of a declined retry, which replaces the order's intent.
+	 */
+	const DECLINED_RETRY_INTENT_ID = 'pi_declined_retry';
+
+	/**
+	 * The intent and stored status of a bank debit retry that is still being processed.
+	 */
+	const BANK_DEBIT_RETRY_INTENT_ID     = 'pi_bank_debit_retry';
+	const BANK_DEBIT_RETRY_INTENT_STATUS = 'processing';
+
+	/**
 	 * The charge of that payment.
 	 */
 	const LATE_CHARGE_ID = 'ch_late_payment';
@@ -731,7 +755,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cod', $order->get_payment_method() );
 		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*paid with another payment method/', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*after this order was paid with another payment, so the order was not updated/', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
@@ -970,6 +994,93 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A new attempt left waiting for 3DS can succeed after a declined retry replaced it on the order. With a
+	 * store clock ahead of Stripe's it looks older than the takeover, but the order holds no payment that went
+	 * through, so the attempt's mode still vouches for it and the shopper isn't left charged on an unpaid order.
+	 */
+	public function test_payment_intent_succeeded_records_a_new_attempt_a_declined_retry_replaced_on_the_order() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::FAILED );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, self::DECLINED_RETRY_INTENT_ID );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertStringNotContainsString( 'another payment method', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * With manual capture on, a later WooPayments payment is only authorized and the order stays on hold,
+	 * which WooCommerce doesn't count as paid. An older attempt that succeeds then is noted as coming after
+	 * another payment, not after a switch to another payment method: that would point the merchant at the
+	 * wrong payment, and they could keep both.
+	 */
+	public function test_payment_intent_succeeded_notes_an_older_attempt_after_a_later_authorization() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::ON_HOLD );
+		$this->put_a_later_authorization_on( $order );
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_later_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$notes = $this->get_order_notes_text( $order );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*after this order was paid with another payment, so the order was not updated/s', $notes );
+		$this->assertStringNotContainsString( 'switched to another payment method', $notes );
+	}
+
+	/**
+	 * A bank debit retry is still being processed and can fail, so it is not a payment that went through:
+	 * another payment for the order that succeeds meanwhile is recorded, even when the store's clock puts it
+	 * before the takeover. Skipped, it would be left off the order if the debit failed.
+	 */
+	public function test_payment_intent_succeeded_records_a_payment_while_a_bank_debit_retry_is_processing() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::ON_HOLD );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, self::BANK_DEBIT_RETRY_INTENT_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, self::BANK_DEBIT_RETRY_INTENT_STATUS );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertStringNotContainsString( 'another payment method', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An attempt left waiting for 3DS that the order no longer named at the takeover can succeed after a new
+	 * WooPayments payment went through. That payment's mode doesn't vouch for it: the order keeps the payment
+	 * it holds, so refunds go to the card that paid.
+	 */
+	public function test_payment_intent_succeeded_ignores_an_older_attempt_after_a_later_woopayments_payment() {
+		$order = $this->create_order_taken_over_by_another_gateway();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, self::LATER_PAYMENT_MODE );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, self::LATER_PAYMENT_INTENT_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, self::LATER_PAYMENT_INTENT_STATUS );
+		$order->update_meta_data( WC_Payments_Order_Service::CHARGE_ID_META_KEY, self::LATER_PAYMENT_CHARGE_ID );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_later_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'ch_later_payment', $order->get_meta( '_charge_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*after this order was paid with another payment, so the order was not updated/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
 	 * The intent the cleanup removed is known by name, so its payment is ignored even when the store's clock
 	 * puts the takeover before the intent's creation.
 	 */
@@ -984,7 +1095,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'processing', $order->get_status() );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
-		$this->assertMatchesRegularExpression( '/pi_late_payment.*paid with another payment method/s', $this->get_order_notes_text( $order ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*after this order was paid with another payment, so the order was not updated/s', $this->get_order_notes_text( $order ) );
 	}
 
 	/**
@@ -1002,6 +1113,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$order->save();
 
 		return $order;
+	}
+
+	/**
+	 * Puts a WooPayments payment authorized after the takeover on the order, as manual capture leaves it.
+	 *
+	 * @param WC_Order $order The order another gateway took over.
+	 */
+	private function put_a_later_authorization_on( WC_Order $order ): void {
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, self::LATER_PAYMENT_MODE );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, self::LATER_PAYMENT_INTENT_ID );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, self::LATER_AUTHORIZATION_INTENT_STATUS );
+		$order->save();
 	}
 
 	/**
@@ -4445,6 +4569,41 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
 		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
 		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was switched to another payment method, so the order was not updated/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * On an order that is already paid, the note about an authorization from before another gateway took the
+	 * order over says the order was paid with another payment: that payment can be another gateway's or a
+	 * later WooPayments payment, such as one collected in person.
+	 */
+	public function test_amount_capturable_updated_notes_an_older_authorization_on_a_paid_order() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::PROCESSING );
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment, so the order was not updated/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An older authorization that arrives while the order holds a later WooPayments authorization is noted as
+	 * coming after another payment, although WooCommerce doesn't count the order on hold as paid.
+	 */
+	public function test_amount_capturable_updated_notes_an_older_authorization_after_a_later_authorization() {
+		$order = $this->create_order_taken_over_by_another_gateway( Order_Status::ON_HOLD );
+		$this->put_a_later_authorization_on( $order );
+		$this->set_up_amount_capturable_updated_event( $order, Payment_Method::CARD, self::PAYMENT_DETAILS_REMOVED_AT - 60 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_later_payment', $order->get_meta( '_intent_id' ) );
+		$notes = $this->get_order_notes_text( $order );
+		$this->assertMatchesRegularExpression( '/pi_mock.*authorized after this order was paid with another payment, so the order was not updated/s', $notes );
+		$this->assertStringNotContainsString( 'switched to another payment method', $notes );
 	}
 
 	/**
