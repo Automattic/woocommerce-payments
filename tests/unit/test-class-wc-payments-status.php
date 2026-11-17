@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Mode;
 
@@ -39,6 +40,15 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_account;
+
+	/**
+	 * Create HPOS tables before test transactions; older WooCommerce installs omit them.
+	 *
+	 * @param WP_UnitTest_Factory $_unused_factory The WordPress test factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $_unused_factory ) {
+		wc_get_container()->get( DataSynchronizer::class )->create_database_tables();
+	}
 
 	/**
 	 * Pre-test setup
