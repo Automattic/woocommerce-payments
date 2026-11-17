@@ -8403,6 +8403,73 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A new payment for the order stops the order naming an attempt left waiting, then cancels it. A result
+	 * reported for that attempt can read the order just before and fetch the intent just after. It must not
+	 * write what it fetched: a cancelled intent would cancel the order the new payment is about to pay.
+	 *
+	 * The same goes for an attempt that went through while the cancel was out: the order is completed by the
+	 * retry, which looks at the attempt again, or by the webhook, not by a result for a payment the order does
+	 * not name.
+	 *
+	 * @dataProvider provider_intents_the_order_names_after_a_retry
+	 *
+	 * @param string $named_by_the_retry The intent the retry leaves on the order while the result is fetched.
+	 * @param string $fetched_status     The status the reported intent is fetched with.
+	 */
+	public function test_update_order_status_ignores_a_result_for_an_attempt_a_new_payment_replaced_meanwhile( string $named_by_the_retry, string $fetched_status ) {
+		// The hardest storage for this check: with HPOS data caching on, a forced read of the order's meta still
+		// answers from this request's cache, which the retry, in another process, cannot clear.
+		$this->store_orders_in_hpos_with_data_caching();
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_intent_id_for_order( $order, self::EARLIER_ATTEMPT_INTENT_ID );
+		$order_id = $order->get_id();
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, self::EARLIER_ATTEMPT_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnCallback(
+				function () use ( $order_id, $named_by_the_retry, $fetched_status ) {
+					// The retry, in another request, while this one waits for the server.
+					$this->write_intent_id_in_another_request( $order_id, $named_by_the_retry );
+
+					return WC_Helper_Intention::create_intention(
+						[
+							'id'       => self::EARLIER_ATTEMPT_INTENT_ID,
+							'status'   => $fetched_status,
+							'metadata' => [ 'order_id' => $order_id ],
+						]
+					);
+				}
+			);
+
+		$response = $this->call_update_order_status( $order, self::EARLIER_ATTEMPT_INTENT_ID );
+
+		$order = wc_get_order( $order_id );
+		$this->assertArrayHasKey( 'error', $response );
+		$this->assertArrayNotHasKey( 'return_url', $response );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( $named_by_the_retry, $this->order_service->get_stored_intent_id( $order ) );
+		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_transaction_id() );
+		$this->assertMatchesRegularExpression( '/pi_earlier_attempt.*does not match any payments for this order/', $this->get_order_notes_text( $order_id ) );
+	}
+
+	/**
+	 * What the order names while a retry is under way, nothing during the cancel, then its own payment, and
+	 * the status the reported attempt is fetched with.
+	 *
+	 * @return array
+	 */
+	public function provider_intents_the_order_names_after_a_retry(): array {
+		return [
+			'nothing, while the cancel is out'             => [ '', Intent_Status::CANCELED ],
+			'the payment of the retry'                     => [ 'pi_payment_of_the_retry', Intent_Status::CANCELED ],
+			'nothing, and the attempt went through'        => [ '', Intent_Status::SUCCEEDED ],
+			'the payment of the retry, attempt authorized' => [ 'pi_payment_of_the_retry', Intent_Status::REQUIRES_CAPTURE ],
+		];
+	}
+
+	/**
 	 * @dataProvider provider_intent_metadata_not_matching_order
 	 *
 	 * @param callable $build_metadata Builds the intent metadata for the order being paid.

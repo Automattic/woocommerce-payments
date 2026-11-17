@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Response;
@@ -375,5 +377,55 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 */
 	protected function reset_payment_method_registry() {
 		$this->get_payment_method_registry_instance_property()->setValue( null, null );
+	}
+
+	/**
+	 * Stores orders in the HPOS tables, with HPOS data caching on where WooCommerce has it, for the rest of the
+	 * test. With that caching, even a forced read of an order's meta answers from this process's cache.
+	 */
+	protected function store_orders_in_hpos_with_data_caching(): void {
+		wc_get_container()->get( DataSynchronizer::class )->create_database_tables();
+		// Filtered, not saved: WooCommerce refuses to switch storage while orders made earlier in the test are
+		// only in the posts table, and the filters go away with the test.
+		add_filter( 'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, [ $this, 'return_yes' ] );
+		// HPOS data caching arrived after WooCommerce 7.6, the oldest version supported.
+		if ( defined( CustomOrdersTableController::class . '::HPOS_DATASTORE_CACHING_ENABLED_OPTION' ) ) {
+			add_filter( 'pre_option_' . CustomOrdersTableController::HPOS_DATASTORE_CACHING_ENABLED_OPTION, [ $this, 'return_yes' ] );
+		}
+	}
+
+	/**
+	 * The value of an enabled WooCommerce option.
+	 *
+	 * @return string
+	 */
+	public function return_yes(): string {
+		return 'yes';
+	}
+
+	/**
+	 * Changes the stored intent of an order as another request would: the row changes, and none of this
+	 * process's caches hear of it.
+	 *
+	 * @param int    $order_id  The order.
+	 * @param string $intent_id The intent the other request writes.
+	 */
+	protected function write_intent_id_in_another_request( int $order_id, string $intent_id ): void {
+		global $wpdb;
+
+		$hpos   = WC_Payments_Utils::is_hpos_tables_usage_enabled();
+		$table  = $hpos ? $wpdb->prefix . 'wc_orders_meta' : $wpdb->postmeta;
+		$column = $hpos ? 'order_id' : 'post_id';
+
+		// phpcs:disable WordPress.DB.SlowDBQuery -- One row of a test order.
+		$wpdb->update(
+			$table,
+			[ 'meta_value' => $intent_id ],
+			[
+				$column    => $order_id,
+				'meta_key' => '_intent_id',
+			]
+		);
+		// phpcs:enable WordPress.DB.SlowDBQuery
 	}
 }

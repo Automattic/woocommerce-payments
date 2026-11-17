@@ -4717,6 +4717,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
+
+				// A new payment for the order stops the order naming an attempt left waiting, then cancels it.
+				// This request may have read the order just before that. What was fetched is about to be
+				// written to the order, and a cancelled intent would cancel the order, so the order must still
+				// name the intent now. That is read from the table, since no cache of this request knows what
+				// another one wrote, right before the first of those writes: the exchange rate above can take a
+				// request of its own.
+				if ( $intent_id !== $this->order_service->get_stored_intent_id( $order ) ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'intent_id_mismatch'
+					);
+				}
+
 				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
