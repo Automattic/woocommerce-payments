@@ -227,6 +227,48 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
 	}
 
+	/**
+	 * @dataProvider provider_cart_and_checkout_pages
+	 */
+	public function test_should_not_show_woopay_button_without_cart( string $page ) {
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+
+		$this->mock_woopay_utilities
+			->method( 'is_country_available' )
+			->willReturn( true );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_cart' )
+			->willReturn( 'cart' === $page );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_checkout' )
+			->willReturn( 'checkout' === $page );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->willReturn( true );
+
+		// REST requests, such as the block editor loading the page, have no cart.
+		$cart      = WC()->cart;
+		WC()->cart = null;
+
+		try {
+			$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+		} finally {
+			WC()->cart = $cart;
+		}
+	}
+
+	public function provider_cart_and_checkout_pages(): array {
+		return [
+			'cart page'     => [ 'cart' ],
+			'checkout page' => [ 'checkout' ],
+		];
+	}
+
 	public function test_should_show_woopay_button_all_good_at_checkout() {
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
 
