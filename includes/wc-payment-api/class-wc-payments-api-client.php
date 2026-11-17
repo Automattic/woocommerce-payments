@@ -2435,7 +2435,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$processing,
 			$payment_method_types,
 			$payment_method_options,
-			$order
+			$order,
+			is_bool( $intention_array['livemode'] ?? null ) ? $intention_array['livemode'] : null
 		);
 
 		return $intent;
@@ -2480,7 +2481,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$metadata,
 			$payment_method_types,
 			$payment_method_options,
-			$order
+			$order,
+			is_bool( $intention_array['livemode'] ?? null ) ? $intention_array['livemode'] : null
 		);
 
 		return $intent;

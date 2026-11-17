@@ -113,8 +113,8 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Delete', $delete_tool['button'] );
 		$this->assertStringContainsString( 'Note:', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'strong class="red"', $delete_tool['desc'] );
-		$this->assertStringContainsString( 'deletes test mode orders with a successful or authorized', $delete_tool['desc'] );
-		$this->assertStringContainsString( 'Orders with incomplete payment details or placed via other gateways will not be affected', $delete_tool['desc'] );
+		$this->assertStringContainsString( 'deletes orders with a verified successful or authorized test', $delete_tool['desc'] );
+		$this->assertStringContainsString( 'Older orders without verified test payment details and orders placed via other gateways will not be affected', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'cannot be undone', $delete_tool['desc'] );
 	}
 
@@ -159,7 +159,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$result = $this->status->delete_test_orders();
 
-		$this->assertEquals( 'No test orders found.', $result );
+		$this->assertEquals( 'No verified test orders found.', $result );
 
 		// Clean up filter.
 		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $filter_callback, 10 );
@@ -175,6 +175,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$order1->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$order1->set_transaction_id( 'pi_test' );
 		$order1->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order1->update_meta_data( '_wcpay_verified_test_intent', 'pi_test' );
 		$order1->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order1->save();
 
@@ -183,6 +184,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$order2->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$order2->set_transaction_id( 'pi_test' );
 		$order2->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order2->update_meta_data( '_wcpay_verified_test_intent', 'pi_test' );
 		$order2->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order2->save();
 
@@ -219,6 +221,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$order->set_transaction_id( 'pi_test' );
 		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order->update_meta_data( '_wcpay_verified_test_intent', 'pi_test' );
 		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order->save();
 
@@ -244,7 +247,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	 * @param bool   $deleted Whether the order can safely be deleted.
 	 * @param bool   $hpos Whether to use HPOS.
 	 */
-	public function test_delete_test_orders_requires_current_accepted_payment( $gateway, $mode, $intent_status, $intent_id, $transaction_id, $order_status, $deleted, $hpos ) {
+	public function test_delete_test_orders_requires_current_accepted_payment( $gateway, $mode, $intent_status, $intent_id, $transaction_id, $order_status, $deleted, $hpos, $proof = null ) {
 		$storage_filter = static function () use ( $hpos ) {
 			return $hpos ? 'yes' : 'no';
 		};
@@ -259,6 +262,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 			$order->set_transaction_id( $transaction_id );
 			$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $mode );
 			$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, $intent_id );
+			$order->update_meta_data( '_wcpay_verified_test_intent', $proof ?? $intent_id );
 			$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, $intent_status );
 			$order->save();
 			$order_id = $order->get_id();
@@ -274,7 +278,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 				$this->assertSame( $order_status, $preserved->get_status() );
 				$this->assertSame( $transaction_id, $preserved->get_transaction_id() );
 				$this->assertSame( $mode, $preserved->get_meta( '_wcpay_mode' ) );
-				$this->assertSame( 'No test orders found.', $result );
+				$this->assertSame( 'No verified test orders found.', $result );
 			}
 		} finally {
 			if ( isset( $order_id ) && wc_get_order( $order_id ) ) {
@@ -324,6 +328,11 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 			'zero-value setup intent'          => [ $gateway, $test, $paid, 'seti_test', 'seti_test', 'completed', true ],
 		];
 
+		foreach ( [ false, true ] as $hpos ) {
+			yield 'unverified historical ' . (int) $hpos => [ $gateway, $test, $paid, 'pi_live', 'pi_live', 'completed', false, $hpos, '' ];
+			yield 'stale proof ' . (int) $hpos => [ $gateway, $test, $paid, 'pi_live', 'pi_live', 'completed', false, $hpos, 'pi_old_test' ];
+		}
+
 		foreach ( $cases as $name => $case ) {
 			yield 'CPT: ' . $name => array_merge( $case, [ false ] );
 			yield 'HPOS: ' . $name => array_merge( $case, [ true ] );
@@ -355,7 +364,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 			$result = $this->status->delete_test_orders();
 
-			$this->assertSame( 'No test orders found.', $result );
+			$this->assertSame( 'No verified test orders found.', $result );
 			$this->assertInstanceOf( WC_Order::class, wc_get_order( $order->get_id() ) );
 			$this->assertInstanceOf( WC_Order_Refund::class, wc_get_order( $refund->get_id() ) );
 			$this->assertSame( 'test', wc_get_order( $refund->get_id() )->get_meta( '_wcpay_mode' ) );
@@ -378,6 +387,42 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 			'CPT'  => [ false ],
 			'HPOS' => [ true ],
 		];
+	}
+
+	/**
+	 * @dataProvider provide_order_storage_modes
+	 */
+	public function test_delete_test_orders_uses_persisted_remote_mode( bool $hpos ): void {
+		$storage_filter = static function () use ( $hpos ) {
+			return $hpos ? 'yes' : 'no';
+		};
+		add_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
+		add_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+		$orders  = [];
+		$service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
+		try {
+			foreach ( [ false, true, null ] as $livemode ) {
+				$order = wc_create_order();
+				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+				$order->update_meta_data( '_wcpay_mode', 'test' );
+				$order->update_meta_data( '_wcpay_verified_test_intent', 'pi_previous_test' );
+				$service->attach_intent_info_to_order( $order, WC_Helper_Intention::create_intention( [ 'livemode' => $livemode ] ) );
+				$orders[] = $order->get_id();
+			}
+			$this->assertSame( '1 test order has been permanently deleted.', $this->status->delete_test_orders() );
+			$this->assertFalse( wc_get_order( $orders[0] ) );
+			$this->assertInstanceOf( WC_Order::class, wc_get_order( $orders[1] ) );
+			$this->assertInstanceOf( WC_Order::class, wc_get_order( $orders[2] ) );
+			$this->assertSame( 'No verified test orders found.', $this->status->delete_test_orders() );
+		} finally {
+			foreach ( $orders as $id ) {
+				if ( wc_get_order( $id ) ) {
+					wc_get_order( $id )->delete( true );
+				}
+			}
+			remove_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
+			remove_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+		}
 	}
 
 	/**
@@ -409,6 +454,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$order1->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$order1->set_transaction_id( 'pi_test' );
 		$order1->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order1->update_meta_data( '_wcpay_verified_test_intent', 'pi_test' );
 		$order1->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order1->save();
 
@@ -417,6 +463,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$order2->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$order2->set_transaction_id( 'pi_test' );
 		$order2->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order2->update_meta_data( '_wcpay_verified_test_intent', 'pi_test' );
 		$order2->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order2->save();
 

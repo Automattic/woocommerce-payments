@@ -254,6 +254,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->event_body['data'] = $event_data;
 
 		$this->mock_order = $this->createMock( WC_Order::class );
+		$this->mock_order->method( 'get_transaction_id' )->willReturn( '' );
 		$this->mock_order
 			->expects( $this->any() )
 			->method( 'get_id' )
@@ -286,6 +287,186 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * @dataProvider provide_successful_payment_modes
+	 */
+	public function test_successful_ipp_webhook_persists_mode_before_notifications( array $mode, string $old_mode, string $expected_mode, string $expected_proof ): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_total( 50 );
+		$order->update_meta_data( '_wcpay_mode', $old_mode );
+		$order->update_meta_data( '_wcpay_verified_test_intent', 'pi_previous_test' );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, 1700000000, false );
+		unset( $this->event_body['livemode'] );
+		$this->event_body = array_merge( $this->event_body, $mode );
+		$this->event_body['data']['object']['charges']['data'][0]['payment_method_details']['type'] = 'card_present';
+		if ( false === ( $mode['livemode'] ?? null ) ) {
+			WC_Payments::mode()->test();
+		}
+
+		$observed = [];
+		$observe  = static function ( $order_id ) use ( &$observed, $order ) {
+			if ( $order_id === $order->get_id() ) {
+				$stored     = wc_get_order( $order_id );
+				$observed[] = [ $stored->get_meta( '_wcpay_mode' ), $stored->get_meta( '_wcpay_verified_test_intent' ) ];
+			}
+		};
+		add_action( 'woocommerce_payment_complete', $observe );
+		$this->mock_receipt_service->expects( $this->once() )->method( 'send_customer_ipp_receipt_email' )->willReturnCallback(
+			function ( $receipt_order ) use ( $expected_mode, $expected_proof ) {
+				$stored = wc_get_order( $receipt_order->get_id() );
+				$this->assertSame( $expected_mode, $stored->get_meta( '_wcpay_mode' ) );
+				$this->assertSame( $expected_proof, $stored->get_meta( '_wcpay_verified_test_intent' ) );
+			}
+		);
+		try {
+			$this->webhook_processing_service->process( $this->event_body );
+			$this->assertSame( [ [ $expected_mode, $expected_proof ] ], $observed );
+			$this->assertSame( 'pi_late_payment', wc_get_order( $order->get_id() )->get_transaction_id() );
+		} finally {
+			remove_action( 'woocommerce_payment_complete', $observe );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function provide_successful_payment_modes(): array {
+		return [
+			'live repairs stale test' => [ [ 'livemode' => true ], 'test', 'prod', '' ],
+			'test repairs stale live' => [ [ 'livemode' => false ], 'prod', 'test', 'pi_late_payment' ],
+			'missing is unknown'      => [ [], 'test', 'test', '' ],
+			'null is unknown'         => [ [ 'livemode' => null ], 'prod', 'prod', '' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_payment_modes_with_existing_payment
+	 */
+	public function test_successful_webhook_mode_respects_existing_payment( string $status, string $expected_mode, string $expected_proof ): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_status( Intent_Status::SUCCEEDED === $status ? 'processing' : 'on-hold' );
+		$order->set_total( 50 );
+		$order->set_transaction_id( 'pi_existing' );
+		$order->update_meta_data( '_intent_id', 'pi_existing' );
+		$order->update_meta_data( '_intention_status', $status );
+		$order->update_meta_data( '_wcpay_mode', 'prod' );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, 1700000000 );
+		$this->event_body['livemode'] = false;
+		WC_Payments::mode()->test();
+		try {
+			$this->webhook_processing_service->process( $this->event_body );
+			$this->webhook_processing_service->process( $this->event_body );
+			$stored = wc_get_order( $order->get_id() );
+			$this->assertSame( $expected_mode, $stored->get_meta( '_wcpay_mode' ) );
+			$this->assertSame( $expected_proof, $stored->get_meta( '_wcpay_verified_test_intent' ) );
+		} finally {
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function provide_payment_modes_with_existing_payment(): array {
+		return [
+			'paid'       => [ Intent_Status::SUCCEEDED, 'prod', '' ],
+			'authorized' => [ Intent_Status::REQUIRES_CAPTURE, 'prod', '' ],
+			'declined'   => [ Intent_Status::REQUIRES_PAYMENT_METHOD, 'test', 'pi_late_payment' ],
+			'processing' => [ Intent_Status::PROCESSING, 'test', 'pi_late_payment' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_conflicting_success_identities
+	 */
+	public function test_conflicting_success_redelivery_preserves_accepted_payment( string $status, string $current_intent, string $transaction ): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_status( Intent_Status::SUCCEEDED === $status ? 'processing' : 'on-hold' );
+		$order->set_transaction_id( $transaction );
+		$order->update_meta_data( '_intent_id', $current_intent );
+		$order->update_meta_data( '_intention_status', $status );
+		$order->update_meta_data( '_charge_id', 'ch_existing' );
+		$order->update_meta_data( '_wcpay_mode', 'prod' );
+		$order->update_meta_data( '_wcpay_transaction_fee', '1.23' );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, 1700000000, false );
+		$this->event_body['livemode'] = false;
+		$this->event_body['data']['object']['charges']['data'][0]['payment_method_details']['type'] = 'card_present';
+		$this->mock_receipt_service->expects( $this->never() )->method( 'send_customer_ipp_receipt_email' );
+		WC_Payments::mode()->test();
+		try {
+			$this->webhook_processing_service->process( $this->event_body );
+			$this->webhook_processing_service->process( $this->event_body );
+			$stored = wc_get_order( $order->get_id() );
+			$this->assertSame( $current_intent, $stored->get_meta( '_intent_id' ) );
+			$this->assertSame( $transaction, $stored->get_transaction_id() );
+			$this->assertSame( $status, $stored->get_meta( '_intention_status' ) );
+			$this->assertSame( 'ch_existing', $stored->get_meta( '_charge_id' ) );
+			$this->assertSame( '1.23', $stored->get_meta( '_wcpay_transaction_fee' ) );
+			$this->assertSame( 'prod', $stored->get_meta( '_wcpay_mode' ) );
+			$this->assertSame( '', $stored->get_meta( '_wcpay_verified_test_intent' ) );
+			$this->assertSame( 1, substr_count( $this->get_order_notes_text( $stored ), 'so the order was not updated' ) );
+		} finally {
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function provide_conflicting_success_identities(): iterable {
+		foreach ( [ Intent_Status::SUCCEEDED, Intent_Status::REQUIRES_CAPTURE ] as $status ) {
+			yield $status . ' intent only' => [ $status, 'pi_existing', '' ];
+			yield $status . ' transaction only' => [ $status, '', 'pi_existing' ];
+			yield $status . ' matching intent' => [ $status, self::LATE_INTENT_ID, 'pi_existing' ];
+		}
+	}
+
+	/**
+	 * @dataProvider provide_matching_accepted_payments
+	 */
+	public function test_matching_success_redelivery_repairs_mode_without_duplicate_completion( string $intent_status, string $order_status, int $expected_completions, string $stored_intent ): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_status( $order_status );
+		$order->set_total( 50 );
+		$order->set_transaction_id( self::LATE_INTENT_ID );
+		$order->update_meta_data( '_intent_id', $stored_intent );
+		$order->update_meta_data( '_intention_status', $intent_status );
+		$order->update_meta_data( '_wcpay_mode', 'prod' );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, 1700000000, false );
+		$this->event_body['livemode'] = false;
+		$completions                  = 0;
+		$observe                      = static function ( $id ) use ( $order, &$completions ) {
+			if ( $order->get_id() === $id ) {
+				++$completions;
+			}
+		};
+		add_action( 'woocommerce_payment_complete', $observe );
+		WC_Payments::mode()->test();
+		try {
+			$this->webhook_processing_service->process( $this->event_body );
+			$this->webhook_processing_service->process( $this->event_body );
+			$stored = wc_get_order( $order->get_id() );
+			$this->assertSame( 'processing', $stored->get_status() );
+			$this->assertSame( 'succeeded', $stored->get_meta( '_intention_status' ) );
+			$this->assertSame( 'test', $stored->get_meta( '_wcpay_mode' ) );
+			$this->assertSame( 'pi_late_payment', $stored->get_meta( '_wcpay_verified_test_intent' ) );
+			$this->assertSame( $expected_completions, $completions );
+			$this->assertStringNotContainsString( 'so the order was not updated', $this->get_order_notes_text( $stored ) );
+		} finally {
+			remove_action( 'woocommerce_payment_complete', $observe );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function provide_matching_accepted_payments(): array {
+		return [
+			'authorization'                => [ Intent_Status::REQUIRES_CAPTURE, 'on-hold', 1, self::LATE_INTENT_ID ],
+			'paid'                         => [ Intent_Status::SUCCEEDED, 'processing', 0, self::LATE_INTENT_ID ],
+			'authorized with stale intent' => [ Intent_Status::REQUIRES_CAPTURE, 'on-hold', 1, self::ORDER_INTENT_ID ],
+			'paid with stale intent'       => [ Intent_Status::SUCCEEDED, 'processing', 0, self::ORDER_INTENT_ID ],
+		];
 	}
 
 	/**
@@ -766,6 +947,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cod', $order->get_payment_method() );
 		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_mode' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_verified_test_intent' ) );
 		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*after this order was paid with another payment, so the order was not updated/', $this->get_order_notes_text( $order ) );
 	}
 
@@ -1304,7 +1487,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 * @param WC_Order $order      The order the intent was created for.
 	 * @param int      $created_at When the intent was created.
 	 */
-	private function set_up_late_payment_intent_succeeded( WC_Order $order, int $created_at ): void {
+	private function set_up_late_payment_intent_succeeded( WC_Order $order, int $created_at, bool $found_by_intent = true ): void {
 		$this->event_body['type']           = 'payment_intent.succeeded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -1328,7 +1511,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_db_wrapper
 			->method( 'order_from_intent_id' )
-			->willReturn( $order );
+			->willReturn( $found_by_intent ? $order : null );
+		$this->mock_db_wrapper->method( 'order_from_order_id' )->willReturnCallback(
+			static function () use ( $order ) {
+				return wc_get_order( $order->get_id() );
+			}
+		);
 
 		$this->mock_api_client
 			->method( 'deserialize_payment_intention_object_from_array' )
@@ -1384,9 +1572,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->mock_order
-			->expects( $this->exactly( 5 ) )
+			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
+				[ '_wcpay_mode', 'prod' ],
 				[ '_intent_id', $id ],
 				[ '_charge_id', $charge_id ],
 				[ '_payment_method_id', $payment_method_id ],
@@ -2076,9 +2265,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->mock_order
-			->expects( $this->exactly( 7 ) )
+			->expects( $this->exactly( 8 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
+				[ '_wcpay_mode', 'prod' ],
 				[ '_intent_id', $id ],
 				[ '_charge_id', $charge_id ],
 				[ '_payment_method_id', $payment_method_id ],
@@ -2183,9 +2373,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->mock_order
-			->expects( $this->exactly( 5 ) )
+			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
+				[ '_wcpay_mode', 'prod' ],
 				[ '_intent_id', $id ],
 				[ '_charge_id', $charge_id ],
 				[ '_payment_method_id', $payment_method_id ],
@@ -2289,9 +2480,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
+				[ '_wcpay_mode', 'prod' ],
 				[ '_intent_id', $id ],
 				[ '_charge_id', $charge_id ],
 				[ '_payment_method_id', $payment_method_id ],
@@ -2544,9 +2736,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->mock_order
-			->expects( $this->exactly( 6 ) )
+			->expects( $this->exactly( 7 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
+				[ '_wcpay_mode', 'prod' ],
 				[ '_intent_id', $id ],
 				[ '_charge_id', $charge_id ],
 				[ '_payment_method_id', $payment_method_id ],

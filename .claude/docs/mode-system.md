@@ -1,8 +1,14 @@
 # WooPayments Mode System
 
-**Last updated:** 2026-02-13
+**Last updated:** 2026-11-17
 
 Reference for how WooPayments determines its operating mode (live, test, dev). Source: `includes/core/class-mode.php`.
+
+## Order payment mode
+
+Store mode selects the API namespace for a request; it does not prove the mode of a historical payment. Payment/setup intent models retain the remote response's strict boolean `livemode`, or `null` when absent or malformed. Accepted intent attachment records `_wcpay_mode` (`prod` or `test`) before saving and changing status. Successful payment webhooks use the verified envelope's mode after supersession and existing-payment checks. Unknown mode leaves the existing tag unchanged.
+
+Permanent test-order deletion additionally requires `_wcpay_verified_test_intent` to match the current intent and transaction, with an accepted status and a WooPayments gateway. This marker is written only for an explicit test-mode response. Live or unknown attachment clears it; cross-gateway takeover removes it; subscriptions and renewals do not inherit it. Older orders without proof are retained even if tagged as test. No historical backfill or per-order remote lookup runs during deletion.
 
 ## Mode Hierarchy
 

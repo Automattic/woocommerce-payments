@@ -37,6 +37,11 @@ class WC_Payments_Order_Service {
 	const INTENT_ID_META_KEY = '_intent_id';
 
 	/**
+	 * Intent whose remote response explicitly confirmed test mode.
+	 */
+	const VERIFIED_TEST_INTENT_META_KEY = '_wcpay_verified_test_intent';
+
+	/**
 	 * WC session key holding the payment intent the current session just paid. Written by the gateway
 	 * when a payment completes, read on the order confirmation page to recognise the genuine payer
 	 * (any WooPayments payment, not only wallets) without trusting query-string params.
@@ -1369,6 +1374,7 @@ class WC_Payments_Order_Service {
 		$order->delete_meta_data( self::INTENT_ID_META_KEY );
 		$order->delete_meta_data( self::INTENTION_STATUS_META_KEY );
 		$order->delete_meta_data( self::WCPAY_MODE_META_KEY );
+		$order->delete_meta_data( self::VERIFIED_TEST_INTENT_META_KEY );
 		if ( ! empty( $superseded_intent_ids ) ) {
 			$order->update_meta_data( self::SUPERSEDED_INTENT_IDS_META_KEY, $superseded_intent_ids );
 		}
@@ -1510,8 +1516,8 @@ class WC_Payments_Order_Service {
 	 * A payment still being processed, as a bank debit is for days, does not count, because it can still fail
 	 * and the payment that did succeed would be left off a Failed order. Two more things are checked, because
 	 * an order can carry payment details it was not paid with, as renewals that copied them from their
-	 * subscription do: the order must no longer be awaiting payment, and its transaction ID must not be the
-	 * given intent.
+	 * subscription do: the order must no longer be awaiting payment, and its accepted payment must differ
+	 * from the given intent. The transaction ID takes precedence over missing or stale intent metadata.
 	 *
 	 * @param WC_Order $order     The order.
 	 * @param string   $intent_id The intent to compare.
@@ -1519,11 +1525,13 @@ class WC_Payments_Order_Service {
 	 * @return bool
 	 */
 	public function is_settled_with_another_payment( WC_Order $order, string $intent_id ): bool {
-		$order_intent_id = (string) $order->get_meta( self::INTENT_ID_META_KEY );
+		$order_intent_id = $order->get_transaction_id();
+		if ( '' === $order_intent_id ) {
+			$order_intent_id = (string) $order->get_meta( self::INTENT_ID_META_KEY );
+		}
 
 		return '' !== $order_intent_id
 			&& $order_intent_id !== $intent_id
-			&& $order->get_transaction_id() !== $intent_id
 			&& ! $order->has_status( [ Order_Status::PENDING, Order_Status::FAILED ] )
 			&& in_array( (string) $order->get_meta( self::INTENTION_STATUS_META_KEY ), [ Intent_Status::SUCCEEDED, Intent_Status::REQUIRES_CAPTURE ], true );
 	}
@@ -2158,6 +2166,8 @@ class WC_Payments_Order_Service {
 		$outcome                = $charge ? $charge->get_outcome() : null;
 		$risk_level             = $outcome ? $outcome['risk_level'] : null;
 
+		$this->set_mode_from_intent( $order, $intent_id, $intent->get_livemode() );
+
 		// next, save it in order meta.
 		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id, $risk_level );
 
@@ -2175,6 +2185,28 @@ class WC_Payments_Order_Service {
 		$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
 		if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
 			$this->set_ipp_channel_for_order( $order, $ipp_channel );
+		}
+	}
+
+	/**
+	 * Records an accepted intent's mode before the caller saves the order.
+	 *
+	 * Store settings and historical mode tags do not prove a payment was a test.
+	 * Unknown mode preserves the existing tag but cannot authorize deletion.
+	 *
+	 * @param WC_Order  $order The order accepting this intent.
+	 * @param string    $intent_id The accepted intent ID.
+	 * @param bool|null $livemode Remote mode, or null when unavailable.
+	 */
+	public function set_mode_from_intent( WC_Order $order, string $intent_id, ?bool $livemode ): void {
+		if ( null !== $livemode ) {
+			$order->update_meta_data( self::WCPAY_MODE_META_KEY, $livemode ? Order_Mode::PRODUCTION : Order_Mode::TEST );
+		}
+
+		if ( false === $livemode && '' !== $intent_id ) {
+			$order->update_meta_data( self::VERIFIED_TEST_INTENT_META_KEY, $intent_id );
+		} else {
+			$order->delete_meta_data( self::VERIFIED_TEST_INTENT_META_KEY );
 		}
 	}
 

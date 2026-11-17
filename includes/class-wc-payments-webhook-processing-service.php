@@ -756,7 +756,8 @@ class WC_Payments_Webhook_Processing_Service {
 		// follow the charge stored on the order. An order still awaiting payment is completed by whichever
 		// payment succeeds, since this event can arrive before the checkout request saves its intent on it.
 		if ( $this->order_service->is_settled_with_another_payment( $order, $intent_id ) ) {
-			$note = sprintf(
+			$transaction_id = $order->get_transaction_id();
+			$note           = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge, %3: the ID of the payment the order was paid with. */
 					__( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded for this order, but the order\'s payment is <code>%3$s</code>, so the order was not updated. Check whether payment <code>%1$s</code> needs a refund.', 'woocommerce-payments' ),
@@ -764,7 +765,7 @@ class WC_Payments_Webhook_Processing_Service {
 				),
 				$intent_id,
 				$charge_id,
-				$this->order_service->get_intent_id_for_order( $order )
+				'' !== $transaction_id ? $transaction_id : $this->order_service->get_intent_id_for_order( $order )
 			);
 			// A redelivered event would only repeat the note.
 			if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
@@ -772,6 +773,8 @@ class WC_Payments_Webhook_Processing_Service {
 			}
 			return;
 		}
+
+		$this->order_service->set_mode_from_intent( $order, $intent_id, is_bool( $event_body['livemode'] ?? null ) ? $event_body['livemode'] : null );
 
 		// Update missing intents because webhook can be delivered before order is processed on the client.
 		$meta_data_to_update = [

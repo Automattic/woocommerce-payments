@@ -164,6 +164,61 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertStringEndsWith( $url, $result_order->get_meta( 'receipt_url' ) );
 	}
 
+	/**
+	 * @dataProvider provide_terminal_payment_modes
+	 */
+	public function test_terminal_capture_persists_mode_before_payment_complete( ?bool $livemode, string $expected_mode, string $expected_proof ): void {
+		$order = $this->create_mock_order();
+		$order->set_total( 50 );
+		$order->update_meta_data( '_wcpay_mode', 'test' );
+		$order->update_meta_data( '_wcpay_verified_test_intent', 'pi_previous_test' );
+		$order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'livemode' => $livemode,
+				'metadata' => [ 'order_id' => $order->get_id() ],
+			]
+		);
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' )->method( 'format_response' )->willReturn( $intent );
+		$controller = new WC_REST_Payments_Orders_Controller(
+			$this->mock_api_client,
+			$this->mock_gateway,
+			$this->mock_customer_service,
+			new WC_Payments_Order_Service( $this->mock_api_client )
+		);
+		$request    = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => 'pi_mock',
+			]
+		);
+		$observed = [];
+		$observe  = static function ( $order_id ) use ( &$observed, $order ) {
+			if ( $order_id === $order->get_id() ) {
+				$stored     = wc_get_order( $order_id );
+				$observed[] = [ $stored->get_meta( '_wcpay_mode' ), $stored->get_meta( '_wcpay_verified_test_intent' ) ];
+			}
+		};
+		add_action( 'woocommerce_payment_complete', $observe );
+		try {
+			$response = $controller->capture_terminal_payment( $request );
+			$this->assertSame( 200, $response->get_status() );
+			$this->assertSame( [ [ $expected_mode, $expected_proof ] ], $observed );
+			$this->assertSame( 'pi_mock', wc_get_order( $order->get_id() )->get_transaction_id() );
+		} finally {
+			remove_action( 'woocommerce_payment_complete', $observe );
+		}
+	}
+
+	public function provide_terminal_payment_modes(): array {
+		return [
+			'live'    => [ true, 'prod', '' ],
+			'test'    => [ false, 'test', 'pi_mock' ],
+			'unknown' => [ null, 'test', '' ],
+		];
+	}
+
 	public function test_capture_terminal_payment_succeeded_intent() {
 		$order       = $this->create_mock_order();
 		$mock_intent = WC_Helper_Intention::create_intention(

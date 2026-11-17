@@ -20,6 +20,48 @@ use PHPUnit\Framework\MockObject\MockObject;
  * WC_Payments_API_Client unit tests.
  */
 class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
+	/**
+	 * @dataProvider provide_intent_modes
+	 */
+	public function test_deserialize_intent_preserves_only_boolean_livemode( array $mode, ?bool $expected ): void {
+		$payload = array_merge(
+			[
+				'id'            => 'pi_mode',
+				'amount'        => 1500,
+				'currency'      => 'usd',
+				'created'       => 1600000000,
+				'status'        => Intent_Status::SUCCEEDED,
+				'client_secret' => 'secret',
+				'metadata'      => [],
+				'charges'       => [
+					'total_count' => 0,
+					'data'        => [],
+				],
+			],
+			$mode
+		);
+		foreach ( [ 'payment', 'setup' ] as $type ) {
+			$method = 'deserialize_' . $type . '_intention_object_from_array';
+			$intent = $this->payments_api_client->$method( $payload );
+			$this->assertTrue( method_exists( $intent, 'get_livemode' ), 'Intent must retain authoritative payment mode.' );
+			$this->assertSame( $expected, $intent->get_livemode() );
+			$this->assertArrayNotHasKey( 'livemode', $intent->jsonSerialize(), 'Existing public response shape must remain unchanged.' );
+		}
+	}
+
+	public function provide_intent_modes(): array {
+		return [
+			'live'         => [ [ 'livemode' => true ], true ],
+			'test'         => [ [ 'livemode' => false ], false ],
+			'missing'      => [ [], null ],
+			'null'         => [ [ 'livemode' => null ], null ],
+			'zero'         => [ [ 'livemode' => 0 ], null ],
+			'one'          => [ [ 'livemode' => 1 ], null ],
+			'empty string' => [ [ 'livemode' => '' ], null ],
+			'string'       => [ [ 'livemode' => 'false' ], null ],
+			'array'        => [ [ 'livemode' => [] ], null ],
+		];
+	}
 
 	/**
 	 * System under test
