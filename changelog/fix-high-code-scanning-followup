@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Reject checkout emails with invalid dots or domain hyphens before opening WooPay.
