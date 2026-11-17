@@ -29,6 +29,16 @@ describe( 'WooPay Utils', () => {
 		expect( validateEmail( email ) ).toBe( expected );
 	} );
 
+	it( 'does not stall on a malformed email', () => {
+		const email = '!@' + '0.0.'.repeat( 14 ) + '!';
+		const start = performance.now();
+
+		validateEmail( email );
+		const elapsed = performance.now() - start;
+
+		expect( elapsed ).toBeLessThan( 100 );
+	} );
+
 	afterEach( () => {
 		Object.defineProperty( window.document, 'cookie', {
 			writable: true,
