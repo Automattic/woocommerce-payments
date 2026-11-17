@@ -1290,7 +1290,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		 * Handle Stripe dashboard login links.
 		 * ==================
 		 */
-		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
+		if ( isset( $_GET['wcpay-login'] ) ) {
+			check_admin_referer( 'wcpay-login' );
+
 			try {
 				if ( $this->is_stripe_connected() && ! $this->is_details_submitted() ) {
 					$args         = $_GET;
@@ -1321,7 +1323,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		 * @see self::get_wpcom_reconnect_url()
 		 * ==================
 		 */
-		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
+		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) ) {
+			check_admin_referer( 'wcpay-reconnect-wpcom' );
+
 			// Track the Jetpack connection start.
 			$this->tracks_event(
 				self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START,
@@ -1385,7 +1389,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		 *            Do NOT let this comment become stale/out-of-sync!!!
 		 * ==================
 		 */
-		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
+		if ( isset( $_GET['wcpay-connect'] ) ) {
+			check_admin_referer( 'wcpay-connect' );
+
 			$wcpay_connect_param         = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 			$incentive_id                = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 			$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
@@ -2920,7 +2926,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway = WC_Payments::get_gateway();
 		// If the gateway is not available, return an empty array.
 		// This should never happen, but better safe than sorry.
-		if ( empty( $gateway ) || ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
+		if ( ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
 			return [];
 		}
 

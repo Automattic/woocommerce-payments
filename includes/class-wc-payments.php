@@ -996,9 +996,9 @@ class WC_Payments {
 	 */
 	public static function hide_gateways_on_settings_page() {
 		$default_gateway = self::get_gateway();
-		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
+		foreach ( WC()->payment_gateways()->payment_gateways as $index => $payment_gateway ) {
 			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== $default_gateway ) {
-				unset( WC()->payment_gateways->payment_gateways[ $index ] );
+				unset( WC()->payment_gateways()->payment_gateways[ $index ] );
 			}
 		}
 	}
@@ -1791,7 +1791,7 @@ class WC_Payments {
 			'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
-		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', false, [], WCPAY_VERSION_NUMBER, false );
 		wp_add_inline_script(
 			'WCPAY_WOOPAY_COMMON_CONFIG',
 			'var wcpayConfig = Object.assign( wcpayConfig || {}, ' . wp_json_encode( $common_config ) . ' );',
@@ -1920,7 +1920,7 @@ class WC_Payments {
 	 * Adds custom email field.
 	 */
 	public static function woopay_fields_before_billing_details() {
-		$checkout = WC()->checkout;
+		$checkout = WC()->checkout();
 
 		echo '<div class="woocommerce-billing-fields" id="contact_details">';
 
@@ -2097,7 +2097,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function enqueue_assets_script() {
-		wp_register_script( 'WCPAY_ASSETS', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_register_script( 'WCPAY_ASSETS', false, [], WCPAY_VERSION_NUMBER, false );
 		wp_enqueue_script( 'WCPAY_ASSETS' );
 		wp_localize_script(
 			'WCPAY_ASSETS',

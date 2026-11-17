@@ -60,7 +60,7 @@ Install and activate the WooCommerce and WooPayments plugins, if you haven't alr
 
 If you are an individual or business based in [one of these countries](https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries), you can sign-up with WooPayments. After completing sign up, you can accept payments from customers anywhere in the world, as long as they are paying with [a supported currency](https://woocommerce.com/document/woopayments/currencies/available-currencies/).
 
-We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooPayments launch next](https://woocommerce.com/payments/#request-invite).
+We are actively planning to expand into additional countries based on your interest. Let us know where you would like to see WooPayments launch next by [submitting a feature request](https://woocommerce.com/feature-requests/woopayments/).
 
 = Can I take payments in person? =
 

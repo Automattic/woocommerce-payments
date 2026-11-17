@@ -52,8 +52,8 @@ class Fraud_Prevention_Service {
 	/**
 	 * Returns singleton instance.
 	 *
-	 * @param \WC_Session|null              $session Session instance.
-	 * @param WC_Payment_Gateway_WCPay|null $gateway WC_Payment_Gateway_WCPay instance.
+	 * @param \WC_Session|null              $session Session instance. Defaults to WC()->session.
+	 * @param WC_Payment_Gateway_WCPay|null $gateway WC_Payment_Gateway_WCPay instance. Defaults to the main gateway.
 	 * @return Fraud_Prevention_Service
 	 */
 	public static function get_instance( $session = null, $gateway = null ): self {
@@ -94,7 +94,7 @@ class Fraud_Prevention_Service {
 			return;
 		}
 
-		wp_register_script( self::TOKEN_NAME, '', [], time(), true );
+		wp_register_script( self::TOKEN_NAME, false, [], time(), true );
 		wp_enqueue_script( self::TOKEN_NAME );
 		// Add the fraud prevention token to the checkout configuration.
 		wp_add_inline_script(
