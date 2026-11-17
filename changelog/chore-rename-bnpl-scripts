@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Notice: BNPL site messaging assets now use WCPAY_BNPL_SITE_MESSAGING and WCPAY_BNPL_CART_BLOCK script handles and the wcpay-bnpl-site-messaging style handle. Custom enqueues using WCPAY_PRODUCT_DETAILS, the WCPAY_CART_BLOCK script, or wcpay-product-details must update.

@@ -1,6 +1,3 @@
-/**
- * External dependencies
- */
 import {
 	Elements,
 	PaymentMethodMessagingElement,
@@ -9,9 +6,6 @@ import { select } from '@wordpress/data';
 // eslint-disable-next-line import/no-unresolved
 import { ExperimentalOrderMeta } from '@woocommerce/blocks-checkout';
 
-/**
- * Internal dependencies
- */
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import {
 	getCachedAppearance,
@@ -20,12 +14,11 @@ import {
 } from 'wcpay/utils/appearance-cache';
 import { useStripeAsync } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'utils/checkout';
-import WCPayAPI from '../../checkout/api';
-import request from '../../checkout/utils/request';
+import WCPayAPI from 'wcpay/checkout/api';
+import request from 'wcpay/checkout/utils/request';
 
 import { useEffect, useState } from 'react';
 
-// Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
 	{
 		publishableKey: getUPEConfig( 'publishableKey' ),
@@ -47,7 +40,7 @@ const normalizeAmount = ( amount, decimalPlaces = 2 ) => {
 	return amount * Math.pow( 10, 2 - decimalPlaces );
 };
 
-const ProductDetail = ( { cart, context } ) => {
+const BNPLCartBlockMessage = ( { cart, context } ) => {
 	const [ appearance, setAppearance ] = useState( () =>
 		getCachedAppearance(
 			'bnpl_cart_block',
@@ -65,12 +58,7 @@ const ProductDetail = ( { cart, context } ) => {
 				getUPEConfig( 'stylesCacheVersion' ),
 				computed
 			);
-			// Effect syncs an external module-level cache (localStorage +
-			// wcpay_elements_appearance CustomEvent) that must run post-commit,
-			// and mirrors the result into local state so <Elements> re-renders
-			// with the resolved appearance. The setState is intentional because
-			// the appearance is derived from a DOM read that isn't safe in
-			// render or in a lazy useState initializer.
+			// Sync the external appearance cache after the DOM is ready.
 			// eslint-disable-next-line react-hooks/set-state-in-effect
 			setAppearance( computed );
 		}
@@ -112,7 +100,7 @@ const ProductDetail = ( { cart, context } ) => {
 		amount: amount,
 		currency: currencyCode || 'USD',
 		paymentMethodTypes: paymentMethods || [],
-		countryCode: country, // Customer's country or base country of the store.
+		countryCode: country,
 	};
 
 	return (
@@ -133,7 +121,7 @@ export const renderBNPLCartMessaging = () => {
 	}
 	return (
 		<ExperimentalOrderMeta>
-			<ProductDetail />
+			<BNPLCartBlockMessage />
 		</ExperimentalOrderMeta>
 	);
 };
