@@ -101,7 +101,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const woopayUrl = getConfig( 'woopayHost' ) + '/woopay/';
 
 	const { addToCart, getProductData } =
-		useExpressCheckoutProductHandler( api );
+		useExpressCheckoutProductHandler( api, context );
 	const getProductDataRef = useRef( getProductData );
 	const addToCartRef = useRef( addToCart );
 
@@ -138,7 +138,8 @@ export const WoopayExpressCheckoutButton = ( {
 					'wc-variation-is-unavailable'
 				)
 			) {
-				window.alert(
+				showErrorMessage(
+					context,
 					window?.wc_add_to_cart_variation_params
 						?.i18n_unavailable_text ||
 						__(
@@ -147,7 +148,8 @@ export const WoopayExpressCheckoutButton = ( {
 						)
 				);
 			} else {
-				window.alert(
+				showErrorMessage(
+					context,
 					__(
 						'Please select your product options before proceeding.',
 						'woocommerce-payments'
