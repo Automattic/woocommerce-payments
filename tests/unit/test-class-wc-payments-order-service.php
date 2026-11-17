@@ -77,6 +77,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	const OTHER_STRIPE_GATEWAY_ID = 'stripe';
 
 	/**
+	 * Intent of a payment that completes after the order was paid with another WooPayments payment.
+	 */
+	const LATE_PAYMENT_INTENT_ID = 'pi_test_late_payment';
+
+	/**
 	 * A stored intent status that is not terminal and is not what a cancelled order ends up with.
 	 */
 	const STORED_STATUS_BEFORE_THE_CANCEL = 'requires_confirmation';
@@ -1279,6 +1284,378 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->assertNotFalse( $priority );
 		$this->assertLessThan( 50, $priority );
+	}
+
+	/**
+	 * A new WooPayments payment replaces an attempt left waiting for 3DS: the attempt is cancelled so it can
+	 * no longer charge the card, and the order stops naming it, so its 3DS callback has nothing to act on.
+	 * What the new payment reuses stays.
+	 */
+	public function test_cancel_attempt_replaced_by_new_payment_cancels_and_detaches_the_attempt() {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$this->expect_cancel_of_earlier_attempt();
+
+		$cancelled = $this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertTrue( $cancelled );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_transaction_id() );
+		$this->assertSame( 'cus_test_payment_details', $order->get_meta( '_stripe_customer_id' ) );
+		$this->assertSame( 'pm_test_payment_details', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( 'test', $order->get_meta( '_wcpay_mode' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_payment_details_removed' ) );
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*was cancelled because a new payment was started for this order/', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * A transaction ID that is not the cancelled attempt stays.
+	 */
+	public function test_cancel_attempt_replaced_by_new_payment_keeps_another_transaction_id() {
+		$order = $this->create_order_with_unfinished_attempt( self::OTHER_GATEWAY_TRANSACTION_ID );
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->assertSame( 'txn_test_other_gateway', wc_get_order( $order->get_id() )->get_transaction_id() );
+	}
+
+	/**
+	 * Another request that loaded the order before the cancel can still save its own intent on it: the
+	 * order's intent is emptied, not deleted, and WooCommerce updates meta by row.
+	 */
+	public function test_cancel_attempt_replaced_by_new_payment_leaves_the_intent_writable_for_a_request_already_running() {
+		$order                  = $this->create_order_with_unfinished_attempt( '' );
+		$order_in_other_request = wc_get_order( $order->get_id() );
+		$this->expect_cancel_of_earlier_attempt();
+
+		$this->order_service->cancel_attempt_replaced_by_new_payment( wc_get_order( $order->get_id() ), self::PAYMENT_DETAILS_INTENT_ID );
+		$order_in_other_request->update_meta_data( '_intent_id', self::LATE_PAYMENT_INTENT_ID );
+		$order_in_other_request->update_meta_data( '_intention_status', Intent_Status::SUCCEEDED );
+		$order_in_other_request->save_meta_data();
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_test_late_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'succeeded', $order->get_meta( '_intention_status' ) );
+	}
+
+	/**
+	 * When the cancel fails the attempt may have gone through, or be cancelled all the same. The order keeps
+	 * the attempt's status and transaction ID and goes on not naming it until the caller has looked at it.
+	 * Any failure counts, as the caller is about to start a payment.
+	 *
+	 * @dataProvider provider_cancel_failures
+	 *
+	 * @param Throwable $failure What the cancel request throws.
+	 */
+	public function test_cancel_attempt_replaced_by_new_payment_leaves_the_attempt_for_the_caller_when_the_cancel_fails( Throwable $failure ) {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$this->expect_cancel_of_earlier_attempt( $failure );
+
+		$cancelled = $this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertFalse( $cancelled );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'requires_action', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 'pi_test_payment_details', $order->get_transaction_id() );
+		$this->assertDoesNotMatchRegularExpression( '/was cancelled/', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Ways the cancel request can fail.
+	 *
+	 * @return array
+	 */
+	public function provider_cancel_failures(): array {
+		return [
+			'the server refuses the cancel' => [ new API_Exception( 'test exception', 'payment_intent_unexpected_state', 400 ) ],
+			'an error that is no exception' => [ new Error( 'test error' ) ],
+		];
+	}
+
+	/**
+	 * The order stops naming the attempt before the server is asked to cancel it. A 3DS result reported
+	 * while the cancel is out then finds no payment to act on, where a cancelled intent the order still names
+	 * would cancel the order.
+	 */
+	public function test_cancel_attempt_replaced_by_new_payment_stops_naming_the_attempt_before_cancelling_it() {
+		$order                   = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$named_during_the_cancel = null;
+		$this->mock_wcpay_request( Cancel_Intention::class, 1, self::PAYMENT_DETAILS_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnCallback(
+				function () use ( $order, &$named_during_the_cancel ) {
+					$named_during_the_cancel = wc_get_order( $order->get_id() )->get_meta( '_intent_id' );
+
+					return WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] );
+				}
+			);
+
+		$this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->assertSame( '', $named_during_the_cancel );
+	}
+
+	/**
+	 * A webhook can write the attempt back on the order while the cancel is out, as the authorization webhook
+	 * does under manual capture. Once the attempt is cancelled, the order must not be left naming it.
+	 */
+	public function test_cancel_attempt_replaced_by_new_payment_clears_an_attempt_written_back_while_the_cancel_was_out() {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$this->mock_wcpay_request( Cancel_Intention::class, 1, self::PAYMENT_DETAILS_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnCallback(
+				function () use ( $order ) {
+					$order_in_webhook = wc_get_order( $order->get_id() );
+					$order_in_webhook->update_meta_data( '_intent_id', self::PAYMENT_DETAILS_INTENT_ID );
+					$order_in_webhook->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
+					$order_in_webhook->save();
+
+					return WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] );
+				}
+			);
+		$fired_before = did_action( 'wcpay_order_intent_id_updated' );
+
+		$this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_transaction_id() );
+		// Emptied before the cancel, and again after the webhook wrote it back: both updates are announced.
+		$this->assertSame( 2, did_action( 'wcpay_order_intent_id_updated' ) - $fired_before );
+	}
+
+	/**
+	 * After a failed cancel, an attempt that is not cancelled is named on the order again, with the status
+	 * and transaction ID the order kept for it.
+	 */
+	public function test_reattach_attempt_names_the_attempt_again() {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$this->expect_cancel_of_earlier_attempt( new API_Exception( 'test exception', 'server_error', 500 ) );
+		$this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->order_service->reattach_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_test_payment_details', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'requires_action', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 'pi_test_payment_details', $order->get_transaction_id() );
+	}
+
+	/**
+	 * The cancel fails when the attempt went through, and its webhook can record that while the cancel is
+	 * out. A webhook that loaded the order while it still named the attempt only saves what it changes, so
+	 * the order is left naming no payment, with the paid status. Naming the attempt again keeps that status.
+	 */
+	public function test_reattach_attempt_keeps_the_status_a_webhook_recorded_while_the_cancel_was_out() {
+		$order            = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$order_in_webhook = wc_get_order( $order->get_id() );
+		$this->mock_wcpay_request( Cancel_Intention::class, 1, self::PAYMENT_DETAILS_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnCallback(
+				function () use ( $order_in_webhook ) {
+					$order_in_webhook->update_meta_data( '_intent_id', self::PAYMENT_DETAILS_INTENT_ID );
+					$order_in_webhook->update_meta_data( '_intention_status', Intent_Status::SUCCEEDED );
+					$order_in_webhook->set_transaction_id( self::PAYMENT_DETAILS_INTENT_ID );
+					$order_in_webhook->set_status( Order_Status::PROCESSING );
+					$order_in_webhook->save();
+
+					throw new API_Exception( 'test exception', 'payment_intent_unexpected_state', 400 );
+				}
+			);
+		$this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->order_service->reattach_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$stored = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_test_payment_details', $stored->get_meta( '_intent_id' ) );
+		$this->assertSame( 'succeeded', $stored->get_meta( '_intention_status' ) );
+		$this->assertSame( 'pi_test_payment_details', $stored->get_transaction_id() );
+		$this->assertSame( 'processing', $stored->get_status() );
+		$this->assertSame( 'succeeded', $order->get_meta( '_intention_status' ) );
+	}
+
+	/**
+	 * A payment another request named on the order while the cancel was out stays.
+	 */
+	public function test_reattach_attempt_leaves_a_payment_another_request_named() {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$this->expect_cancel_of_earlier_attempt( new API_Exception( 'test exception', 'server_error', 500 ) );
+		$this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+		$order_in_other_request = wc_get_order( $order->get_id() );
+		$order_in_other_request->update_meta_data( '_intent_id', self::LATE_PAYMENT_INTENT_ID );
+		$order_in_other_request->save();
+
+		$this->order_service->reattach_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->assertSame( 'pi_test_late_payment', wc_get_order( $order->get_id() )->get_meta( '_intent_id' ) );
+	}
+
+	/**
+	 * Once the attempt is cancelled, a note that can't be added must not fail the new payment.
+	 */
+	public function test_cancel_attempt_replaced_by_new_payment_survives_a_note_that_cannot_be_added() {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$this->expect_cancel_of_earlier_attempt();
+		add_filter(
+			'woocommerce_new_order_note_data',
+			function () {
+				throw new RuntimeException( 'test exception' );
+			}
+		);
+
+		$cancelled = $this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->assertTrue( $cancelled );
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_meta( '_intent_id' ) );
+	}
+
+	/**
+	 * An attempt found cancelled although the cancel call failed is detached like one this request cancelled.
+	 */
+	public function test_detach_cancelled_attempt_stops_the_order_naming_the_attempt() {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->order_service->detach_cancelled_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_transaction_id() );
+		$this->assertSame( 1, preg_match_all( '/pi_test_payment_details.*was cancelled because a new payment was started for this order/', $this->order_note_contents( $order ) ) );
+	}
+
+	/**
+	 * Emptying the order's intent is an update of `_intent_id` like any other, so the action fires for it.
+	 */
+	public function test_detach_cancelled_attempt_fires_the_intent_action_when_it_empties_the_intent() {
+		$order        = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$fired_before = did_action( 'wcpay_order_intent_id_updated' );
+
+		$this->order_service->detach_cancelled_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->assertSame( 1, did_action( 'wcpay_order_intent_id_updated' ) - $fired_before );
+	}
+
+	/**
+	 * On the usual path the retry has already emptied the intent before the cancel, so the detach has nothing
+	 * left to announce.
+	 */
+	public function test_cancel_attempt_replaced_by_new_payment_fires_the_intent_action_once() {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$this->expect_cancel_of_earlier_attempt();
+		$fired_before = did_action( 'wcpay_order_intent_id_updated' );
+
+		$this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->assertSame( 1, did_action( 'wcpay_order_intent_id_updated' ) - $fired_before );
+	}
+
+	/**
+	 * Another request may have saved its own intent on the order since this one loaded it. That intent stays.
+	 */
+	public function test_detach_cancelled_attempt_leaves_an_intent_another_request_saved() {
+		$order                  = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$order_in_other_request = wc_get_order( $order->get_id() );
+		$order_in_other_request->update_meta_data( '_intent_id', self::LATE_PAYMENT_INTENT_ID );
+		$order_in_other_request->save();
+
+		$this->order_service->detach_cancelled_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->assertSame( 'pi_test_late_payment', wc_get_order( $order->get_id() )->get_meta( '_intent_id' ) );
+		$this->assertStringNotContainsString( 'was cancelled', $this->order_note_contents( $order ) );
+	}
+
+	/**
+	 * Two requests can retire the same attempt: one cancels it, the other finds it cancelled. One note.
+	 */
+	public function test_detach_cancelled_attempt_does_not_repeat_the_note() {
+		$order = $this->create_order_with_unfinished_attempt( self::PAYMENT_DETAILS_INTENT_ID );
+		$this->expect_cancel_of_earlier_attempt();
+		$this->order_service->cancel_attempt_replaced_by_new_payment( $order, self::PAYMENT_DETAILS_INTENT_ID );
+		$order->update_meta_data( '_intent_id', self::PAYMENT_DETAILS_INTENT_ID );
+		$order->save();
+
+		$this->order_service->detach_cancelled_attempt( $order, self::PAYMENT_DETAILS_INTENT_ID );
+
+		$this->assertSame( '', wc_get_order( $order->get_id() )->get_meta( '_intent_id' ) );
+		$this->assertSame( 1, substr_count( $this->order_note_contents( $order ), 'was cancelled because a new payment was started' ) );
+	}
+
+	/**
+	 * Creates a WooPayments order whose payment still waits for the shopper.
+	 *
+	 * @param string $transaction_id The order's transaction ID.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_with_unfinished_attempt( string $transaction_id ): WC_Order {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_transaction_id( $transaction_id );
+		$order->update_meta_data( '_intention_status', self::EARLIER_ATTEMPT_INTENT_STATUS );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Whether an order is settled with a payment other than the one an event is for.
+	 *
+	 * @dataProvider provider_is_settled_with_another_payment
+	 *
+	 * @param string $order_status     The order's status.
+	 * @param string $order_intent_id  The intent the order names.
+	 * @param string $transaction_id   The order's transaction ID.
+	 * @param string $intention_status The stored status of the order's intent.
+	 * @param string $event_intent_id  The intent to compare.
+	 * @param bool   $expected         Whether the order is settled with another payment.
+	 */
+	public function test_is_settled_with_another_payment( string $order_status, string $order_intent_id, string $transaction_id, string $intention_status, string $event_intent_id, bool $expected ) {
+		// Only what the order holds in memory is read, so it is never saved.
+		$order = new WC_Order();
+		$order->set_status( $order_status );
+		$order->set_transaction_id( $transaction_id );
+		$order->update_meta_data( '_intent_id', $order_intent_id );
+		$order->update_meta_data( '_intention_status', $intention_status );
+
+		$settled = $this->order_service->is_settled_with_another_payment( $order, $event_intent_id );
+
+		$this->assertSame( $expected, $settled );
+	}
+
+	/**
+	 * Orders and the payment an event is for.
+	 *
+	 * @return array
+	 */
+	public function provider_is_settled_with_another_payment(): array {
+		$order_payment = self::PAYMENT_DETAILS_INTENT_ID;
+		$late_payment  = self::LATE_PAYMENT_INTENT_ID;
+
+		return [
+			'a paid order, the event is another payment'  => [ Order_Status::PROCESSING, $order_payment, $order_payment, Intent_Status::SUCCEEDED, $late_payment, true ],
+			'a completed order'                           => [ Order_Status::COMPLETED, $order_payment, $order_payment, Intent_Status::SUCCEEDED, $late_payment, true ],
+			'an order on hold with an authorized payment' => [ Order_Status::ON_HOLD, $order_payment, $order_payment, Intent_Status::REQUIRES_CAPTURE, $late_payment, true ],
+			'an order on hold with a payment still being processed' => [ Order_Status::ON_HOLD, $order_payment, $order_payment, Intent_Status::PROCESSING, $late_payment, false ],
+			'a refunded order'                            => [ Order_Status::REFUNDED, $order_payment, $order_payment, Intent_Status::SUCCEEDED, $late_payment, true ],
+			'a paid order without a transaction ID'       => [ Order_Status::PROCESSING, $order_payment, '', Intent_Status::SUCCEEDED, $late_payment, true ],
+			'the event is the order payment'              => [ Order_Status::PROCESSING, $order_payment, $order_payment, Intent_Status::SUCCEEDED, $order_payment, false ],
+			'the event is the order payment, and the order has no transaction ID' => [ Order_Status::ON_HOLD, $order_payment, '', Intent_Status::REQUIRES_CAPTURE, $order_payment, false ],
+			'the order payment still waits for the shopper' => [ Order_Status::PROCESSING, $order_payment, $order_payment, Intent_Status::REQUIRES_ACTION, $late_payment, false ],
+			'the order payment was declined'              => [ Order_Status::PROCESSING, $order_payment, '', Intent_Status::REQUIRES_PAYMENT_METHOD, $late_payment, false ],
+			'the order payment was cancelled'             => [ Order_Status::PROCESSING, $order_payment, $order_payment, Intent_Status::CANCELED, $late_payment, false ],
+			'the order names no payment'                  => [ Order_Status::PROCESSING, '', '', '', $late_payment, false ],
+			'the order names no payment but stores a paid status' => [ Order_Status::PROCESSING, '', '', Intent_Status::SUCCEEDED, $late_payment, false ],
+			'the order was completed with the event payment but names another' => [ Order_Status::PROCESSING, $order_payment, $late_payment, Intent_Status::SUCCEEDED, $late_payment, false ],
+			'a pending order that carries a paid status it was not paid with' => [ Order_Status::PENDING, $order_payment, '', Intent_Status::SUCCEEDED, $late_payment, false ],
+			'a failed order that carries a paid status it was not paid with' => [ Order_Status::FAILED, $order_payment, '', Intent_Status::SUCCEEDED, $late_payment, false ],
+		];
 	}
 
 	/**
@@ -4141,6 +4518,62 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $this->order->get_meta( '_intent_id', true ), $intent_id );
 		$this->assertSame( 1, did_action( 'wcpay_order_intent_id_updated' ) );
 		$this->assertSame( 0, did_action( 'wcpay_order_payment_method_id_updated' ) );
+	}
+
+	/**
+	 * Another request can change the order's intent while this one holds the order. That write happens in
+	 * another PHP process, so nothing clears this one's caches: with HPOS and its data caching on, even a forced
+	 * read of the order's meta answers from the cache. The stored value is read from the table instead.
+	 *
+	 * @dataProvider provider_order_storage
+	 *
+	 * @param bool $hpos_with_data_caching Whether orders are in HPOS tables with data caching on.
+	 */
+	public function test_get_stored_intent_id_reads_what_another_request_wrote( bool $hpos_with_data_caching ) {
+		if ( $hpos_with_data_caching ) {
+			$this->store_orders_in_hpos_with_data_caching();
+		}
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', self::PAYMENT_DETAILS_INTENT_ID );
+		$order->save();
+		$order = wc_get_order( $order->get_id() );
+
+		$this->write_intent_id_in_another_request( $order->get_id(), self::LATE_PAYMENT_INTENT_ID );
+
+		$this->assertSame( 'pi_test_late_payment', $this->order_service->get_stored_intent_id( $order ) );
+	}
+
+	/**
+	 * An order that names no payment, and one that never did.
+	 *
+	 * @dataProvider provider_order_storage
+	 *
+	 * @param bool $hpos_with_data_caching Whether orders are in HPOS tables with data caching on.
+	 */
+	public function test_get_stored_intent_id_is_empty_for_an_order_naming_no_payment( bool $hpos_with_data_caching ) {
+		if ( $hpos_with_data_caching ) {
+			$this->store_orders_in_hpos_with_data_caching();
+		}
+		$order_that_never_named_one = WC_Helper_Order::create_order();
+		$order_emptied_by_a_retry   = WC_Helper_Order::create_order();
+		$order_emptied_by_a_retry->update_meta_data( '_intent_id', self::PAYMENT_DETAILS_INTENT_ID );
+		$order_emptied_by_a_retry->save();
+		$this->write_intent_id_in_another_request( $order_emptied_by_a_retry->get_id(), '' );
+
+		$this->assertSame( '', $this->order_service->get_stored_intent_id( $order_that_never_named_one ) );
+		$this->assertSame( '', $this->order_service->get_stored_intent_id( $order_emptied_by_a_retry ) );
+	}
+
+	/**
+	 * Where orders are stored.
+	 *
+	 * @return array
+	 */
+	public function provider_order_storage(): array {
+		return [
+			'the posts table'           => [ false ],
+			'HPOS with data caching on' => [ true ],
+		];
 	}
 
 	public function test_get_intent_id_for_order() {

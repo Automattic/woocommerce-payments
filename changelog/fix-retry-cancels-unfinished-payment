@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Cancel an unfinished WooPayments payment when the shopper starts a new one for the same order, so only one of them can be charged.

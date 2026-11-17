@@ -1087,6 +1087,32 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Reads the intent an order names straight from the table its meta is stored in.
+	 *
+	 * For a request that must know what another request wrote since it loaded the order, as when a new payment
+	 * stops the order naming an earlier attempt. That write happens in another PHP process, so nothing clears
+	 * this one's caches, and with HPOS data caching on even `WC_Order::read_meta_data( true )` answers from them.
+	 *
+	 * @param WC_Order $order The order.
+	 *
+	 * @return string The stored intent ID, or an empty string when the order names none.
+	 */
+	public function get_stored_intent_id( WC_Order $order ): string {
+		global $wpdb;
+
+		if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
+			// The lowest row ID first, as `get_meta()` returns the first of several values.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Uncached by design.
+			$intent_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->prefix}wc_orders_meta WHERE order_id = %d AND meta_key = %s ORDER BY id ASC LIMIT 1", $order->get_id(), self::INTENT_ID_META_KEY ) );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Uncached by design.
+			$intent_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s ORDER BY meta_id ASC LIMIT 1", $order->get_id(), self::INTENT_ID_META_KEY ) );
+		}
+
+		return (string) $intent_id;
+	}
+
+	/**
 	 * Get the payment metadata for intent id.
 	 *
 	 * @param  mixed $order The order Id or order object.
@@ -1417,11 +1443,17 @@ class WC_Payments_Order_Service {
 	 * @param WC_Order $order     The order.
 	 * @param string   $message   The translated message, with the `<code>` tag around `%1$s`.
 	 * @param string   $intent_id The payment to name.
+	 * @param bool     $once      Whether to skip a note the order already has.
 	 *
 	 * @return void
 	 */
-	private function add_note_naming_intent( WC_Order $order, string $message, string $intent_id ): void {
-		$order->add_order_note( sprintf( WC_Payments_Utils::esc_interpolated_html( $message, [ 'code' => '<code>' ] ), $intent_id ) );
+	private function add_note_naming_intent( WC_Order $order, string $message, string $intent_id, bool $once = false ): void {
+		$note = sprintf( WC_Payments_Utils::esc_interpolated_html( $message, [ 'code' => '<code>' ] ), $intent_id );
+		if ( $once && $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$order->add_order_note( $note );
 	}
 
 	/**
@@ -1467,6 +1499,33 @@ class WC_Payments_Order_Service {
 		$taken_over_at = (int) $order->get_meta( self::PAYMENT_DETAILS_REMOVED_META_KEY );
 
 		return 0 < $taken_over_at && 0 < $intent_created_at && $intent_created_at < $taken_over_at;
+	}
+
+	/**
+	 * Whether the order is settled with a WooPayments payment that is not the given intent.
+	 *
+	 * Webhooks find the order through the intent's metadata, so a payment that completes late, such as a 3DS
+	 * challenge finished after the shopper paid with another card, reaches an order that is already settled.
+	 * The stored status says the order's payment went through: charged, or authorized and waiting for capture.
+	 * A payment still being processed, as a bank debit is for days, does not count, because it can still fail
+	 * and the payment that did succeed would be left off a Failed order. Two more things are checked, because
+	 * an order can carry payment details it was not paid with, as renewals that copied them from their
+	 * subscription do: the order must no longer be awaiting payment, and its transaction ID must not be the
+	 * given intent.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $intent_id The intent to compare.
+	 *
+	 * @return bool
+	 */
+	public function is_settled_with_another_payment( WC_Order $order, string $intent_id ): bool {
+		$order_intent_id = (string) $order->get_meta( self::INTENT_ID_META_KEY );
+
+		return '' !== $order_intent_id
+			&& $order_intent_id !== $intent_id
+			&& $order->get_transaction_id() !== $intent_id
+			&& ! $order->has_status( [ Order_Status::PENDING, Order_Status::FAILED ] )
+			&& in_array( (string) $order->get_meta( self::INTENTION_STATUS_META_KEY ), [ Intent_Status::SUCCEEDED, Intent_Status::REQUIRES_CAPTURE ], true );
 	}
 
 	/**
@@ -1546,6 +1605,27 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Asks the server to cancel an intent of the order, and logs a failure.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $intent_id The intent to cancel.
+	 *
+	 * @return bool Whether the intent was cancelled.
+	 */
+	private function send_cancel_of_intent( WC_Order $order, string $intent_id ): bool {
+		try {
+			$request = Cancel_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$request->send();
+		} catch ( \Throwable $e ) {
+			Logger::error( sprintf( 'Could not cancel intent %1$s of order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Cancels the intent of an earlier WooPayments attempt on an order another gateway took over, and notes
 	 * whether it worked.
 	 *
@@ -1596,6 +1676,112 @@ class WC_Payments_Order_Service {
 		}
 
 		return $cancelled_intent;
+	}
+
+	/**
+	 * Cancels a WooPayments attempt left waiting for 3DS or a redirect when a new WooPayments payment starts
+	 * for the order, and stops the order naming it.
+	 *
+	 * A challenge left open can be completed after the new payment went through, which charges the shopper
+	 * twice. A cancelled intent can't be confirmed. The order must stop naming it too: the browser still
+	 * reports the failed challenge, and a cancelled intent the order names would cancel the order. So the
+	 * order stops naming the attempt before the cancel, and a report arriving while the cancel is out finds
+	 * no payment to act on.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $intent_id The intent of the attempt.
+	 *
+	 * @return bool Whether the attempt was cancelled. When the cancel fails the attempt may have gone through,
+	 *              and the order still doesn't name it: the caller looks at the attempt, then calls
+	 *              `reattach_attempt()`, or `detach_cancelled_attempt()` when it turns out to be cancelled.
+	 */
+	public function cancel_attempt_replaced_by_new_payment( WC_Order $order, string $intent_id ): bool {
+		// Emptied, not deleted: WooCommerce updates meta by row, so another request that loaded the order before
+		// this one could no longer save its own intent on a deleted row.
+		$this->set_intent_id_for_order( $order, '' );
+
+		if ( ! $this->send_cancel_of_intent( $order, $intent_id ) ) {
+			return false;
+		}
+
+		$this->detach_cancelled_attempt( $order, $intent_id );
+
+		return true;
+	}
+
+	/**
+	 * Makes the order name an attempt again after a failed cancel, unless the attempt turned out to be
+	 * cancelled: it went through, failed, is still open, or can't be read.
+	 *
+	 * @param WC_Order $order     The order. Its meta is read again, so unsaved meta changes are lost.
+	 * @param string   $intent_id The intent of the attempt.
+	 *
+	 * @return void
+	 */
+	public function reattach_attempt( WC_Order $order, string $intent_id ): void {
+		// A payment another request named on the order while the cancel was out stays.
+		$order->read_meta_data( true );
+		if ( '' !== (string) $order->get_meta( self::INTENT_ID_META_KEY ) ) {
+			return;
+		}
+
+		$this->set_intent_id_for_order( $order, $intent_id );
+	}
+
+	/**
+	 * Clears what the order keeps of an attempt that is cancelled, and notes the cancel once.
+	 *
+	 * Also for an attempt found cancelled although the cancel call failed: the call errored after it went
+	 * through, or another request cancelled the attempt first.
+	 *
+	 * @param WC_Order $order     The order. Its meta is read again, so unsaved meta changes are lost.
+	 * @param string   $intent_id The intent of the attempt.
+	 *
+	 * @return void
+	 */
+	public function detach_cancelled_attempt( WC_Order $order, string $intent_id ): void {
+		// While a cancel was out, a webhook may have written the attempt back, or another request may have
+		// saved its own payment. The attempt is cleared again; another payment stays.
+		$order->read_meta_data( true );
+		$named_intent_id = (string) $order->get_meta( self::INTENT_ID_META_KEY );
+		if ( ! in_array( $named_intent_id, [ '', $intent_id ], true ) ) {
+			return;
+		}
+
+		if ( '' !== $named_intent_id ) {
+			// Through the setter, so that `wcpay_order_intent_id_updated` fires for this update too.
+			$this->set_intent_id_for_order( $order, '' );
+		}
+		$order->update_meta_data( self::INTENTION_STATUS_META_KEY, '' );
+		if ( $order->get_transaction_id() === $intent_id ) {
+			$order->set_transaction_id( '' );
+		}
+		$order->save();
+
+		$this->note_attempt_cancelled( $order, $intent_id );
+	}
+
+	/**
+	 * Notes, once, that an attempt was cancelled for a new payment. The attempt is cancelled by now, so a
+	 * note that can't be added must not fail the payment.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $intent_id The intent of the attempt.
+	 *
+	 * @return void
+	 */
+	private function note_attempt_cancelled( WC_Order $order, string $intent_id ): void {
+		try {
+			$this->add_note_naming_intent(
+				$order,
+				/* translators: %1: the ID of a WooPayments payment. */
+				__( 'The earlier WooPayments payment <code>%1$s</code> was cancelled because a new payment was started for this order.', 'woocommerce-payments' ),
+				$intent_id,
+				true
+			);
+		} catch ( \Throwable $e ) {
+			Logger::error( sprintf( 'Could not note the cancel of intent %1$s on order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
+		}
 	}
 
 	/**
