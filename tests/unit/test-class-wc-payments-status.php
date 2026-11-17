@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Mode;
+
 /**
  * WC_Payments_Status unit tests.
  */
@@ -110,8 +113,8 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Delete', $delete_tool['button'] );
 		$this->assertStringContainsString( 'Note:', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'strong class="red"', $delete_tool['desc'] );
-		$this->assertStringContainsString( 'deletes all test mode orders placed via', $delete_tool['desc'] );
-		$this->assertStringContainsString( 'Orders placed via other gateways will not be affected', $delete_tool['desc'] );
+		$this->assertStringContainsString( 'deletes test mode orders with a successful or authorized', $delete_tool['desc'] );
+		$this->assertStringContainsString( 'Orders with incomplete payment details or placed via other gateways will not be affected', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'cannot be undone', $delete_tool['desc'] );
 	}
 
@@ -169,15 +172,23 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		// Create test orders with _wcpay_mode meta.
 		$order1 = wc_create_order();
 		$order1->update_meta_data( '_wcpay_mode', 'test' );
+		$order1->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order1->set_transaction_id( 'pi_test' );
+		$order1->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order1->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order1->save();
 
 		$order2 = wc_create_order();
 		$order2->update_meta_data( '_wcpay_mode', 'test' );
+		$order2->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order2->set_transaction_id( 'pi_test' );
+		$order2->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order2->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order2->save();
 
 		// Create a non-test order that should not be deleted.
 		$order3 = wc_create_order();
-		$order3->update_meta_data( '_wcpay_mode', 'live' );
+		$order3->update_meta_data( '_wcpay_mode', Order_Mode::PRODUCTION );
 		$order3->save();
 
 		$result = $this->status->delete_test_orders();
@@ -205,6 +216,10 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		// Create single test order.
 		$order = wc_create_order();
 		$order->update_meta_data( '_wcpay_mode', 'test' );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_transaction_id( 'pi_test' );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order->save();
 
 		$result = $this->status->delete_test_orders();
@@ -214,6 +229,155 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		// Verify order was permanently deleted (no longer exists).
 		$deleted_order = wc_get_order( $order->get_id() );
 		$this->assertFalse( $deleted_order, 'Test order should be permanently deleted' );
+	}
+
+	/**
+	 * Keeps historical attempts and other gateways away from permanent deletion.
+	 *
+	 * @dataProvider provide_test_order_deletion_cases
+	 * @param string $gateway Payment gateway saved on the order.
+	 * @param string $mode Stored WooPayments mode.
+	 * @param string $intent_status Status of the WooPayments attempt.
+	 * @param string $intent_id WooPayments intent ID.
+	 * @param string $transaction_id Current order transaction.
+	 * @param string $order_status WooCommerce order status.
+	 * @param bool   $deleted Whether the order can safely be deleted.
+	 * @param bool   $hpos Whether to use HPOS.
+	 */
+	public function test_delete_test_orders_requires_current_accepted_payment( $gateway, $mode, $intent_status, $intent_id, $transaction_id, $order_status, $deleted, $hpos ) {
+		$storage_filter = static function () use ( $hpos ) {
+			return $hpos ? 'yes' : 'no';
+		};
+		add_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
+		add_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+
+		try {
+			$this->assertSame( $hpos, \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() );
+			$order = wc_create_order();
+			$order->set_payment_method( $gateway );
+			$order->set_status( $order_status );
+			$order->set_transaction_id( $transaction_id );
+			$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $mode );
+			$order->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, $intent_id );
+			$order->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, $intent_status );
+			$order->save();
+			$order_id = $order->get_id();
+
+			$result = $this->status->delete_test_orders();
+
+			if ( $deleted ) {
+				$this->assertFalse( wc_get_order( $order_id ) );
+				$this->assertSame( '1 test order has been permanently deleted.', $result );
+			} else {
+				$preserved = wc_get_order( $order_id );
+				$this->assertInstanceOf( WC_Order::class, $preserved );
+				$this->assertSame( $order_status, $preserved->get_status() );
+				$this->assertSame( $transaction_id, $preserved->get_transaction_id() );
+				$this->assertSame( $mode, $preserved->get_meta( '_wcpay_mode' ) );
+				$this->assertSame( 'No test orders found.', $result );
+			}
+		} finally {
+			if ( isset( $order_id ) && wc_get_order( $order_id ) ) {
+				wc_get_order( $order_id )->delete( true );
+			}
+			remove_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
+			remove_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+		}
+	}
+
+	/**
+	 * Historical orders can have a stale gateway as well as stale mode metadata.
+	 *
+	 * @return iterable
+	 */
+	public function provide_test_order_deletion_cases() {
+		$gateway = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$test    = Order_Mode::TEST;
+		$paid    = Intent_Status::SUCCEEDED;
+		$failed  = Intent_Status::REQUIRES_PAYMENT_METHOD;
+		$cases   = [
+			'COD after decline'                => [ 'cod', $test, $failed, 'pi_declined', 'pi_declined', 'processing', false ],
+			'bank transfer after decline'      => [ 'bacs', $test, $failed, 'pi_declined', 'pi_declined', 'on-hold', false ],
+			'other card gateway'               => [ 'stripe', $test, $failed, 'pi_declined', 'ch_other', 'completed', false ],
+			'other gateway after test payment' => [ 'cod', $test, $paid, 'pi_test', 'pi_test', 'processing', false ],
+			'stale gateway after decline'      => [ $gateway, $test, $failed, 'pi_declined', 'pi_declined', 'processing', false ],
+			'stale gateway without status'     => [ $gateway, $test, '', 'pi_declined', 'pi_declined', 'completed', false ],
+			'abandoned authentication'         => [ $gateway, $test, Intent_Status::REQUIRES_ACTION, 'pi_test', 'pi_test', 'pending', false ],
+			'unconfirmed intent'               => [ $gateway, $test, Intent_Status::REQUIRES_CONFIRMATION, 'pi_test', 'pi_test', 'pending', false ],
+			'cancelled authorization'          => [ $gateway, $test, Intent_Status::CANCELED, 'pi_test', 'pi_test', 'cancelled', false ],
+			'failed test order'                => [ $gateway, $test, $failed, 'pi_test', 'pi_test', 'failed', false ],
+			'no payment intent'                => [ $gateway, $test, $paid, '', '', 'completed', false ],
+			'no current transaction'           => [ $gateway, $test, $paid, 'pi_test', '', 'completed', false ],
+			'another current transaction'      => [ $gateway, $test, $paid, 'pi_test', 'pi_other', 'completed', false ],
+			'gateway prefix collision'         => [ 'woocommerce_payments_otherplugin', $test, $failed, 'pi_test', 'pi_test', 'processing', false ],
+			'gateway without family delimiter' => [ 'woocommerce_paymentscustom', $test, $paid, 'pi_test', 'pi_test', 'processing', false ],
+			'no gateway'                       => [ '', $test, $paid, 'pi_test', 'pi_test', 'processing', false ],
+			'live payment'                     => [ $gateway, Order_Mode::PRODUCTION, $paid, 'pi_live', 'pi_live', 'processing', false ],
+			'noncanonical mode'                => [ $gateway, 'TEST', $paid, 'pi_test', 'pi_test', 'processing', false ],
+			'no mode'                          => [ $gateway, '', $paid, 'pi_test', 'pi_test', 'processing', false ],
+			'card payment'                     => [ $gateway, $test, $paid, 'pi_test', 'pi_test', 'processing', true ],
+			'completed payment'                => [ $gateway, $test, $paid, 'pi_test', 'pi_test', 'completed', true ],
+			'refunded test payment'            => [ $gateway, $test, $paid, 'pi_test', 'pi_test', 'refunded', true ],
+			'authorization'                    => [ $gateway, $test, Intent_Status::REQUIRES_CAPTURE, 'pi_test', 'pi_test', 'on-hold', true ],
+			'asynchronous payment'             => [ $gateway . '_sepa_debit', $test, Intent_Status::PROCESSING, 'pi_test', 'pi_test', 'on-hold', true ],
+			'disabled legacy payment method'   => [ $gateway . '_giropay', $test, $paid, 'pi_test', 'pi_test', 'completed', true ],
+			'zero-value setup intent'          => [ $gateway, $test, $paid, 'seti_test', 'seti_test', 'completed', true ],
+		];
+
+		foreach ( $cases as $name => $case ) {
+			yield 'CPT: ' . $name => array_merge( $case, [ false ] );
+			yield 'HPOS: ' . $name => array_merge( $case, [ true ] );
+		}
+	}
+
+	/**
+	 * Refunds can appear in the order query but do not own payment details.
+	 *
+	 * @dataProvider provide_order_storage_modes
+	 * @param bool $hpos Whether to use HPOS.
+	 */
+	public function test_delete_test_orders_preserves_tagged_refunds( $hpos ) {
+		$storage_filter = static function () use ( $hpos ) {
+			return $hpos ? 'yes' : 'no';
+		};
+		add_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
+		add_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+
+		try {
+			$this->assertSame( $hpos, \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() );
+			$order = wc_create_order();
+			$order->set_payment_method( 'cod' );
+			$order->save();
+			$refund = new WC_Order_Refund();
+			$refund->set_parent_id( $order->get_id() );
+			$refund->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+			$refund->save();
+
+			$result = $this->status->delete_test_orders();
+
+			$this->assertSame( 'No test orders found.', $result );
+			$this->assertInstanceOf( WC_Order::class, wc_get_order( $order->get_id() ) );
+			$this->assertInstanceOf( WC_Order_Refund::class, wc_get_order( $refund->get_id() ) );
+			$this->assertSame( 'test', wc_get_order( $refund->get_id() )->get_meta( '_wcpay_mode' ) );
+		} finally {
+			if ( isset( $order ) ) {
+				$order->delete( true );
+			}
+			remove_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
+			remove_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+		}
+	}
+
+	/**
+	 * Storage backends supported by the deletion tool.
+	 *
+	 * @return array
+	 */
+	public function provide_order_storage_modes() {
+		return [
+			'CPT'  => [ false ],
+			'HPOS' => [ true ],
+		];
 	}
 
 	/**
@@ -242,10 +406,18 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		// Create test orders with _wcpay_mode meta.
 		$order1 = wc_create_order();
 		$order1->update_meta_data( '_wcpay_mode', 'test' );
+		$order1->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order1->set_transaction_id( 'pi_test' );
+		$order1->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order1->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order1->save();
 
 		$order2 = wc_create_order();
 		$order2->update_meta_data( '_wcpay_mode', 'test' );
+		$order2->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order2->set_transaction_id( 'pi_test' );
+		$order2->update_meta_data( WC_Payments_Order_Service::INTENT_ID_META_KEY, 'pi_test' );
+		$order2->update_meta_data( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY, Intent_Status::SUCCEEDED );
 		$order2->save();
 
 		// Mock that the current user is missing the manage_woocommerce capability.

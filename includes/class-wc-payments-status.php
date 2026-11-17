@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Mode;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -109,7 +112,7 @@ class WC_Payments_Status {
 					'button'   => __( 'Delete', 'woocommerce-payments' ),
 					'desc'     => sprintf(
 						/* translators: %s: WooPayments */
-						__( '<strong class="red">Note:</strong> This option deletes all test mode orders placed via %s. Orders placed via other gateways will not be affected. Use with caution, as this action cannot be undone.', 'woocommerce-payments' ),
+						__( '<strong class="red">Note:</strong> This option deletes test mode orders with a successful or authorized %s payment. Orders with incomplete payment details or placed via other gateways will not be affected. Use with caution, as this action cannot be undone.', 'woocommerce-payments' ),
 						'WooPayments'
 					),
 					'callback' => [ $this, 'delete_test_orders' ],
@@ -140,9 +143,10 @@ class WC_Payments_Status {
 	}
 
 	/**
-	 * Deletes all test orders created with WooPayments.
+	 * Deletes test orders with an accepted WooPayments payment.
 	 *
-	 * Test orders are identified by the '_wcpay_mode' meta key with value 'test'.
+	 * Keeps ambiguous orders: a failed test attempt can leave its mode and even its gateway
+	 * on an order subsequently paid through another gateway.
 	 *
 	 * @return string Success or error message.
 	 */
@@ -164,6 +168,8 @@ class WC_Payments_Status {
 					'return'     => 'objects',
 				]
 			);
+
+			$test_orders = array_filter( $test_orders, [ $this, 'is_deletable_test_order' ] );
 
 			if ( empty( $test_orders ) ) {
 				return __( 'No test orders found.', 'woocommerce-payments' );
@@ -194,6 +200,27 @@ class WC_Payments_Status {
 				$e->getMessage()
 			);
 		}
+	}
+
+	/**
+	 * Checks that a test-mode attempt is still the order's accepted WooPayments payment.
+	 *
+	 * @param WC_Abstract_Order $order Order being considered for permanent deletion.
+	 * @return bool
+	 */
+	private function is_deletable_test_order( WC_Abstract_Order $order ): bool {
+		if ( ! $order instanceof WC_Order ) {
+			return false;
+		}
+
+		$gateway   = $order->get_payment_method();
+		$intent_id = $order->get_meta( WC_Payments_Order_Service::INTENT_ID_META_KEY );
+
+		return Order_Mode::TEST === $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY )
+			&& ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $gateway || 0 === strpos( $gateway, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' ) )
+			&& '' !== $intent_id
+			&& $intent_id === $order->get_transaction_id()
+			&& in_array( $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ), Intent_Status::AUTHORIZED_STATUSES, true );
 	}
 
 	/**
