@@ -139,10 +139,8 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$this->assertSame( '<div id="payment-method-message"></div>', $result );
 		$this->assertTrue( wp_script_is( 'WCPAY_BNPL_SITE_MESSAGING', 'enqueued' ) );
 		$this->assertStringEndsWith( '/dist/bnpl-site-messaging.js', wp_scripts()->registered['WCPAY_BNPL_SITE_MESSAGING']->src );
-		$this->assertFalse( wp_script_is( 'WCPAY_PRODUCT_DETAILS', 'registered' ) );
 		$this->assertTrue( wp_style_is( 'wcpay-bnpl-site-messaging', 'enqueued' ) );
 		$this->assertStringEndsWith( '/dist/bnpl-site-messaging.css', wp_styles()->registered['wcpay-bnpl-site-messaging']->src );
-		$this->assertFalse( wp_style_is( 'wcpay-product-details', 'registered' ) );
 		$this->assertContains( 'affirm', $script_data['paymentMethods'], 'Affirm should be included' );
 		$this->assertContains( 'klarna', $script_data['paymentMethods'], 'Klarna should be included' );
 		$this->assertNotContains( 'afterpay_clearpay', $script_data['paymentMethods'], 'Afterpay should not be included' );

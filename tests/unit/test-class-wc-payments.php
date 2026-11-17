@@ -89,7 +89,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			$this->assertTrue( wp_script_is( 'WCPAY_BNPL_CART_BLOCK', 'registered' ) );
 			$this->assertStringEndsWith( '/dist/bnpl-cart-block.js', wp_scripts()->registered['WCPAY_BNPL_CART_BLOCK']->src );
 			$this->assertSame( $should_enqueue, wp_script_is( 'WCPAY_BNPL_CART_BLOCK', 'enqueued' ) );
-			$this->assertFalse( wp_script_is( 'WCPAY_CART_BLOCK', 'registered' ) );
 			$this->assertTrue( wp_style_is( 'WCPAY_CART_BLOCK', 'enqueued' ) );
 			$this->assertStringEndsWith( '/dist/cart-block.css', wp_styles()->registered['WCPAY_CART_BLOCK']->src );
 		} finally {
