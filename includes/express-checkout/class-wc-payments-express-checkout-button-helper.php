@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields;
 use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
 use Automattic\WooCommerce\StoreApi\SchemaController;
 use Automattic\WooCommerce\StoreApi\Schemas\V1\BillingAddressSchema;
 use Automattic\WooCommerce\StoreApi\Schemas\V1\ShippingAddressSchema;
@@ -1187,6 +1188,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * merchant-created order without a billing country) can't be paid this way. Card payment on the
 	 * same page doesn't need the address.
 	 *
+	 * A missing required phone is assumed to come from the wallet, but a wallet can return none even
+	 * when asked (Google Pay does). Such a payment then fails as it did before this check existed.
+	 *
 	 * The addresses go through the Store API's own address schemas: the response formatting the
 	 * express checkout receives, then the request validation and sanitization it is checked with.
 	 *
@@ -1265,7 +1269,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 
 			$order_controller->validate_existing_order_before_update( $candidate );
+		} catch ( RouteException $e ) {
+			Logger::log( 'The Store API rejected the order address: ' . $e->getMessage() );
+			return false;
 		} catch ( Throwable $e ) {
+			$this->log_pay_for_order_check_error( $e );
 			return false;
 		}
 
@@ -1287,6 +1295,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				'shipping' => $schema_controller->get( ShippingAddressSchema::IDENTIFIER ),
 			];
 		} catch ( Throwable $e ) {
+			$this->log_pay_for_order_check_error( $e );
 			return null;
 		}
 	}
@@ -1307,42 +1316,39 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		try {
 			return new OrderController();
 		} catch ( Throwable $e ) {
+			$this->log_pay_for_order_check_error( $e );
 			return null;
 		}
 	}
 
 	/**
-	 * Mirrors `OrderController::validate_addresses()` for WooCommerce versions before 11.0, whose
-	 * Store API has no public method to validate an existing order's addresses.
+	 * Mirrors `OrderController::validate_addresses()` for WooCommerce 9.9 to 10.x, whose Store API
+	 * has no public method to validate an existing order's addresses.
 	 *
-	 * From WooCommerce 9.9 the order decides whether the shipping address is validated, and the
-	 * shipping country isn't checked for local pickup. Before 9.9 the visitor's cart decides, with no
-	 * local pickup exception (woocommerce/woocommerce#56645).
+	 * Before 9.9 the order isn't checked, as before this check existed: the Store API validated
+	 * fewer fields (no core fields before 9.3, woocommerce/woocommerce#50028), and the visitor's
+	 * cart decided whether the shipping address was validated.
 	 *
 	 * Where it can't match upstream, this errs towards hiding the button:
-	 * - Upstream 9.9+ reads local pickup from the visitor's cart packages, which say nothing about
-	 *   this order, and skips the shipping country check when the cart is empty. The order's
-	 *   shipping lines are used instead, so the country is checked unless every shipping line is
-	 *   local pickup, the order has no shipping lines, or shipping is disabled
+	 * - Upstream reads local pickup from the visitor's cart packages, which say nothing about this
+	 *   order, and skips the shipping country check when the cart is empty. The order's shipping
+	 *   lines are used instead, so the country is checked unless every shipping line is local
+	 *   pickup, the order has no shipping lines, or shipping is disabled
 	 *   (`WC_Order::needs_shipping_address()`).
-	 * - Hidden required fields are skipped on every version; upstream skips them from 10.0.
+	 * - Hidden required fields are skipped on 9.9 too; upstream skips them from 10.0.
 	 *
 	 * @param WC_Order $order The order, with the addresses that will be sent.
 	 *
 	 * @return bool
 	 */
 	private function are_order_addresses_complete( WC_Order $order ): bool {
-		$countries = WC()->countries;
-
-		if ( version_compare( WC_VERSION, '9.9.0-dev', '>=' ) ) {
-			$needs_shipping          = $order->needs_shipping();
-			$checks_shipping_country = $needs_shipping && $order->needs_shipping_address();
-		} else {
-			/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$cart                    = WC()->cart;
-			$needs_shipping          = null !== $cart && $cart->needs_shipping();
-			$checks_shipping_country = $needs_shipping;
+		if ( version_compare( WC_VERSION, '9.9.0-dev', '<' ) ) {
+			return true;
 		}
+
+		$countries               = WC()->countries;
+		$needs_shipping          = $order->needs_shipping();
+		$checks_shipping_country = $needs_shipping && $order->needs_shipping_address();
 
 		if (
 			$checks_shipping_country &&
@@ -1377,7 +1383,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	private function has_missing_required_address_field( WC_Order $order, string $address_type ): bool {
 		$countries      = WC()->countries;
 		$all_locales    = $countries->get_country_locale();
-		$address        = $order->get_address( $address_type );
+		$address        = array_merge( $order->get_address( $address_type ), $this->get_saved_additional_address_fields( $order, $address_type ) );
 		$current_locale = $all_locales[ $address['country'] ] ?? [];
 		$default_locale = $all_locales['default'] ?? null;
 
@@ -1409,6 +1415,35 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Returns the order's saved additional checkout fields for an address, keyed by field ID.
+	 *
+	 * `WC_Order::get_address()` doesn't include them, but the country locale lists the required ones,
+	 * so upstream merges them in before checking for missing fields.
+	 *
+	 * @param WC_Order $order        The order.
+	 * @param string   $address_type Address type, 'billing' or 'shipping'.
+	 *
+	 * @return array
+	 */
+	private function get_saved_additional_address_fields( WC_Order $order, string $address_type ): array {
+		if ( ! class_exists( Package::class ) || ! class_exists( CheckoutFields::class ) ) {
+			return [];
+		}
+
+		try {
+			$checkout_fields = Package::container()->get( CheckoutFields::class );
+			if ( ! is_object( $checkout_fields ) || ! method_exists( $checkout_fields, 'get_all_fields_from_object' ) ) {
+				return [];
+			}
+
+			return (array) $checkout_fields->get_all_fields_from_object( $order, $address_type );
+		} catch ( Throwable $e ) {
+			$this->log_pay_for_order_check_error( $e );
+			return [];
+		}
+	}
+
+	/**
 	 * Whether the store has a required additional checkout field in the contact or order section.
 	 *
 	 * The Store API then requires `additional_fields` on every checkout request. The Pay for Order
@@ -1424,6 +1459,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		try {
 			$checkout_fields = Package::container()->get( CheckoutFields::class );
 		} catch ( Throwable $e ) {
+			$this->log_pay_for_order_check_error( $e );
 			return false;
 		}
 
@@ -1444,6 +1480,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Logs an error in the Pay for Order checks themselves, so it isn't mistaken for an invalid address.
+	 *
+	 * @param Throwable $e The error.
+	 *
+	 * @return void
+	 */
+	private function log_pay_for_order_check_error( Throwable $e ): void {
+		Logger::log( sprintf( 'The Pay for Order address check failed: %s: %s', get_class( $e ), $e->getMessage() ) );
 	}
 
 	/**

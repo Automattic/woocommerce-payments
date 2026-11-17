@@ -835,7 +835,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * @dataProvider provider_pay_for_order_billing_addresses
 	 */
 	public function test_pay_for_order_button_depends_on_the_billing_address( array $billing_address, bool $expected, string $checked_since = '' ) {
-		// Older WooCommerce versions don't check it, so the payment goes through there.
+		// Before WooCommerce 9.9 the order's addresses are only checked for their format, so the
+		// payment may fail there, as it did before this check existed.
 		if ( '' !== $checked_since && version_compare( WC_VERSION, $checked_since, '<' ) ) {
 			$expected = true;
 		}
@@ -848,13 +849,14 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 	public function provider_pay_for_order_billing_addresses(): array {
 		return [
-			'no address'                                 => [ [], false ],
-			'only a country'                             => [ [ 'country' => 'GB' ], false ],
+			'no address'                                 => [ [], false, '9.9.0-dev' ],
+			'only a country'                             => [ [ 'country' => 'GB' ], false, '9.9.0-dev' ],
 			'complete, phone and email left to wallet'   => [ self::COMPLETE_GB_ADDRESS, true ],
 			'complete with a state'                      => [ self::COMPLETE_US_ADDRESS, true ],
-			'missing a field the country requires'       => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'city' => '' ] ), false ],
+			'missing a field the country requires'       => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'city' => '' ] ), false, '9.9.0-dev' ],
 			'blank field the country does not require'   => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'state' => '' ] ), true ],
-			'state that is not valid for the country'    => [ array_merge( self::COMPLETE_US_ADDRESS, [ 'state' => 'XX' ] ), false ],
+			// The Store API blanks a state it doesn't know, and then requires one.
+			'state that is not valid for the country'    => [ array_merge( self::COMPLETE_US_ADDRESS, [ 'state' => 'XX' ] ), false, '9.9.0-dev' ],
 			'postcode that is not valid for the country' => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'postcode' => '123' ] ), false ],
 			'phone that is not valid'                    => [ array_merge( self::COMPLETE_GB_ADDRESS, [ 'phone' => 'not a phone' ] ), false ],
 			// The address schema limits the phone to 100 characters from WooCommerce 11.3.
@@ -876,6 +878,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_pay_for_order_button_is_hidden_when_the_store_does_not_sell_to_the_billing_country() {
+		$this->skip_before_wc_9_9();
 		update_option( 'woocommerce_allowed_countries', 'specific' );
 		update_option( 'woocommerce_specific_allowed_countries', [ 'US' ] );
 		$order = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
@@ -890,7 +893,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_pay_for_order_button_is_hidden_when_a_shipped_order_has_no_shipping_address() {
-		$this->skip_before_wc_validates_shipping_from_the_order();
+		$this->skip_before_wc_9_9();
 		// Has a product that needs shipping, a billing address and no shipping address.
 		$order = WC_Helper_Order::create_order( 1, 100 );
 
@@ -924,17 +927,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		} finally {
 			delete_option( 'woocommerce_ship_to_destination' );
 		}
-	}
-
-	public function test_pay_for_order_button_is_hidden_before_wc_9_9_when_the_visitors_cart_needs_shipping() {
-		if ( version_compare( WC_VERSION, '9.9.0-dev', '>=' ) ) {
-			$this->markTestSkipped( 'From WooCommerce 9.9 the Store API reads shipping from the order, not the cart.' );
-		}
-		$order  = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
-		$helper = $this->make_helper_for_pay_for_order_page( $order );
-		WC()->cart->add_to_cart( $this->simple_product->get_id(), 1 );
-
-		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}
 
 	public function test_pay_for_order_button_ignores_the_shipping_address_of_an_order_that_does_not_ship() {
@@ -976,7 +968,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * visitor's cart, which is empty on a payment link, so only the fallback is checked here.
 	 */
 	public function test_pay_for_order_fallback_checks_the_shipping_country_unless_the_order_is_local_pickup() {
-		$this->skip_before_wc_validates_shipping_from_the_order();
+		$this->skip_before_wc_9_9();
 		update_option( 'woocommerce_ship_to_countries', 'specific' );
 		update_option( 'woocommerce_specific_ship_to_countries', [ 'US' ] );
 		$order = WC_Helper_Order::create_order( 1, 100 );
@@ -1079,17 +1071,22 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		return [
 			'complete billing address'   => [ $complete_billing, [], true ],
 			'no email'                   => [ array_merge( $complete_billing, [ 'email' => '' ] ), [], false ],
-			// The Store API requires the phone the store requires from WooCommerce 9.6.
-			'no phone'                   => [ array_merge( $complete_billing, [ 'phone' => '' ] ), [], false, '9.6.0-dev' ],
+			'no phone'                   => [ array_merge( $complete_billing, [ 'phone' => '' ] ), [], false, '9.9.0-dev' ],
 			'complete shipping address'  => [ $complete_billing, $complete_shipping, true ],
-			// Before WooCommerce 9.9 the Store API checks the shipping address only when the visitor's
-			// cart needs shipping, and a payment link visitor's cart is empty.
 			'shipping without last name' => [ $complete_billing, array_merge( $complete_shipping, [ 'last_name' => '' ] ), false, '9.9.0-dev' ],
 		];
 	}
 
 	public function test_pay_for_order_woopay_is_hidden_when_the_order_address_is_rejected() {
-		$order = $this->create_fee_only_order( [ 'email' => 'jane@example.com' ] );
+		$order = $this->create_fee_only_order(
+			array_merge(
+				self::COMPLETE_GB_ADDRESS,
+				[
+					'email'    => 'jane@example.com',
+					'postcode' => '123',
+				]
+			)
+		);
 
 		$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order )->is_pay_for_order_supported_by_woopay() );
 	}
@@ -1116,14 +1113,18 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$throw = function () {
 			throw new Error( 'A third-party filter failed.' );
 		};
-		add_filter( 'woocommerce_countries_allowed_countries', $throw );
+		add_filter( 'woocommerce_order_get_billing_country', $throw );
+		$logged = $this->capture_wcpay_logs();
 
 		try {
 			$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button() );
 			$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order, true )->should_show_express_checkout_button() );
 		} finally {
-			remove_filter( 'woocommerce_countries_allowed_countries', $throw );
+			remove_filter( 'woocommerce_order_get_billing_country', $throw );
+			wcpay_get_test_container()->reset_all_replacements();
 		}
+
+		$this->assertContains( 'The Pay for Order address check failed: Error: A third-party filter failed.', $logged->getArrayCopy() );
 	}
 
 	public function test_pay_for_order_button_is_hidden_without_the_order_key() {
@@ -1133,6 +1134,50 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$_GET['key'] = self::WRONG_ORDER_KEY;
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
+	}
+
+	public function test_pay_for_order_buttons_are_hidden_for_a_user_who_cannot_pay_the_order() {
+		$order = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
+		$order->set_customer_id( self::factory()->user->create( [ 'role' => 'customer' ] ) );
+		$order->save();
+		$helper = $this->make_helper_for_pay_for_order_page( $order );
+
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'customer' ] ) );
+
+		$this->assertFalse( $helper->should_show_express_checkout_button() );
+		$this->assertFalse( $helper->is_pay_for_order_supported_by_woopay() );
+	}
+
+	public function test_pay_for_order_button_takes_a_saved_required_address_field_into_account() {
+		$this->skip_before_wc_9_9();
+		$this->skip_without_additional_checkout_fields();
+		woocommerce_register_additional_checkout_field(
+			[
+				'id'       => self::ADDITIONAL_FIELD_ID,
+				'label'    => 'Door code',
+				'location' => 'address',
+				'required' => true,
+			]
+		);
+
+		try {
+			$order = $this->create_fee_only_order( self::COMPLETE_GB_ADDRESS );
+
+			$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button(), 'Not saved, Store API validation' );
+			$this->assertFalse( $this->make_helper_for_pay_for_order_page( $order, true )->should_show_express_checkout_button(), 'Not saved, fallback validation' );
+
+			Automattic\WooCommerce\Blocks\Package::container()
+				->get( Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields::class )
+				->persist_field_for_order( self::ADDITIONAL_FIELD_ID, '1234', $order, 'billing', false );
+			$order->save();
+
+			$this->assertTrue( $this->make_helper_for_pay_for_order_page( $order )->should_show_express_checkout_button(), 'Saved, Store API validation' );
+			$this->assertTrue( $this->make_helper_for_pay_for_order_page( $order, true )->should_show_express_checkout_button(), 'Saved, fallback validation' );
+		} finally {
+			__internal_woocommerce_blocks_deregister_checkout_field( self::ADDITIONAL_FIELD_ID );
+			// The country locale lists address fields and is cached for the request.
+			WC()->countries->locale = [];
+		}
 	}
 
 	public function test_pay_for_order_button_is_hidden_when_the_store_has_a_required_contact_checkout_field() {
@@ -1222,12 +1267,12 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * Before WooCommerce 9.9 the Store API validates the shipping address when the visitor's cart
-	 * needs shipping, whatever the order (woocommerce/woocommerce#56645).
+	 * Before WooCommerce 9.9 the order's addresses aren't checked for missing fields or countries
+	 * the store doesn't sell or ship to.
 	 */
-	private function skip_before_wc_validates_shipping_from_the_order() {
+	private function skip_before_wc_9_9() {
 		if ( version_compare( WC_VERSION, '9.9.0-dev', '<' ) ) {
-			$this->markTestSkipped( 'Before WooCommerce 9.9 the Store API reads shipping from the cart, not the order.' );
+			$this->markTestSkipped( 'Needs WooCommerce 9.9.' );
 		}
 	}
 
@@ -1248,6 +1293,32 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		if ( ! function_exists( 'woocommerce_register_additional_checkout_field' ) ) {
 			$this->markTestSkipped( 'Additional checkout fields need WooCommerce 8.9.' );
 		}
+	}
+
+	/**
+	 * Replaces the internal logger with one that records every message.
+	 *
+	 * @return ArrayObject The logged messages, filled as the test runs.
+	 */
+	private function capture_wcpay_logs(): ArrayObject {
+		$logged      = new ArrayObject();
+		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+			->setMethods( [ 'log' ] )
+			->getMock();
+		$mock_logger
+			->method( 'log' )
+			->willReturnCallback(
+				function ( $level, $message ) use ( $logged ) {
+					$logged[] = $message;
+				}
+			);
+
+		wcpay_get_test_container()->replace(
+			WCPay\Internal\Logger::class,
+			new WCPay\Internal\Logger( $mock_logger, WC_Payments::mode() )
+		);
+
+		return $logged;
 	}
 
 	/**
@@ -1273,8 +1344,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$_GET['key']           = $order->get_order_key();
 		wp_set_current_user( $order->get_customer_id() );
 		add_filter( 'woocommerce_is_checkout', '__return_true' );
-		// Like a customer opening a payment link. Before WooCommerce 9.9 the cart decides whether
-		// the Store API validates the shipping address, so the set_up() product would require one.
+		// Like a customer opening a payment link.
 		WC()->cart->empty_cart();
 
 		$mocked_methods = [ 'get_enabled_express_checkout_methods_for_context' ];
