@@ -342,6 +342,13 @@ class WC_Payments_Order_Service {
 	private $earlier_attempts_to_finish = [];
 
 	/**
+	 * ID of the order the classic pay-for-order page is paying in this request, or 0.
+	 *
+	 * @var int
+	 */
+	private $order_in_pay_action = 0;
+
+	/**
 	 * WC_Payments_Order_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
@@ -363,6 +370,7 @@ class WC_Payments_Order_Service {
 		// Keep these below 50: WooCommerce Subscriptions copies the order's meta into switches and new subscriptions at 50 and 100.
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'maybe_remove_payment_details_for_other_gateway' ] );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'maybe_remove_payment_details_for_other_gateway' ] );
+		add_action( 'woocommerce_before_pay_action', [ $this, 'watch_order_in_pay_action' ] );
 		add_filter( 'woocommerce_cancel_unpaid_order', [ $this, 'keep_order_with_superseded_payment' ], 10, 2 );
 
 		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
@@ -1354,6 +1362,56 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Starts watching the order the classic pay-for-order page is about to pay.
+	 *
+	 * That page fires neither checkout order processed action, and it fires this one before it puts the posted
+	 * gateway on the order. WooCommerce sets the gateway and saves the order once it has checked the terms and
+	 * that the gateway is available, so that save is where the earlier attempt is removed.
+	 *
+	 * @internal
+	 *
+	 * @param mixed $order The order being paid.
+	 *
+	 * @return void
+	 */
+	public function watch_order_in_pay_action( $order ): void {
+		if ( ! $order instanceof WC_Order ) {
+			return;
+		}
+
+		$this->order_in_pay_action = $order->get_id();
+		add_action( 'woocommerce_after_order_object_save', [ $this, 'maybe_remove_payment_details_in_pay_action' ] );
+	}
+
+	/**
+	 * Removes the payment details of an earlier WooPayments attempt once the classic pay-for-order page has put
+	 * another gateway on the order.
+	 *
+	 * WooCommerce only calls the gateway while there are no error notices, so the attempt stays when there
+	 * are any. The gateway's own field validation runs after the save and can't be told apart here: when it
+	 * fails, the attempt is removed, and a 3DS step left open is cancelled, although the order was not paid.
+	 * The classic checkout validates the gateway's fields before it processes the order, so it keeps the
+	 * attempt in that case. Both remove it when the other gateway's payment fails.
+	 *
+	 * @internal
+	 *
+	 * @param mixed $order The order that was saved.
+	 *
+	 * @return void
+	 */
+	public function maybe_remove_payment_details_in_pay_action( $order ): void {
+		if ( ! $order instanceof WC_Order || $order->get_id() !== $this->order_in_pay_action ) {
+			return;
+		}
+
+		if ( 0 < wc_notice_count( 'error' ) ) {
+			return;
+		}
+
+		$this->maybe_remove_payment_details_for_other_gateway( $order );
+	}
+
+	/**
 	 * Adds an order note whose message names a WooPayments payment in its `<code>%1$s</code>` placeholder.
 	 *
 	 * @param WC_Order $order     The order.
@@ -1373,9 +1431,15 @@ class WC_Payments_Order_Service {
 	 * the cleanup removed is named on the order, which is exact. An older attempt the order no longer named
 	 * at the takeover is told apart by its creation time against the takeover time, which compares Stripe's
 	 * clock with the store's, so it can miss an attempt started within the clock difference of the takeover.
-	 * That comparison stops once a new WooPayments attempt writes the mode back: a store clock ahead of
-	 * Stripe's would otherwise make a retry seconds after a failed takeover look superseded, and for a method
-	 * that pays later the skipped webhook is what completes the order.
+	 * Two things skip that comparison. The intent the order names is its current payment: the takeover
+	 * removes the intent it finds, so a named one was attached afterwards, as an in-person payment is before
+	 * its capture. And a new WooPayments attempt writes the mode back, which vouches for every intent while
+	 * the order holds no payment that went through: a store clock ahead of Stripe's would otherwise make a
+	 * retry seconds after a failed takeover look superseded, and the skipped webhook can be what completes the
+	 * order. Once the stored status says a payment went through, charged or authorized and waiting for
+	 * capture, the mode stops vouching for other intents, so an older attempt that succeeds late can't
+	 * replace it. A payment still being processed, as a bank debit is for days, doesn't count: it can still
+	 * fail, and the payment that did succeed would be left off a Failed order.
 	 *
 	 * @param WC_Order $order             The order.
 	 * @param string   $intent_id         The intent.
@@ -1389,7 +1453,14 @@ class WC_Payments_Order_Service {
 			return true;
 		}
 
-		if ( '' !== (string) $order->get_meta( self::WCPAY_MODE_META_KEY ) ) {
+		if ( '' !== $intent_id && (string) $order->get_meta( self::INTENT_ID_META_KEY ) === $intent_id ) {
+			return false;
+		}
+
+		if (
+			'' !== (string) $order->get_meta( self::WCPAY_MODE_META_KEY )
+			&& ! in_array( (string) $order->get_meta( self::INTENTION_STATUS_META_KEY ), [ Intent_Status::SUCCEEDED, Intent_Status::REQUIRES_CAPTURE ], true )
+		) {
 			return false;
 		}
 
@@ -1488,9 +1559,9 @@ class WC_Payments_Order_Service {
 			$order,
 			$intent_id,
 			/* translators: %1: the ID of a WooPayments payment. */
-			__( 'The earlier WooPayments payment <code>%1$s</code> was cancelled because this order was paid with another payment method.', 'woocommerce-payments' ),
+			__( 'The earlier WooPayments payment <code>%1$s</code> was cancelled because this order is being paid with another payment method.', 'woocommerce-payments' ),
 			/* translators: %1: the ID of a WooPayments payment. */
-			__( 'The earlier WooPayments payment <code>%1$s</code> could not be cancelled when this order was paid with another payment method. Check that it was not charged.', 'woocommerce-payments' )
+			__( 'The earlier WooPayments payment <code>%1$s</code> could not be cancelled while this order is being paid with another payment method. Check that it was not charged.', 'woocommerce-payments' )
 		);
 	}
 
