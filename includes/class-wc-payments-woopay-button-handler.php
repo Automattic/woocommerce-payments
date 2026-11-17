@@ -292,7 +292,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// The cart checks below need a cart, and there is nothing to pay for without one.
-		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->has_cart() ) {
+		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->express_checkout_helper->has_cart() ) {
 			return false;
 		}
 
@@ -409,20 +409,6 @@ class WC_Payments_WooPay_Button_Handler {
 		 * @param WC_Product|false|null  $product      The product being checked, or false/null when none could be resolved.
 		 */
 		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );
-	}
-
-	/**
-	 * Whether this request has a cart. Pages with a cart or checkout block can be rendered
-	 * without one, e.g. when the block editor loads the page through the REST API.
-	 *
-	 * @return bool
-	 */
-	private function has_cart(): bool {
-		// WooCommerce types the property as WC_Cart, but only loads the cart for frontend requests.
-		/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-		$cart = WC()->cart;
-
-		return null !== $cart;
 	}
 
 	/**

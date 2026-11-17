@@ -886,7 +886,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * @return bool
 	 */
-	private function has_cart(): bool {
+	public function has_cart(): bool {
 		// WooCommerce types the property as WC_Cart, but only loads the cart for frontend requests.
 		/** @var WC_Cart|null $cart */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 		$cart = WC()->cart;
