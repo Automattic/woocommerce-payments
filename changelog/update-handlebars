@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Updated the transitive handlebars dev dependency from 4.7.9 to 4.7.10 via a pnpm override, addressing critical Dependabot security alert #571 (GHSA-8r5x-fm3f-whwj / GHSA-p8wg-vrv2-v86f).
