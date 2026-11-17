@@ -283,6 +283,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE = 'upe_process_redirect_retryable_decline';
 
+	const PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE = 'upe_process_redirect_cancelled_intent';
+
 	/**
 	 * Payment provider error code and decline code combinations after which the customer
 	 * can retry the payment with a different payment method, so the order is left in
@@ -2712,6 +2714,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$error                  = $intent->get_last_setup_error();
 			}
 
+			// Cancelling an order cancels a payment still open, but the shopper can approve it at the provider
+			// and come back. The order already notes the cancel, and the shopper must not see it as received.
+			// A payment cancelled some other way still cancels its order below.
+			if ( Intent_Status::CANCELED === $status && $order->has_status( Order_Status::CANCELLED ) ) {
+				throw new Process_Payment_Exception(
+					__( 'This order was cancelled before its payment was completed, so you have not been charged.', 'woocommerce-payments' ),
+					self::PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE
+				);
+			}
+
 			if ( ! empty( $error ) ) {
 				Logger::log( 'Error when processing payment: ' . ( $error['message'] ?? $error['code'] ?? '' ) );
 				$error_code = $this->is_retryable_decline( $error )
@@ -2777,6 +2789,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE === $e->get_error_code();
 
+			$is_cancelled_intent =
+				$e instanceof Process_Payment_Exception
+				&& self::PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE === $e->get_error_code();
+
 			if ( $is_retryable_decline && ! empty( $error ) ) {
 				// The payment provider declined the payment, but the customer can retry with a
 				// different payment method, so the order is left pending and the provider's error
@@ -2792,7 +2808,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
 			// Because the outcome of the payment intent is for another order, not for the order processed here.
 			// Retryable declines also leave the order pending so the customer can try a different payment method.
-			if ( ! $is_order_id_mismatched_exception && ! $is_retryable_decline ) {
+			// The cancelled order of a cancelled payment stays as it is.
+			if ( ! $is_order_id_mismatched_exception && ! $is_retryable_decline && ! $is_cancelled_intent ) {
 				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
 				$status    = $status ?? null;
 				$charge_id = $charge_id ?? null;

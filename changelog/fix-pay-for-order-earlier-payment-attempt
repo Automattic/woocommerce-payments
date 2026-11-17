@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove an earlier WooPayments payment attempt from an order paid with another payment method on the pay for order page.

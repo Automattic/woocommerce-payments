@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\{ Amount_Too_Small_Exception, API_Exception, Connection_Exception };
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
+use WCPay\Constants\Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -963,6 +964,41 @@ class WC_Payments_Utils {
 		}
 
 		return $definition_class::get_limits_per_currency();
+	}
+
+	/**
+	 * Get the selected BNPL methods whose account capability is active.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway WooPayments gateway.
+	 * @return string[] Active BNPL payment method IDs.
+	 */
+	public static function get_active_bnpl_payment_method_ids( WC_Payment_Gateway_WCPay $gateway ): array {
+		$enabled_bnpl_methods = array_intersect(
+			$gateway->get_upe_enabled_payment_method_ids(),
+			Payment_Method::BNPL_PAYMENT_METHODS
+		);
+
+		if ( [] === $enabled_bnpl_methods ) {
+			return [];
+		}
+
+		$statuses           = $gateway->get_upe_enabled_payment_method_statuses();
+		$capability_key_map = $gateway->get_payment_method_capability_key_map();
+
+		return array_values(
+			array_filter(
+				$enabled_bnpl_methods,
+				static function ( $payment_method_id ) use ( $statuses, $capability_key_map ) {
+					$capability_key = $capability_key_map[ $payment_method_id ] ?? null;
+
+					if ( null === $capability_key ) {
+						return false;
+					}
+
+					return 'active' === ( $statuses[ $capability_key ]['status'] ?? null );
+				}
+			)
+		);
 	}
 
 	/**
