@@ -1,5 +1,8 @@
 name: QIT E2E Tests - Pre-release
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:

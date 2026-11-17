@@ -1,5 +1,8 @@
 name: Compatibility - WC, WP and PHP
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   # Also run on a schedule so WC beta and WP nightly breakage is caught in quiet weeks
