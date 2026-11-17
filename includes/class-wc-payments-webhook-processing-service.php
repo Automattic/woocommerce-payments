@@ -513,11 +513,11 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( $this->skip_superseded_attempt(
 			$order,
 			$event_object,
-			! $order->is_paid()
+			! $this->holds_a_payment( $order )
 				/* translators: %1: the ID of a WooPayments payment. */
 				? __( 'A WooPayments payment <code>%1$s</code> was authorized after this order was switched to another payment method, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
 				/* translators: %1: the ID of a WooPayments payment. */
-				: __( 'A WooPayments payment <code>%1$s</code> was authorized after this order was paid with another payment method, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
+				: __( 'A WooPayments payment <code>%1$s</code> was authorized after this order was paid with another payment, so the order was not updated. The authorization was not captured and expires on its own.', 'woocommerce-payments' )
 		) ) {
 			return;
 		}
@@ -739,11 +739,11 @@ class WC_Payments_Webhook_Processing_Service {
 		if ( $this->skip_superseded_attempt(
 			$order,
 			$event_object,
-			! $order->is_paid()
+			! $this->holds_a_payment( $order )
 				/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
 				? __( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was switched to another payment method, so the order was not updated. If that payment method has paid or authorized this order, refund this payment. If not, this is the only payment for this order: keep or refund it.', 'woocommerce-payments' )
 				/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge. */
-				: __( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was paid with another payment method, so the order was not updated. Check whether the payment needs a refund.', 'woocommerce-payments' ),
+				: __( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded after this order was paid with another payment, so the order was not updated. Check whether the payment needs a refund.', 'woocommerce-payments' ),
 			$charge_id
 		) ) {
 			$order->update_meta_data( WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY, $intent_id );
@@ -1208,6 +1208,23 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function has_webhook_property( $items, $key ) {
 		return isset( $items[ $key ] );
+	}
+
+	/**
+	 * Whether the order holds a payment, which picks the note for a WooPayments attempt from before another
+	 * gateway took the order over.
+	 *
+	 * WooCommerce counts an order as paid once it is processing or completed. A later WooPayments payment
+	 * authorized with manual capture leaves the order on hold instead, and the note must still name that
+	 * payment rather than the switch to another payment method.
+	 *
+	 * @param WC_Order $order The order.
+	 *
+	 * @return bool
+	 */
+	private function holds_a_payment( WC_Order $order ): bool {
+		return $order->is_paid()
+			|| in_array( (string) $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ), [ Intent_Status::SUCCEEDED, Intent_Status::REQUIRES_CAPTURE ], true );
 	}
 
 	/**
