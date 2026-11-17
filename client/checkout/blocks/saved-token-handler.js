@@ -2,12 +2,12 @@
  * Internal dependencies
  */
 import { useEffect } from 'react';
-import { usePaymentCompleteHandler } from './hooks';
+import { usePaymentCompleteHandler, usePaymentFailHandler } from './hooks';
 import { useSelect } from '@wordpress/data';
 
 export const SavedTokenHandler = ( {
 	api,
-	eventRegistration: { onPaymentSetup, onCheckoutSuccess },
+	eventRegistration: { onPaymentSetup, onCheckoutSuccess, onCheckoutFail },
 	emitResponse,
 } ) => {
 	const paymentMethodData = useSelect( ( select ) => {
@@ -39,6 +39,8 @@ export const SavedTokenHandler = ( {
 		emitResponse,
 		false // No need to save a payment that has already been saved.
 	);
+
+	usePaymentFailHandler( onCheckoutFail, emitResponse );
 
 	return <></>;
 };
