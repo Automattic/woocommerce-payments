@@ -85,7 +85,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$this->original_server      = $_SERVER;
 		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
-		$_SERVER['REQUEST_URI']     = '/wp-json/wc/store/v1/checkout';
+		WCPay_Test_Request_Context::set( 'store_api' );
+
+		// Tests dispatch REST requests internally (rest_preload_api_request) without WooPay credentials.
+		// The authentication hook is exercised by calling it directly.
+		remove_filter( 'rest_request_before_callbacks', [ WooPay_Session::class, 'authenticate_woopay_rest_request' ], 20 );
+		remove_filter( 'rest_request_after_callbacks', [ WooPay_Session::class, 'end_woopay_rest_request' ], 20 );
 
 		$this->mock_customer_service     = $this->createMock( WC_Payments_Customer_Service::class );
 		$this->original_customer_service = WC_Payments::get_customer_service();
@@ -96,9 +101,15 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
-		// The request context this class fakes must not outlive it: suites that run later
-		// read $_SERVER['REQUEST_URI'] to decide whether they are serving the Store API.
+		// Leave no request marked as WooPay-authenticated for the next test.
+		$accepted_requests = new ReflectionProperty( WooPay_Session::class, 'woopay_rest_requests' );
+		$accepted_requests->setAccessible( true );
+		$accepted_requests->setValue( null, [] );
+
+		add_filter( 'rest_request_before_callbacks', [ WooPay_Session::class, 'authenticate_woopay_rest_request' ], 20, 3 );
+		add_filter( 'rest_request_after_callbacks', [ WooPay_Session::class, 'end_woopay_rest_request' ], 20, 3 );
 		$_SERVER = $this->original_server;
+		WCPay_Test_Request_Context::reset();
 
 		// Leave an ordinary front-end request behind rather than no request at all —
 		// WordPress always defines this, and code under test dereferences it directly.
@@ -456,7 +467,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$order = \WC_Helper_Order::create_order( $verified_user->ID );
 		$order->set_billing_email( $verified_user->user_email );
 		$order->save();
+		$this->setup_session( $verified_user->ID );
+
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		WooPay_Session::authenticate_woopay_rest_request( null, [], $request );
 		WooPay_Session::woopay_order_payment_status_changed( $order->get_id() );
+		WooPay_Session::end_woopay_rest_request( null, [], $request );
 
 		$updated_order = wc_get_order( $order->get_id() );
 		$this->assertEquals( $updated_order->get_meta( 'woopay_merchant_customer_id' ), $verified_user->ID );
@@ -519,61 +535,115 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, null );
 	}
 
-	public function test_determine_current_user_is_request_woopay_false() {
+	public function test_authenticate_rest_request_passes_through_a_request_not_from_woopay() {
 		$_SERVER['HTTP_USER_AGENT'] = 'NotWooPay';
 
-		$guest_user = 0;
-		self::factory()->user->create_and_get();
+		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 
-		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), 0 );
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
 	}
 
-	public function test_determine_current_user_is_store_api_request_false() {
-		$_SERVER['REQUEST_URI'] = '/another/store/url';
+	public function test_authenticate_rest_request_passes_through_a_route_woopay_does_not_use() {
+		$request = new WP_REST_Request( 'GET', '/wc/v3/orders' );
 
-		$guest_user = 0;
-		self::factory()->user->create_and_get();
-
-		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), 0 );
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
 	}
 
-	public function test_determine_current_user_is_store_api_request_true_using_uri() {
-		$guest_user  = 0;
+	public function test_authenticate_rest_request_passes_through_a_store_api_route_woopay_does_not_use() {
+		$request = new WP_REST_Request( 'GET', '/wc/store/v1/products' );
+
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
+	}
+
+	public function test_authenticate_rest_request_accepts_a_store_api_batch_sub_route() {
 		$woopay_user = self::factory()->user->create_and_get();
 
-		wp_set_current_user( $woopay_user->ID );
-
-		$woopay_store_api_token   = WooPay_Store_Api_Token::init();
-		$authenticated_cart_token = $woopay_store_api_token->get_cart_token();
-
-		$_SERVER['HTTP_CART_TOKEN'] = $authenticated_cart_token;
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $woopay_user->ID );
 
 		$this->setup_session( $woopay_user->ID );
 
-		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), $woopay_user->ID );
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/cart/add-item' );
+
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertTrue( WooPay_Session::is_inside_woopay_rest_route() );
+
+		WooPay_Session::end_woopay_rest_request( null, [], $request );
 	}
 
-	public function test_determine_current_user_is_store_api_request_true_using_rest_route_parameter() {
-		$_SERVER['REQUEST_URI'] = '/index.php';
-		$_REQUEST['rest_route'] = '/wc/store/v1/checkout';
+	public function test_authenticate_rest_request_passes_through_an_existing_error() {
+		$error = new WP_Error( 'other', 'Other error' );
 
-		$guest_user  = 0;
+		$this->assertSame(
+			$error,
+			WooPay_Session::authenticate_woopay_rest_request( $error, [], new WP_REST_Request( 'GET', '/wc/store/v1/cart' ) )
+		);
+		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
+	}
+
+	public function test_authenticate_rest_request_sets_the_user_of_an_accepted_request() {
 		$woopay_user = self::factory()->user->create_and_get();
 
-		wp_set_current_user( $woopay_user->ID );
-
-		$woopay_store_api_token   = WooPay_Store_Api_Token::init();
-		$authenticated_cart_token = $woopay_store_api_token->get_cart_token();
-
-		$_SERVER['HTTP_CART_TOKEN'] = $authenticated_cart_token;
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $woopay_user->ID );
 
 		$this->setup_session( $woopay_user->ID );
+		wp_set_current_user( 0 );
 
-		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), $woopay_user->ID );
+		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 
-		unset( $_REQUEST['rest_route'] );
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertSame( $woopay_user->ID, get_current_user_id() );
+		$this->assertTrue( WooPay_Session::is_inside_woopay_rest_route() );
+
+		WooPay_Session::end_woopay_rest_request( null, [], $request );
+		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
+	}
+
+	public function test_authenticate_rest_request_accepts_the_woopay_session_route() {
+		$this->authenticate_woopay_request_headers();
+
+		$request = new WP_REST_Request( 'POST', '/payments/woopay/session' );
+
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertTrue( WooPay_Session::is_inside_woopay_rest_route() );
+
+		WooPay_Session::end_woopay_rest_request( null, [], $request );
+	}
+
+	public function test_nested_rest_requests_clear_the_woopay_state_in_order() {
+		$this->authenticate_woopay_request_headers();
+
+		$outer = new WP_REST_Request( 'POST', '/payments/woopay/session' );
+		$inner = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
+
+		WooPay_Session::authenticate_woopay_rest_request( null, [], $outer );
+		WooPay_Session::authenticate_woopay_rest_request( null, [], $inner );
+
+		WooPay_Session::end_woopay_rest_request( null, [], $inner );
+		$this->assertTrue( WooPay_Session::is_inside_woopay_rest_route(), 'The outer request is still being dispatched.' );
+
+		// A request that was never accepted must not end the outer one.
+		WooPay_Session::end_woopay_rest_request( null, [], new WP_REST_Request( 'GET', '/wc/store/v1/cart' ) );
+		$this->assertTrue( WooPay_Session::is_inside_woopay_rest_route() );
+
+		WooPay_Session::end_woopay_rest_request( null, [], $outer );
+		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
+	}
+
+	/**
+	 * Gives the current request the headers of an authenticated WooPay request.
+	 */
+	private function authenticate_woopay_request_headers() {
+		$woopay_user = self::factory()->user->create_and_get();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $woopay_user->ID );
+
+		$this->setup_session( $woopay_user->ID );
 	}
 
 	public function test_is_valid_request_with_cart_token_is_true_for_a_valid_cart_token() {
@@ -929,7 +999,10 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		// No Cart-Token, which is refused above when unsigned. Signed, the request is not
 		// refused, and with no Cart-Token to resolve an account from it keeps the user it had.
-		$this->assertSame( 0, WooPay_Session::determine_current_user_for_woopay( 0 ) );
+		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
+		$this->assertNull( WooPay_Session::authenticate_woopay_rest_request( null, [], $request ) );
+		$this->assertSame( 0, get_current_user_id() );
+		WooPay_Session::end_woopay_rest_request( null, [], $request );
 
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 	}
@@ -941,21 +1014,17 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Asserts the current request is refused by determine_current_user_for_woopay().
+	 * Asserts the current request is refused by authenticate_woopay_rest_request().
 	 *
 	 * @param string $expected_message The message the request should be refused with.
 	 */
 	private function expect_woopay_request_to_die( string $expected_message ) {
-		try {
-			WooPay_Session::determine_current_user_for_woopay( null );
-		} catch ( WPDieException $e ) {
-			$this->assertSame( $expected_message, $e->getMessage() );
-			$this->assertSame( 401, $e->getCode() );
+		$result = WooPay_Session::authenticate_woopay_rest_request( null, [], new WP_REST_Request( 'GET', '/wc/store/v1/cart' ) );
 
-			return;
-		}
-
-		$this->fail( 'Expected the request to be refused, but it was allowed through.' );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( $expected_message, $result->get_error_message() );
+		$this->assertSame( 401, $result->get_error_data()['status'] );
+		$this->assertFalse( WooPay_Session::is_inside_woopay_rest_route() );
 	}
 
 	public function test_nonce_is_withheld_from_the_rest_route_when_the_email_is_not_attested() {

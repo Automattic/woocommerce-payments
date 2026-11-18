@@ -47,7 +47,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		unset( $_COOKIE['woocommerce_items_in_cart'] );
 		unset( $_COOKIE['woocommerce_cart_hash'] );
 		unset( $_SERVER['REQUEST_URI'] );
-		unset( $_REQUEST['rest_route'] );
+		WCPay_Test_Request_Context::reset();
 		// we need to manually unset the session, otherwise it'll linger between test cases.
 		WC()->session = null;
 		WC()->initialize_session();
@@ -139,7 +139,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' );
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']       = '';
 		$_SERVER['REQUEST_URI']                                     = '/index.php';
-		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart';
+		WCPay_Test_Request_Context::set( 'store_api' );
 		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 		$request->set_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
@@ -162,7 +162,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = 'invalid-nonce';
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']       = '';
 		$_SERVER['REQUEST_URI']                                     = '/index.php';
-		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart';
+		WCPay_Test_Request_Context::set( 'store_api' );
 		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 		$request->set_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', 'invalid-nonce' );
 		$request->set_header( 'Content-Type', 'application/json' );
@@ -185,7 +185,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = 'invalid-nonce';
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']       = '';
 		$_SERVER['REQUEST_URI']                                     = '/index.php';
-		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart';
+		WCPay_Test_Request_Context::set( 'store_api' );
 		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 		$request->set_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', 'invalid-nonce' );
 		$request->set_header( 'Content-Type', 'application/json' );
@@ -200,7 +200,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' );
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']       = '';
 		$_SERVER['REQUEST_URI']                                     = '/index.php';
-		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart';
+		WCPay_Test_Request_Context::set( 'store_api' );
 		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 		$request->set_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
@@ -229,7 +229,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' );
 		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']       = '';
 		$_SERVER['REQUEST_URI']                                     = '/index.php';
-		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart';
+		WCPay_Test_Request_Context::set( 'store_api' );
 		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 		$request->set_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ) );
 		$request->set_header( 'X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart', '1' );

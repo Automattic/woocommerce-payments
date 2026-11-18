@@ -7,17 +7,18 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
+use Automattic\WooCommerce\Currency\ActiveCurrency;
 use WC_Order;
 use WC_Subscription;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Subscriptions Plugin and WCPay Subscriptions.
  */
 class WooCommerceSubscriptions extends BaseCompatibility {
-
 	/**
 	 * Subscription cart item types whose currency comes from the subscription in the cart item's `subscription_id`.
 	 */
@@ -84,7 +85,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	public function init() {
 		// Add needed actions and filters if WC Subscriptions or WCPay Subscriptions are active.
 		if ( class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Payments_Subscriptions' ) ) {
-			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
+			if ( Utils::is_non_admin_request() ) {
 				$this->frontend_currencies = $this->multi_currency->get_frontend_currencies();
 
 				add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_subscription_product_price' ], 50, 2 );
@@ -156,7 +157,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 				// Check to see if it's currently determining prorated prices.
 				if ( $this->utils->is_call_in_backtrace( [ 'WC_Subscriptions_Product::get_sign_up_fee' ] )
-					&& $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] )
+					&& ActiveCurrency::is_in_operation( 'cart.calculate_totals' )
 					&& $item['key'] === $switch_cart_item
 					&& ! $this->utils->is_call_in_backtrace( [ 'WCS_Switch_Totals_Calculator->apportion_sign_up_fees' ] ) ) {
 						return $price;
@@ -250,13 +251,6 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $should_convert;
 		}
 
-		$calls = [
-			'WC_Cart_Totals->calculate_item_totals',
-			'WC_Cart->get_product_subtotal',
-			'wc_get_price_excluding_tax',
-			'wc_get_price_including_tax',
-		];
-
 		// Check for renewal. Only the renewal's own product has its price set from the order; any other product in the cart still needs to be converted.
 		if ( $this->get_subscription_type_from_cart( 'renewal', $product ) ) {
 			// When WCPay Subs programmatically sets up the cart, we need to return the
@@ -265,24 +259,33 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				return $should_convert;
 			}
 
-			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
+			if ( $this->is_pricing_cart_product() ) {
 				return false;
 			}
 		}
 
 		// Check for resubscribe. As with renewals, only the resubscribe item's own product keeps its unconverted price.
 		if ( $this->get_subscription_type_from_cart( 'resubscribe', $product )
-			&& $this->utils->is_call_in_backtrace( $calls ) ) {
+			&& $this->is_pricing_cart_product() ) {
 			return false;
 		}
 
 		// WCPay Subs does a check against the product price and the total, we need to return the actual product price for this check.
-		if ( $this->utils->is_call_in_backtrace( [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] )
-			&& $this->utils->is_call_in_backtrace( [ 'WC_Product->get_price' ] ) ) {
+		// Inside the operation, any price read is one of these checks.
+		if ( ActiveCurrency::is_in_operation( \WC_Payments_Subscription_Service::OPERATION_RECURRING_ITEM_DATA ) ) {
 			return false;
 		}
 
 		return $should_convert;
+	}
+
+	/**
+	 * Whether the cart is pricing a product: WooCommerce's cart totals or its cart price display, as announced by core operations.
+	 */
+	private function is_pricing_cart_product(): bool {
+		return ActiveCurrency::is_in_operation( 'cart.calculate_totals' )
+			|| ActiveCurrency::is_in_operation( 'cart.product_subtotal' )
+			|| ActiveCurrency::is_in_operation( 'product.price_for_display' );
 	}
 
 	/**
@@ -401,6 +404,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			'WCS_Template_Loader::get_my_subscriptions ',
 			'WC_Subscription->get_formatted_order_total',
 		];
+
 		if ( $this->utils->is_call_in_backtrace( $calls ) ) {
 			// If we have our calls in the backtrace, we set our cached sub and clear the FrontendCurrencies cache.
 			$this->current_my_account_subscription = $subscription;

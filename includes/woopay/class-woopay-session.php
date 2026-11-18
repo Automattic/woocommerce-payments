@@ -99,12 +99,43 @@ class WooPay_Session {
 	private static $is_error_handler_registered = false;
 
 	/**
+	 * REST routes WooPay uses, matched against the route WordPress matched for the request.
+	 *
+	 * @var string[]
+	 */
+	const WOOPAY_ROUTE_PATTERNS = [
+		'@^/wc/store(/v[\d]+)?/cart$@',
+		'@^/wc/store(/v[\d]+)?/cart/add-item$@',
+		'@^/wc/store(/v[\d]+)?/cart/remove-item$@',
+		'@^/wc/store(/v[\d]+)?/cart/apply-coupon$@',
+		'@^/wc/store(/v[\d]+)?/cart/remove-coupon$@',
+		'@^/wc/store(/v[\d]+)?/cart/select-shipping-rate$@',
+		'@^/wc/store(/v[\d]+)?/cart/update-customer$@',
+		'@^/wc/store(/v[\d]+)?/cart/update-item$@',
+		'@^/wc/store(/v[\d]+)?/cart/extensions$@',
+		'@^/wc/store(/v[\d]+)?/checkout/(?P<id>[\d]+)@',
+		'@^/wc/store(/v[\d]+)?/checkout$@',
+		'@^/wc/store(/v[\d]+)?/order/(?P<id>[\d]+)@',
+		// Not a Store API route, but WooPay uses it to indirectly reach the Store API.
+		'@^/payments/woopay/session$@',
+	];
+
+	/**
+	 * The REST requests being dispatched that were accepted as authenticated WooPay requests,
+	 * innermost last. A stack, because `rest_do_request()` can be nested inside a route callback.
+	 *
+	 * @var WP_REST_Request[]
+	 */
+	private static $woopay_rest_requests = [];
+
+	/**
 	 * Init the hooks.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
+		add_filter( 'rest_request_before_callbacks', [ __CLASS__, 'authenticate_woopay_rest_request' ], 20, 3 );
+		add_filter( 'rest_request_after_callbacks', [ __CLASS__, 'end_woopay_rest_request' ], 20, 3 );
 		add_filter( 'woocommerce_session_handler', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 20 );
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'woopay_order_payment_status_changed' ] );
 		add_action( 'woocommerce_store_api_checkout_update_order_from_request', [ __CLASS__, 'set_woopay_order_customer_ip' ] );
@@ -131,8 +162,7 @@ class WooPay_Session {
 
 		if (
 		$cart_token &&
-		self::is_request_from_woopay() &&
-		\WC_Payments_Utils::is_store_api_request() &&
+		self::is_inside_woopay_rest_route() &&
 		class_exists( JsonWebToken::class ) &&
 		JsonWebToken::validate( $cart_token, '@' . wp_salt() )
 		) {
@@ -143,19 +173,53 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Sets the current user as the user sent via the api from WooPay if present.
+	 * Whether a REST route that WooPay authenticated is being dispatched right now.
 	 *
-	 * @param \WP_User|null|int $user user to be used during the request.
-	 *
-	 * @return \WP_User|null|int
+	 * @return bool
 	 */
-	public static function determine_current_user_for_woopay( $user ) {
-		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
-			return $user;
+	public static function is_inside_woopay_rest_route(): bool {
+		return ! empty( self::$woopay_rest_requests );
+	}
+
+	/**
+	 * Whether the matched REST route is one that WooPay uses.
+	 *
+	 * @param string $route The matched route, e.g. `/wc/store/v1/cart`.
+	 *
+	 * @return bool
+	 */
+	private static function is_woopay_route( string $route ): bool {
+		foreach ( self::WOOPAY_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $route ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Authenticates a WooPay REST request once its route is matched, before the permission and route callbacks.
+	 *
+	 * Sets the current user to the one sent via the API from WooPay, if present.
+	 *
+	 * @param \WP_REST_Response|\WP_HTTP_Response|\WP_Error|mixed $response The result so far.
+	 * @param array                                               $_unused_handler The matched handler.
+	 * @param WP_REST_Request                                     $request The request.
+	 *
+	 * @return mixed The unchanged response, or a WP_Error if the request is not authenticated.
+	 */
+	public static function authenticate_woopay_rest_request( $response, $_unused_handler, $request ) {
+		if ( ! empty( $response ) || ! $request instanceof WP_REST_Request ) {
+			return $response;
+		}
+
+		if ( ! self::is_request_from_woopay() || ! self::is_woopay_route( $request->get_route() ) ) {
+			return $response;
 		}
 
 		if ( ! self::is_woopay_enabled() ) {
-			return $user;
+			return $response;
 		}
 
 		// Validate that the request is authenticated, by a valid Cart-Token or by the blog
@@ -163,29 +227,39 @@ class WooPay_Session {
 		if ( ! self::is_valid_request_with_cart_token() && ! self::is_authenticated_by_blog_token_signature() ) {
 			$error = self::get_unauthenticated_request_error();
 
-			$error_data = $error->get_error_data();
-
 			Logger::log( 'WooPay request rejected: ' . $error->get_error_code() );
 
-			// Spelled out rather than passing the WP_Error itself: only handlers that run it
-			// through _wp_die_process_input() would unpack the code and status, and the
-			// handler is filterable.
-			wp_die(
-				esc_html( $error->get_error_message() ),
-				'',
-				[
-					'response' => absint( $error_data['status'] ),
-					'code'     => esc_html( $error->get_error_code() ),
-				]
-			);
+			return $error;
 		}
+
+		self::$woopay_rest_requests[] = $request;
 
 		$cart_token_user_id = self::get_user_id_from_cart_token();
-		if ( null === $cart_token_user_id ) {
-			return $user;
+		if ( null !== $cart_token_user_id ) {
+			wp_set_current_user( $cart_token_user_id );
 		}
 
-		return $cart_token_user_id;
+		return $response;
+	}
+
+	/**
+	 * Ends the WooPay-authenticated state of a REST request once its callbacks are done.
+	 *
+	 * @param mixed           $response The result of the callbacks.
+	 * @param array           $_unused_handler The matched handler.
+	 * @param WP_REST_Request $request The request.
+	 *
+	 * @return mixed The unchanged response.
+	 */
+	public static function end_woopay_rest_request( $response, $_unused_handler, $request ) {
+		$index = array_search( $request, self::$woopay_rest_requests, true );
+
+		if ( false !== $index ) {
+			// Drops the request together with anything nested above it that never got to end.
+			self::$woopay_rest_requests = array_slice( self::$woopay_rest_requests, 0, $index );
+		}
+
+		return $response;
 	}
 
 	/**
@@ -276,7 +350,7 @@ class WooPay_Session {
 			return;
 		}
 
-		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
+		if ( ! self::is_inside_woopay_rest_route() ) {
 			return;
 		}
 
@@ -369,7 +443,7 @@ class WooPay_Session {
 	 * @return false|int|mixed The advocate ID or false if the request is not from WooPay.
 	 */
 	public static function automatewoo_refer_a_friend_referral_from_parameter( $advocate_id ) {
-		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
+		if ( ! self::is_inside_woopay_rest_route() ) {
 			return $advocate_id;
 		}
 
@@ -394,7 +468,7 @@ class WooPay_Session {
 	 * @param array     $_unused_valid_order_statuses The valid order statuses.
 	 */
 	public static function woopay_trial_subscriptions_handler( $needs_payment, $order, $_unused_valid_order_statuses ) {
-		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
+		if ( ! self::is_inside_woopay_rest_route() ) {
 			return $needs_payment;
 		}
 

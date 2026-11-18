@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+PoC: rely on WooCommerce core's active currency in Multi-Currency. Not for merge.

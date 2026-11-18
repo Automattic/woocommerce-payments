@@ -159,4 +159,60 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 
 		$this->assertSame( $expected, $this->woocommerce_bookings->filter_wc_price_args( $defaults ) );
 	}
+
+	/**
+	 * Adjusted booking costs are converted outside add-to-cart, and left as they are while the cart adds the booking.
+	 */
+	public function test_adjust_amount_for_calculated_booking_cost_converts_outside_add_to_cart() {
+		$this->mock_multi_currency->expects( $this->once() )->method( 'adjust_amount_for_selected_currency' )->with( 12 )->willReturn( 42 );
+
+		$this->assertSame( 42, $this->woocommerce_bookings->adjust_amount_for_calculated_booking_cost( 12 ) );
+	}
+
+	public function test_adjust_amount_for_calculated_booking_cost_skips_conversion_inside_add_to_cart() {
+		$this->mock_multi_currency->expects( $this->never() )->method( 'adjust_amount_for_selected_currency' );
+
+		$this->assertSame(
+			12,
+			$this->in_operation( fn() => $this->woocommerce_bookings->adjust_amount_for_calculated_booking_cost( 12 ), 'cart.add_to_cart' )
+		);
+	}
+
+	public function test_get_price_skips_conversion_during_add_to_cart_booking_cost_calculation() {
+		$this->mock_multi_currency->expects( $this->never() )->method( 'get_price' );
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->with( [ 'WC_Bookings_Cost_Calculation::calculate_booking_cost' ] )
+			->willReturn( true );
+
+		$this->assertSame(
+			12,
+			$this->in_operation( fn() => $this->woocommerce_bookings->get_price( 12 ), 'cart.add_to_cart' )
+		);
+	}
+
+	public function test_get_price_converts_booking_cost_calculation_outside_add_to_cart() {
+		$this->mock_multi_currency->expects( $this->once() )->method( 'get_price' )->with( 12, 'exchange_rate' )->willReturn( 42.0 );
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
+
+		$this->assertSame( 42.0, $this->woocommerce_bookings->get_price( 12 ) );
+	}
+
+	/**
+	 * Call a function while an ActiveCurrency scope with the given operation and subject is held.
+	 *
+	 * @param callable    $callback  Function to call.
+	 * @param string|null $operation Operation name.
+	 * @param object|null $subject   Operation subject.
+	 * @return mixed What the callback returns.
+	 */
+	private function in_operation( callable $callback, ?string $operation = null, ?object $subject = null ) {
+		$scope = \Automattic\WooCommerce\Currency\ActiveCurrency::scope( '', $operation, $subject );
+
+		try {
+			return $callback();
+		} finally {
+			$scope->release();
+		}
+	}
 }

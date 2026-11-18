@@ -68,6 +68,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	 */
 	public function set_up() {
 		parent::set_up();
+		WCPay_Test_Request_Context::set( 'rest' );
 
 		$this->add_mock_order_with_meta();
 		$this->set_is_admin( true );
@@ -109,6 +110,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	 * Post-test tear down.
 	 */
 	public function tear_down() {
+		WCPay_Test_Request_Context::reset();
 		$this->delete_mock_orders();
 
 		remove_filter( 'woocommerce_is_rest_api_request', '__return_true' );

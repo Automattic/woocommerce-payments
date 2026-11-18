@@ -40,12 +40,7 @@ class WooCommerceUPS extends BaseCompatibility {
 			return $should_return;
 		}
 
-		$calls = [
-			'WC_Shipping_UPS->per_item_shipping',
-			'WC_Shipping_UPS->box_shipping',
-			'WC_Shipping_UPS->calculate_shipping',
-		];
-		if ( $this->utils->is_call_in_backtrace( $calls ) ) {
+		if ( $this->utils->is_in_shipping_method_rates( 'WC_Shipping_UPS' ) ) {
 			return true;
 		}
 

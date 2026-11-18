@@ -106,22 +106,19 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 	}
 
 	public function test_maybe_convert_product_prices_for_deposits() {
-		$this->mock_utils->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with( [ 'WC_Cart->calculate_totals' ] )
-			->willReturn( true );
-
 		$product = WC_Helper_Product::create_simple_product();
 		$product->add_meta_data( '_wc_deposit_enabled', 'optional' );
 		$product->add_meta_data( '_wc_deposit_type', 'plan' );
 		$product->save();
 
-		$this->assertEquals( false, $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ) );
+		// WooCommerce announces the cart totals calculation, so plan deposits are not converted during it.
+		$this->assertFalse( $this->in_operation( fn() => $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ), 'cart.calculate_totals' ) );
+		$this->assertTrue( $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ) );
 
 		$product->update_meta_data( '_wc_deposit_type', 'percent' );
 		$product->save();
 
-		$this->assertEquals( true, $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ) );
+		$this->assertTrue( $this->in_operation( fn() => $this->woocommerce_deposits->maybe_convert_product_prices_for_deposits( true, $product ), 'cart.calculate_totals' ) );
 	}
 
 	public function test_should_modify_order_currency() {
@@ -143,5 +140,23 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 		$next_order = wc_get_order( $next_order->get_id() );
 
 		$this->assertEquals( 'JPY', $next_order->get_currency() );
+	}
+
+	/**
+	 * Call a function while an ActiveCurrency scope with the given operation and subject is held.
+	 *
+	 * @param callable    $callback  Function to call.
+	 * @param string|null $operation Operation name.
+	 * @param object|null $subject   Operation subject.
+	 * @return mixed What the callback returns.
+	 */
+	private function in_operation( callable $callback, ?string $operation = null, ?object $subject = null ) {
+		$scope = \Automattic\WooCommerce\Currency\ActiveCurrency::scope( '', $operation, $subject );
+
+		try {
+			return $callback();
+		} finally {
+			$scope->release();
+		}
 	}
 }

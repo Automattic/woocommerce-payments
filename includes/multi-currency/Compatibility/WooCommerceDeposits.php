@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
+use Automattic\WooCommerce\Currency\ActiveCurrency;
+
 use WC_Product;
 use WCPay\MultiCurrency\MultiCurrency;
 
@@ -86,7 +88,7 @@ class WooCommerceDeposits extends BaseCompatibility {
 	 * @return  bool                        Whether the price should be converted or not.
 	 */
 	public function maybe_convert_product_prices_for_deposits( $result, $product ) {
-		if ( 'plan' === $this->get_product_deposit_type( $product ) && $this->utils->is_call_in_backtrace( [ 'WC_Cart->calculate_totals' ] ) ) {
+		if ( 'plan' === $this->get_product_deposit_type( $product ) && ActiveCurrency::is_in_operation( 'cart.calculate_totals' ) ) {
 			return false;
 		}
 		return $result;

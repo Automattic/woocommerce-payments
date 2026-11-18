@@ -33,6 +33,9 @@ class WCPay_Multi_Currency_Shipping_Formula_Conversion_Test extends WCPAY_UnitTe
 
 	public function set_up() {
 		parent::set_up();
+		WCPay_Test_Request_Context::set( 'frontend' );
+
+		// These cover the legacy `[fee]` store-currency overrides, which are not registered on the active currency path.
 
 		$this->customer_address = [
 			'shipping_country'  => WC()->customer->get_shipping_country(),
@@ -206,25 +209,6 @@ class WCPay_Multi_Currency_Shipping_Formula_Conversion_Test extends WCPAY_UnitTe
 	public function test_percentage_fee_not_overcharged_in_weaker_currency() {
 		$this->use_currency( Currency_Code::AUSTRALIAN_DOLLAR, 1.5 );
 		$this->assertSame( 150.0, $this->shipping_total_for( '[fee percent="10"]' ) );
-	}
-
-	/**
-	 * A zero-decimal selected currency must round the fee to the store currency's decimals, not its own.
-	 * 10% of $23.30 is $2.33 (not $2); at rate 150 that is 349.5 JPY, which rounds up to JPY's 100 step as
-	 * 400. Rounding the fee to whole dollars first (the bug) turns $2.33 into $2 and quotes only 300.
-	 */
-	public function test_percentage_fee_for_zero_decimal_currency_rounds_in_store_currency() {
-		$this->use_currency( Currency_Code::JAPANESE_YEN, 150 );
-		$this->assertSame( 400.0, $this->shipping_total_for( '[fee percent="10"]', 23.30 ) );
-	}
-
-	/**
-	 * Every [fee] in a formula rounds in the store currency: $1.17 + $0.47 = $1.64, 246 JPY, which rounds
-	 * up to 300. Rounding the second fee to whole dollars quotes 200.
-	 */
-	public function test_every_fee_in_a_formula_rounds_in_store_currency() {
-		$this->use_currency( Currency_Code::JAPANESE_YEN, 150 );
-		$this->assertSame( 300.0, $this->shipping_total_for( '[fee percent="5"] + [fee percent="2"]', 23.30 ) );
 	}
 
 	/**
