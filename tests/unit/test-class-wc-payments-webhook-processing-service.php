@@ -1531,109 +1531,73 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that a payment_intent.succeeded event will complete the order.
+	 * Create a pending order and a live card payment that can be found by its intent or its order metadata.
+	 *
+	 * @param bool $attach_intent Whether checkout saved the intent on the order before webhook delivery.
 	 */
-	public function test_payment_intent_successful_and_completes_order() {
+	private function create_order_for_successful_card_webhook( bool $attach_intent = true ): WC_Order {
+		$order = WC_Helper_Order::create_order( 1, 15 );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_currency( Currency_Code::EURO );
+		$order->update_meta_data( '_wcpay_mode', 'test' );
+		$order->update_meta_data( '_wcpay_verified_test_intent', 'pi_previous_test' );
+		if ( $attach_intent ) {
+			$order->update_meta_data( '_intent_id', 'pi_card' );
+		}
+		$order->save();
+
+		$charge = [
+			'id'                     => 'ch_card',
+			'amount'                 => 1500,
+			'created'                => time(),
+			'payment_method'         => 'pm_card',
+			'payment_method_details' => [ 'type' => Payment_Method::CARD ],
+			'captured'               => true,
+		];
+
 		$this->event_body['type']           = 'payment_intent.succeeded';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
-			'object'   => 'payment_intent',
-			'amount'   => 1500,
-			'charges'  => [
-				'data' => [
-					[
-						'id'                     => $charge_id         = 'py_123123123123123',
-						'payment_method'         => $payment_method_id = 'pm_foo',
-						'payment_method_details' => [
-							'type' => 'card',
-						],
-					],
-				],
+			'id'            => 'pi_card',
+			'object'        => 'payment_intent',
+			'status'        => Intent_Status::SUCCEEDED,
+			'amount'        => 1500,
+			'currency'      => 'eur',
+			'created'       => $charge['created'],
+			'client_secret' => 'cs_mock',
+			'charges'       => [
+				'total_count' => 1,
+				'data'        => [ $charge ],
 			],
-			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = Intent_Status::SUCCEEDED,
-			'metadata' => [],
+			'metadata'      => $attach_intent ? [] : [ 'order_id' => $order->get_id() ],
+			'livemode'      => true,
 		];
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'deserialize_payment_intention_object_from_array' )
-			->with( $this->event_body['data']['object'] )
-			->willReturn(
-				WC_Helper_Intention::create_intention(
-					[
-						'amount'                 => 1500,
-						'currency'               => 'eur',
-						'status'                 => $intent_status,
-						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
-					]
-				)
-			);
+		$db = new WC_Payments_DB();
+		$this->mock_db_wrapper->method( 'order_from_intent_id' )->willReturnCallback( [ $db, 'order_from_intent_id' ] );
+		$this->mock_db_wrapper->method( 'order_from_order_id' )->willReturnCallback( [ $db, 'order_from_order_id' ] );
+		$this->mock_api_client->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturnCallback( [ WC_Payments::get_payments_api_client(), 'deserialize_payment_intention_object_from_array' ] );
+		$this->mock_receipt_service->expects( $this->never() )->method( 'send_customer_ipp_receipt_email' );
+		$this->mock_wcpay_gateway->expects( $this->never() )->method( 'get_option' );
 
-		$this->mock_order
-			->expects( $this->exactly( 6 ) )
-			->method( 'update_meta_data' )
-			->withConsecutive(
-				[ '_wcpay_mode', 'prod' ],
-				[ '_intent_id', $id ],
-				[ '_charge_id', $charge_id ],
-				[ '_payment_method_id', $payment_method_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
-				[ '_intention_status', $intent_status ]
-			);
+		return $order;
+	}
 
-		$this->mock_order
-			->expects( $this->exactly( 2 ) )
-			->method( 'save' );
+	/**
+	 * Tests that a payment_intent.succeeded event will complete the order.
+	 */
+	public function test_payment_intent_successful_and_completes_order() {
+		$order = $this->create_order_for_successful_card_webhook();
 
-			$this->mock_order
-				->method( 'get_total' )
-				->willReturn( 15.00 );
-
-			$this->mock_order
-				->method( 'get_currency' )
-				->willReturn( Currency_Code::EURO );
-
-		$this->mock_order
-			->expects( $this->exactly( 2 ) )
-			->method( 'has_status' )
-			->with(
-				[
-					Order_Status::PROCESSING,
-					Order_Status::COMPLETED,
-				]
-			)
-			->willReturn( false );
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'payment_complete' );
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_intent_id' )
-			->with( 'pi_123123123123123' )
-			->willReturn( $this->mock_order );
-
-		$this->mock_order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
-
-		$this->mock_order
-			->method( 'get_meta' )
-			->willReturn( '' );
-
-		$this->mock_receipt_service
-			->expects( $this->never() )
-			->method( 'send_customer_ipp_receipt_email' );
-
-		$this->mock_wcpay_gateway
-			->expects( $this->never() )
-			->method( 'get_option' );
-
-		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( 'pi_card', $order->get_transaction_id() );
+		$this->assertSame( 'succeeded', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 'prod', $order->get_meta( '_wcpay_mode' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_verified_test_intent' ) );
 	}
 
 	/**
@@ -2225,222 +2189,32 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests that a payment_intent.succeeded event will add relevant metadata.
 	 */
 	public function test_payment_intent_successful_adds_relevant_metadata() {
-		$this->event_body['type']           = 'payment_intent.succeeded';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
-			'object'   => 'payment_intent',
-			'amount'   => 1500,
-			'charges'  => [
-				'data' => [
-					[
-						'id'                     => $charge_id         = 'py_123123123123123',
-						'payment_method'         => $payment_method_id = 'pm_foo',
-						'payment_method_details' => [
-							'type' => 'card',
-						],
-						'application_fee_amount' => 100,
-						'captured'               => true,
-					],
-				],
-			],
-			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = Intent_Status::SUCCEEDED,
-			'metadata' => [],
-		];
+		$order = $this->create_order_for_successful_card_webhook();
+		$this->event_body['data']['object']['charges']['data'][0]['application_fee_amount'] = 100;
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'deserialize_payment_intention_object_from_array' )
-			->with( $this->event_body['data']['object'] )
-			->willReturn(
-				WC_Helper_Intention::create_intention(
-					[
-						'amount'                 => 1500,
-						'currency'               => 'eur',
-						'status'                 => $intent_status,
-						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
-					]
-				)
-			);
-
-		$this->mock_order
-			->expects( $this->exactly( 8 ) )
-			->method( 'update_meta_data' )
-			->withConsecutive(
-				[ '_wcpay_mode', 'prod' ],
-				[ '_intent_id', $id ],
-				[ '_charge_id', $charge_id ],
-				[ '_payment_method_id', $payment_method_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
-				[ '_wcpay_transaction_fee', 1.0 ],
-				[ '_wcpay_net', 14.00 ],
-				[ '_intention_status', $intent_status ],
-			);
-
-		$this->mock_order
-			->expects( $this->exactly( 2 ) )
-			->method( 'save' );
-
-			$this->mock_order
-				->method( 'get_total' )
-				->willReturn( 15.00 );
-
-			$this->mock_order
-				->method( 'get_currency' )
-				->willReturn( Currency_Code::EURO );
-
-		$this->mock_order
-			->expects( $this->exactly( 2 ) )
-			->method( 'has_status' )
-			->with(
-				[
-					Order_Status::PROCESSING,
-					Order_Status::COMPLETED,
-				]
-			)
-			->willReturn( false );
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'payment_complete' );
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_intent_id' )
-			->with( 'pi_123123123123123' )
-			->willReturn( $this->mock_order );
-
-		$this->mock_order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
-
-		$this->mock_order
-			->method( 'get_meta' )
-			->willReturn( '' );
-
-		$this->mock_receipt_service
-			->expects( $this->never() )
-			->method( 'send_customer_ipp_receipt_email' );
-
-		$this->mock_wcpay_gateway
-			->expects( $this->never() )
-			->method( 'get_option' );
-
-		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( 'pi_card', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'ch_card', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'pm_card', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( 'eur', $order->get_meta( '_wcpay_intent_currency' ) );
+		$this->assertSame( '1', $order->get_meta( '_wcpay_transaction_fee' ) );
+		$this->assertSame( '14', $order->get_meta( '_wcpay_net' ) );
 	}
 
 	/**
 	 * Tests that a payment_intent.succeeded event will complete the order even if the intent was not properly attached into the order.
 	 */
 	public function test_payment_intent_successful_and_completes_order_without_intent_id() {
-		$this->event_body['type']           = 'payment_intent.succeeded';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
-			'object'   => 'payment_intent',
-			'amount'   => 1500,
-			'charges'  => [
-				'data' => [
-					[
-						'id'                     => $charge_id         = 'py_123123123123123',
-						'payment_method'         => $payment_method_id = 'pm_foo',
-						'payment_method_details' => [
-							'type' => 'card',
-						],
-					],
-				],
-			],
-			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = Intent_Status::SUCCEEDED,
-			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
-		];
+		$order = $this->create_order_for_successful_card_webhook( false );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'deserialize_payment_intention_object_from_array' )
-			->with( $this->event_body['data']['object'] )
-			->willReturn(
-				WC_Helper_Intention::create_intention(
-					[
-						'amount'                 => 1500,
-						'currency'               => 'eur',
-						'status'                 => $intent_status,
-						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
-					]
-				)
-			);
-
-		$this->mock_order
-			->expects( $this->exactly( 6 ) )
-			->method( 'update_meta_data' )
-			->withConsecutive(
-				[ '_wcpay_mode', 'prod' ],
-				[ '_intent_id', $id ],
-				[ '_charge_id', $charge_id ],
-				[ '_payment_method_id', $payment_method_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
-				[ '_intention_status', $intent_status ]
-			);
-
-		$this->mock_order
-			->expects( $this->exactly( 2 ) )
-			->method( 'save' );
-
-			$this->mock_order
-				->method( 'get_total' )
-				->willReturn( 15.00 );
-
-			$this->mock_order
-				->method( 'get_currency' )
-				->willReturn( Currency_Code::EURO );
-
-		$this->mock_order
-			->expects( $this->exactly( 2 ) )
-			->method( 'has_status' )
-			->with(
-				[
-					Order_Status::PROCESSING,
-					Order_Status::COMPLETED,
-				]
-			)
-			->willReturn( false );
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'payment_complete' );
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_intent_id' )
-			->with( 'pi_123123123123123' )
-			->willReturn( null );
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_order_id' )
-			->with( 'id_1323' )
-			->willReturn( $this->mock_order );
-
-		$this->mock_order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
-
-		$this->mock_order
-			->method( 'get_meta' )
-			->willReturn( '' );
-
-		$this->mock_receipt_service
-			->expects( $this->never() )
-			->method( 'send_customer_ipp_receipt_email' );
-
-		$this->mock_wcpay_gateway
-			->expects( $this->never() )
-			->method( 'get_option' );
-
-		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( 'pi_card', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'pi_card', $order->get_transaction_id() );
 	}
 
 	/**
@@ -2448,87 +2222,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 * if it is already completed/processed.
 	 */
 	public function test_payment_intent_successful_when_retrying() {
-		$this->event_body['type']           = 'payment_intent.succeeded';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
-			'object'   => 'payment_intent',
-			'amount'   => 1500,
-			'charges'  => [
-				'data' => [
-					[
-						'id'             => $charge_id         = 'py_123123123123123',
-						'payment_method' => $payment_method_id = 'pm_foo',
-					],
-				],
-			],
-			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = Intent_Status::SUCCEEDED,
-			'metadata' => [],
-		];
+		$order                    = $this->create_order_for_successful_card_webhook();
+		$completions_before_event = did_action( 'woocommerce_pre_payment_complete' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'deserialize_payment_intention_object_from_array' )
-			->with( $this->event_body['data']['object'] )
-			->willReturn(
-				WC_Helper_Intention::create_intention(
-					[
-						'status' => $intent_status,
-					]
-				)
-			);
-
-		$this->mock_order
-			->expects( $this->exactly( 5 ) )
-			->method( 'update_meta_data' )
-			->withConsecutive(
-				[ '_wcpay_mode', 'prod' ],
-				[ '_intent_id', $id ],
-				[ '_charge_id', $charge_id ],
-				[ '_payment_method_id', $payment_method_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ]
-			);
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'save' );
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'has_status' )
-			->with(
-				[
-					Order_Status::PROCESSING,
-					Order_Status::COMPLETED,
-				]
-			)
-			->willReturn( true );
-
-		$this->mock_order
-			->expects( $this->never() )
-			->method( 'payment_complete' );
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_intent_id' )
-			->with( 'pi_123123123123123' )
-			->willReturn( $this->mock_order );
-
-		$this->mock_order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
-
-		$this->mock_receipt_service
-			->expects( $this->never() )
-			->method( 'send_customer_ipp_receipt_email' );
-
-		$this->mock_wcpay_gateway
-			->expects( $this->never() )
-			->method( 'get_option' );
-
-		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+		$this->assertSame( $completions_before_event + 1, did_action( 'woocommerce_pre_payment_complete' ) );
+		$this->assertSame( 'processing', wc_get_order( $order->get_id() )->get_status() );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( $completions_before_event + 1, did_action( 'woocommerce_pre_payment_complete' ) );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( 'pi_card', $order->get_transaction_id() );
 	}
 
 	/**
@@ -2695,110 +2401,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests that a payment_intent.succeeded event will save mandate.
 	 */
 	public function test_payment_intent_successful_and_save_mandate() {
-		$this->event_body['type']           = 'payment_intent.succeeded';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
-			'object'   => 'payment_intent',
-			'amount'   => 1500,
-			'charges'  => [
-				'data' => [
-					[
-						'id'                     => $charge_id         = 'py_123123123123123',
-						'payment_method'         => $payment_method_id = 'pm_foo',
-						'payment_method_details' => [
-							'card' => [
-								'mandate' => $mandate_id = 'mandate_123123123',
-							],
-							'type' => 'card',
-						],
-					],
-				],
-			],
-			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = Intent_Status::SUCCEEDED,
-			'metadata' => [],
-		];
+		$order = $this->create_order_for_successful_card_webhook();
+		$this->event_body['data']['object']['charges']['data'][0]['payment_method_details']['card']['mandate'] = 'mandate_card';
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'deserialize_payment_intention_object_from_array' )
-			->with( $this->event_body['data']['object'] )
-			->willReturn(
-				WC_Helper_Intention::create_intention(
-					[
-						'amount'                 => 1500,
-						'currency'               => 'eur',
-						'status'                 => $intent_status,
-						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
-					]
-				)
-			);
-
-		$this->mock_order
-			->expects( $this->exactly( 7 ) )
-			->method( 'update_meta_data' )
-			->withConsecutive(
-				[ '_wcpay_mode', 'prod' ],
-				[ '_intent_id', $id ],
-				[ '_charge_id', $charge_id ],
-				[ '_payment_method_id', $payment_method_id ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
-				[ '_stripe_mandate_id', $mandate_id ],
-				[ '_intention_status', $intent_status ]
-			);
-
-			$this->mock_order
-				->method( 'get_total' )
-				->willReturn( 15.00 );
-
-			$this->mock_order
-				->method( 'get_currency' )
-				->willReturn( Currency_Code::EURO );
-
-		$this->mock_order
-			->expects( $this->exactly( 2 ) )
-			->method( 'save' );
-
-		$this->mock_order
-			->expects( $this->exactly( 2 ) )
-			->method( 'has_status' )
-			->with(
-				[
-					Order_Status::PROCESSING,
-					Order_Status::COMPLETED,
-				]
-			)
-			->willReturn( false );
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'payment_complete' );
-
-		$this->mock_order
-			->method( 'get_data_store' )
-			->willReturn( new \WC_Mock_WC_Data_Store() );
-
-		$this->mock_order
-			->method( 'get_meta' )
-			->willReturn( '' );
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_intent_id' )
-			->with( 'pi_123123123123123' )
-			->willReturn( $this->mock_order );
-
-		$this->mock_receipt_service
-			->expects( $this->never() )
-			->method( 'send_customer_ipp_receipt_email' );
-
-		$this->mock_wcpay_gateway
-			->expects( $this->never() )
-			->method( 'get_option' );
-
-		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( 'mandate_card', $order->get_meta( '_stripe_mandate_id' ) );
 	}
 
 	/**
