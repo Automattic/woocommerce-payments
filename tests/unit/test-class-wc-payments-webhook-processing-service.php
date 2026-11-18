@@ -4767,20 +4767,43 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that an authorization moves a pending order to On hold and links its charge,
-	 * for when the shopper leaves before the browser updates the order after 3DS.
+	 * An authorization received after the shopper leaves checkout links its charge
+	 * and uses the intent's reported mode to update the order's test-payment evidence.
+	 *
+	 * @dataProvider provide_authorization_modes
 	 */
-	public function test_amount_capturable_updated_puts_pending_order_on_hold() {
+	public function test_amount_capturable_updated_puts_pending_order_on_hold( array $mode, string $expected_mode, string $expected_proof ) {
 		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_mode', 'prod' );
+		$order->update_meta_data( '_wcpay_verified_test_intent', 'pi_previous_test' );
+		$order->save();
 		$this->set_up_amount_capturable_updated_event( $order );
+		$this->event_body['livemode']       = false;
+		$this->event_body['data']['object'] = array_merge( $this->event_body['data']['object'], $mode );
 
-		$this->webhook_processing_service->process( $this->event_body );
+		WC_Payments::mode()->test();
+		try {
+			$this->webhook_processing_service->process( $this->event_body );
+		} finally {
+			WC_Payments::mode()->live();
+		}
 
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'on-hold', $order->get_status() );
 		$this->assertSame( 'ch_mock', $order->get_meta( '_charge_id' ) );
 		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 'pi_mock', $order->get_transaction_id() );
+		$this->assertSame( 'pi_mock', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( $expected_mode, $order->get_meta( '_wcpay_mode' ) );
+		$this->assertSame( $expected_proof, $order->get_meta( '_wcpay_verified_test_intent' ) );
 		$this->assertStringContainsString( 'was <strong>authorized</strong> using WooPayments', $this->get_order_notes_text( $order ) );
+	}
+
+	public function provide_authorization_modes(): array {
+		return [
+			'test intent'         => [ [ 'livemode' => false ], 'test', 'pi_mock' ],
+			'missing intent mode' => [ [], 'prod', '' ],
+		];
 	}
 
 	/**
@@ -5218,11 +5241,26 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->event_body['type']           = 'payment_intent.amount_capturable_updated';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'id'       => self::AUTHORIZATION_INTENT_ID,
-			'status'   => Intent_Status::REQUIRES_CAPTURE,
-			'created'  => $created_at,
-			'metadata' => [ 'order_id' => $order->get_id() ],
-			'charges'  => [ 'data' => [ [ 'payment_method_details' => [ 'type' => $payment_method_type ] ] ] ],
+			'id'             => self::AUTHORIZATION_INTENT_ID,
+			'status'         => Intent_Status::REQUIRES_CAPTURE,
+			'created'        => $created_at,
+			'amount'         => 5000,
+			'currency'       => 'usd',
+			'client_secret'  => 'cs_mock',
+			'payment_method' => 'pm_mock',
+			'metadata'       => [ 'order_id' => $order->get_id() ],
+			'charges'        => [
+				'total_count' => 1,
+				'data'        => [
+					[
+						'id'                     => 'ch_mock',
+						'amount'                 => 5000,
+						'created'                => $created_at,
+						'captured'               => false,
+						'payment_method_details' => [ 'type' => $payment_method_type ],
+					],
+				],
+			],
 		];
 
 		$this->mock_db_wrapper
@@ -5231,14 +5269,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->method( 'deserialize_payment_intention_object_from_array' )
-			->willReturn(
-				WC_Helper_Intention::create_intention(
-					[
-						'status' => Intent_Status::REQUIRES_CAPTURE,
-						'charge' => [ 'captured' => false ],
-					]
-				)
-			);
+			->willReturnCallback( [ WC_Payments::get_payments_api_client(), 'deserialize_payment_intention_object_from_array' ] );
 	}
 
 	/**
