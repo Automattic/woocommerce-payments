@@ -870,28 +870,44 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Loads the cart from the session on a wc-ajax request whose recalculation fails, and returns the exception.
+	 * Runs the callback with a fee callback that throws in every cart calculation, like a fee service that is down.
 	 *
-	 * @param string $action The wc-ajax action.
-	 * @return Exception|null The exception the cart load threw, if any.
+	 * @param callable $callback The callback to run.
+	 * @return mixed The callback's return value.
 	 */
-	private function load_cart_on_wc_ajax_request_with_failing_fee( string $action ) {
+	private function with_failing_fee( callable $callback ) {
 		$failing_fee = function () {
 			throw new Exception( self::FAILING_FEE_MESSAGE );
 		};
 		add_action( 'woocommerce_cart_calculate_fees', $failing_fee );
 
 		try {
-			$this->as_wc_ajax_request(
-				$action,
-				function () {
-					$this->reload_cart_from_session();
+			return $callback();
+		} finally {
+			remove_action( 'woocommerce_cart_calculate_fees', $failing_fee );
+		}
+	}
+
+	/**
+	 * Loads the cart from the session on a wc-ajax request whose recalculation fails, and returns the exception.
+	 *
+	 * @param string $action The wc-ajax action.
+	 * @return Exception|null The exception the cart load threw, if any.
+	 */
+	private function load_cart_on_wc_ajax_request_with_failing_fee( string $action ) {
+		try {
+			$this->with_failing_fee(
+				function () use ( $action ) {
+					$this->as_wc_ajax_request(
+						$action,
+						function () {
+							$this->reload_cart_from_session();
+						}
+					);
 				}
 			);
 		} catch ( Exception $exception ) {
 			return $exception;
-		} finally {
-			remove_action( 'woocommerce_cart_calculate_fees', $failing_fee );
 		}
 
 		return null;
@@ -1012,12 +1028,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertEquals( 100, (float) WC()->cart->get_totals()['total'] );
 
 		try {
-			$this->with_cart_not_loaded(
-				function () {
-					$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
-				}
-			);
-			$this->start_new_request();
+			$this->switch_currency_without_loading_the_cart( Currency_Code::POUND_STERLING );
 
 			$this->as_request(
 				$kind,
@@ -1053,12 +1064,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->add_product_to_cart();
 
 		try {
-			$this->with_cart_not_loaded(
-				function () {
-					$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
-				}
-			);
-			$this->start_new_request();
+			$this->switch_currency_without_loading_the_cart( Currency_Code::POUND_STERLING );
 
 			$recalculations = $this->as_request(
 				'page',
@@ -1222,12 +1228,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->add_product_to_cart();
 
 		try {
-			$this->with_cart_not_loaded(
-				function () {
-					$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
-				}
-			);
-			$this->start_new_request();
+			$this->switch_currency_without_loading_the_cart( Currency_Code::POUND_STERLING );
 
 			$recalculations = $this->load_page_with_currency_url( 'gbp' );
 
@@ -1247,12 +1248,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->add_product_to_cart();
 
 		try {
-			$this->with_cart_not_loaded(
-				function () {
-					$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
-				}
-			);
-			$this->start_new_request();
+			$this->switch_currency_without_loading_the_cart( Currency_Code::POUND_STERLING );
 
 			$recalculations = $this->load_page_with_currency_url( 'CLP' );
 
@@ -1801,23 +1797,22 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->add_product_to_cart();
 		$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
 		WC()->session->__unset( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY );
-		$failing_fee = function () {
-			throw new Exception( self::FAILING_FEE_MESSAGE );
-		};
-		add_action( 'woocommerce_cart_calculate_fees', $failing_fee );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Fee service unavailable' );
 
 		try {
-			$this->as_request(
-				'rest_route',
+			$this->with_failing_fee(
 				function () {
-					$this->multi_currency->maybe_recalculate_cart_for_currency();
+					$this->as_request(
+						'rest_route',
+						function () {
+							$this->multi_currency->maybe_recalculate_cart_for_currency();
+						}
+					);
 				}
 			);
 		} finally {
-			remove_action( 'woocommerce_cart_calculate_fees', $failing_fee );
 			WC()->cart->empty_cart();
 		}
 	}
