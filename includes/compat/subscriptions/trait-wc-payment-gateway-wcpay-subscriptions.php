@@ -1246,7 +1246,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	private function get_single_payment_meta_keys(): array {
 		return [
 			WC_Payments_Order_Service::INTENT_ID_META_KEY,
-			WC_Payments_Order_Service::VERIFIED_TEST_INTENT_META_KEY,
 			WC_Payments_Order_Service::INTENTION_STATUS_META_KEY,
 			WC_Payments_Order_Service::CHARGE_ID_META_KEY,
 			WC_Payments_Order_Service::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY,

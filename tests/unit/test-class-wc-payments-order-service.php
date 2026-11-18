@@ -594,8 +594,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$order = $this->create_order_with_payment_details( self::OTHER_GATEWAY_ID );
 		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
 
-		$order->update_meta_data( '_wcpay_verified_test_intent', self::PAYMENT_DETAILS_INTENT_ID );
-		$order->save();
 		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
 
 		$order = wc_get_order( $order->get_id() );
@@ -604,7 +602,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
 		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
 		$this->assertSame( '', $order->get_meta( '_wcpay_mode' ) );
-		$this->assertSame( '', $order->get_meta( '_wcpay_verified_test_intent' ) );
 	}
 
 	/**
@@ -1642,10 +1639,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$late_payment  = self::LATE_PAYMENT_INTENT_ID;
 
 		return [
-			'paid transaction without intent'             => [ Order_Status::PROCESSING, '', $order_payment, Intent_Status::SUCCEEDED, $late_payment, true ],
-			'authorized transaction without intent'       => [ Order_Status::ON_HOLD, '', $order_payment, Intent_Status::REQUIRES_CAPTURE, $late_payment, true ],
-			'paid transaction with stale intent'          => [ Order_Status::PROCESSING, $late_payment, $order_payment, Intent_Status::SUCCEEDED, $late_payment, true ],
-			'authorized with stale intent'                => [ Order_Status::ON_HOLD, $late_payment, $order_payment, Intent_Status::REQUIRES_CAPTURE, $late_payment, true ],
 			'a paid order, the event is another payment'  => [ Order_Status::PROCESSING, $order_payment, $order_payment, Intent_Status::SUCCEEDED, $late_payment, true ],
 			'a completed order'                           => [ Order_Status::COMPLETED, $order_payment, $order_payment, Intent_Status::SUCCEEDED, $late_payment, true ],
 			'an order on hold with an authorized payment' => [ Order_Status::ON_HOLD, $order_payment, $order_payment, Intent_Status::REQUIRES_CAPTURE, $late_payment, true ],
@@ -4865,67 +4858,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
 
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
-	}
-
-	/**
-	 * @dataProvider provide_attached_intent_modes
-	 */
-	public function test_attach_intent_persists_authoritative_mode( ?bool $livemode, string $old_mode, string $expected_mode, string $expected_proof ): void {
-		$this->order->update_meta_data( '_wcpay_mode', $old_mode );
-		$this->order->update_meta_data( '_wcpay_verified_test_intent', 'pi_previous_test' );
-		$this->order->save();
-		$intent = WC_Helper_Intention::create_intention(
-			[
-				'id'       => 'pi_mode',
-				'livemode' => $livemode,
-			]
-		);
-
-		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
-
-		$stored = wc_get_order( $this->order->get_id() );
-		$this->assertSame( $expected_mode, $stored->get_meta( '_wcpay_mode' ) );
-		$this->assertSame( $expected_proof, $stored->get_meta( '_wcpay_verified_test_intent' ) );
-		$this->assertSame( 'pi_mode', $stored->get_transaction_id() );
-	}
-
-	public function provide_attached_intent_modes(): array {
-		return [
-			'live replaces stale test' => [ true, 'test', 'prod', '' ],
-			'test replaces stale live' => [ false, 'prod', 'test', 'pi_mode' ],
-			'unknown preserves live'   => [ null, 'prod', 'prod', '' ],
-			'unknown preserves test'   => [ null, 'test', 'test', '' ],
-			'unknown stays unknown'    => [ null, '', '', '' ],
-		];
-	}
-
-	/**
-	 * @dataProvider provide_mode_update_after_success
-	 */
-	public function test_attach_intent_mode_honors_success_guard( bool $allow_update, string $expected_mode, string $expected_proof ): void {
-		$this->order->update_meta_data( '_wcpay_mode', 'prod' );
-		$this->order->update_meta_data( '_intention_status', Intent_Status::SUCCEEDED );
-		$this->order->update_meta_data( '_intent_id', 'pi_paid' );
-		$this->order->save();
-		$intent = WC_Helper_Intention::create_intention(
-			[
-				'id'       => 'pi_mode',
-				'livemode' => false,
-			]
-		);
-
-		$this->order_service->attach_intent_info_to_order( $this->order, $intent, $allow_update );
-
-		$stored = wc_get_order( $this->order->get_id() );
-		$this->assertSame( $expected_mode, $stored->get_meta( '_wcpay_mode' ) );
-		$this->assertSame( $expected_proof, $stored->get_meta( '_wcpay_verified_test_intent' ) );
-	}
-
-	public function provide_mode_update_after_success(): array {
-		return [
-			'protected payment'    => [ false, 'prod', '' ],
-			'explicit replacement' => [ true, 'test', 'pi_mode' ],
-		];
 	}
 
 	public function test_attach_intent_order_with_allow_update_on_success() {

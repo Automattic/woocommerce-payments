@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Correct payment mode from accepted WooPayments intents and preserve orders without verified test payment details when deleting test orders.

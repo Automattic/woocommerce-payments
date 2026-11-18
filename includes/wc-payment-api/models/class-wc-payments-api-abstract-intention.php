@@ -21,13 +21,6 @@ abstract class WC_Payments_API_Abstract_Intention implements \JsonSerializable {
 	protected $id;
 
 	/**
-	 * Authoritative payment mode, or null for responses that omit it.
-	 *
-	 * @var bool|null
-	 */
-	protected $livemode;
-
-	/**
 	 * Time charge created
 	 *
 	 * Server-side times are presumed to be UTC, (de)serializers should take care to set/respect the timezone on the
@@ -108,15 +101,6 @@ abstract class WC_Payments_API_Abstract_Intention implements \JsonSerializable {
 	 */
 	public function get_id() {
 		return $this->id;
-	}
-
-	/**
-	 * Returns the remote mode without inferring it from store settings.
-	 *
-	 * @return bool|null
-	 */
-	public function get_livemode(): ?bool {
-		return $this->livemode;
 	}
 
 	/**

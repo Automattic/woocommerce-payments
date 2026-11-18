@@ -145,9 +145,7 @@ class WC_Helper_Intention {
 			$intent_data['metadata'],
 			$intent_data['processing'],
 			$intent_data['payment_method_types'],
-			$intent_data['payment_method_options'],
-			[],
-			$intent_data['livemode'] ?? null
+			$intent_data['payment_method_options']
 		);
 
 		return $intention;
@@ -193,9 +191,7 @@ class WC_Helper_Intention {
 			$intent_data['last_setup_error'],
 			$intent_data['metadata'],
 			$intent_data['payment_method_types'],
-			$intent_data['payment_method_options'],
-			[],
-			$intent_data['livemode'] ?? null
+			$intent_data['payment_method_options']
 		);
 
 		return $intention;

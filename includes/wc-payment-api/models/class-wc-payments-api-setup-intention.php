@@ -34,7 +34,6 @@ class WC_Payments_API_Setup_Intention extends WC_Payments_API_Abstract_Intention
 	 * @param array       $payment_method_types - An array containing the possible payment methods for the intent.
 	 * @param array       $payment_method_options - An array containing the payment method options for the intent.
 	 * @param array       $order                - An array containing the order data associated with this intention.
-	 * @param bool|null   $livemode Whether the remote intent is live; null when unknown.
 	 */
 	public function __construct(
 		string $id,
@@ -48,8 +47,7 @@ class WC_Payments_API_Setup_Intention extends WC_Payments_API_Abstract_Intention
 		array $metadata = [],
 		array $payment_method_types = [],
 		array $payment_method_options = [],
-		array $order = [],
-		?bool $livemode = null
+		array $order = []
 	) {
 		$this->id                     = $id;
 		$this->created                = $created;
@@ -63,7 +61,6 @@ class WC_Payments_API_Setup_Intention extends WC_Payments_API_Abstract_Intention
 		$this->payment_method_types   = $payment_method_types;
 		$this->payment_method_options = $payment_method_options;
 		$this->order                  = $order;
-		$this->livemode               = $livemode;
 	}
 
 	/**
