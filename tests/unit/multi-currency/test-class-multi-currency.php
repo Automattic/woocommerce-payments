@@ -270,6 +270,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
+		WC()->session->__unset( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY );
 		WC()->session->__unset( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY );
 		WC()->session->__unset( MultiCurrency::CART_TOTALS_HASH_SESSION_KEY );
 		WC()->session->__unset( 'cart_totals' );
@@ -725,7 +726,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 			// 100 USD at 0.708099, rounded up to 0.50 and charmed by -0.1.
 			$this->assertEqualsWithDelta( 70.90, (float) WC()->cart->get_totals()['total'], 0.001 );
-			$this->assertSame( 'GBP', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'GBP', $this->get_stamped_currency() );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -770,6 +771,79 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$session_property = new ReflectionProperty( WC_Cart::class, 'session' );
 		$session_property->setAccessible( true );
 		$session_property->getValue( WC()->cart )->get_cart_from_session();
+	}
+
+	/**
+	 * Returns the session data held by this request.
+	 *
+	 * @return array
+	 */
+	private function get_session_data(): array {
+		$property = new ReflectionProperty( WC()->session, '_data' );
+		$property->setAccessible( true );
+		return $property->getValue( WC()->session );
+	}
+
+	/**
+	 * Replaces the session data held by this request, as if it had loaded that session.
+	 *
+	 * @param array $data Session data, as returned by get_session_data().
+	 *
+	 * @return void
+	 */
+	private function replace_session_data( array $data ) {
+		$property = new ReflectionProperty( WC()->session, '_data' );
+		$property->setAccessible( true );
+		$property->setValue( WC()->session, $data );
+	}
+
+	/**
+	 * Applies the keys a request changed since it loaded the session onto the session stored now, as WooCommerce 11.4's
+	 * `SessionDataWriter::merge()` does when another request saved in between.
+	 *
+	 * @param array $stored  Session data stored by the request that saved first.
+	 * @param array $current Session data of the request saving now.
+	 * @param array $loaded  Session data as the request saving now loaded it.
+	 *
+	 * @return array
+	 */
+	private function apply_changed_session_keys( array $stored, array $current, array $loaded ): array {
+		foreach ( array_keys( $current + $loaded ) as $key ) {
+			$value = $current[ $key ] ?? null;
+			if ( ( $loaded[ $key ] ?? null ) === $value ) {
+				continue;
+			}
+			if ( null === $value ) {
+				unset( $stored[ $key ] );
+			} else {
+				$stored[ $key ] = $value;
+			}
+		}
+		return $stored;
+	}
+
+	/**
+	 * Returns the currency the cart totals stamp names.
+	 *
+	 * @return string|null
+	 */
+	private function get_stamped_currency() {
+		$stamp = WC()->session->get( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY );
+		return is_array( $stamp ) ? ( $stamp['currency'] ?? null ) : null;
+	}
+
+	/**
+	 * Changes the currency the cart totals stamp names, keeping its totals hash.
+	 *
+	 * @param string $currency_code The currency code.
+	 *
+	 * @return void
+	 */
+	private function set_stamped_currency( string $currency_code ) {
+		$stamp             = WC()->session->get( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY );
+		$stamp             = is_array( $stamp ) ? $stamp : [];
+		$stamp['currency'] = $currency_code;
+		WC()->session->set( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY, $stamp );
 	}
 
 	/**
@@ -945,7 +1019,48 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$this->assertSame( 'GBP', get_woocommerce_currency() );
 			$this->assertEqualsWithDelta( 70.90, (float) WC()->cart->get_totals()['total'], 0.001 );
 			$this->assertEqualsWithDelta( 70.90, (float) WC()->session->get( 'cart_totals' )['total'], 0.001 );
-			$this->assertSame( 'GBP', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'GBP', $this->get_stamped_currency() );
+		} finally {
+			WC()->cart->empty_cart();
+		}
+	}
+
+	/**
+	 * WooCommerce 11.4 and later save only the session keys a request changed. When a currency switch saves while a cart
+	 * change calculated in the old currency is still running, the cart change then writes its own totals and stamp over
+	 * the switch's. The stamp must still name the currency of those totals, so the next REST load recalculates them.
+	 */
+	public function test_stamp_saved_by_an_overlapping_cart_change_still_marks_its_totals_stale_after_a_currency_switch() {
+		$this->register_cart_totals_currency_hooks();
+		$this->add_product_to_cart();
+		$product_id = current( WC()->cart->get_cart() )['product_id'];
+		$loaded     = $this->get_session_data();
+
+		try {
+			// The cart change adds a second item in the store currency.
+			WC()->cart->add_to_cart( $product_id, 1 );
+			$cart_change = $this->get_session_data();
+
+			// The currency switch loaded the same session and saves first.
+			$this->replace_session_data( $loaded );
+			$this->reload_cart_from_session();
+			$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
+			$switch = $this->get_session_data();
+
+			// The cart change saves last: only the keys it changed are applied over the switch's save.
+			$this->replace_session_data( $this->apply_changed_session_keys( $switch, $cart_change, $loaded ) );
+			$this->start_new_request();
+			$this->as_request(
+				'rest_filter',
+				function () {
+					$this->reload_cart_from_session();
+				}
+			);
+
+			// Two items of 100 USD, each 70.90 GBP after rounding and charm.
+			$this->assertSame( 'GBP', get_woocommerce_currency() );
+			$this->assertEqualsWithDelta( 141.80, (float) WC()->cart->get_totals()['total'], 0.001 );
+			$this->assertSame( 'GBP', $this->get_stamped_currency() );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -987,7 +1102,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			);
 
 			$this->assertSame( 0, $recalculations );
-			$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'USD', $this->get_stamped_currency() );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -1016,7 +1131,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			);
 
 			$this->assertEqualsWithDelta( 70.90, (float) WC()->cart->get_totals()['total'], 0.001 );
-			$this->assertSame( 'GBP', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'GBP', $this->get_stamped_currency() );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -1041,7 +1156,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 			$this->assertSame( 1, $recalculations );
 			$this->assertEqualsWithDelta( 70.90, (float) WC()->cart->get_totals()['total'], 0.001 );
-			$this->assertSame( 'GBP', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'GBP', $this->get_stamped_currency() );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -1065,7 +1180,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$recalculations = $this->load_page_with_currency_url( 'CLP' );
 
 			$this->assertSame( 0, $recalculations );
-			$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'USD', $this->get_stamped_currency() );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -1111,7 +1226,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		wp_set_current_user( self::LOGGED_IN_USER_ID );
 		$this->register_cart_totals_currency_hooks();
 		$this->add_product_to_cart();
-		$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		$this->assertSame( 'USD', $this->get_stamped_currency() );
 
 		$session_property = new ReflectionProperty( WC_Cart::class, 'session' );
 		$session_property->setAccessible( true );
@@ -1123,7 +1238,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 			$this->assertEqualsWithDelta( 70.90, (float) WC()->cart->get_totals()['total'], 0.001 );
 			$this->assertEquals( 100, (float) WC()->session->get( 'cart_totals' )['total'] );
-			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertNull( $this->get_stamped_currency() );
 		} finally {
 			add_action( 'woocommerce_after_calculate_totals', [ $cart_session, 'set_session' ], 1000 );
 			WC()->cart->empty_cart();
@@ -1145,7 +1260,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		try {
 			$this->add_product_to_cart();
 
-			$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'USD', $this->get_stamped_currency() );
 
 			$recalculations = $this->as_request(
 				'rest_route',
@@ -1180,7 +1295,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		try {
 			$this->multi_currency->record_cart_totals_currency( WC()->cart );
 
-			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertNull( $this->get_stamped_currency() );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -1207,7 +1322,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
 
 			$this->assertEquals( 100, (float) WC()->session->get( 'cart_totals' )['total'] );
-			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertNull( $this->get_stamped_currency() );
 		} finally {
 			remove_action( 'woocommerce_after_calculate_totals', $save_other_cart, self::OTHER_CART_SAVE_PRIORITY );
 			add_action( 'woocommerce_after_calculate_totals', [ $cart_session, 'set_session' ], 1000 );
@@ -1228,7 +1343,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		try {
 			$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
 
-			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertNull( $this->get_stamped_currency() );
 		} finally {
 			remove_action( 'woocommerce_after_calculate_totals', $save_other_cart, self::OTHER_CART_SAVE_PRIORITY );
 			WC()->cart->empty_cart();
@@ -1255,13 +1370,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 * the saved totals, so they must not stamp the session.
 	 */
 	public function test_record_cart_totals_currency_skips_other_carts() {
-		WC()->session->set( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY, Currency_Code::EURO );
+		$this->set_stamped_currency( Currency_Code::EURO );
 		$other_cart = $this->createMock( WC_Cart::class );
 		$other_cart->method( 'get_totals' )->willReturn( WC()->session->get( 'cart_totals' ) );
 
 		$this->multi_currency->record_cart_totals_currency( $other_cart );
 
-		$this->assertSame( 'EUR', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		$this->assertSame( 'EUR', $this->get_stamped_currency() );
 	}
 
 	/**
@@ -1270,7 +1385,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 */
 	public function test_record_cart_totals_currency_skips_missing_cart() {
 		$cart = WC()->cart;
-		WC()->session->set( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY, Currency_Code::EURO );
+		$this->set_stamped_currency( Currency_Code::EURO );
 		WC()->cart = null;
 
 		try {
@@ -1279,7 +1394,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			WC()->cart = $cart;
 		}
 
-		$this->assertSame( 'EUR', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		$this->assertSame( 'EUR', $this->get_stamped_currency() );
 	}
 
 	/**
@@ -1287,7 +1402,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 */
 	public function test_record_cart_totals_currency_skips_missing_session() {
 		$session = WC()->session;
-		WC()->session->set( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY, Currency_Code::EURO );
+		$this->set_stamped_currency( Currency_Code::EURO );
 		WC()->session = null;
 
 		try {
@@ -1296,7 +1411,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			WC()->session = $session;
 		}
 
-		$this->assertSame( 'EUR', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		$this->assertSame( 'EUR', $this->get_stamped_currency() );
 	}
 
 	/**
@@ -1305,16 +1420,15 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	public function test_maybe_recalculate_cart_for_currency_clears_stamp_of_empty_cart() {
 		$this->register_cart_totals_currency_hooks();
 		$this->add_product_to_cart();
-		$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		$this->assertSame( 'USD', $this->get_stamped_currency() );
 
 		try {
 			WC()->cart->remove_cart_item( array_key_first( WC()->cart->get_cart() ) );
-			$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'USD', $this->get_stamped_currency() );
 
 			$this->multi_currency->maybe_recalculate_cart_for_currency();
 
-			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
-			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_HASH_SESSION_KEY ) );
+			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY ) );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -1326,7 +1440,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 */
 	public function test_maybe_recalculate_cart_for_currency_skips_cart_without_saved_totals() {
 		$this->add_product_to_cart();
-		WC()->session->__unset( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY );
+		WC()->session->__unset( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY );
 		WC()->session->set( 'cart_totals', null );
 
 		try {
@@ -1350,12 +1464,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	public function test_emptying_the_cart_clears_cart_totals_currency() {
 		$this->register_cart_totals_currency_hooks();
 		$this->add_product_to_cart();
-		$this->assertSame( 'USD', WC()->session->get( 'wcpay_cart_totals_currency' ) );
+		$this->assertSame( 'USD', $this->get_stamped_currency() );
 
 		WC()->cart->empty_cart();
 
-		$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
-		$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_HASH_SESSION_KEY ) );
+		$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY ) );
 	}
 
 	/**
@@ -1380,7 +1493,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	public function test_maybe_recalculate_cart_for_currency_leaves_matching_totals_untouched() {
 		$this->add_product_to_cart();
 		$this->multi_currency->record_cart_totals_currency( WC()->cart );
-		$this->assertSame( get_woocommerce_currency(), WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		$this->assertSame( get_woocommerce_currency(), $this->get_stamped_currency() );
 
 		try {
 			$recalculations = $this->as_request(
@@ -1482,7 +1595,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		wp_set_current_user( self::LOGGED_IN_USER_ID );
 		$this->register_cart_totals_currency_hooks();
 		$this->add_product_to_cart();
-		WC()->session->set( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY, Currency_Code::EURO );
+		$this->set_stamped_currency( Currency_Code::EURO );
 		WC()->session->set( self::CACHED_SHIPPING_RATES_KEY, self::CACHED_SHIPPING_RATES );
 		WC()->session->save_data();
 
@@ -1494,9 +1607,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 				}
 			);
 			WC()->cart->calculate_totals();
-			$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertSame( 'USD', $this->get_stamped_currency() );
 
-			WC()->session->set( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY, Currency_Code::EURO );
+			$this->set_stamped_currency( Currency_Code::EURO );
 			WC()->session->set( self::CACHED_SHIPPING_RATES_KEY, self::REBUILT_SHIPPING_RATES );
 			WC()->session->save_data();
 			$this->as_request(
@@ -1546,7 +1659,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->register_cart_totals_currency_hooks();
 		$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
 		$this->add_product_to_cart();
-		$this->assertSame( 'GBP', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		$this->assertSame( 'GBP', $this->get_stamped_currency() );
 		$totals                        = WC()->session->get( 'cart_totals' );
 		$totals['subtotal']            = self::STORE_CURRENCY_CART_TOTAL;
 		$totals['cart_contents_total'] = self::STORE_CURRENCY_CART_TOTAL;
@@ -1579,7 +1692,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	public function test_maybe_recalculate_cart_for_currency_recalculates_unstamped_totals() {
 		$this->add_product_to_cart();
 		$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
-		WC()->session->__unset( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY );
+		WC()->session->__unset( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY );
 
 		try {
 			$recalculations = $this->as_request(
@@ -1606,7 +1719,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	public function test_failing_recalculation_fails_a_rest_request_with_stale_totals() {
 		$this->add_product_to_cart();
 		$this->multi_currency->update_selected_currency( Currency_Code::POUND_STERLING );
-		WC()->session->__unset( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY );
+		WC()->session->__unset( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY );
 		$failing_fee = function () {
 			throw new Exception( self::FAILING_FEE_MESSAGE );
 		};
