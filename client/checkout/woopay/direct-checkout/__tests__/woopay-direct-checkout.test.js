@@ -34,6 +34,15 @@ describe( 'WooPayDirectCheckout', () => {
 	describe( 'addRedirectToWooPayEventListener', () => {
 		let classicCheckoutButton;
 
+		const appendCartBlockButton = ( innerHTML ) => {
+			const wrapper = document.createElement( 'div' );
+			wrapper.className =
+				'wp-block-woocommerce-proceed-to-checkout-block';
+			wrapper.innerHTML = innerHTML;
+			document.body.appendChild( wrapper );
+			return wrapper;
+		};
+
 		const appendMiniCartButton = ( href = MERCHANT_CHECKOUT_URL ) => {
 			const button = document.createElement( 'a' );
 			button.href = href;
@@ -70,6 +79,7 @@ describe( 'WooPayDirectCheckout', () => {
 		} );
 
 		afterEach( () => {
+			WooPayDirectCheckout.removeRedirectToWooPayEventListener();
 			WooPayDirectCheckout.teardown();
 			document.body.replaceChildren();
 			jest.restoreAllMocks();
@@ -157,6 +167,32 @@ describe( 'WooPayDirectCheckout', () => {
 			expect( redirectTo ).toHaveBeenCalledTimes( 1 );
 		} );
 
+		it( 'keeps ignoring checkout clicks after the redirect starts', async () => {
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( true );
+
+			click( classicCheckoutButton );
+			await flushPromises();
+			const clickWhileUnloading = click( classicCheckoutButton );
+			await flushPromises();
+
+			expect( clickWhileUnloading.defaultPrevented ).toBe( true );
+			expect( redirectTo ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'redirects again after the page is restored from the back/forward cache', async () => {
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( true );
+
+			click( classicCheckoutButton );
+			await flushPromises();
+			window.dispatchEvent(
+				new PageTransitionEvent( 'pageshow', { persisted: true } )
+			);
+			click( classicCheckoutButton );
+			await flushPromises();
+
+			expect( redirectTo ).toHaveBeenCalledTimes( 2 );
+		} );
+
 		it( 'does not redirect a click that WooCommerce already prevented', async () => {
 			WooPayDirectCheckout.addRedirectToWooPayEventListener( true );
 			const miniCartButton = appendMiniCartButton();
@@ -191,6 +227,44 @@ describe( 'WooPayDirectCheckout', () => {
 			expect( redirectTo ).not.toHaveBeenCalled();
 		} );
 
+		it( 'does not redirect a Cart block button whose link is disabled', async () => {
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( true );
+			const cartBlockButton = appendCartBlockButton(
+				`<a href="${ UNHANDLED_CHECKOUT_HREF }" aria-disabled="true">Proceed to checkout</a>`
+			);
+
+			const event = click( cartBlockButton.querySelector( 'a' ) );
+			await flushPromises();
+
+			expect( event.defaultPrevented ).toBe( false );
+			expect(
+				WooPayDirectCheckout.getWooPayCheckoutUrl
+			).not.toHaveBeenCalled();
+			expect( redirectTo ).not.toHaveBeenCalled();
+		} );
+
+		it( 'lets a checkout button without a link through and keeps handling other buttons', async () => {
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( true );
+			const cartBlockButton = appendCartBlockButton(
+				'<button type="button">Proceed to checkout</button>'
+			);
+
+			const event = click( cartBlockButton.querySelector( 'button' ) );
+			await flushPromises();
+
+			expect( event.defaultPrevented ).toBe( false );
+			expect(
+				WooPayDirectCheckout.getWooPayCheckoutUrl
+			).not.toHaveBeenCalled();
+
+			click( classicCheckoutButton );
+			await flushPromises();
+
+			expect( redirectTo ).toHaveBeenCalledWith(
+				'https://woopay.test/woopay?platform_checkout_key=1234567890'
+			);
+		} );
+
 		it( 'ignores clicks outside the checkout buttons', async () => {
 			WooPayDirectCheckout.addRedirectToWooPayEventListener( true );
 			const otherButton = document.createElement( 'button' );
@@ -205,9 +279,9 @@ describe( 'WooPayDirectCheckout', () => {
 			).not.toHaveBeenCalled();
 		} );
 
-		it( 'stops redirecting after teardown', async () => {
+		it( 'stops redirecting after the listener is removed', async () => {
 			WooPayDirectCheckout.addRedirectToWooPayEventListener( true );
-			WooPayDirectCheckout.teardown();
+			WooPayDirectCheckout.removeRedirectToWooPayEventListener();
 			const miniCartButton = appendMiniCartButton(
 				UNHANDLED_CHECKOUT_HREF
 			);

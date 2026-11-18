@@ -18,6 +18,7 @@ class WooPayDirectCheckout {
 	static sessionConnect;
 	static encryptedSessionDataPromise;
 	static checkoutClickListener = null;
+	static pageShowListener = null;
 	static checkoutRedirectUserIsLoggedIn = null;
 	static isRedirectingToWooPay = false;
 	static redirectElements = {
@@ -69,13 +70,6 @@ class WooPayDirectCheckout {
 	 * Teardown WooPayDirectCheckout.
 	 */
 	static teardown() {
-		if ( this.checkoutClickListener ) {
-			document.removeEventListener( 'click', this.checkoutClickListener );
-		}
-		this.checkoutClickListener = null;
-		this.checkoutRedirectUserIsLoggedIn = null;
-		this.isRedirectingToWooPay = false;
-
 		this.sessionConnect?.detachMessageListener();
 		this.userConnect?.detachMessageListener();
 
@@ -389,6 +383,32 @@ class WooPayDirectCheckout {
 		// Bubbling phase, so WooCommerce can block checkout first: the Mini-Cart prevents it while
 		// the cart is updating, and a disabled Cart block button stops the click from propagating.
 		document.addEventListener( 'click', this.checkoutClickListener );
+
+		// The listener stays after a redirect starts, so a click while the page unloads can't
+		// navigate to the store checkout instead. A page restored from the back/forward cache
+		// needs checkout clicks to work again.
+		this.pageShowListener = ( event ) => {
+			if ( event.persisted ) {
+				this.isRedirectingToWooPay = false;
+			}
+		};
+		window.addEventListener( 'pageshow', this.pageShowListener );
+	}
+
+	/**
+	 * Removes the listeners added by addRedirectToWooPayEventListener().
+	 */
+	static removeRedirectToWooPayEventListener() {
+		if ( this.checkoutClickListener ) {
+			document.removeEventListener( 'click', this.checkoutClickListener );
+		}
+		if ( this.pageShowListener ) {
+			window.removeEventListener( 'pageshow', this.pageShowListener );
+		}
+		this.checkoutClickListener = null;
+		this.pageShowListener = null;
+		this.checkoutRedirectUserIsLoggedIn = null;
+		this.isRedirectingToWooPay = false;
 	}
 
 	/**
