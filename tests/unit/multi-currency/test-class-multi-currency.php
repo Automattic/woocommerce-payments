@@ -37,6 +37,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	const FAILING_FEE_MESSAGE           = 'Fee service unavailable';
 	const STORE_API_CART_ROUTE          = '/wc/store/v1/cart';
 	const STOREFRONT_REQUEST_URI        = '/shop/';
+	const PAYMENT_WC_AJAX_ACTION        = 'ppc-create-order';
+	const FRAGMENTS_WC_AJAX_ACTION      = 'get_refreshed_fragments';
+	const FRAGMENTS_RECALCULATED_KEY    = 'wcpay_stale_totals_fragments_recalculated';
 
 	/**
 	 * Mock enabled currencies.
@@ -273,6 +276,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->__unset( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY );
 		WC()->session->__unset( MultiCurrency::CART_TOTALS_HASH_SESSION_KEY );
 		WC()->session->__unset( 'cart_totals' );
+		WC()->session->__unset( self::FRAGMENTS_RECALCULATED_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
 		remove_all_filters( 'wcpay_multi_currency_override_selected_currency' );
@@ -813,6 +817,91 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Runs the callback as a storefront `?wc-ajax=` request for the given action.
+	 *
+	 * @param string   $action   The wc-ajax action.
+	 * @param callable $callback The callback to run.
+	 * @return mixed The callback's return value.
+	 */
+	private function as_wc_ajax_request( string $action, callable $callback ) {
+		$_GET['wc-ajax'] = $action;
+		add_filter( 'wp_doing_ajax', '__return_true' );
+
+		try {
+			return $this->as_request( 'page', $callback );
+		} finally {
+			unset( $_GET['wc-ajax'] );
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+		}
+	}
+
+	/**
+	 * Selects the currency on a request that doesn't load the cart, leaving the saved totals stale for the next request.
+	 *
+	 * @param string $currency_code The currency to select.
+	 * @return void
+	 */
+	private function switch_currency_without_loading_the_cart( string $currency_code ) {
+		$this->with_cart_not_loaded(
+			function () use ( $currency_code ) {
+				$this->multi_currency->update_selected_currency( $currency_code );
+			}
+		);
+		$this->start_new_request();
+	}
+
+	/**
+	 * Counts the cart calculations started while the callback runs, including ones that throw before they finish.
+	 *
+	 * @param callable $callback The callback to run.
+	 * @return int The number of calculations started.
+	 */
+	private function count_calculations_started_during( callable $callback ): int {
+		$started = 0;
+		$spy     = function () use ( &$started ) {
+			++$started;
+		};
+
+		add_action( 'woocommerce_before_calculate_totals', $spy );
+
+		try {
+			$callback();
+		} finally {
+			remove_action( 'woocommerce_before_calculate_totals', $spy );
+		}
+
+		return $started;
+	}
+
+	/**
+	 * Loads the cart from the session on a wc-ajax request whose recalculation fails, and returns the exception.
+	 *
+	 * @param string $action The wc-ajax action.
+	 * @return Exception|null The exception the cart load threw, if any.
+	 */
+	private function load_cart_on_wc_ajax_request_with_failing_fee( string $action ) {
+		$failing_fee = function () {
+			throw new Exception( self::FAILING_FEE_MESSAGE );
+		};
+		add_action( 'woocommerce_cart_calculate_fees', $failing_fee );
+
+		try {
+			$this->as_wc_ajax_request(
+				$action,
+				function () {
+					$this->reload_cart_from_session();
+				}
+			);
+		} catch ( Exception $exception ) {
+			return $exception;
+		} finally {
+			remove_action( 'woocommerce_cart_calculate_fees', $failing_fee );
+		}
+
+		return null;
+	}
+
+	/**
 	 * Adds a product priced CART_PRODUCT_PRICE in the store currency to an empty cart.
 	 *
 	 * @return void
@@ -988,6 +1077,153 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 			$this->assertSame( 0, $recalculations );
 			$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		} finally {
+			WC()->cart->empty_cart();
+		}
+	}
+
+	/**
+	 * Payment buttons read the cart over `wc-ajax` without calculating it (for example WooCommerce PayPal Payments'
+	 * `ppc-create-order`), so a wc-ajax request recalculates stale totals before its action reads them.
+	 */
+	public function test_wc_ajax_request_recalculates_stale_cart_totals_in_the_selected_currency() {
+		$this->register_cart_totals_currency_hooks();
+		$this->add_product_to_cart();
+
+		try {
+			$this->switch_currency_without_loading_the_cart( Currency_Code::POUND_STERLING );
+
+			$recalculations = $this->as_wc_ajax_request(
+				self::PAYMENT_WC_AJAX_ACTION,
+				function () {
+					return $this->count_recalculations_during(
+						function () {
+							$this->reload_cart_from_session();
+						}
+					);
+				}
+			);
+
+			// 100 USD at 0.708099, rounded up to 0.50 and charmed by -0.1.
+			$this->assertSame( 1, $recalculations );
+			$this->assertEqualsWithDelta( 70.90, (float) WC()->cart->get_total( 'edit' ), 0.001 );
+			$this->assertSame( 'GBP', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		} finally {
+			WC()->cart->empty_cart();
+		}
+	}
+
+	/**
+	 * A recalculation that failed on an earlier wc-ajax request, such as the mini-cart refresh that classic themes send
+	 * first, must not keep a later payment request from recalculating: it would read the stale totals otherwise.
+	 *
+	 * @dataProvider provider_wc_ajax_actions
+	 */
+	public function test_wc_ajax_request_recalculates_stale_cart_totals_after_an_earlier_recalculation_failed( string $first_action ) {
+		$this->register_cart_totals_currency_hooks();
+		$this->add_product_to_cart();
+
+		try {
+			$this->switch_currency_without_loading_the_cart( Currency_Code::POUND_STERLING );
+			$exception = $this->load_cart_on_wc_ajax_request_with_failing_fee( $first_action );
+			$this->assertSame( 'Fee service unavailable', $exception ? $exception->getMessage() : null );
+
+			$recalculations = $this->as_wc_ajax_request(
+				self::PAYMENT_WC_AJAX_ACTION,
+				function () {
+					return $this->count_recalculations_during(
+						function () {
+							$this->reload_cart_from_session();
+						}
+					);
+				}
+			);
+
+			$this->assertSame( 1, $recalculations );
+			$this->assertEqualsWithDelta( 70.90, (float) WC()->cart->get_total( 'edit' ), 0.001 );
+			$this->assertSame( 'GBP', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertNull( WC()->session->get( 'wcpay_stale_totals_fragments_recalculated' ) );
+		} finally {
+			WC()->cart->empty_cart();
+		}
+	}
+
+	public function provider_wc_ajax_actions(): array {
+		return [
+			'mini-cart refresh' => [ self::FRAGMENTS_WC_AJAX_ACTION ],
+			'payment request'   => [ self::PAYMENT_WC_AJAX_ACTION ],
+		];
+	}
+
+	/**
+	 * Classic themes refresh the mini-cart on page views, so a calculation that keeps failing fails that refresh once
+	 * per stale state, not on every page.
+	 */
+	public function test_mini_cart_refresh_recalculates_stale_cart_totals_once_per_stale_state() {
+		$this->register_cart_totals_currency_hooks();
+		$this->add_product_to_cart();
+
+		try {
+			$this->switch_currency_without_loading_the_cart( Currency_Code::POUND_STERLING );
+			$this->load_cart_on_wc_ajax_request_with_failing_fee( self::FRAGMENTS_WC_AJAX_ACTION );
+
+			$calculations = $this->count_calculations_started_during(
+				function () {
+					$this->assertNull( $this->load_cart_on_wc_ajax_request_with_failing_fee( self::FRAGMENTS_WC_AJAX_ACTION ) );
+				}
+			);
+			$this->assertSame( 0, $calculations );
+
+			// Another switch leaves the totals stale in a new way, so the refresh tries again.
+			$this->switch_currency_without_loading_the_cart( Currency_Code::CANADIAN_DOLLAR );
+			$recalculations = $this->as_wc_ajax_request(
+				self::FRAGMENTS_WC_AJAX_ACTION,
+				function () {
+					return $this->count_recalculations_during(
+						function () {
+							$this->reload_cart_from_session();
+						}
+					);
+				}
+			);
+
+			$this->assertSame( 1, $recalculations );
+			$this->assertSame( 'CAD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+		} finally {
+			WC()->cart->empty_cart();
+		}
+	}
+
+	/**
+	 * Page views note the stale state too, when they drop the cached shipping rates; the mini-cart refresh that follows
+	 * must still recalculate.
+	 */
+	public function test_mini_cart_refresh_after_a_page_view_recalculates_stale_cart_totals() {
+		$this->register_cart_totals_currency_hooks();
+		$this->add_product_to_cart();
+
+		try {
+			$this->switch_currency_without_loading_the_cart( Currency_Code::POUND_STERLING );
+			$this->as_request(
+				'page',
+				function () {
+					$this->reload_cart_from_session();
+				}
+			);
+
+			$recalculations = $this->as_wc_ajax_request(
+				self::FRAGMENTS_WC_AJAX_ACTION,
+				function () {
+					return $this->count_recalculations_during(
+						function () {
+							$this->reload_cart_from_session();
+						}
+					);
+				}
+			);
+
+			$this->assertSame( 1, $recalculations );
+			$this->assertEqualsWithDelta( 70.90, (float) WC()->cart->get_total( 'edit' ), 0.001 );
 		} finally {
 			WC()->cart->empty_cart();
 		}
@@ -1310,11 +1546,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		try {
 			WC()->cart->remove_cart_item( array_key_first( WC()->cart->get_cart() ) );
 			$this->assertSame( 'USD', WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			WC()->session->set( self::FRAGMENTS_RECALCULATED_KEY, 'stale state' );
 
 			$this->multi_currency->maybe_recalculate_cart_for_currency();
 
 			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
 			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_HASH_SESSION_KEY ) );
+			$this->assertNull( WC()->session->get( 'wcpay_stale_totals_fragments_recalculated' ) );
 		} finally {
 			WC()->cart->empty_cart();
 		}
