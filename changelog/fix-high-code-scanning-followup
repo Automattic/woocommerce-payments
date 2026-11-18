@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Reject checkout emails with invalid dots or domain hyphens before opening WooPay.
+Skip the WooPay account lookup for emails with invalid dots or domain hyphens.
