@@ -123,7 +123,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Delete', $delete_tool['button'] );
 		$this->assertStringContainsString( 'Note:', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'strong class="red"', $delete_tool['desc'] );
-		$this->assertStringContainsString( 'deletes orders with a verified successful or authorized test', $delete_tool['desc'] );
+		$this->assertStringContainsString( 'verified WooPayments test payment that succeeded, was authorized, or is still processing', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'Older orders without verified test payment details and orders placed via other gateways will not be affected', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'cannot be undone', $delete_tool['desc'] );
 	}

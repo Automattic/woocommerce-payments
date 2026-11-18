@@ -112,7 +112,7 @@ class WC_Payments_Status {
 					'button'   => __( 'Delete', 'woocommerce-payments' ),
 					'desc'     => sprintf(
 						/* translators: %s: WooPayments */
-						__( '<strong class="red">Note:</strong> This option deletes orders with a verified successful or authorized test %s payment. Older orders without verified test payment details and orders placed via other gateways will not be affected. Use with caution, as this action cannot be undone.', 'woocommerce-payments' ),
+						__( '<strong class="red">Note:</strong> This option deletes orders with a verified %s test payment that succeeded, was authorized, or is still processing. Older orders without verified test payment details and orders placed via other gateways will not be affected. Use with caution, as this action cannot be undone.', 'woocommerce-payments' ),
 						'WooPayments'
 					),
 					'callback' => [ $this, 'delete_test_orders' ],

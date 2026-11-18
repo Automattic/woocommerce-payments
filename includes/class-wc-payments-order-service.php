@@ -2189,13 +2189,13 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Records an accepted intent's mode before the caller saves the order.
+	 * Records the mode reported by the intent before the caller saves the order.
 	 *
 	 * Store settings and historical mode tags do not prove a payment was a test.
 	 * Unknown mode preserves the existing tag but cannot authorize deletion.
 	 *
-	 * @param WC_Order  $order The order accepting this intent.
-	 * @param string    $intent_id The accepted intent ID.
+	 * @param WC_Order  $order The order associated with the intent.
+	 * @param string    $intent_id The remote intent ID.
 	 * @param bool|null $livemode Remote mode, or null when unavailable.
 	 */
 	public function set_mode_from_intent( WC_Order $order, string $intent_id, ?bool $livemode ): void {
