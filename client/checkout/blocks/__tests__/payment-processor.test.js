@@ -211,7 +211,7 @@ describe( 'PaymentProcessor', () => {
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should scroll the payment fields into view when the card fields fail validation', async () => {
+	it( 'should scroll the payment fields into view, only if needed, when the card fields fail validation', async () => {
 		const scrollIntoView = jest.fn();
 		Element.prototype.scrollIntoView = scrollIntoView;
 		validateElements.mockRejectedValueOnce(
@@ -226,7 +226,7 @@ describe( 'PaymentProcessor', () => {
 
 		expect( scrollIntoView ).toHaveBeenCalledWith( {
 			behavior: 'smooth',
-			block: 'center',
+			block: 'nearest',
 		} );
 	} );
 
