@@ -62,6 +62,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	const REPLACED_ATTEMPT_INTENT_ID = 'pi_test_replaced_attempt';
 
 	/**
+	 * Intent ID of a card reader payment captured on the order while the pay-for-order page was paying it.
+	 */
+	const CARD_READER_INTENT_ID = 'pi_test_card_reader';
+
+	/**
+	 * Intent ID of a WooPayments attempt another request started on the order while the pay-for-order page
+	 * was paying it, as a retry in another tab does.
+	 */
+	const RETRY_ATTEMPT_INTENT_ID = 'pi_test_retry_attempt';
+
+	/**
 	 * The status an in-person payment stores on the order when it is attached, before its capture.
 	 */
 	const IN_PERSON_INTENT_STATUS = 'requires_capture';
@@ -1800,6 +1811,449 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * WooCommerce loads the order when the pay-for-order request starts and saves it with the other gateway
+	 * later, after the plugins on its pay action have run. A WooPayments payment that goes through in between,
+	 * written by another request, is the order's payment, not an earlier attempt: it stays, nothing is
+	 * cancelled, and an error notice stops WooCommerce from taking the other gateway's payment. The order goes
+	 * back to the gateway it was loaded with.
+	 *
+	 * @dataProvider provider_payments_that_go_through_during_the_pay_action
+	 *
+	 * @param string $intent_id_at_load      The intent the order names when the request loads it.
+	 * @param string $intent_status_at_load  Its stored status then.
+	 * @param string $paid_intent_id         The intent the other request writes, with a status that went through.
+	 * @param bool   $hpos_with_data_caching Whether orders are in HPOS tables with data caching on.
+	 * @param bool   $loaded_again           Whether the request loads the order again before the other request
+	 *                                       writes, as a plugin checking the pay form can.
+	 * @param string $expected_intent_id     The intent the order names afterwards.
+	 */
+	public function test_pay_action_keeps_a_payment_that_went_through_and_takes_no_other_payment( string $intent_id_at_load, string $intent_status_at_load, string $paid_intent_id, bool $hpos_with_data_caching, bool $loaded_again, string $expected_intent_id ) {
+		if ( $hpos_with_data_caching ) {
+			$this->store_orders_in_hpos_with_data_caching();
+		}
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->update_meta_data( '_intent_id', $intent_id_at_load );
+		$order->update_meta_data( '_intention_status', $intent_status_at_load );
+		$order->save();
+		$order = wc_get_order( $order->get_id() );
+		$this->hook_only_this_order_service_to_the_pay_action();
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->fire_before_pay_action( $order );
+		if ( $loaded_again ) {
+			wc_get_order( $order->get_id() )->read_meta_data();
+		}
+		$this->write_meta_in_another_request( $order->get_id(), '_intent_id', $paid_intent_id );
+		$this->write_meta_in_another_request( $order->get_id(), '_intention_status', Intent_Status::SUCCEEDED );
+		$this->set_stored_order_status_without_clearing_caches( $order->get_id(), 'wc-processing' );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		// WooCommerce goes on with the object it saved, which now holds the order as stored.
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( 'woocommerce_payments', $order->get_payment_method() );
+		$this->assertSame( 'succeeded', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( $expected_intent_id, $this->get_stored_meta( $order->get_id(), '_intent_id' ) );
+		$this->assertSame( 'succeeded', $this->get_stored_meta( $order->get_id(), '_intention_status' ) );
+		$this->assertSame( 'test', $this->get_stored_meta( $order->get_id(), '_wcpay_mode' ) );
+		$this->assertNull( $this->get_stored_meta( $order->get_id(), '_wcpay_superseded_intent_ids' ) );
+		$this->assertSame( 1, $error_notices );
+		$this->assertSame( 'woocommerce_payments', wc_get_order( $order->get_id() )->get_payment_method() );
+		$notes = $this->order_note_contents( $order );
+		$this->assertStringNotContainsString( 'were removed', $notes );
+		$this->assertStringContainsString( 'took no payment with another payment method, because the WooPayments payment', $notes );
+	}
+
+	/**
+	 * Payments that go through while the pay-for-order page switches the order to another gateway: a 3DS step
+	 * finished in another tab, and a card reader capture on an order whose earlier attempt a retry emptied.
+	 *
+	 * @return array
+	 */
+	public function provider_payments_that_go_through_during_the_pay_action(): array {
+		$attempt     = self::PAYMENT_DETAILS_INTENT_ID;
+		$card_reader = self::CARD_READER_INTENT_ID;
+		$waiting     = self::EARLIER_ATTEMPT_INTENT_STATUS;
+
+		return [
+			'3DS finished, posts table'                   => [ $attempt, $waiting, $attempt, false, false, 'pi_test_payment_details' ],
+			'3DS finished, HPOS with data caching'        => [ $attempt, $waiting, $attempt, true, false, 'pi_test_payment_details' ],
+			'3DS finished, posts table, loaded again'     => [ $attempt, $waiting, $attempt, false, true, 'pi_test_payment_details' ],
+			'3DS finished, HPOS with data caching, loaded again' => [ $attempt, $waiting, $attempt, true, true, 'pi_test_payment_details' ],
+			'card reader capture, posts table'            => [ '', '', $card_reader, false, false, 'pi_test_card_reader' ],
+			'card reader capture, HPOS with data caching' => [ '', '', $card_reader, true, false, 'pi_test_card_reader' ],
+			'card reader capture, posts table, loaded again' => [ '', '', $card_reader, false, true, 'pi_test_card_reader' ],
+			'card reader capture, HPOS with data caching, loaded again' => [ '', '', $card_reader, true, true, 'pi_test_card_reader' ],
+		];
+	}
+
+	/**
+	 * A card reader payment can go through on an order no WooPayments attempt touched, loaded with another
+	 * gateway. The order goes to WooPayments, which took the payment.
+	 */
+	public function test_pay_action_puts_woopayments_on_an_order_loaded_with_another_gateway() {
+		$order = $this->create_order_loaded_with_another_gateway();
+		$this->hook_only_this_order_service_to_the_pay_action();
+
+		$this->fire_before_pay_action( $order );
+		$this->write_payment_of_a_card_reader_in_another_request( $order->get_id() );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, $error_notices );
+		$this->assertSame( 'woocommerce_payments', wc_get_order( $order->get_id() )->get_payment_method() );
+	}
+
+	/**
+	 * A plugin checking the pay form can save the order, or read its meta again, on WooCommerce's pay action, at
+	 * any priority, registered after WooPayments. Neither stands in for WooCommerce's save with the posted
+	 * gateway, and a WooPayments payment that goes through meanwhile still stops the other gateway's payment.
+	 *
+	 * @dataProvider provider_plugins_on_the_pay_action
+	 *
+	 * @param int  $priority       The plugin's priority on the action.
+	 * @param bool $paid_in_action Whether the payment goes through while the plugin runs, which then reads the
+	 *                             order's meta again before saving it.
+	 */
+	public function test_pay_action_stops_the_other_payment_whatever_a_plugin_does_on_the_action( int $priority, bool $paid_in_action ) {
+		$order = $this->create_order_loaded_with_another_gateway();
+		$this->hook_only_this_order_service_to_the_pay_action();
+		add_action(
+			'woocommerce_before_pay_action',
+			function ( $order_being_paid ) use ( $paid_in_action ) {
+				if ( $paid_in_action ) {
+					$this->write_payment_of_a_card_reader_in_another_request( $order_being_paid->get_id() );
+					$order_being_paid->read_meta_data( true );
+				}
+				$order_being_paid->save();
+			},
+			$priority
+		);
+
+		$this->fire_before_pay_action( $order );
+		if ( ! $paid_in_action ) {
+			$this->write_payment_of_a_card_reader_in_another_request( $order->get_id() );
+		}
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, $error_notices );
+	}
+
+	/**
+	 * Between its pay action and its save with the posted gateway, WooCommerce saves the customer and asks which
+	 * gateways are available, and code hooked there can save the order from an object of its own. That save
+	 * isn't WooCommerce's, and a WooPayments payment that goes through after it still stops the other gateway's
+	 * payment.
+	 */
+	public function test_pay_action_stops_the_other_payment_after_another_object_saved_the_order() {
+		$order = $this->create_order_loaded_with_another_gateway();
+		$this->hook_only_this_order_service_to_the_pay_action();
+
+		$this->fire_before_pay_action( $order );
+		wc_get_order( $order->get_id() )->save();
+		$this->write_payment_of_a_card_reader_in_another_request( $order->get_id() );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, $error_notices );
+	}
+
+	/**
+	 * Between its pay action and its save with the posted gateway, WooCommerce checks again that the order needs
+	 * payment, handing its own object to the filters there. A filter that saves it saves the gateway the order
+	 * was loaded with, and a WooPayments payment that goes through after that save still stops the other
+	 * gateway's payment.
+	 */
+	public function test_pay_action_stops_the_other_payment_after_a_filter_saved_the_order() {
+		$order = $this->create_order_waiting_for_authentication();
+		$this->hook_only_this_order_service_to_the_pay_action();
+		$save_order = function ( $needs_payment, $order_checked ) {
+			$order_checked->save();
+			return $needs_payment;
+		};
+		add_filter( 'woocommerce_order_needs_payment', $save_order, 10, 2 );
+
+		$this->fire_before_pay_action( $order );
+		$order->needs_payment();
+		remove_filter( 'woocommerce_order_needs_payment', $save_order, 10 );
+		$this->write_meta_in_another_request( $order->get_id(), '_intention_status', Intent_Status::SUCCEEDED );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, $error_notices );
+	}
+
+	/**
+	 * The same, on an order loaded with another gateway, where the filter's save carries that gateway: a card
+	 * reader payment captured after it still stops the other gateway's payment.
+	 */
+	public function test_pay_action_stops_the_other_payment_after_a_filter_saved_an_order_loaded_with_another_gateway() {
+		$order = $this->create_order_loaded_with_another_gateway();
+		$this->hook_only_this_order_service_to_the_pay_action();
+		$save_order = function ( $needs_payment, $order_checked ) {
+			$order_checked->save();
+			return $needs_payment;
+		};
+		add_filter( 'woocommerce_order_needs_payment', $save_order, 10, 2 );
+
+		$this->fire_before_pay_action( $order );
+		$order->needs_payment();
+		remove_filter( 'woocommerce_order_needs_payment', $save_order, 10 );
+		$this->write_payment_of_a_card_reader_in_another_request( $order->get_id() );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, $error_notices );
+	}
+
+	/**
+	 * A payment the order held when WooCommerce loaded it, authorized or still being processed, can go through
+	 * while the pay form is submitted, as a capture does. It is then charged, and stops the other gateway's
+	 * payment like a new one.
+	 *
+	 * @dataProvider provider_payments_held_at_load_that_go_through
+	 *
+	 * @param string $intent_status_at_load The stored status of the order's payment when WooCommerce loads it.
+	 */
+	public function test_pay_action_stops_the_other_payment_when_the_loaded_payment_goes_through( string $intent_status_at_load ) {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, $intent_status_at_load );
+		$order = wc_get_order( $order->get_id() );
+		$this->hook_only_this_order_service_to_the_pay_action();
+
+		$this->fire_before_pay_action( $order );
+		$this->write_meta_in_another_request( $order->get_id(), '_intention_status', Intent_Status::SUCCEEDED );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, $error_notices );
+		$this->assertSame( 'woocommerce_payments', wc_get_order( $order->get_id() )->get_payment_method() );
+	}
+
+	/**
+	 * Payments an order can hold when loaded that later go through.
+	 *
+	 * @return array
+	 */
+	public function provider_payments_held_at_load_that_go_through(): array {
+		return [
+			'authorized, then captured'           => [ Intent_Status::REQUIRES_CAPTURE ],
+			'still being processed, then charged' => [ Intent_Status::PROCESSING ],
+		];
+	}
+
+	/**
+	 * A long-running process can handle one pay action after another. Each watches its own order.
+	 */
+	public function test_pay_action_watches_the_order_of_a_later_pay_action() {
+		$first_order = WC_Helper_Order::create_order();
+		$order       = $this->create_order_loaded_with_another_gateway();
+		$this->hook_only_this_order_service_to_the_pay_action();
+
+		$this->fire_before_pay_action( $first_order );
+		$this->fire_before_pay_action( $order );
+		$this->write_payment_of_a_card_reader_in_another_request( $order->get_id() );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, $error_notices );
+	}
+
+	/**
+	 * A plugin can fire WooCommerce's pay action again from within it, for the same order once the payment went
+	 * through and its meta was read again, or for another order. The order WooCommerce is paying stays watched
+	 * as it was loaded, and the other gateway's payment is still stopped.
+	 *
+	 * @dataProvider provider_nested_pay_actions
+	 *
+	 * @param bool $for_another_order Whether the nested action is for another order.
+	 */
+	public function test_pay_action_keeps_watching_the_order_when_the_action_fires_again( bool $for_another_order ) {
+		$order       = $this->create_order_loaded_with_another_gateway();
+		$other_order = WC_Helper_Order::create_order();
+		$this->hook_only_this_order_service_to_the_pay_action();
+		$fired_again = false;
+		add_action(
+			'woocommerce_before_pay_action',
+			function ( $order_being_paid ) use ( $for_another_order, $other_order, &$fired_again ) {
+				if ( $fired_again ) {
+					return;
+				}
+				$fired_again = true;
+				$this->write_payment_of_a_card_reader_in_another_request( $order_being_paid->get_id() );
+				$order_being_paid->read_meta_data( true );
+				$this->fire_before_pay_action( $for_another_order ? $other_order : $order_being_paid );
+			}
+		);
+
+		$this->fire_before_pay_action( $order );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, $error_notices );
+	}
+
+	/**
+	 * What a nested pay action is for.
+	 *
+	 * @return array
+	 */
+	public function provider_nested_pay_actions(): array {
+		return [
+			'the same order' => [ false ],
+			'another order'  => [ true ],
+		];
+	}
+
+	/**
+	 * Plugins on WooCommerce's pay action, by priority, and whether the payment goes through while they run.
+	 *
+	 * @return array
+	 */
+	public function provider_plugins_on_the_pay_action(): array {
+		return [
+			'a plugin saves the order'                   => [ 10, false ],
+			'a plugin hooked last saves the order'       => [ PHP_INT_MAX, false ],
+			'a plugin reads the meta again after the payment' => [ 10, true ],
+			'a plugin hooked first reads the meta again' => [ PHP_INT_MIN, true ],
+		];
+	}
+
+	/**
+	 * Writes a captured card reader payment on the order as another request would.
+	 *
+	 * @param int $order_id The order.
+	 */
+	private function write_payment_of_a_card_reader_in_another_request( int $order_id ): void {
+		$this->write_meta_in_another_request( $order_id, '_intent_id', self::CARD_READER_INTENT_ID );
+		$this->write_meta_in_another_request( $order_id, '_intention_status', Intent_Status::SUCCEEDED );
+	}
+
+	/**
+	 * A merchant can reopen an order whose WooPayments payment went through, and the shopper pay it with another
+	 * gateway. The payment was there when WooCommerce loaded the order, so that gateway's payment goes ahead and
+	 * the payment details stay, as before.
+	 */
+	public function test_pay_action_takes_the_other_payment_on_a_reopened_paid_order() {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, Intent_Status::SUCCEEDED );
+		$order = wc_get_order( $order->get_id() );
+		$this->hook_only_this_order_service_to_the_pay_action();
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->fire_before_pay_action( $order );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$this->assertSame( 0, $error_notices );
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cod', $order->get_payment_method() );
+		$this->assertSame( 'pi_test_payment_details', $order->get_meta( '_intent_id' ) );
+	}
+
+	/**
+	 * A WooPayments payment from the pay-for-order page goes ahead when another went through meanwhile: the
+	 * duplicate payment check settles the order on the payment that went through instead of charging again.
+	 */
+	public function test_pay_action_lets_a_woopayments_payment_go_ahead_when_another_went_through() {
+		$order = $this->create_order_waiting_for_authentication();
+		$this->hook_only_this_order_service_to_the_pay_action();
+
+		$this->fire_before_pay_action( $order );
+		$this->write_meta_in_another_request( $order->get_id(), '_intention_status', Intent_Status::SUCCEEDED );
+		$error_notices = $this->count_error_notices_after_setting_the_gateway( $order, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 0, $error_notices );
+		$this->assertSame( 'pi_test_payment_details', $this->get_stored_meta( $order->get_id(), '_intent_id' ) );
+	}
+
+	/**
+	 * Only WooCommerce's own save, before it calls the other gateway, can stop that gateway's payment. A
+	 * WooPayments payment that goes through later, such as while the other gateway saves the order as it takes
+	 * its payment, adds no error notice: that payment is already being taken.
+	 */
+	public function test_pay_action_adds_no_notice_for_a_payment_that_goes_through_after_woocommerce_saved_the_order() {
+		$order = $this->create_order_waiting_for_authentication();
+		$this->hook_only_this_order_service_to_the_pay_action();
+
+		$this->fire_before_pay_action( $order );
+		try {
+			$this->set_gateway_as_the_pay_action_does( $order, self::OTHER_GATEWAY_ID );
+			$order_in_the_other_gateway = wc_get_order( $order->get_id() );
+			$this->write_payment_of_a_card_reader_in_another_request( $order->get_id() );
+			$order_in_the_other_gateway->set_status( Order_Status::PROCESSING );
+			$order_in_the_other_gateway->save();
+			$error_notices = wc_notice_count( 'error' );
+		} finally {
+			wc_clear_notices();
+		}
+
+		$this->assertSame( 0, $error_notices );
+	}
+
+	/**
+	 * WooCommerce goes on with the object it saved, and so do the plugins on its later pay action. Once the
+	 * earlier attempt is removed, that object no longer holds its payment details, so a later save of it can't
+	 * copy them back.
+	 */
+	public function test_pay_action_leaves_the_saved_order_without_the_removed_details() {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order = wc_get_order( $order->get_id() );
+		$this->hook_only_this_order_service_to_the_pay_action();
+
+		$this->fire_before_pay_action( $order );
+		$this->set_gateway_as_the_pay_action_does( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_mode' ) );
+	}
+
+	/**
+	 * With HPOS, a meta change saves the whole order when the order was last changed in an earlier second, and
+	 * that save fires the hook the cleanup runs on. The order loaded then still holds what the cleanup has yet
+	 * to remove, and the cleanup must not run on it again.
+	 */
+	public function test_pay_action_removes_the_earlier_attempt_once_when_its_removal_saves_the_order() {
+		$this->store_orders_in_hpos_with_data_caching();
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->hook_only_this_order_service_to_the_pay_action();
+		$this->fire_before_pay_action( $order );
+		// The first meta change saves the order, as when a second ends between WooCommerce's save and it. That
+		// save changes the order in the current second, so WooCommerce saves no more.
+		$saves_left = 1;
+		add_filter(
+			'woocommerce_orders_table_datastore_should_save_after_meta_change',
+			function ( $should_save ) use ( &$saves_left ) {
+				return 0 < $saves_left-- || $should_save;
+			}
+		);
+
+		$this->set_gateway_as_the_pay_action_does( $order, self::OTHER_GATEWAY_ID );
+
+		$this->assertSame( 1, substr_count( $this->order_note_contents( $order ), 'were removed' ) );
+		$this->assertCount( 1, wc_get_order( $order->get_id() )->get_meta( '_wcpay_superseded_intent_ids', false ) );
+	}
+
+	/**
+	 * Another request can start a new WooPayments attempt on the order while the pay-for-order page pays it, as
+	 * a retry in another tab does. The attempt the order names when it is saved is the one removed and
+	 * cancelled.
+	 *
+	 * @dataProvider provider_order_storage
+	 *
+	 * @param bool $hpos_with_data_caching Whether orders are in HPOS tables with data caching on.
+	 */
+	public function test_pay_action_removes_the_attempt_the_order_names_when_it_is_saved( bool $hpos_with_data_caching ) {
+		if ( $hpos_with_data_caching ) {
+			$this->store_orders_in_hpos_with_data_caching();
+		}
+		$order = $this->create_order_waiting_for_authentication();
+		$this->hook_only_this_order_service_to_the_pay_action();
+		$this->mock_wcpay_request( Cancel_Intention::class, 1, self::RETRY_ATTEMPT_INTENT_ID );
+
+		$this->fire_before_pay_action( $order );
+		$this->write_intent_id_in_another_request( $order->get_id(), self::RETRY_ATTEMPT_INTENT_ID );
+		$this->set_gateway_as_the_pay_action_does( $order, self::OTHER_GATEWAY_ID );
+		$this->order_service->finish_removing_earlier_attempts();
+
+		$this->assertNull( $this->get_stored_meta( $order->get_id(), '_intent_id' ) );
+		$this->assertSame( [ 'pi_test_retry_attempt' ], wc_get_order( $order->get_id() )->get_meta( '_wcpay_superseded_intent_ids' ) );
+	}
+
+	/**
 	 * Leaves the order service under test as the only one on the pay-for-order action, with no error notice
 	 * pending. The plugin's own instance is hooked too, and would otherwise handle the order first.
 	 */
@@ -1831,6 +2285,49 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	private function set_gateway_as_the_pay_action_does( WC_Order $order, string $gateway_id ): void {
 		$order->set_payment_method( $gateway_id );
 		$order->save();
+	}
+
+	/**
+	 * Puts the posted gateway on the order as WooCommerce does, and counts the error notices that then stop
+	 * WooCommerce from calling it. The notices are cleared, since the session outlives the test.
+	 *
+	 * @param WC_Order $order      The order being paid.
+	 * @param string   $gateway_id The posted gateway.
+	 *
+	 * @return int
+	 */
+	private function count_error_notices_after_setting_the_gateway( WC_Order $order, string $gateway_id ): int {
+		try {
+			$this->set_gateway_as_the_pay_action_does( $order, $gateway_id );
+			return wc_notice_count( 'error' );
+		} finally {
+			wc_clear_notices();
+		}
+	}
+
+	/**
+	 * Creates an order no WooPayments attempt touched, with another gateway, loaded as WooCommerce loads it.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_loaded_with_another_gateway(): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( self::OTHER_STRIPE_GATEWAY_ID );
+		$order->save();
+
+		return wc_get_order( $order->get_id() );
+	}
+
+	/**
+	 * Creates an order whose WooPayments attempt waits for 3DS, loaded as WooCommerce loads it.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_waiting_for_authentication(): WC_Order {
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+
+		return wc_get_order( $order->get_id() );
 	}
 
 	/**

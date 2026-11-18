@@ -234,8 +234,15 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		$this->currency = $currency;
 	}
 
-	public function add_order_note( $_unused_note = '' ) {
-		// do nothing.
+	/**
+	 * Notes passed to add_order_note(), captured so tests can assert the durable merchant-visible signals.
+	 *
+	 * @var string[]
+	 */
+	public $order_notes = [];
+
+	public function add_order_note( $note = '' ) {
+		$this->order_notes[] = $note;
 	}
 
 	public function payment_failed( $new_status = 'on-hold' ) {
