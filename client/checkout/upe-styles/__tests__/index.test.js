@@ -654,3 +654,66 @@ describe( 'getAppearance card field error text', () => {
 		} );
 	} );
 } );
+
+describe( 'getAppearance invalid input height on blocks checkout', () => {
+	const renderBlocksCheckout = ( labelPosition ) => {
+		document.body.innerHTML = `
+			<div class="wc-block-checkout__contact-fields">
+				<div class="wc-block-components-text-input is-active">
+					<input type="email" id="email" />
+					<label for="email">Email address</label>
+				</div>
+			</div>`;
+		const style = document.createElement( 'style' );
+		style.textContent = `
+			.wc-block-components-text-input input { padding: 16px 12px; line-height: 25px; }
+			.wc-block-components-text-input.is-active input { padding: 24px 9px 8px; }
+			.wc-block-components-text-input label {
+				position: ${ labelPosition };
+				font-size: 18px;
+				line-height: 18px;
+			}`;
+		document.head.appendChild( style );
+	};
+
+	afterEach( () => {
+		document.head.innerHTML = '';
+		document.body.innerHTML = '';
+	} );
+
+	test( 'invalid inputs get the same padding as valid inputs with floating labels', () => {
+		renderBlocksCheckout( 'absolute' );
+
+		const { labels, rules } = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			document
+		);
+
+		expect( labels ).toBe( 'floating' );
+		expect( rules[ '.Input--invalid' ].paddingTop ).toBe(
+			'calc(24px - 18px - 4px - 1px)'
+		);
+		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe( '7px' );
+		expect( rules[ '.Input--invalid' ].paddingTop ).toBe(
+			rules[ '.Input' ].paddingTop
+		);
+		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe(
+			rules[ '.Input' ].paddingBottom
+		);
+	} );
+
+	test( 'invalid inputs match valid padding when labels sit above the field', () => {
+		renderBlocksCheckout( 'static' );
+
+		const { labels, rules } = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			document
+		);
+
+		expect( labels ).toBe( 'above' );
+		expect( rules[ '.Input--invalid' ].paddingTop ).toBe( '24px' );
+		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe( '8px' );
+	} );
+} );

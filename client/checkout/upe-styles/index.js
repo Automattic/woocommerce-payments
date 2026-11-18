@@ -73,7 +73,12 @@ export const appearanceSelectors = {
 		],
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
-		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		// Same state as the valid row, so invalid inputs measure the same padding.
+		invalidClasses: [
+			'wc-block-components-text-input',
+			'is-active',
+			'has-error',
+		],
 		errorElement: {
 			tagName: 'p',
 			classes: [],

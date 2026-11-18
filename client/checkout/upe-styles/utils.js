@@ -258,26 +258,23 @@ export const handleAppearanceForFloatingLabel = (
 	// Minus 1px for each vertical padding to account for the unpredictable input height
 	// (see https://github.com/Automattic/woocommerce-payments/issues/9476#issuecomment-2374766540).
 	// When the result is less than 0, it will automatically use 0.
-	if ( appearance.rules[ '.Input' ].paddingTop ) {
-		appearance.rules[
-			'.Input'
-			// eslint-disable-next-line max-len
-		].paddingTop =
-			`calc(${ appearance.rules[ '.Input' ].paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;
-	}
+	// Invalid inputs get the same adjustment, so an error doesn't change the field height.
+	[ '.Input', '.Input--invalid' ].forEach( ( selector ) => {
+		const inputRules = appearance.rules[ selector ];
+		if ( inputRules?.paddingTop ) {
+			inputRules.paddingTop = `calc(${ inputRules.paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;
+		}
+		if ( inputRules?.paddingBottom ) {
+			inputRules.paddingBottom = `${
+				parseFloat( inputRules.paddingBottom ) - 1
+			}px`;
+		}
+	} );
 	if ( appearance.rules[ '.Input' ].paddingBottom ) {
-		const originalPaddingBottom = parseFloat(
-			appearance.rules[ '.Input' ].paddingBottom
-		);
-		appearance.rules[
-			'.Input'
-			// eslint-disable-next-line max-len
-		].paddingBottom = `${ originalPaddingBottom - 1 }px`;
-
 		const originalLabelMarginTop =
 			appearance.rules[ '.Label' ].marginTop ?? '0';
 		appearance.rules[ '.Label' ].marginTop = `${ Math.floor(
-			( originalPaddingBottom - 1 ) / 3
+			parseFloat( appearance.rules[ '.Input' ].paddingBottom ) / 3
 		) }px`;
 		appearance.rules[ '.Label--floating' ].marginTop =
 			originalLabelMarginTop;
