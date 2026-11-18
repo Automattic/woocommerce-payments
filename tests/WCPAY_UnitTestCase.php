@@ -411,21 +411,64 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * @param string $intent_id The intent the other request writes.
 	 */
 	protected function write_intent_id_in_another_request( int $order_id, string $intent_id ): void {
+		$this->write_meta_in_another_request( $order_id, '_intent_id', $intent_id );
+	}
+
+	/**
+	 * Changes a stored meta value of an order as another request would: the row changes, or is added when the
+	 * order has none, and none of this process's caches hear of it.
+	 *
+	 * @param int    $order_id   The order.
+	 * @param string $meta_key   The meta key.
+	 * @param string $meta_value The value the other request writes.
+	 */
+	protected function write_meta_in_another_request( int $order_id, string $meta_key, string $meta_value ): void {
 		global $wpdb;
 
-		$hpos   = WC_Payments_Utils::is_hpos_tables_usage_enabled();
-		$table  = $hpos ? $wpdb->prefix . 'wc_orders_meta' : $wpdb->postmeta;
-		$column = $hpos ? 'order_id' : 'post_id';
+		// phpcs:disable WordPress.DB.SlowDBQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- One row of a test order; the table and column are fixed.
+		[ $table, $column ] = $this->order_meta_table();
+		$row                = [
+			$column    => $order_id,
+			'meta_key' => $meta_key,
+		];
 
-		// phpcs:disable WordPress.DB.SlowDBQuery -- One row of a test order.
-		$wpdb->update(
-			$table,
-			[ 'meta_value' => $intent_id ],
-			[
-				$column    => $order_id,
-				'meta_key' => '_intent_id',
-			]
-		);
-		// phpcs:enable WordPress.DB.SlowDBQuery
+		$stored = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE {$column} = %d AND meta_key = %s", $order_id, $meta_key ) );
+		if ( 0 < $stored ) {
+			$wpdb->update( $table, [ 'meta_value' => $meta_value ], $row );
+		} else {
+			$wpdb->insert( $table, $row + [ 'meta_value' => $meta_value ] );
+		}
+		// phpcs:enable WordPress.DB.SlowDBQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	}
+
+	/**
+	 * Reads a meta value of an order from its table, past every cache, as the next request would see it.
+	 *
+	 * @param int    $order_id The order.
+	 * @param string $meta_key The meta key.
+	 *
+	 * @return string|null The first stored value, or null when the order has none.
+	 */
+	protected function get_stored_meta( int $order_id, string $meta_key ): ?string {
+		global $wpdb;
+
+		[ $table, $column, $row_id ] = $this->order_meta_table();
+
+		// The lowest row ID first, as `get_meta()` returns the first of several values.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- The table and columns are fixed.
+		return $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$table} WHERE {$column} = %d AND meta_key = %s ORDER BY {$row_id} ASC LIMIT 1", $order_id, $meta_key ) );
+	}
+
+	/**
+	 * The table order meta is stored in, its order ID column and its row ID column.
+	 *
+	 * @return string[]
+	 */
+	private function order_meta_table(): array {
+		global $wpdb;
+
+		return WC_Payments_Utils::is_hpos_tables_usage_enabled()
+			? [ $wpdb->prefix . 'wc_orders_meta', 'order_id', 'id' ]
+			: [ $wpdb->postmeta, 'post_id', 'meta_id' ];
 	}
 }
