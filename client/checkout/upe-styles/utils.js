@@ -215,13 +215,15 @@ export const usesFloatingLabelPattern = ( labelSelector, scope = document ) => {
 /**
  * Modifies the appearance object to include styles for floating label.
  *
- * @param {Object} appearance          object to modify.
- * @param {Object} floatingLabelStyles Floating label styles.
+ * @param {Object}  appearance          object to modify.
+ * @param {Object}  floatingLabelStyles Floating label styles.
+ * @param {boolean} adjustInvalidInput  Whether `.Input--invalid` gets the same padding adjustment as `.Input`.
  * @return {Object} Modified appearance object.
  */
 export const handleAppearanceForFloatingLabel = (
 	appearance,
-	floatingLabelStyles
+	floatingLabelStyles,
+	adjustInvalidInput = false
 ) => {
 	// Add floating label styles.
 	appearance.rules[ '.Label--floating' ] = floatingLabelStyles;
@@ -258,8 +260,12 @@ export const handleAppearanceForFloatingLabel = (
 	// Minus 1px for each vertical padding to account for the unpredictable input height
 	// (see https://github.com/Automattic/woocommerce-payments/issues/9476#issuecomment-2374766540).
 	// When the result is less than 0, it will automatically use 0.
-	// Invalid inputs get the same adjustment, so an error doesn't change the field height.
-	[ '.Input', '.Input--invalid' ].forEach( ( selector ) => {
+	// Invalid inputs get the same adjustment when they were measured in the same state,
+	// so an error doesn't change the field height.
+	const inputSelectors = adjustInvalidInput
+		? [ '.Input', '.Input--invalid' ]
+		: [ '.Input' ];
+	inputSelectors.forEach( ( selector ) => {
 		const inputRules = appearance.rules[ selector ];
 		if ( inputRules?.paddingTop ) {
 			inputRules.paddingTop = `calc(${ inputRules.paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;

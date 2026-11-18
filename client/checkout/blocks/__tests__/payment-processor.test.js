@@ -211,6 +211,25 @@ describe( 'PaymentProcessor', () => {
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 	} );
 
+	it( 'should scroll the payment fields into view when the card fields fail validation', async () => {
+		const scrollIntoView = jest.fn();
+		Element.prototype.scrollIntoView = scrollIntoView;
+		validateElements.mockRejectedValueOnce(
+			Object.assign( new Error( 'Your card number is incomplete.' ), {
+				type: 'validation_error',
+			} )
+		);
+		const runPaymentSetup = renderProcessorForSetup();
+
+		await runPaymentSetup();
+		delete Element.prototype.scrollIntoView;
+
+		expect( scrollIntoView ).toHaveBeenCalledWith( {
+			behavior: 'smooth',
+			block: 'center',
+		} );
+	} );
+
 	it( 'should keep the message for other errors from validating the payment fields', async () => {
 		validateElements.mockRejectedValueOnce(
 			Object.assign( new Error( 'Something went wrong.' ), {

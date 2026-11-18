@@ -560,7 +560,6 @@ const hiddenElementsForUPE = {
 			scope
 		);
 
-		// Append the checkout's field error element to hidden invalid row.
 		if ( selectors.errorElement ) {
 			this.appendErrorElement(
 				hiddenInvalidRow,
@@ -848,7 +847,7 @@ export const getAppearance = (
 	};
 
 	if ( Object.keys( errorRules ).length ) {
-		appearance.rules[ '.Error' ] = { ...errorRules };
+		appearance.rules[ '.Error' ] = errorRules;
 	}
 
 	if ( isFloatingLabel ) {
@@ -859,7 +858,9 @@ export const getAppearance = (
 				'.Label--floating',
 				null,
 				scope
-			)
+			),
+			// WooPay's invalid inputs are measured without `is-active`, so they keep their own padding.
+			! forWooPay
 		);
 	}
 

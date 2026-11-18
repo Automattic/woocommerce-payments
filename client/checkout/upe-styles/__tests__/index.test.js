@@ -709,3 +709,39 @@ describe( 'getAppearance invalid input height on blocks checkout', () => {
 		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe( '8px' );
 	} );
 } );
+
+describe( 'getAppearance invalid input padding for WooPay', () => {
+	afterEach( () => {
+		document.head.innerHTML = '';
+		document.body.innerHTML = '';
+	} );
+
+	test( 'leaves the WooPay invalid input padding as measured', () => {
+		document.body.innerHTML = `
+			<div class="wc-block-checkout__contact-fields">
+				<div class="wc-block-components-text-input is-active">
+					<input type="email" id="email" />
+					<label for="email">Email address</label>
+				</div>
+			</div>`;
+		const style = document.createElement( 'style' );
+		style.textContent = `
+			.wc-block-components-text-input input { padding: 16px 12px; line-height: 25px; }
+			.wc-block-components-text-input.is-active input { padding: 24px 9px 8px; }
+			.wc-block-components-text-input label {
+				position: absolute;
+				font-size: 18px;
+				line-height: 18px;
+			}`;
+		document.head.appendChild( style );
+
+		const { rules } = upeStyles.getAppearance(
+			'blocks_checkout',
+			true,
+			document
+		);
+
+		expect( rules[ '.Input--invalid' ].paddingTop ).toBe( '16px' );
+		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe( '16px' );
+	} );
+} );
