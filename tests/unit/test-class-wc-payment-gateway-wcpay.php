@@ -6860,10 +6860,21 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'is_limited' )
 			->willReturn( true );
 
+		wc_clear_notices();
+		$failed_hook_count = did_action( 'woocommerce_payments_order_failed' );
+
 		$result = $this->card_gateway->process_payment( $order->get_id() );
 
 		$this->assertSame( 'fail', $result['result'] );
 		$this->assertSame( 'processing', wc_get_order( $order->get_id() )->get_status() );
+
+		// The rest of the catch still runs for the subscription.
+		$this->assertSame( [ 'Your payment was not processed.' ], array_column( wc_get_notices( 'error' ), 'notice' ) );
+		$this->assertSame( 1, did_action( 'woocommerce_payments_order_failed' ) - $failed_hook_count );
+		$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+		$this->assertNotEmpty( preg_grep( '/too many failed transactions/', $notes ) );
+
+		wc_clear_notices();
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
