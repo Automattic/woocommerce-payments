@@ -69,6 +69,12 @@ class MultiCurrency {
 	private const STALE_TOTALS_RATES_DROPPED_SESSION_KEY = 'wcpay_stale_totals_rates_dropped';
 
 	/**
+	 * Session key of the stale cart totals state the classic mini-cart refresh last recalculated, so it recalculates
+	 * once per stale state rather than on every page view.
+	 */
+	private const STALE_TOTALS_FRAGMENTS_RECALCULATED_SESSION_KEY = 'wcpay_stale_totals_fragments_recalculated';
+
+	/**
 	 * Option flag marking that the one-time caching auto-detection has already run.
 	 */
 	const CACHE_AUTODETECT_DONE_OPTION = 'wcpay_multi_currency_cache_autodetect_done';
@@ -1357,7 +1363,7 @@ class MultiCurrency {
 			]
 		);
 		$this->clear_legacy_cart_totals_stamp();
-		WC()->session->__unset( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY );
+		$this->clear_stale_totals_markers();
 	}
 
 	/**
@@ -1454,7 +1460,7 @@ class MultiCurrency {
 		// last item doesn't empty_cart(), so drop the stamp here too.
 		if ( WC()->cart->is_empty() ) {
 			$this->clear_cart_totals_currency();
-			WC()->session->__unset( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY );
+			$this->clear_stale_totals_markers();
 			return;
 		}
 
@@ -1488,13 +1494,47 @@ class MultiCurrency {
 			WC()->session->set( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY, $stale_state );
 		}
 
-		// Only REST requests can use saved totals without calculating them. Elsewhere a throwing third-party calculation
-		// here would fail every page view, so only a request that selected the currency before the cart loaded recalculates.
 		if ( ! $this->currency_changed_before_cart_load && ! $this->is_rest_request() ) {
-			return;
+			// Page views only display the saved totals, and a throwing third-party calculation here would fail every one of
+			// them. AJAX requests can use the totals without calculating them (payment buttons read them over `wc-ajax` to
+			// create the payment), so they recalculate, failing rather than letting a payment use the stale totals.
+			if ( ! wp_doing_ajax() ) {
+				return;
+			}
+
+			// The classic mini-cart refresh runs on page views and only displays the totals, so it recalculates once per
+			// stale state: a calculation that keeps failing fails one refresh, not every page. Its own key, because page
+			// views note the stale state for the shipping rates too.
+			if ( $this->is_cart_fragments_request() ) {
+				if ( WC()->session->get( self::STALE_TOTALS_FRAGMENTS_RECALCULATED_SESSION_KEY ) === $stale_state ) {
+					return;
+				}
+				WC()->session->set( self::STALE_TOTALS_FRAGMENTS_RECALCULATED_SESSION_KEY, $stale_state );
+			}
 		}
 
 		$this->recalculate_cart();
+	}
+
+	/**
+	 * Forgets the stale totals states noted for dropping shipping rates and for the mini-cart refresh.
+	 *
+	 * @return void
+	 */
+	private function clear_stale_totals_markers() {
+		WC()->session->__unset( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY );
+		WC()->session->__unset( self::STALE_TOTALS_FRAGMENTS_RECALCULATED_SESSION_KEY );
+	}
+
+	/**
+	 * Whether the cart is loading for the classic mini-cart refresh (`?wc-ajax=get_refreshed_fragments`).
+	 *
+	 * @return bool
+	 */
+	private function is_cart_fragments_request(): bool {
+		// The cart loads on `wp_loaded`, before WordPress parses the `wc-ajax` query var, so read the request the way
+		// WC_AJAX::define_ajax() does.
+		return isset( $_GET['wc-ajax'] ) && 'get_refreshed_fragments' === sanitize_text_field( wp_unslash( $_GET['wc-ajax'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
