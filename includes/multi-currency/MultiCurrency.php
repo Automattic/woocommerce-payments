@@ -1345,8 +1345,7 @@ class MultiCurrency {
 
 		WC()->session->set( self::CART_TOTALS_CURRENCY_SESSION_KEY, get_woocommerce_currency() );
 		WC()->session->set( self::CART_TOTALS_HASH_SESSION_KEY, $this->get_cart_totals_hash( $saved_totals ) );
-		WC()->session->__unset( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY );
-		WC()->session->__unset( self::STALE_TOTALS_FRAGMENTS_RECALCULATED_SESSION_KEY );
+		$this->clear_stale_totals_markers();
 	}
 
 	/**
@@ -1418,8 +1417,7 @@ class MultiCurrency {
 		// last item doesn't empty_cart(), so drop the stamp here too.
 		if ( WC()->cart->is_empty() ) {
 			$this->clear_cart_totals_currency();
-			WC()->session->__unset( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY );
-			WC()->session->__unset( self::STALE_TOTALS_FRAGMENTS_RECALCULATED_SESSION_KEY );
+			$this->clear_stale_totals_markers();
 			return;
 		}
 
@@ -1474,6 +1472,16 @@ class MultiCurrency {
 		}
 
 		$this->recalculate_cart();
+	}
+
+	/**
+	 * Forgets the stale totals states noted for dropping shipping rates and for the mini-cart refresh.
+	 *
+	 * @return void
+	 */
+	private function clear_stale_totals_markers() {
+		WC()->session->__unset( self::STALE_TOTALS_RATES_DROPPED_SESSION_KEY );
+		WC()->session->__unset( self::STALE_TOTALS_FRAGMENTS_RECALCULATED_SESSION_KEY );
 	}
 
 	/**
