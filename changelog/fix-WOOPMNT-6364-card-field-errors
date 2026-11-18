@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Checkout: show card field errors once, under the field, in the store's own error style, without the card fields changing height.
