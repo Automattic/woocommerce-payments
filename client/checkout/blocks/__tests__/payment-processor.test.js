@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import PaymentProcessor from '../payment-processor';
 import { PaymentElement } from '@stripe/react-stripe-js';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 
 jest.mock( 'wcpay/checkout/utils/validate-elements', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
@@ -161,6 +162,66 @@ describe( 'PaymentProcessor', () => {
 		expect( await onPaymentSetupCallback() ).toEqual( {
 			type: 'error',
 			message: 'Some generic error',
+		} );
+		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+	} );
+
+	const renderProcessorForSetup = () => {
+		let onPaymentSetupCallback;
+
+		act( () => {
+			render(
+				<PaymentProcessor
+					activePaymentMethod="woocommerce_payments"
+					api={ mockApi }
+					paymentMethodId="card"
+					emitResponse={ {} }
+					eventRegistration={ {
+						// Return a no-op unsubscribe: the component runs it on
+						// re-render, and returning the callback would run setup early.
+						onPaymentSetup: ( callback ) => {
+							onPaymentSetupCallback = callback;
+							return () => {};
+						},
+					} }
+					fingerprint=""
+					shouldSavePayment={ false }
+					upeMethods={ {
+						card: { gatewayId: 'woocommerce_payments' },
+					} }
+				/>
+			);
+		} );
+
+		return () => onPaymentSetupCallback();
+	};
+
+	it( 'should return an error without a message when the card fields fail validation', async () => {
+		validateElements.mockRejectedValueOnce(
+			Object.assign( new Error( 'Your card number is incomplete.' ), {
+				type: 'validation_error',
+			} )
+		);
+		const runPaymentSetup = renderProcessorForSetup();
+
+		const result = await runPaymentSetup();
+
+		expect( result ).toEqual( { type: 'error' } );
+		expect( result ).not.toHaveProperty( 'message' );
+		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should keep the message for other errors from validating the payment fields', async () => {
+		validateElements.mockRejectedValueOnce(
+			Object.assign( new Error( 'Something went wrong.' ), {
+				type: 'invalid_request_error',
+			} )
+		);
+		const runPaymentSetup = renderProcessorForSetup();
+
+		expect( await runPaymentSetup() ).toEqual( {
+			type: 'error',
+			message: 'Something went wrong.',
 		} );
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 	} );

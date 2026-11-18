@@ -223,6 +223,12 @@ const PaymentProcessor = ( {
 					try {
 						await validateElements( elements );
 					} catch ( e ) {
+						// Stripe already shows validation errors under each field. An error
+						// without a message stops checkout without adding a second notice.
+						if ( e.type === 'validation_error' ) {
+							return { type: 'error' };
+						}
+
 						return {
 							type: 'error',
 							message: e.message,
