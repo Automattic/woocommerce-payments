@@ -183,6 +183,53 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	const ORDER_LEVEL3_DATA = [ 'line_items' => [ [ 'product_description' => 'Edited order line' ] ] ];
 
 	/**
+	 * Gateway ID of Amazon Pay orders.
+	 */
+	const AMAZON_PAY_GATEWAY_ID = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+
+	/**
+	 * Intent ID of the payment the Fee details note tests write a note for.
+	 */
+	const FEE_NOTE_INTENT_ID = 'pi_test_fee_note';
+
+	/**
+	 * A timeline captured event, as the platform reports it once WooPayments has refunded its fee.
+	 */
+	const FEE_NOTE_CAPTURED_EVENT = [
+		'type'                => 'captured',
+		'amount'              => 1500,
+		'amount_captured'     => 1500,
+		'fee'                 => 74,
+		'fee_rates'           => [
+			'percentage'     => 0.029,
+			'fixed'          => 30,
+			'fixed_currency' => 'USD',
+			'history'        => [
+				[
+					'type'            => 'base',
+					'percentage_rate' => 0.029,
+					'fixed_rate'      => 30,
+					'currency'        => 'usd',
+				],
+			],
+		],
+		'currency'            => 'USD',
+		'datetime'            => 1651997740,
+		'deposit'             => null,
+		'transaction_id'      => 'txn_test_fee_note',
+		'transaction_details' => [
+			'customer_currency'        => 'USD',
+			'customer_amount'          => 1500,
+			'customer_amount_captured' => 1500,
+			'customer_fee'             => 74,
+			'store_currency'           => 'USD',
+			'store_amount'             => 1500,
+			'store_amount_captured'    => 1500,
+			'store_fee'                => 74,
+		],
+	];
+
+	/**
 	 * System under test.
 	 *
 	 * @var WC_Payments_Order_Service
@@ -212,6 +259,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		wcpay_get_test_container()->reset_all_replacements();
+		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes' );
+		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes_fallback' );
 		parent::tear_down();
 	}
 
@@ -6127,6 +6176,116 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( count( $notes_before ), $notes_after );
+	}
+
+	/**
+	 * WooPayments refunds its fee on non-card Amazon Pay payments when the platform handles Stripe's event, a
+	 * second or two after the payment. A note written before that shows the fee from before the refund, so
+	 * completing the payment only schedules a delayed backup: the forwarded event writes the note.
+	 */
+	public function test_completed_amazon_pay_payment_leaves_the_fee_details_note_to_the_webhook() {
+		$this->order->set_payment_method( self::AMAZON_PAY_GATEWAY_ID );
+		$this->order->save();
+		$intent    = WC_Helper_Intention::create_intention( [ 'id' => self::FEE_NOTE_INTENT_ID ] );
+		$scheduled = time();
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$this->assertFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes', $this->order ) );
+		$this->assertGreaterThanOrEqual( $scheduled + 3600, $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes_fallback', $this->order ) );
+	}
+
+	/**
+	 * Other payments keep their Fee details note right after the payment: no fee changes after it.
+	 */
+	public function test_completed_card_payment_adds_the_fee_details_note_right_away() {
+		$intent    = WC_Helper_Intention::create_intention( [ 'id' => self::FEE_NOTE_INTENT_ID ] );
+		$scheduled = time();
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$note_job = $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes', $this->order );
+		$this->assertNotFalse( $note_job );
+		$this->assertLessThanOrEqual( $scheduled + 1, $note_job );
+		$this->assertFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes_fallback', $this->order ) );
+	}
+
+	/**
+	 * A capture from the order page waits for the webhook too, as Stripe's event for it triggers the refund.
+	 */
+	public function test_captured_amazon_pay_payment_leaves_the_fee_details_note_to_the_webhook() {
+		$this->order->set_payment_method( self::AMAZON_PAY_GATEWAY_ID );
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$intent = WC_Helper_Intention::create_intention( [ 'id' => self::FEE_NOTE_INTENT_ID ] );
+
+		$this->order_service->process_captured_payment( $this->order, $intent );
+
+		$this->assertFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes', $this->order ) );
+		$this->assertNotFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes_fallback', $this->order ) );
+	}
+
+	/**
+	 * The forwarded event comes after the platform's refund, so it writes the Amazon Pay note right away.
+	 */
+	public function test_amazon_pay_fee_details_note_is_added_from_the_webhook() {
+		$this->order->set_payment_method( self::AMAZON_PAY_GATEWAY_ID );
+		$this->order->save();
+		$scheduled = time();
+
+		$this->order_service->enqueue_add_fee_breakdown_to_order_notes_from_webhook( $this->order, self::FEE_NOTE_INTENT_ID );
+
+		$note_job = $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes', $this->order );
+		$this->assertNotFalse( $note_job );
+		$this->assertLessThanOrEqual( $scheduled + 1, $note_job );
+	}
+
+	/**
+	 * Other payments got their note when they completed, so the webhook leaves them alone.
+	 */
+	public function test_card_fee_details_note_is_not_added_from_the_webhook() {
+		$this->order_service->enqueue_add_fee_breakdown_to_order_notes_from_webhook( $this->order, self::FEE_NOTE_INTENT_ID );
+
+		$this->assertFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes', $this->order ) );
+	}
+
+	/**
+	 * The webhook's job and the backup job can both run, and Stripe can deliver the event again: a payment
+	 * gets one Fee details note.
+	 */
+	public function test_add_fee_breakdown_to_order_notes_adds_the_note_once_per_payment() {
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client
+			->method( 'get_timeline' )
+			->willReturn( [ 'data' => [ self::FEE_NOTE_CAPTURED_EVENT ] ] );
+		$order_service = new WC_Payments_Order_Service( $mock_api_client );
+
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), self::FEE_NOTE_INTENT_ID );
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), self::FEE_NOTE_INTENT_ID );
+
+		$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ), 'content' );
+		$this->assertCount( 1, preg_grep( '/Fee details:/', $notes ) );
+	}
+
+	/**
+	 * When the Fee details note job for an order's payment runs next, or false when none is scheduled.
+	 *
+	 * @param string   $hook  The job's hook.
+	 * @param WC_Order $order The order.
+	 *
+	 * @return int|bool
+	 */
+	private function get_fee_note_job_time( string $hook, WC_Order $order ) {
+		return as_next_scheduled_action(
+			$hook,
+			[
+				'order_id'     => $order->get_id(),
+				'intent_id'    => self::FEE_NOTE_INTENT_ID,
+				'is_test_mode' => WC_Payments::mode()->is_test(),
+			],
+			'woocommerce_payments'
+		);
 	}
 
 	public function test_maybe_record_first_live_sale_short_circuits_when_option_already_set(): void {

@@ -880,6 +880,34 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * The platform refunds WooPayments' fee on non-card Amazon Pay payments before it forwards this event, so the
+	 * Fee details note written from it shows the fee after the refund.
+	 */
+	public function test_payment_intent_succeeded_adds_the_amazon_pay_fee_details_note() {
+		$order = $this->create_order_settled_with_another_payment( Order_Status::PENDING, Intent_Status::SUCCEEDED, '' );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, time() );
+		$scheduled = time();
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$note_job = as_next_scheduled_action(
+			'wcpay_add_fee_breakdown_to_order_notes',
+			[
+				'order_id'     => $order->get_id(),
+				'intent_id'    => self::LATE_INTENT_ID,
+				'is_test_mode' => WC_Payments::mode()->is_test(),
+			],
+			'woocommerce_payments'
+		);
+		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes' );
+		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes_fallback' );
+		$this->assertNotFalse( $note_job );
+		$this->assertLessThanOrEqual( $scheduled + 1, $note_job );
+	}
+
+	/**
 	 * Orders that name a payment they are not settled with.
 	 *
 	 * @return array
