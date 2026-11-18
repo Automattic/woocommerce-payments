@@ -51,7 +51,7 @@ class Duplicates_Detection_Service {
 
 			// Return payment method IDs list so that front-end can successfully compare with its own list.
 			return $this->gateways_qualified_by_duplicates_detector;
-		} catch ( \Exception $e ) {
+		} catch ( \Throwable $e ) {
 			Logger::warning( 'Duplicates detection service failed silently with the following error: ' . $e->getMessage() );
 
 			// Fail silently and return an empty array in case of any exception.
@@ -126,23 +126,9 @@ class Duplicates_Detection_Service {
 			'googlepay',
 		];
 
-		foreach ( $this->get_registered_gateways() as $gateway ) {
-			if ( 'yes' === $gateway->enabled ) {
-				foreach ( $keywords as $keyword ) {
-					if ( strpos( $gateway->id, $keyword ) !== false ) {
-						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-						break;
-					} elseif ( 'woocommerce_payments' === $gateway->id && method_exists( $gateway, 'is_payment_request_enabled' ) && $gateway->is_payment_request_enabled() ) {
-						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-						break;
-					} elseif ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
-						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-						break;
-					} elseif ( 'yes' === $gateway->get_option( 'express_checkout_enabled' ) ) {
-						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-						break;
-					}
-				}
+		foreach ( $this->get_enabled_gateways() as $gateway ) {
+			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || $this->gateway_has_wallets_in_settings( $gateway ) ) {
+				$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 			}
 		}
 
@@ -185,6 +171,62 @@ class Duplicates_Detection_Service {
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Check whether a gateway offers Apple Pay / Google Pay through its settings, rather than through
+	 * a dedicated gateway whose ID names the wallet.
+	 *
+	 * @param \WC_Payment_Gateway $gateway Enabled gateway.
+	 *
+	 * @return bool True if the gateway's wallets are enabled, false otherwise.
+	 */
+	private function gateway_has_wallets_in_settings( $gateway ) {
+		return $this->plugin_gateway_has_wallets_enabled( $gateway )
+			|| 'yes' === $gateway->get_option( 'express_checkout_enabled' );
+	}
+
+	/**
+	 * Check the wallet settings of plugins known to keep them on another gateway.
+	 *
+	 * These settings are internal to each plugin and may change without notice. A plugin that renames
+	 * one stops being detected, so only its duplicate notice is lost.
+	 *
+	 * @param \WC_Payment_Gateway $gateway Enabled gateway.
+	 *
+	 * @return bool True if the gateway's wallets are enabled, false otherwise.
+	 */
+	private function plugin_gateway_has_wallets_enabled( $gateway ) {
+		switch ( $gateway->id ) {
+			case 'woocommerce_payments':
+				return method_exists( $gateway, 'is_payment_request_enabled' ) && $gateway->is_payment_request_enabled();
+
+			case 'stripe':
+				// With Stripe's payment method configurations, the stored option can be out of date.
+				if ( method_exists( $gateway, 'is_express_checkout_enabled' ) ) {
+					return (bool) $gateway->is_express_checkout_enabled();
+				}
+
+				// Stripe 9.1.0 moved `payment_request` to `express_checkout`.
+				$express_checkout = $gateway->get_option( 'express_checkout' );
+				return 'yes' === ( '' !== $express_checkout ? $express_checkout : $gateway->get_option( 'payment_request' ) );
+
+			case 'square_credit_card':
+				$hidden_wallets = (array) $gateway->get_option( 'digital_wallets_hide_button_options', [] );
+
+				return 'yes' === $gateway->get_option( 'enable_digital_wallets', 'yes' )
+					&& ! empty( array_diff( [ 'apple', 'google' ], $hidden_wallets ) );
+
+			case 'braintree_credit_card':
+				return 'yes' === get_option( 'sv_wc_apple_pay_enabled' ) || 'yes' === get_option( 'sv_wc_google_pay_enabled' );
+
+			case 'airwallex_express_checkout':
+				$wallets = (array) $gateway->get_option( 'payment_methods', [] );
+
+				return ! empty( array_intersect( [ 'apple_pay', 'google_pay' ], $wallets ) );
+		}
+
+		return false;
 	}
 
 	/**

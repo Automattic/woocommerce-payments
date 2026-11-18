@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Stop showing the "enabled by other extensions" notice for Apple Pay / Google Pay when only WooPayments offers them.
+Show the "enabled by other extensions" notice for Apple Pay / Google Pay only when another plugin offers them, including wallets enabled through Stripe, Square, Braintree and Airwallex settings.
