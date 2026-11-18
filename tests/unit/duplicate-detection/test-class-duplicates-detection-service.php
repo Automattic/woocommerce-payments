@@ -253,7 +253,10 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 		$this->enable_woopayments_wallets();
 		WC()->payment_gateways()->payment_gateways = [ $this->woopayments_gateway, $stripe_gateway ];
 
-		$this->assertSame( [], $this->service->find_duplicates() );
+		$result = $this->service->find_duplicates();
+
+		$this->assertArrayNotHasKey( 'apple_pay_google_pay', $result );
+		$this->assertSame( [ 'woocommerce_payments', 'stripe' ], $result['card'] );
 	}
 
 	public function test_prb_detection_excludes_disabled_stripe_gateway() {

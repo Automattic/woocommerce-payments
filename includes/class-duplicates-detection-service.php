@@ -182,8 +182,15 @@ class Duplicates_Detection_Service {
 	 * @return bool True if the gateway's wallets are enabled, false otherwise.
 	 */
 	private function gateway_has_wallets_in_settings( $gateway ) {
-		return $this->plugin_gateway_has_wallets_enabled( $gateway )
-			|| 'yes' === $gateway->get_option( 'express_checkout_enabled' );
+		try {
+			return $this->plugin_gateway_has_wallets_enabled( $gateway )
+				|| 'yes' === $gateway->get_option( 'express_checkout_enabled' );
+		} catch ( \Throwable $e ) {
+			// Other plugins' code can change, so one failure must not cost the remaining detection results.
+			Logger::warning( 'Duplicates detection could not read wallet settings of gateway ' . $gateway->id . ': ' . $e->getMessage() );
+
+			return false;
+		}
 	}
 
 	/**
