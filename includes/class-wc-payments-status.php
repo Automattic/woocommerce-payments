@@ -112,7 +112,7 @@ class WC_Payments_Status {
 					'button'   => __( 'Delete', 'woocommerce-payments' ),
 					'desc'     => sprintf(
 						/* translators: %s: WooPayments */
-						__( '<strong class="red">Note:</strong> This option deletes orders with a verified %s test payment that succeeded, was authorized, or is still processing. Older orders without verified test payment details and orders placed via other gateways will not be affected. Use with caution, as this action cannot be undone.', 'woocommerce-payments' ),
+						__( '<strong class="red">Note:</strong> This option deletes test mode orders whose %s payment succeeded, was authorized, or is still processing. Orders with only failed or abandoned attempts and orders placed via other gateways will not be affected. Use with caution, as this action cannot be undone.', 'woocommerce-payments' ),
 						'WooPayments'
 					),
 					'callback' => [ $this, 'delete_test_orders' ],
@@ -172,7 +172,7 @@ class WC_Payments_Status {
 			$test_orders = array_filter( $test_orders, [ $this, 'is_deletable_test_order' ] );
 
 			if ( empty( $test_orders ) ) {
-				return __( 'No verified test orders found.', 'woocommerce-payments' );
+				return __( 'No test orders found.', 'woocommerce-payments' );
 			}
 
 			$deleted_count = 0;
@@ -219,7 +219,6 @@ class WC_Payments_Status {
 		return Order_Mode::TEST === $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY )
 			&& ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $gateway || 0 === strpos( $gateway, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' ) )
 			&& '' !== $intent_id
-			&& $intent_id === $order->get_meta( WC_Payments_Order_Service::VERIFIED_TEST_INTENT_META_KEY )
 			&& $intent_id === $order->get_transaction_id()
 			&& in_array( $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ), Intent_Status::AUTHORIZED_STATUSES, true );
 	}
