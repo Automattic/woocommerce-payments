@@ -1066,6 +1066,43 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		}
 	}
 
+	/**
+	 * A session saved by 11.3.0 carries the stamp in two legacy keys. It counts as unstamped: the next REST load
+	 * recalculates once and stamps it in the one-key format, dropping the legacy keys, and the load after trusts it.
+	 */
+	public function test_totals_stamped_in_the_legacy_two_key_format_are_recalculated_once_and_restamped() {
+		$this->register_cart_totals_currency_hooks();
+		$this->add_product_to_cart();
+
+		try {
+			WC()->session->__unset( MultiCurrency::CART_TOTALS_STAMP_SESSION_KEY );
+			WC()->session->set( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY, Currency_Code::UNITED_STATES_DOLLAR );
+			WC()->session->set( MultiCurrency::CART_TOTALS_HASH_SESSION_KEY, md5( (string) wp_json_encode( WC()->session->get( 'cart_totals' ) ) ) );
+
+			$load = function () {
+				$this->start_new_request();
+				return $this->as_request(
+					'rest_filter',
+					function () {
+						return $this->count_recalculations_during(
+							function () {
+								$this->reload_cart_from_session();
+							}
+						);
+					}
+				);
+			};
+
+			$this->assertSame( 1, $load() );
+			$this->assertSame( 'USD', $this->get_stamped_currency() );
+			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_CURRENCY_SESSION_KEY ) );
+			$this->assertNull( WC()->session->get( MultiCurrency::CART_TOTALS_HASH_SESSION_KEY ) );
+			$this->assertSame( 0, $load() );
+		} finally {
+			WC()->cart->empty_cart();
+		}
+	}
+
 	public function provider_rest_request_kinds(): array {
 		return [
 			'REST API URL'         => [ 'rest_filter' ],
