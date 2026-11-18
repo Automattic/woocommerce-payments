@@ -332,11 +332,6 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 					backgroundColor: '#ffffff',
 				},
-				'.Error': {
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-				},
 			},
 			labels: 'above',
 		} );
@@ -612,7 +607,7 @@ describe( 'getAppearance card field error text', () => {
 		expect( appearance.rules ).not.toHaveProperty( [ '.Error' ] );
 	} );
 
-	test( 'keeps the Stripe error color when the theme gives error text the normal text color', () => {
+	test( 'keeps the Stripe error style when the theme gives error text the normal text color', () => {
 		renderBlocksCheckout();
 		addStyles( `
 			.wc-block-components-text-input { color: rgb(51, 51, 51); }
@@ -627,10 +622,7 @@ describe( 'getAppearance card field error text', () => {
 			document
 		);
 
-		expect( appearance.rules[ '.Error' ] ).toMatchObject( {
-			fontSize: '14px',
-		} );
-		expect( appearance.rules[ '.Error' ] ).not.toHaveProperty( 'color' );
+		expect( appearance.rules ).not.toHaveProperty( [ '.Error' ] );
 	} );
 
 	test( 'classic checkout: .Error uses the WooCommerce inline error style', () => {

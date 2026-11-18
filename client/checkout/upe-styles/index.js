@@ -770,15 +770,15 @@ export const getAppearance = (
 		scope
 	);
 
-	const errorRules = getFieldStyles(
+	let errorRules = getFieldStyles(
 		selectors.hiddenError,
 		'.Error',
 		null,
 		scope
 	);
-	// Error text styled like normal text means the theme doesn't style it: keep Stripe's error color.
+	// Error text colored like normal text means the theme doesn't style it: keep Stripe's error style.
 	if ( errorRules.color && errorRules.color === paragraphRules.color ) {
-		delete errorRules.color;
+		errorRules = {};
 	}
 
 	const tabRules = getFieldStyles(
