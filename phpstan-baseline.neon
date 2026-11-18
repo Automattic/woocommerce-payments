@@ -1135,6 +1135,12 @@ parameters:
 			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
 
 		-
+			rawMessage: 'Call to internal static method Automattic\WooCommerce\StoreApi\StoreApi::container() from outside its root namespace Automattic.'
+			identifier: staticMethod.internal
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
 			rawMessage: Negated boolean expression is always false.
 			identifier: booleanNot.alwaysFalse
 			count: 1

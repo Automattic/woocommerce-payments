@@ -34,10 +34,10 @@ const getTestMatch = ( group: string, branch: string ) => {
 	if ( group === 'blocks' ) {
 		// For blocks group, look in wcpay directory - actual @blocks tag filtering happens via grep config
 		const wcpayTestDir = buildTestDir( 'wcpay', branch );
-		return new RegExp( `${ wcpayTestDir }\/.*\.spec\.ts` );
+		return new RegExp( `${ wcpayTestDir }\/.*\\.spec\\.ts` );
 	}
 
-	return new RegExp( `${ testDir }\/.*\.spec\.ts` );
+	return new RegExp( `${ testDir }\/.*\\.spec\\.ts` );
 };
 
 const getBaseUrl = () => {

@@ -1,5 +1,8 @@
 name: QIT E2E Tests
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:

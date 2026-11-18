@@ -1,5 +1,8 @@
 name: "Release - Create release PRs"
 
+permissions:
+  contents: read
+
 # This action will run inside the release code freeze workflow or when it is triggered manually
 on:
   workflow_call:
@@ -60,6 +63,9 @@ defaults:
 
 jobs:
   prepare-release:
+    permissions:
+      contents: write
+      pull-requests: write
     name: "Prepare a stable release"
     runs-on: ubuntu-latest
     outputs:
