@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid loading BNPL messaging when no selected method is active

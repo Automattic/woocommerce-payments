@@ -210,3 +210,35 @@ test.describe(
 		} );
 	}
 );
+
+test.describe(
+	'Shopper > Checkout > Retry after failure without page refresh',
+	{ tag: [ '@shopper', '@critical' ] },
+	() => {
+		test.beforeEach( async ( { customerPage } ) => {
+			await shopper.emptyCart( customerPage );
+			await shopper.addToCartFromShopPage( customerPage );
+		} );
+
+		test( 'should successfully complete order after retrying with a valid card without refreshing the page', async ( {
+			customerPage,
+		} ) => {
+			await shopper.setupCheckout( customerPage );
+			await shopper.selectPaymentMethod( customerPage );
+
+			// First attempt: declined card.
+			await shopper.fillCardDetails( customerPage, config.cards.declined );
+			await shopper.placeOrder( customerPage );
+			await expect(
+				customerPage.getByText( 'Error: Your card was declined.' )
+			).toBeVisible();
+
+			// Second attempt: valid card, same page, no refresh.
+			await shopper.fillCardDetails( customerPage, config.cards.basic );
+			await shopper.placeOrder( customerPage );
+			await expect(
+				customerPage.getByText( 'Order received' ).first()
+			).toBeVisible();
+		} );
+	}
+);

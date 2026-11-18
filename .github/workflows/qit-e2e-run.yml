@@ -1,5 +1,8 @@
 name: QIT E2E Tests - Run
 
+permissions:
+  contents: read
+
 on:
   workflow_call:
     inputs:
