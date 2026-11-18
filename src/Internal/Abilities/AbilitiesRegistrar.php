@@ -16,8 +16,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * Registers WooPayments read and write abilities under the shared
  * `woocommerce` category.
- * All abilities gate on `manage_woocommerce` and are gated by the
- * `woocommerce_payments_abilities_enabled` filter (default `false`).
+ * All abilities gate on `manage_woocommerce`. Read abilities are registered
+ * by default (`woocommerce_payments_read_abilities_enabled`); write abilities
+ * are opt-in (`woocommerce_payments_write_abilities_enabled`). The deprecated
+ * `woocommerce_payments_abilities_enabled` filter still toggles both.
  *
  * Delegation errors are logged under the `woopayments-abilities` source.
  */
@@ -47,11 +49,11 @@ class AbilitiesRegistrar {
 	];
 
 	/**
-	 * Ability definition classes appended to Woo Core's loader.
+	 * Read-only ability definition classes, registered by default.
 	 *
 	 * @var class-string<AbilityDefinition>[]
 	 */
-	private const ABILITY_CLASSES = [
+	private const READ_ABILITY_CLASSES = [
 		\WCPay\Internal\Abilities\Domain\GetAccount::class,
 		\WCPay\Internal\Abilities\Domain\GetDepositsOverview::class,
 		\WCPay\Internal\Abilities\Domain\GetActiveLoanSummary::class,
@@ -67,14 +69,30 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetDisputes::class,
 		\WCPay\Internal\Abilities\Domain\GetAuthorizations::class,
 		\WCPay\Internal\Abilities\Domain\GetDeposits::class,
-		\WCPay\Internal\Abilities\Domain\RefundCharge::class,
-		\WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence::class,
-		\WCPay\Internal\Abilities\Domain\AcceptDispute::class,
-		\WCPay\Internal\Abilities\Domain\UploadDisputeEvidenceFile::class,
 		\WCPay\Internal\Abilities\Domain\GetBalance::class,
 		\WCPay\Internal\Abilities\Domain\GetFraudOutcomes::class,
 		\WCPay\Internal\Abilities\Domain\GetFeesSummary::class,
 	];
+
+	/**
+	 * Write ability definition classes (annotated `readonly => false`),
+	 * registered only when explicitly enabled.
+	 *
+	 * @var class-string<AbilityDefinition>[]
+	 */
+	private const WRITE_ABILITY_CLASSES = [
+		\WCPay\Internal\Abilities\Domain\RefundCharge::class,
+		\WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence::class,
+		\WCPay\Internal\Abilities\Domain\AcceptDispute::class,
+		\WCPay\Internal\Abilities\Domain\UploadDisputeEvidenceFile::class,
+	];
+
+	/**
+	 * Ability classes enabled by the filters evaluated in `init()`.
+	 *
+	 * @var class-string<AbilityDefinition>[]
+	 */
+	private static $enabled_classes = [];
 
 	/**
 	 * Initialize the abilities registration.
@@ -82,15 +100,65 @@ class AbilitiesRegistrar {
 	 * @return void
 	 */
 	public static function init() {
+		$read_enabled  = true;
+		$write_enabled = false;
+
+		// Only consult the deprecated filter when something is hooked to it, so
+		// its `false` default does not switch off the new read default.
+		if ( has_filter( 'woocommerce_payments_abilities_enabled' ) ) {
+			/**
+			 * Filter whether WooPayments' Abilities API registrations are active.
+			 *
+			 * Any value other than `false` enables both read and write abilities,
+			 * and `false` disables both. Both remain overridable by the filters below.
+			 *
+			 * @since 10.8.0
+			 * @deprecated 11.4.0 Read abilities are enabled by default. Use `woocommerce_payments_write_abilities_enabled`
+			 *                    to enable write abilities, or `woocommerce_payments_read_abilities_enabled` to disable read abilities.
+			 *
+			 * @param bool $enabled Whether to register WooPayments abilities. Default false.
+			 * @return bool
+			 */
+			$legacy_enabled = false !== apply_filters_deprecated(
+				'woocommerce_payments_abilities_enabled',
+				[ false ],
+				'11.4.0',
+				'woocommerce_payments_read_abilities_enabled and woocommerce_payments_write_abilities_enabled'
+			);
+			$read_enabled   = $legacy_enabled;
+			$write_enabled  = $legacy_enabled;
+		}
+
 		/**
-		 * Filter whether WooPayments' Abilities API registrations are active.
+		 * Filter whether WooPayments' read-only abilities are registered.
 		 *
-		 * @since 10.8.0
+		 * @since 11.4.0
 		 *
-		 * @param bool $enabled Whether to register WooPayments abilities. Default false.
+		 * @param bool $enabled Whether to register read-only abilities. Default true,
+		 *                      or the result of the deprecated `woocommerce_payments_abilities_enabled` filter when it is used.
 		 * @return bool
 		 */
-		if ( false === apply_filters( 'woocommerce_payments_abilities_enabled', false ) ) {
+		$read_enabled = self::to_bool( apply_filters( 'woocommerce_payments_read_abilities_enabled', $read_enabled ), $read_enabled );
+
+		/**
+		 * Filter whether WooPayments' write abilities are registered. Write
+		 * abilities perform consequential actions, such as refunds and
+		 * dispute responses.
+		 *
+		 * @since 11.4.0
+		 *
+		 * @param bool $enabled Whether to register write abilities. Default false,
+		 *                      or the result of the deprecated `woocommerce_payments_abilities_enabled` filter when it is used.
+		 * @return bool
+		 */
+		$write_enabled = self::to_bool( apply_filters( 'woocommerce_payments_write_abilities_enabled', $write_enabled ), $write_enabled );
+
+		self::$enabled_classes = array_merge(
+			$read_enabled ? self::READ_ABILITY_CLASSES : [],
+			$write_enabled ? self::WRITE_ABILITY_CLASSES : []
+		);
+
+		if ( [] === self::$enabled_classes ) {
 			return;
 		}
 
@@ -106,7 +174,7 @@ class AbilitiesRegistrar {
 	 * @return array
 	 */
 	public static function append_classes( array $classes ): array {
-		return array_merge( $classes, self::ABILITY_CLASSES );
+		return array_merge( $classes, self::$enabled_classes );
 	}
 
 	/**
@@ -171,6 +239,19 @@ class AbilitiesRegistrar {
 		}
 
 		return is_array( $response ) ? $response : [];
+	}
+
+	/**
+	 * Coerce a filtered toggle to a boolean, falling back to the default for
+	 * values that are not boolean-like (for example arrays or objects).
+	 *
+	 * @param mixed $value         Filtered value.
+	 * @param bool  $default_value Value to use when `$value` is not boolean-like.
+	 * @return bool
+	 */
+	private static function to_bool( $value, bool $default_value ): bool {
+		$bool = filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+		return null === $bool ? $default_value : $bool;
 	}
 
 	/**
