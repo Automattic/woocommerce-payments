@@ -155,7 +155,10 @@ require __DIR__ . '/../WCPAY_UnitTestCase.php';
 
 // WooCommerce 7.6 omits HPOS tables on install. Inside a test transaction WordPress would create
 // temporary tables, which MySQL cannot join twice when loading an order's billing and shipping addresses.
-wc_get_container()->get( DataSynchronizer::class )->create_database_tables();
+$data_synchronizer = wc_get_container()->get( DataSynchronizer::class );
+if ( ! $data_synchronizer->check_orders_table_exists() ) {
+	$data_synchronizer->create_database_tables();
+}
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
