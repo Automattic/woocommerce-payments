@@ -6,7 +6,6 @@
  */
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
-use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request;
@@ -400,7 +399,6 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * test. With that caching, even a forced read of an order's meta answers from this process's cache.
 	 */
 	protected function store_orders_in_hpos_with_data_caching(): void {
-		wc_get_container()->get( DataSynchronizer::class )->create_database_tables();
 		$this->set_order_storage( true );
 		// HPOS data caching arrived after WooCommerce 7.6, the oldest version supported.
 		if ( defined( CustomOrdersTableController::class . '::HPOS_DATASTORE_CACHING_ENABLED_OPTION' ) ) {
