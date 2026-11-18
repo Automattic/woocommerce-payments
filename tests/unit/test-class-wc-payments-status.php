@@ -258,14 +258,9 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	 * @param bool   $hpos Whether to use HPOS.
 	 */
 	public function test_delete_test_orders_requires_current_accepted_payment( $gateway, $mode, $intent_status, $intent_id, $transaction_id, $order_status, $deleted, $hpos, $proof = null ) {
-		$storage_filter = static function () use ( $hpos ) {
-			return $hpos ? 'yes' : 'no';
-		};
-		add_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
-		add_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+		$this->set_order_storage( $hpos );
 
 		try {
-			$this->assertSame( $hpos, \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() );
 			$order = wc_create_order();
 			$order->set_payment_method( $gateway );
 			$order->set_status( $order_status );
@@ -294,8 +289,6 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 			if ( isset( $order_id ) && wc_get_order( $order_id ) ) {
 				wc_get_order( $order_id )->delete( true );
 			}
-			remove_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
-			remove_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
 		}
 	}
 
@@ -356,14 +349,9 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	 * @param bool $hpos Whether to use HPOS.
 	 */
 	public function test_delete_test_orders_preserves_tagged_refunds( $hpos ) {
-		$storage_filter = static function () use ( $hpos ) {
-			return $hpos ? 'yes' : 'no';
-		};
-		add_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
-		add_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+		$this->set_order_storage( $hpos );
 
 		try {
-			$this->assertSame( $hpos, \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() );
 			$order = wc_create_order();
 			$order->set_payment_method( 'cod' );
 			$order->save();
@@ -382,8 +370,6 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 			if ( isset( $order ) ) {
 				$order->delete( true );
 			}
-			remove_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
-			remove_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
 		}
 	}
 
@@ -403,11 +389,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider provide_order_storage_modes
 	 */
 	public function test_delete_test_orders_uses_persisted_remote_mode( bool $hpos ): void {
-		$storage_filter = static function () use ( $hpos ) {
-			return $hpos ? 'yes' : 'no';
-		};
-		add_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
-		add_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
+		$this->set_order_storage( $hpos );
 		$orders  = [];
 		$service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		try {
@@ -430,8 +412,6 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 					wc_get_order( $id )->delete( true );
 				}
 			}
-			remove_filter( 'pre_option_woocommerce_custom_orders_table_enabled', $storage_filter );
-			remove_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $storage_filter );
 		}
 	}
 
