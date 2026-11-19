@@ -5307,6 +5307,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
+		return $this->filter_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check, false );
+	}
+
+	/**
+	 * Returns the payment method types that would function with the current checkout if the order total were within their amount limits.
+	 *
+	 * Block checkout registers payment methods once, on page load, so a method hidden there by its amount limit
+	 * could never appear after the billing country or the total changes. The available gateways list then decides
+	 * whether the method is shown.
+	 *
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() {
+		return $this->filter_payment_method_ids_enabled_at_checkout( null, false, true );
+	}
+
+	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout.
+	 *
+	 * @param string|null $order_id             Order ID.
+	 * @param bool        $force_currency_check Whether the currency check is required even if is_admin().
+	 * @param bool        $skip_amount_limits   Whether to ignore the payment methods' amount limits.
+	 *
+	 * @return string[]
+	 */
+	private function filter_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check, $skip_amount_limits ) {
 		$upe_enabled_payment_methods = $this->get_upe_enabled_payment_method_ids_based_on_manual_capture();
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			$force_currency_check = true;
@@ -5331,7 +5357,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check || $skip_amount_limits ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;

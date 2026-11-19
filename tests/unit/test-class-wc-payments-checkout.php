@@ -7,11 +7,14 @@
 
 use WCPay\WC_Payments_Checkout;
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Payment_Method;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
@@ -116,6 +119,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'get_icon_url',
 					'get_payment_method_ids_enabled_at_checkout',
 					'get_payment_method_ids_enabled_at_checkout_filtered_by_fees',
+					'get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits',
 					'is_subscription_item_in_cart',
 					'wc_payments_get_payment_method_by_id',
 					'display_gateway_html',
@@ -1007,6 +1011,53 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		// filters it out based on currency.
 		$this->assertArrayHasKey( 'card', $config );
 		$this->assertArrayNotHasKey( 'link', $config );
+	}
+
+	public function test_get_amount_limited_payment_method_config_returns_only_methods_held_back_by_amount_limits() {
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( Country_Code::GERMANY );
+
+		// Klarna is over its limit for this cart; Apple Pay is an express method and stays out of the list.
+		$this->mock_wcpay_gateway
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ Payment_Method::CARD ] );
+		$this->mock_wcpay_gateway
+			->method( 'get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits' )
+			->willReturn( [ Payment_Method::CARD, Payment_Method::KLARNA, Payment_Method::APPLE_PAY ] );
+
+		$payment_methods = [
+			Payment_Method::CARD      => new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class ),
+			Payment_Method::KLARNA    => new UPE_Payment_Method( $this->mock_token_service, KlarnaDefinition::class ),
+			Payment_Method::APPLE_PAY => new UPE_Payment_Method( $this->mock_token_service, ApplePayDefinition::class ),
+		];
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturnCallback(
+				static function ( $payment_method_id ) use ( $payment_methods ) {
+					return $payment_methods[ $payment_method_id ] ?? false;
+				}
+			);
+
+		$config = $this->system_under_test->get_amount_limited_payment_method_config();
+
+		$this->assertSame( [ 'klarna' ], array_keys( $config ) );
+		$this->assertSame( 'woocommerce_payments_klarna', $config['klarna']['gatewayId'] );
+	}
+
+	public function test_get_amount_limited_payment_method_config_is_empty_when_no_method_is_held_back() {
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( Country_Code::GERMANY );
+
+		$this->mock_wcpay_gateway
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ Payment_Method::CARD, Payment_Method::KLARNA ] );
+		$this->mock_wcpay_gateway
+			->method( 'get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits' )
+			->willReturn( [ Payment_Method::CARD, Payment_Method::KLARNA ] );
+
+		$this->assertSame( [], $this->system_under_test->get_amount_limited_payment_method_config() );
 	}
 
 	public function test_add_payment_methods_config_to_fragments_returns_unchanged_when_payment_fragment_missing() {

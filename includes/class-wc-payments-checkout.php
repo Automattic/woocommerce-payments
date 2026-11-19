@@ -388,6 +388,38 @@ class WC_Payments_Checkout {
 	}
 
 	/**
+	 * Gets the config for payment methods left out of `get_enabled_payment_method_config()` only because the
+	 * order total is outside their amount limits (e.g. Klarna over the customer country's maximum).
+	 *
+	 * Block checkout registers these too, so they can appear once the billing country or total brings the order
+	 * within limits. The Store API's available payment methods still decide whether each one is shown.
+	 *
+	 * @return array
+	 */
+	public function get_amount_limited_payment_method_config() {
+		$settings = [];
+
+		$amount_limited_payment_methods = array_diff(
+			$this->gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits(),
+			$this->gateway->get_payment_method_ids_enabled_at_checkout()
+		);
+
+		foreach ( $amount_limited_payment_methods as $payment_method_id ) {
+			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+			if ( ! $payment_method || $payment_method->is_express_checkout() ) {
+				continue;
+			}
+
+			$config = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
+			if ( [] !== $config ) {
+				$settings[ $payment_method_id ] = $config;
+			}
+		}
+
+		return $settings;
+	}
+
+	/**
 	 * Adds dynamic payment fields config to the update_order_review AJAX response fragments.
 	 *
 	 * This allows the frontend to refresh the available payment methods and currency
