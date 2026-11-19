@@ -283,6 +283,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE = 'upe_process_redirect_retryable_decline';
 
+	const PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE = 'upe_process_redirect_cancelled_intent';
+
 	/**
 	 * Payment provider error code and decline code combinations after which the customer
 	 * can retry the payment with a different payment method, so the order is left in
@@ -1475,7 +1477,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		// A subscription only reaches the gateway to change its payment method; refuse any other pay-for-order
-		// request for one. Returned as a failure, not thrown: a subscription rejects update_status( 'failed' ) in the catch.
+		// request for one. Returned as a failure, not thrown, so the catch can't set the subscription to failed.
 		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) && ! $this->is_changing_payment_method_for_subscription() ) {
 			Logger::error( sprintf( 'Refused to process a payment for subscription #%d outside of the change payment method flow.', $order->get_id() ) );
 			wc_add_notice( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ), 'error' );
@@ -1486,8 +1488,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		// A card change passes the subscription itself. It lasts for years, and reaching the limit would set it
-		// to failed in the catch below, so its declines count in the session only.
+		// A card change passes the subscription itself. It lasts for years, so its declines count in the session only.
 		$rate_limited_order = function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ? null : $order;
 
 		// A subscription keeps the intent of its last successful card change, and nothing clears it. Remember
@@ -1644,7 +1645,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 */
 			if ( $e instanceof Process_Payment_Exception && 'duplicate_payment_amount_mismatch' === $e->get_error_code() ) {
 				$order->update_status( Order_Status::FAILED, $e->getMessage() );
-			} elseif ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+			} elseif ( ! $blocked_by_fraud_rules && ! $this->is_changing_payment_method_for_subscription( $order ) && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+				// A subscription has no failed status: WooCommerce would store it as pending, which stops its renewals.
 				$order->update_status( Order_Status::FAILED );
 			}
 
@@ -2717,6 +2719,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$error                  = $intent->get_last_setup_error();
 			}
 
+			// Cancelling an order cancels a payment still open, but the shopper can approve it at the provider
+			// and come back. The order already notes the cancel, and the shopper must not see it as received.
+			// A payment cancelled some other way still cancels its order below.
+			if ( Intent_Status::CANCELED === $status && $order->has_status( Order_Status::CANCELLED ) ) {
+				throw new Process_Payment_Exception(
+					__( 'This order was cancelled before its payment was completed, so you have not been charged.', 'woocommerce-payments' ),
+					self::PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE
+				);
+			}
+
 			if ( ! empty( $error ) ) {
 				Logger::log( 'Error when processing payment: ' . ( $error['message'] ?? $error['code'] ?? '' ) );
 				$error_code = $this->is_retryable_decline( $error )
@@ -2782,6 +2794,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE === $e->get_error_code();
 
+			$is_cancelled_intent =
+				$e instanceof Process_Payment_Exception
+				&& self::PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE === $e->get_error_code();
+
 			if ( $is_retryable_decline && ! empty( $error ) ) {
 				// The payment provider declined the payment, but the customer can retry with a
 				// different payment method, so the order is left pending and the provider's error
@@ -2797,7 +2813,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
 			// Because the outcome of the payment intent is for another order, not for the order processed here.
 			// Retryable declines also leave the order pending so the customer can try a different payment method.
-			if ( ! $is_order_id_mismatched_exception && ! $is_retryable_decline ) {
+			// The cancelled order of a cancelled payment stays as it is.
+			if ( ! $is_order_id_mismatched_exception && ! $is_retryable_decline && ! $is_cancelled_intent ) {
 				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
 				$status    = $status ?? null;
 				$charge_id = $charge_id ?? null;
@@ -4705,6 +4722,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
+
+				// A new payment for the order stops the order naming an attempt left waiting, then cancels it.
+				// This request may have read the order just before that. What was fetched is about to be
+				// written to the order, and a cancelled intent would cancel the order, so the order must still
+				// name the intent now. That is read from the table, since no cache of this request knows what
+				// another one wrote, right before the first of those writes: the exchange rate above can take a
+				// request of its own.
+				if ( $intent_id !== $this->order_service->get_stored_intent_id( $order ) ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'intent_id_mismatch'
+					);
+				}
+
 				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {

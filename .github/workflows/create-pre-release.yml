@@ -1,5 +1,8 @@
 name: "Create a GH pre-release"
 
+permissions:
+  contents: read
+
 # This action will run when it is triggered manually
 on:
   workflow_dispatch:
@@ -17,6 +20,8 @@ jobs:
   create-release:
     name: "Create the pre-release"
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
 

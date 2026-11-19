@@ -1,5 +1,8 @@
 name: "Build zip file & Run release tests"
 
+permissions:
+  contents: read
+
 # This action will run inside the package creation workflows or when it is triggered manually
 on:
   workflow_call:

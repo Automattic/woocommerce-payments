@@ -1,0 +1,3 @@
+Significance: patch
+Type: fix
+Comment: Fixed WooPay preview handling of custom messages and checkout email validation.

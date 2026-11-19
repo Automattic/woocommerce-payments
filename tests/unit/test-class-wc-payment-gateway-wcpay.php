@@ -2057,6 +2057,87 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' ) );
 	}
 
+	/**
+	 * A shopper can approve a redirect payment after the order was cancelled, which cancels its payment. The
+	 * shopper is told nothing was charged instead of seeing the order received page, and the order is left as is.
+	 */
+	public function test_process_redirect_payment_with_cancelled_intent_keeps_order_cancelled_and_tells_shopper() {
+		$intent_id = 'pi_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->set_status( Order_Status::CANCELLED );
+		$order->save();
+		$notes_before = $this->get_order_notes_text( $order->get_id() );
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'   => Intent_Status::CANCELED,
+						'metadata' => [ 'order_id' => (string) $order->get_id() ],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, false );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $result_order->get_status() );
+		$this->assertSame( $notes_before, $this->get_order_notes_text( $result_order->get_id() ) );
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertSame( 'This order was cancelled before its payment was completed, so you have not been charged.', $notices['error'][0]['notice'] );
+	}
+
+	/**
+	 * A payment cancelled while its order is still pending, for example from the Stripe dashboard,
+	 * cancels the order when the shopper returns, as before.
+	 */
+	public function test_process_redirect_payment_with_cancelled_intent_cancels_pending_order() {
+		$intent_id = 'pi_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		wp_get_current_user();
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'   => Intent_Status::CANCELED,
+						'metadata' => [ 'order_id' => (string) $order->get_id() ],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$this->card_gateway->process_redirect_payment( $order, $intent_id, false );
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'cancelled', $result_order->get_status() );
+		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $this->get_order_notes_text( $result_order->get_id() ) );
+		$this->assertEmpty( WC()->session->get( 'wc_notices' )['error'] ?? [] );
+	}
+
 	public function test_process_redirect_payment_with_retryable_decline_keeps_order_pending() {
 		$error_code    = 'payment_intent_authentication_failure';
 		$error_message = 'The customer declined the payment.';
@@ -6767,6 +6848,35 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return $request;
 	}
 
+	public function test_process_payment_keeps_subscription_status_when_card_change_is_rate_limited() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_status( Order_Status::PROCESSING );
+
+		$_GET['change_payment_method'] = $order->get_id();
+		WC_Subscriptions::set_wcs_is_subscription( '__return_true' );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( true );
+
+		wc_clear_notices();
+		$failed_hook_count = did_action( 'woocommerce_payments_order_failed' );
+
+		$result = $this->card_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
+		$this->assertSame( 'processing', wc_get_order( $order->get_id() )->get_status() );
+
+		// The rest of the catch still runs for the subscription.
+		$this->assertSame( [ 'Your payment was not processed.' ], array_column( wc_get_notices( 'error' ), 'notice' ) );
+		$this->assertSame( 1, did_action( 'woocommerce_payments_order_failed' ) - $failed_hook_count );
+		$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+		$this->assertNotEmpty( preg_grep( '/too many failed transactions/', $notes ) );
+
+		wc_clear_notices();
+	}
+
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
 		$order = WC_Helper_Order::create_order();
 
@@ -8384,6 +8494,73 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
 		$this->assertSame( '1700000000', (string) $order->get_meta( WC_Payments_Order_Service::PAYMENT_DETAILS_REMOVED_META_KEY ) );
 		$this->assertMatchesRegularExpression( '/pi_earlier_attempt.*does not match any payments for this order/', $this->get_order_notes_text( $order->get_id() ) );
+	}
+
+	/**
+	 * A new payment for the order stops the order naming an attempt left waiting, then cancels it. A result
+	 * reported for that attempt can read the order just before and fetch the intent just after. It must not
+	 * write what it fetched: a cancelled intent would cancel the order the new payment is about to pay.
+	 *
+	 * The same goes for an attempt that went through while the cancel was out: the order is completed by the
+	 * retry, which looks at the attempt again, or by the webhook, not by a result for a payment the order does
+	 * not name.
+	 *
+	 * @dataProvider provider_intents_the_order_names_after_a_retry
+	 *
+	 * @param string $named_by_the_retry The intent the retry leaves on the order while the result is fetched.
+	 * @param string $fetched_status     The status the reported intent is fetched with.
+	 */
+	public function test_update_order_status_ignores_a_result_for_an_attempt_a_new_payment_replaced_meanwhile( string $named_by_the_retry, string $fetched_status ) {
+		// The hardest storage for this check: with HPOS data caching on, a forced read of the order's meta still
+		// answers from this request's cache, which the retry, in another process, cannot clear.
+		$this->store_orders_in_hpos_with_data_caching();
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_intent_id_for_order( $order, self::EARLIER_ATTEMPT_INTENT_ID );
+		$order_id = $order->get_id();
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, self::EARLIER_ATTEMPT_INTENT_ID )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturnCallback(
+				function () use ( $order_id, $named_by_the_retry, $fetched_status ) {
+					// The retry, in another request, while this one waits for the server.
+					$this->write_intent_id_in_another_request( $order_id, $named_by_the_retry );
+
+					return WC_Helper_Intention::create_intention(
+						[
+							'id'       => self::EARLIER_ATTEMPT_INTENT_ID,
+							'status'   => $fetched_status,
+							'metadata' => [ 'order_id' => $order_id ],
+						]
+					);
+				}
+			);
+
+		$response = $this->call_update_order_status( $order, self::EARLIER_ATTEMPT_INTENT_ID );
+
+		$order = wc_get_order( $order_id );
+		$this->assertArrayHasKey( 'error', $response );
+		$this->assertArrayNotHasKey( 'return_url', $response );
+		$this->assertSame( 'pending', $order->get_status() );
+		$this->assertSame( $named_by_the_retry, $this->order_service->get_stored_intent_id( $order ) );
+		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( '', $order->get_transaction_id() );
+		$this->assertMatchesRegularExpression( '/pi_earlier_attempt.*does not match any payments for this order/', $this->get_order_notes_text( $order_id ) );
+	}
+
+	/**
+	 * What the order names while a retry is under way, nothing during the cancel, then its own payment, and
+	 * the status the reported attempt is fetched with.
+	 *
+	 * @return array
+	 */
+	public function provider_intents_the_order_names_after_a_retry(): array {
+		return [
+			'nothing, while the cancel is out'             => [ '', Intent_Status::CANCELED ],
+			'the payment of the retry'                     => [ 'pi_payment_of_the_retry', Intent_Status::CANCELED ],
+			'nothing, and the attempt went through'        => [ '', Intent_Status::SUCCEEDED ],
+			'the payment of the retry, attempt authorized' => [ 'pi_payment_of_the_retry', Intent_Status::REQUIRES_CAPTURE ],
+		];
 	}
 
 	/**
