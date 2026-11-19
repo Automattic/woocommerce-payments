@@ -5711,16 +5711,16 @@
         },
         {
             "name": "woocommerce/php-stubs",
-            "version": "v2026.10.23.4",
+            "version": "v2026.11.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/php-stubs.git",
-                "reference": "71b58e28da692342af5d3ca78d9d60e72eb450b5"
+                "reference": "be4aecc0cfb19d1a871b6939e7925adb6a137413"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/71b58e28da692342af5d3ca78d9d60e72eb450b5",
-                "reference": "71b58e28da692342af5d3ca78d9d60e72eb450b5",
+                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/be4aecc0cfb19d1a871b6939e7925adb6a137413",
+                "reference": "be4aecc0cfb19d1a871b6939e7925adb6a137413",
                 "shasum": ""
             },
             "type": "library",
@@ -5739,9 +5739,9 @@
             ],
             "support": {
                 "issues": "https://github.com/woocommerce/php-stubs/issues",
-                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.10.23.4"
+                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.11.12"
             },
-            "time": "2026-10-23T21:12:23+00:00"
+            "time": "2026-11-12T03:13:52+00:00"
         },
         {
             "name": "woocommerce/qit-cli",
