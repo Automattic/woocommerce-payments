@@ -12,7 +12,7 @@ echo "Setting up WooPayments for E2E testing..."
 wp config set WP_ENVIRONMENT_TYPE development --quiet 2>/dev/null || true
 
 # Match the legacy E2E site title; the home page test and the dispute cover letter read it.
-wp option update blogname "WooPayments E2E site" --quiet 2>/dev/null || true
+wp option update blogname "WooPayments E2E site" --quiet || echo "Warning: unable to set the site title."
 
 # Enable WooPayments dev mode via constant (required for payment processing in test environment).
 wp config set WCPAY_DEV_MODE true --raw --type=constant --quiet 2>/dev/null || true

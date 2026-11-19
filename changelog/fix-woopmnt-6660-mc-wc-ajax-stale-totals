@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Multi-Currency: recalculate cart totals left in another currency before payment buttons and the mini-cart read them over wc-ajax.
