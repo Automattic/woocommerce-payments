@@ -116,44 +116,6 @@ class AbilitiesRegistrar {
 	}
 
 	/**
-	 * Ability classes enabled by the read and write filters.
-	 *
-	 * @return class-string<AbilityDefinition>[]
-	 */
-	private static function get_enabled_classes(): array {
-		/**
-		 * Filter whether WooPayments' read-only Abilities API registrations are active.
-		 *
-		 * Any value other than `false` enables the read-only abilities. Write
-		 * abilities are controlled separately by `woocommerce_payments_write_abilities_enabled`.
-		 *
-		 * @since 10.8.0
-		 * @since 11.4.0 Default changed to true, and the filter no longer enables write abilities.
-		 *
-		 * @param bool $enabled Whether to register WooPayments read-only abilities. Default true.
-		 * @return bool
-		 */
-		$read_enabled = false !== apply_filters( 'woocommerce_payments_abilities_enabled', true );
-
-		/**
-		 * Filter whether WooPayments' write abilities are registered. Write
-		 * abilities perform consequential actions, such as refunds and
-		 * dispute responses.
-		 *
-		 * @since 11.4.0
-		 *
-		 * @param bool $enabled Whether to register write abilities. Default false.
-		 * @return bool
-		 */
-		$write_enabled = self::to_bool( apply_filters( 'woocommerce_payments_write_abilities_enabled', false ), false );
-
-		return array_merge(
-			$read_enabled ? self::READ_ABILITY_CLASSES : [],
-			$write_enabled ? self::WRITE_ABILITY_CLASSES : []
-		);
-	}
-
-	/**
 	 * Permission callback for every WooPayments ability — mirrors
 	 * `WC_Payments_REST_Controller::check_permission()`.
 	 *
@@ -218,16 +180,41 @@ class AbilitiesRegistrar {
 	}
 
 	/**
-	 * Coerce a filtered toggle to a boolean, falling back to the default for
-	 * values that are not boolean-like (for example arrays or objects).
+	 * Ability classes enabled by the read and write filters.
 	 *
-	 * @param mixed $value         Filtered value.
-	 * @param bool  $default_value Value to use when `$value` is not boolean-like.
-	 * @return bool
+	 * @return class-string<AbilityDefinition>[]
 	 */
-	private static function to_bool( $value, bool $default_value ): bool {
-		$bool = filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
-		return null === $bool ? $default_value : $bool;
+	private static function get_enabled_classes(): array {
+		/**
+		 * Filter whether WooPayments' read-only Abilities API registrations are active.
+		 *
+		 * Any value other than `false` enables the read-only abilities. Write
+		 * abilities are controlled separately by `woocommerce_payments_write_abilities_enabled`.
+		 *
+		 * @since 10.8.0
+		 * @since 11.4.0 Default changed to true, and the filter no longer enables write abilities.
+		 *
+		 * @param bool $enabled Whether to register WooPayments read-only abilities. Default true.
+		 * @return bool
+		 */
+		$read_enabled = false !== apply_filters( 'woocommerce_payments_abilities_enabled', true );
+
+		/**
+		 * Filter whether WooPayments' write abilities are registered. Write
+		 * abilities perform consequential actions, such as refunds and
+		 * dispute responses. Only `true` enables them.
+		 *
+		 * @since 11.4.0
+		 *
+		 * @param bool $enabled Whether to register write abilities. Default false.
+		 * @return bool
+		 */
+		$write_enabled = true === apply_filters( 'woocommerce_payments_write_abilities_enabled', false );
+
+		return array_merge(
+			$read_enabled ? self::READ_ABILITY_CLASSES : [],
+			$write_enabled ? self::WRITE_ABILITY_CLASSES : []
+		);
 	}
 
 	/**

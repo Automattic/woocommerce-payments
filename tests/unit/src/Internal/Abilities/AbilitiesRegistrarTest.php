@@ -86,6 +86,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		AbilitiesRegistrar::init();
 		add_filter( self::READ_FILTER, '__return_false' );
 
+		/** This filter is documented in WooCommerce's AbilitiesLoader. */
 		$classes = apply_filters( 'woocommerce_ability_definition_classes', [] );
 
 		$this->assertNotContains( 'WCPay\\Internal\\Abilities\\Domain\\GetTransactions', $classes );
@@ -100,6 +101,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		AbilitiesRegistrar::init();
 		add_filter( self::WRITE_FILTER, '__return_true' );
 
+		/** This filter is documented in WooCommerce's AbilitiesLoader. */
 		$classes = apply_filters( 'woocommerce_ability_definition_classes', [] );
 
 		$this->assertContains( 'WCPay\\Internal\\Abilities\\Domain\\GetTransactions', $classes );
@@ -184,29 +186,31 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Filter callbacks can return anything; non-boolean-like values fall
-	 * back to the default rather than enabling write abilities.
+	 * Write abilities can refund charges and accept disputes, so a truthy
+	 * value other than `true` must not enable them.
+	 *
+	 * @dataProvider provider_truthy_non_true_values
+	 *
+	 * @param mixed $value Value returned by the write filter.
 	 */
-	public function test_non_boolean_like_write_filter_value_keeps_default(): void {
+	public function test_truthy_non_true_write_filter_value_does_not_enable_write_abilities( $value ): void {
 		add_filter(
 			self::WRITE_FILTER,
-			function () {
-				return [ 'yes' ];
+			function () use ( $value ) {
+				return $value;
 			}
 		);
 
 		$this->assertNotContains( 'woocommerce-payments/refund-charge', $this->get_enabled_ability_names() );
 	}
 
-	public function test_boolean_like_string_write_filter_value_is_honored(): void {
-		add_filter(
-			self::WRITE_FILTER,
-			function () {
-				return 'no';
-			}
-		);
-
-		$this->assertNotContains( 'woocommerce-payments/refund-charge', $this->get_enabled_ability_names() );
+	public function provider_truthy_non_true_values(): array {
+		return [
+			'yes string' => [ 'yes' ],
+			'one'        => [ 1 ],
+			'one string' => [ '1' ],
+			'array'      => [ [ 'yes' ] ],
+		];
 	}
 
 	public function test_current_user_can_manage_woocommerce_matches_capability(): void {

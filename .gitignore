@@ -120,6 +120,3 @@ bin/jurassictube/
 
 # Playwright MCP browser-automation artifacts
 .playwright-mcp/
-
-# pnpm content-addressable store
-.pnpm-store/
