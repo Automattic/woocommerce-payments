@@ -8,7 +8,6 @@
 namespace WCPay;
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use Exception;
 use WC_Order;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
@@ -16,6 +15,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\WooPay\WooPay_Utilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -83,7 +83,9 @@ class Duplicate_Payment_Prevention_Service {
 	 *
 	 * @param WC_Order $order Current order to check.
 	 *
-	 * @return array|void A successful response in case the attached intent was successful, null if none.
+	 * @return array|void A successful response in case the attached intent was successful, a failed one when an
+	 *                    earlier attempt still waiting for the shopper could not be cancelled and the request
+	 *                    brings no payment of its own, null otherwise.
 	 * @throws Process_Payment_Exception When order amount doesn't match the charged amount.
 	 */
 	public function check_payment_intent_attached_to_order_succeeded( WC_Order $order ) {
@@ -98,28 +100,60 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
-		try {
-			$request = Get_Intention::create( $intent_id );
-			$request->set_hook_args( $order );
-			/** @var \WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-			$intent        = $request->send();
-			$intent_status = $intent->get_status();
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to fetch attached payment intent: ' . $e );
+		$intent = $this->fetch_attached_intent( $intent_id, $order );
+		if ( null === $intent || ! $this->is_intent_for_order( $intent, $order ) ) {
 			return;
 		}
 
+		// An attempt left waiting for 3DS or a redirect can still be completed after the payment that is about
+		// to start, which would charge the shopper twice.
+		if ( Intent_Status::REQUIRES_ACTION === $intent->get_status() && $this->can_replace_unfinished_attempt( $order, $intent_id ) ) {
+			if ( $this->order_service->cancel_attempt_replaced_by_new_payment( $order, $intent_id ) ) {
+				return;
+			}
+
+			// The cancel fails when the shopper finished the attempt in the meantime, so look again before
+			// charging. The order has stopped naming the attempt, and names it again unless it turns out to be
+			// cancelled: a 3DS result reported for a cancelled intent the order names would cancel the order.
+			try {
+				$intent = $this->fetch_attached_intent( $intent_id, $order );
+			} catch ( \Error $e ) {
+				// Nothing may skip what follows: the order has stopped naming the attempt, and must name it again.
+				Logger::error( 'Failed to fetch attached payment intent after a failed cancel: ' . $e );
+				$intent = null;
+			}
+			if ( null !== $intent && Intent_Status::CANCELED === $intent->get_status() ) {
+				// The cancel call errored after it went through, or another request cancelled the attempt first.
+				$this->order_service->detach_cancelled_attempt( $order, $intent_id );
+				return;
+			}
+
+			// A payment that went through settles the order below, one that failed can no longer be completed,
+			// and one that is still open, or can't be read, is there for the shopper's next try to cancel.
+			$this->order_service->reattach_attempt( $order, $intent_id );
+
+			// An attempt that is still open, or can't be read, could yet charge the shopper.
+			if ( null === $intent || Intent_Status::REQUIRES_ACTION === $intent->get_status() ) {
+				if ( '' === $this->get_posted_woopay_intent_id() ) {
+					// The new payment waits for the shopper's next try.
+					return $this->refuse_payment_while_attempt_is_open( $order, $intent_id );
+				}
+
+				// WooPay charged the payment it posts before this request, so holding the request back prevents
+				// nothing and leaves the shopper charged with no order. If the earlier attempt completes too,
+				// its webhook finds the order settled and flags it for a refund.
+				$this->add_note_once(
+					$order,
+					/* translators: %1: the ID of a WooPayments payment. */
+					__( 'The earlier WooPayments payment <code>%1$s</code> could not be cancelled before a WooPay payment for this order. If it still completes, it will need a refund.', 'woocommerce-payments' ),
+					$intent_id
+				);
+				return;
+			}
+		}
+
+		$intent_status = $intent->get_status();
 		if ( ! $intent->is_authorized() ) {
-			return;
-		}
-
-		$intent_meta_order_id_raw     = $intent->get_metadata()['order_id'] ?? '';
-		$intent_meta_order_id         = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-		$intent_meta_order_number_raw = $intent->get_metadata()['order_number'] ?? '';
-		$intent_meta_order_number     = is_numeric( $intent_meta_order_number_raw ) ? intval( $intent_meta_order_number_raw ) : 0;
-		$paid_on_woopay               = filter_var( $intent->get_metadata()['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN );
-		$is_woopay_order              = $order->get_id() === $intent_meta_order_number;
-		if ( ! ( $paid_on_woopay && $is_woopay_order ) && $intent_meta_order_id !== $order->get_id() ) {
 			return;
 		}
 
@@ -158,6 +192,157 @@ class Duplicate_Payment_Prevention_Service {
 		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
 			'result'   => 'success',
 			'redirect' => $return_url,
+		];
+	}
+
+	/**
+	 * Fetches the payment intent attached to an order.
+	 *
+	 * @param string   $intent_id The intent attached to the order.
+	 * @param WC_Order $order     The order.
+	 *
+	 * @return \WC_Payments_API_Payment_Intention|null The intent, or null when fetching it threw an exception. A
+	 *                                                 PHP error is not caught here: a response that is not an
+	 *                                                 intent says nothing about the attached payment.
+	 */
+	private function fetch_attached_intent( string $intent_id, WC_Order $order ) {
+		try {
+			$request = Get_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+
+			return $request->send();
+		} catch ( \Exception $e ) {
+			Logger::error( 'Failed to fetch attached payment intent: ' . $e );
+			return null;
+		}
+	}
+
+	/**
+	 * Whether an intent was created for an order, going by the intent's own metadata.
+	 *
+	 * An order can store an intent created for another order, so the ID on the order is not enough.
+	 *
+	 * @param \WC_Payments_API_Payment_Intention $intent The intent attached to the order.
+	 * @param WC_Order                           $order  The order.
+	 *
+	 * @return bool
+	 */
+	private function is_intent_for_order( $intent, WC_Order $order ): bool {
+		$metadata                     = $intent->get_metadata();
+		$intent_meta_order_id_raw     = $metadata['order_id'] ?? '';
+		$intent_meta_order_id         = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+		$intent_meta_order_number_raw = $metadata['order_number'] ?? '';
+		$intent_meta_order_number     = is_numeric( $intent_meta_order_number_raw ) ? intval( $intent_meta_order_number_raw ) : 0;
+		$paid_on_woopay               = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		$is_woopay_order              = $order->get_id() === $intent_meta_order_number;
+
+		return ( $paid_on_woopay && $is_woopay_order ) || $intent_meta_order_id === $order->get_id();
+	}
+
+	/**
+	 * Whether a new payment may cancel the attempt of the order's intent: the shopper can still pay the order,
+	 * and the intent is not the payment the request itself brings.
+	 *
+	 * @param WC_Order $order     The order being paid.
+	 * @param string   $intent_id The intent attached to the order.
+	 *
+	 * @return bool
+	 */
+	private function can_replace_unfinished_attempt( WC_Order $order, string $intent_id ): bool {
+		if ( ! $order->has_status( $this->get_statuses_a_retry_cancels_in( $order ) ) ) {
+			return false;
+		}
+
+		// WooPay brings its own intent, which the gateway then uses for this payment.
+		return $this->get_posted_woopay_intent_id() !== $intent_id;
+	}
+
+	/**
+	 * The order statuses in which a new payment cancels an attempt left waiting for the shopper: those in
+	 * which the shopper can pay the order again.
+	 *
+	 * Pending and failed always count: the classic checkout takes an order up again in them whatever a store
+	 * declares, and a filter callback can replace the list as well as add to it. A status the store adds counts
+	 * too, as a custom "awaiting payment" status does: an order created in it keeps it while a challenge is
+	 * open. On hold never counts. An order on hold with an intent waiting for the shopper is waiting on a
+	 * voucher, which stays payable.
+	 *
+	 * @param WC_Order $order The order being paid.
+	 *
+	 * @return string[] Status slugs, without the `wc-` prefix.
+	 */
+	private function get_statuses_a_retry_cancels_in( WC_Order $order ): array {
+		$statuses = [ Order_Status::PENDING, Order_Status::FAILED ];
+
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
+		$declared = apply_filters( 'woocommerce_valid_order_statuses_for_payment', $statuses, $order );
+
+		// Any callback can return anything.
+		$declared = array_filter( (array) $declared, 'is_string' );
+
+		return array_values( array_diff( array_unique( array_merge( $statuses, $declared ) ), [ Order_Status::ON_HOLD ] ) );
+	}
+
+	/**
+	 * The intent a request brings with it, as WooPay does for a payment it has already taken.
+	 *
+	 * @return string The intent ID, or an empty string when the request posts none.
+	 */
+	private function get_posted_woopay_intent_id(): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$posted_intent = wp_unslash( $_POST['platform-checkout-intent'] ?? '' );
+
+		return is_string( $posted_intent ) ? WooPay_Utilities::sanitize_intent_id( $posted_intent ) : '';
+	}
+
+	/**
+	 * Adds an order note naming a WooPayments payment, unless the order already has it.
+	 *
+	 * @param WC_Order $order     The order.
+	 * @param string   $message   The translated message, with the `<code>` tag around `%1$s`.
+	 * @param string   $intent_id The payment to name.
+	 *
+	 * @return void
+	 */
+	private function add_note_once( WC_Order $order, string $message, string $intent_id ): void {
+		// A note that can't be added must not fail a payment, least of all one WooPay has already charged.
+		try {
+			$note = sprintf( \WC_Payments_Utils::esc_interpolated_html( $message, [ 'code' => '<code>' ] ), $intent_id );
+			if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
+				$order->add_order_note( $note );
+			}
+		} catch ( \Throwable $e ) {
+			Logger::error( sprintf( 'Could not add a note about intent %1$s to order %2$d: %3$s', $intent_id, $order->get_id(), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Refuses a new payment while the order's earlier attempt could still charge the shopper, and tells the
+	 * merchant once. The order keeps its status, since nothing about it failed.
+	 *
+	 * @param WC_Order $order     The order being paid.
+	 * @param string   $intent_id The intent of the earlier attempt.
+	 *
+	 * @return array The failed payment result.
+	 */
+	private function refuse_payment_while_attempt_is_open( WC_Order $order, string $intent_id ): array {
+		$this->add_note_once(
+			$order,
+			/* translators: %1: the ID of a WooPayments payment. */
+			__( 'The earlier WooPayments payment <code>%1$s</code> could not be cancelled, so a new payment was not started for this order. The shopper was asked to try again.', 'woocommerce-payments' ),
+			$intent_id
+		);
+
+		// The classic checkout shows the notice. The block checkout shows what the gateway's error action puts
+		// on the payment result.
+		$message = __( 'Your earlier payment attempt for this order is still in progress. Please wait a moment and try again.', 'woocommerce-payments' );
+		wc_add_notice( $message, 'error' );
+		/** This action is documented in includes/class-wc-payment-gateway-wcpay.php */
+		do_action( 'wcpay_update_payment_result_on_error', new Process_Payment_Exception( $message, 'earlier_payment_attempt_in_progress' ), $order );
+
+		return [
+			'result'   => 'fail',
+			'redirect' => '',
 		];
 	}
 

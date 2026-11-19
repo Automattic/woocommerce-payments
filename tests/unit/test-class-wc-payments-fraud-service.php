@@ -263,6 +263,18 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_link_session_if_user_just_logged_in_bails_on_ajax_requests() {
+		add_filter( 'wp_doing_ajax', '__return_true' );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_blog_id' );
+
+		$this->fraud_service->link_session_if_user_just_logged_in();
+
+		remove_filter( 'wp_doing_ajax', '__return_true' );
+	}
+
 	public function test_link_session_if_user_just_logged_in_bails_on_no_wpcom_connection() {
 		$this->mock_api_client
 			->method( 'get_blog_id' )

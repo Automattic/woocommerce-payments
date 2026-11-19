@@ -666,6 +666,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		if ( $request ) {
 			return new WP_REST_Response( [], 200 );
 		}
+
+		return null;
 	}
 
 	/**

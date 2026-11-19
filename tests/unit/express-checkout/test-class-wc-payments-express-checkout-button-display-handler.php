@@ -255,6 +255,73 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		ob_end_clean();
 	}
 
+	public function test_display_express_checkout_buttons_on_cart_block_page_with_cart() {
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id() );
+
+		try {
+			$output = $this->render_express_checkout_buttons_on_cart_block_page();
+		} finally {
+			WC()->cart->empty_cart();
+		}
+
+		$this->assertStringContainsString( 'wcpay-woopay-button', $output );
+	}
+
+	public function test_display_express_checkout_buttons_on_cart_block_page_without_cart() {
+		// The Add to Cart with Options block fires the display hook when the REST API renders a page with a Cart block, and REST requests have no cart.
+		$cart      = WC()->cart;
+		WC()->cart = null;
+
+		try {
+			$output = $this->render_express_checkout_buttons_on_cart_block_page();
+		} finally {
+			WC()->cart = $cart;
+		}
+
+		$this->assertSame( '', $output );
+	}
+
+	/**
+	 * Renders the express checkout buttons on a Cart block page through the real WooPay handler and helper,
+	 * with WooPay and Apple Pay / Google Pay enabled on the cart page.
+	 *
+	 * @return string The rendered markup.
+	 */
+	private function render_express_checkout_buttons_on_cart_block_page(): string {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_woopay_utilities->method( 'is_country_available' )->willReturn( true );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'payment_request', 'woopay' ] );
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+		$woopay_button_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
+			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->mock_woopay_utilities, $helper ] )
+			->onlyMethods( [ 'is_woopay_enabled' ] )
+			->getMock();
+		$woopay_button_handler->method( 'is_woopay_enabled' )->willReturn( true );
+		$display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler(
+			$this->mock_wcpay_gateway,
+			$woopay_button_handler,
+			$this->mock_express_checkout_ece_button_handler,
+			$this->mock_express_checkout_ajax_handler,
+			$helper
+		);
+		WC_Payments::mode()->dev();
+		$GLOBALS['post'] = $this->factory->post->create_and_get( [ 'post_content' => '<!-- wp:woocommerce/cart /-->' ] ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		ob_start();
+		try {
+			$display_handler->display_express_checkout_buttons();
+			return (string) ob_get_contents();
+		} finally {
+			ob_end_clean();
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
 	public function test_display_express_checkout_buttons_only_woopay() {
 		$this->mock_woopay_button_handler
 			->method( 'should_show_woopay_button' )

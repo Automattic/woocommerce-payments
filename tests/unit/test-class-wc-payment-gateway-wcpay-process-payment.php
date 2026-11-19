@@ -743,7 +743,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'bump' );
+			->method( 'bump' )
+			->with( $this->callback( $this->is_order( $order->get_id() ) ) );
 
 		$this->mock_customer_service
 			->expects( $this->once() )
@@ -837,6 +838,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_rate_limiter
 			->expects( $this->once() )
 			->method( 'is_limited' )
+			->with( $this->callback( $this->is_order( $order->get_id() ) ) )
 			->willReturn( true );
 
 		// Act: process payment.
@@ -2672,5 +2674,18 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->dev();
 
 		return $logged;
+	}
+
+	/**
+	 * Matches the order by ID, since process_payment() loads its own instance.
+	 *
+	 * @param int $order_id The expected order ID.
+	 *
+	 * @return callable
+	 */
+	private function is_order( int $order_id ): callable {
+		return function ( $order ) use ( $order_id ) {
+			return $order instanceof WC_Order && $order_id === $order->get_id();
+		};
 	}
 }

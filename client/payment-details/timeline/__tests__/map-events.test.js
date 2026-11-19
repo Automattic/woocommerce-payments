@@ -512,6 +512,127 @@ describe( 'mapTimelineEvents', () => {
 			).toMatchSnapshot();
 		} );
 
+		describe( 'partial capture reversal', () => {
+			const RELEASED_TRANSACTION_ID = 'txn_released';
+			const releaseEvent = ( type ) => ( {
+				amount_refunded: 1300,
+				currency: 'EUR',
+				datetime: 1585940281,
+				deposit: null,
+				type,
+				transaction_id: RELEASED_TRANSACTION_ID,
+			} );
+			const headlines = ( items ) =>
+				items.map( ( item ) => item.headline );
+
+			test( 'formats partial_capture_reversal events as a release', () => {
+				const items = mapTimelineEvents( [
+					releaseEvent( 'partial_capture_reversal' ),
+				] );
+
+				expect( headlines( items ) ).toEqual( [
+					'€13.00 EUR will be deducted from a future payout.',
+					'The uncaptured €13.00 EUR of the authorization was released to the customer.',
+				] );
+			} );
+
+			test.each( [ 'partial_refund', 'full_refund' ] )(
+				'formats a %s event for a reversal transaction as a release',
+				( type ) => {
+					const items = mapTimelineEvents(
+						[ releaseEvent( type ) ],
+						null,
+						undefined,
+						undefined,
+						undefined,
+						[ RELEASED_TRANSACTION_ID ]
+					);
+
+					expect( headlines( items ) ).toEqual( [
+						'€13.00 EUR will be deducted from a future payout.',
+						'The uncaptured €13.00 EUR of the authorization was released to the customer.',
+					] );
+				}
+			);
+
+			test( 'keeps refund events for other transactions as refunds', () => {
+				const items = mapTimelineEvents(
+					[
+						{
+							...releaseEvent( 'partial_refund' ),
+							transaction_id: 'txn_refund',
+						},
+					],
+					null,
+					undefined,
+					undefined,
+					undefined,
+					[ RELEASED_TRANSACTION_ID ]
+				);
+
+				expect( headlines( items ) ).toContain(
+					'A payment of €13.00 EUR was successfully refunded.'
+				);
+			} );
+
+			test( 'keeps other event types for a reversal transaction', () => {
+				const items = mapTimelineEvents(
+					[
+						{
+							...releaseEvent( 'refund_failed' ),
+							amount_refunded: 1300,
+						},
+					],
+					null,
+					undefined,
+					undefined,
+					undefined,
+					[ RELEASED_TRANSACTION_ID ]
+				);
+
+				expect( headlines( items ) ).not.toContain(
+					'The uncaptured €13.00 EUR of the authorization was released to the customer.'
+				);
+			} );
+
+			test( 'keeps refund events as refunds without reversal transactions', () => {
+				const items = mapTimelineEvents(
+					[ releaseEvent( 'partial_refund' ) ],
+					null,
+					undefined,
+					undefined,
+					undefined,
+					null
+				);
+
+				expect( headlines( items ) ).toContain(
+					'A payment of €13.00 EUR was successfully refunded.'
+				);
+			} );
+
+			test( 'shows the payout deduction in the store currency', () => {
+				const items = mapTimelineEvents( [
+					{
+						...releaseEvent( 'partial_capture_reversal' ),
+						transaction_details: {
+							customer_currency: 'EUR',
+							customer_amount: 1300,
+							store_currency: 'USD',
+							store_amount: 1455,
+						},
+					},
+				] );
+
+				expect( headlines( items ) ).toEqual( [
+					'$14.55 USD will be deducted from a future payout.',
+					'The uncaptured €13.00 EUR of the authorization was released to the customer.',
+				] );
+				expect( items[ 1 ].body ).toEqual( [
+					'1.00 EUR → 1.11923 USD: $14.55 USD',
+				] );
+			} );
+		} );
+
 		test( 'renders a free-text refund reason when present', () => {
 			const [ , , mainItem ] = mapTimelineEvents( [
 				{
@@ -1603,6 +1724,24 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 } );
 
 describe( 'composeTaxString', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			shouldUseExplicitPrice: true,
+			zeroDecimalCurrencies: [],
+			connect: { country: 'US' },
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
+	} );
+
 	it( 'should return empty string when no tax data is present', () => {
 		const event = {};
 		expect( composeTaxString( event ) ).toBe( '' );
@@ -1642,6 +1781,22 @@ describe( 'composeTaxString', () => {
 		};
 		expect( composeTaxString( event ) ).toBe(
 			'Tax ES VAT (21.00%): -€0.10'
+		);
+	} );
+
+	it( 'should use the translatable label for the tax description', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'GBP',
+					percentage_rate: 0.2,
+					description: 'GB VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe(
+			'Tax UK VAT (20.00%): -£0.10'
 		);
 	} );
 

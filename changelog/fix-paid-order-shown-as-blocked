@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop showing an order as blocked by fraud protection once a later payment for it succeeds.

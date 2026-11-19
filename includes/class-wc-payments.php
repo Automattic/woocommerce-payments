@@ -693,6 +693,9 @@ class WC_Payments {
 
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
+			// This checks selected methods, not active ones: capability statuses need account data, and
+			// loading that on every request just to add hooks isn't worth it. Each handler asks
+			// WC_Payments_Utils::get_active_bnpl_payment_method_ids() when it runs instead.
 			$enabled_bnpl_payment_methods = array_intersect(
 				Payment_Method::BNPL_PAYMENT_METHODS,
 				self::get_gateway()->get_upe_enabled_payment_method_ids()
@@ -993,9 +996,9 @@ class WC_Payments {
 	 */
 	public static function hide_gateways_on_settings_page() {
 		$default_gateway = self::get_gateway();
-		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
+		foreach ( WC()->payment_gateways()->payment_gateways as $index => $payment_gateway ) {
 			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== $default_gateway ) {
-				unset( WC()->payment_gateways->payment_gateways[ $index ] );
+				unset( WC()->payment_gateways()->payment_gateways[ $index ] );
 			}
 		}
 	}
@@ -1788,7 +1791,7 @@ class WC_Payments {
 			'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
-		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', false, [], WCPAY_VERSION_NUMBER, false );
 		wp_add_inline_script(
 			'WCPAY_WOOPAY_COMMON_CONFIG',
 			'var wcpayConfig = Object.assign( wcpayConfig || {}, ' . wp_json_encode( $common_config ) . ' );',
@@ -1906,12 +1909,9 @@ class WC_Payments {
 		$currency = sanitize_text_field( wp_unslash( $_POST['currency'] ) );
 		$country  = sanitize_text_field( wp_unslash( $_POST['country'] ) );
 
-		$enabled_bnpl_payment_methods = array_intersect(
-			Payment_Method::BNPL_PAYMENT_METHODS,
-			self::get_gateway()->get_upe_enabled_payment_method_ids()
-		);
+		$active_bnpl_payment_methods = WC_Payments_Utils::get_active_bnpl_payment_method_ids( self::get_gateway() );
 
-		$is_available = WC_Payments_Utils::is_any_bnpl_method_available( $enabled_bnpl_payment_methods, $country, $currency, $price );
+		$is_available = WC_Payments_Utils::is_any_bnpl_method_available( $active_bnpl_payment_methods, $country, $currency, $price );
 
 		wp_send_json_success( [ 'is_available' => $is_available ] );
 	}
@@ -1920,7 +1920,7 @@ class WC_Payments {
 	 * Adds custom email field.
 	 */
 	public static function woopay_fields_before_billing_details() {
-		$checkout = WC()->checkout;
+		$checkout = WC()->checkout();
 
 		echo '<div class="woocommerce-billing-fields" id="contact_details">';
 
@@ -1984,7 +1984,9 @@ class WC_Payments {
 			// by the time WordPress outputs scripts in the footer, WC Core's lazy registration has already run (the cart block renders before `wp_footer`).
 			$cart_block_deps = wp_script_is( 'wc-cart-block-frontend', 'registered' ) ? [ 'wc-cart-block-frontend' ] : [];
 			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', $cart_block_deps );
-			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+			if ( [] !== WC_Payments_Utils::get_active_bnpl_payment_method_ids( self::get_gateway() ) ) {
+				wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+			}
 
 			// Enqueue cart block styles.
 			WC_Payments_Utils::enqueue_style(
@@ -2095,7 +2097,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function enqueue_assets_script() {
-		wp_register_script( 'WCPAY_ASSETS', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_register_script( 'WCPAY_ASSETS', false, [], WCPAY_VERSION_NUMBER, false );
 		wp_enqueue_script( 'WCPAY_ASSETS' );
 		wp_localize_script(
 			'WCPAY_ASSETS',

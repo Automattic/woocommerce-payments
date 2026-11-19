@@ -64,7 +64,10 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 	public function tear_down(): void {
 		parent::tear_down();
 		wp_reset_postdata();
-		wp_scripts()->remove( 'WCPAY_PRODUCT_DETAILS' );
+		wp_dequeue_script( 'WCPAY_PRODUCT_DETAILS' );
+		wp_deregister_script( 'WCPAY_PRODUCT_DETAILS' );
+		wp_dequeue_style( 'wcpay-product-details' );
+		wp_deregister_style( 'wcpay-product-details' );
 	}
 
 	private function setup_gateway_mocks() {
@@ -129,22 +132,24 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 			]
 		);
 
-		$this->messaging_element->init();
+		$result = $this->messaging_element->init();
 
 		$script_data = $this->get_script_data();
 
-		// only active BNPLs should be included.
-		$this->assertContains( Payment_Method::AFFIRM, $script_data['paymentMethods'], 'Affirm should be included' );
-		$this->assertContains( Payment_Method::KLARNA, $script_data['paymentMethods'], 'Klarna should be included' );
-		$this->assertNotContains( Payment_Method::AFTERPAY, $script_data['paymentMethods'], 'Afterpay should not be included' );
-		$this->assertNotContains( Payment_Method::CARD, $script_data['paymentMethods'], 'Card should not be included' );
-		$this->assertNotContains( Payment_Method::IDEAL, $script_data['paymentMethods'], 'iDEAL should not be included' );
+		$this->assertSame( '<div id="payment-method-message"></div>', $result );
+		$this->assertTrue( wp_script_is( 'WCPAY_PRODUCT_DETAILS', 'enqueued' ) );
+		$this->assertTrue( wp_style_is( 'wcpay-product-details', 'enqueued' ) );
+		$this->assertContains( 'affirm', $script_data['paymentMethods'], 'Affirm should be included' );
+		$this->assertContains( 'klarna', $script_data['paymentMethods'], 'Klarna should be included' );
+		$this->assertNotContains( 'afterpay_clearpay', $script_data['paymentMethods'], 'Afterpay should not be included' );
+		$this->assertNotContains( 'card', $script_data['paymentMethods'], 'Card should not be included' );
+		$this->assertNotContains( 'ideal', $script_data['paymentMethods'], 'iDEAL should not be included' );
 	}
 
 	/**
-	 * Test that no BNPL methods are returned when all are inactive.
+	 * Test that rejected and inactive BNPL methods do not load messaging.
 	 */
-	public function test_init_returns_no_bnpl_methods_when_all_inactive() {
+	public function test_init_skips_messaging_when_no_bnpl_method_is_active() {
 		$this->mock_account->method( 'get_stripe_account_id' )->willReturn( 'acct_test' );
 		$this->mock_account->method( 'get_publishable_key' )->willReturn( 'pk_test_key' );
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
@@ -157,7 +162,7 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_statuses' )->willReturn(
 			[
 				'affirm_payments'            => [ 'status' => 'inactive' ],
-				'afterpay_clearpay_payments' => [ 'status' => 'inactive' ],
+				'afterpay_clearpay_payments' => [ 'status' => 'rejected' ],
 				'klarna_payments'            => [ 'status' => 'inactive' ],
 			]
 		);
@@ -169,12 +174,14 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 			]
 		);
 
-		$this->messaging_element->init();
+		$result = $this->messaging_element->init();
 
-		$script_data = $this->get_script_data();
-
-		// no payment methods should be included.
-		$this->assertEmpty( $script_data['paymentMethods'], 'No BNPL methods should be included when all are inactive' );
+		$this->assertNull( $result );
+		$this->assertTrue( wp_script_is( 'WCPAY_PRODUCT_DETAILS', 'registered' ) );
+		$this->assertFalse( wp_script_is( 'WCPAY_PRODUCT_DETAILS', 'enqueued' ) );
+		$this->assertTrue( wp_style_is( 'wcpay-product-details', 'registered' ) );
+		$this->assertFalse( wp_style_is( 'wcpay-product-details', 'enqueued' ) );
+		$this->assertFalse( wp_scripts()->get_data( 'WCPAY_PRODUCT_DETAILS', 'data' ) );
 	}
 
 	/**

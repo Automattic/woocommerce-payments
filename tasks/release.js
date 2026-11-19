@@ -6,7 +6,7 @@ require( 'shelljs/global' );
 // directory would still produce a zip and exit 0.
 config.fatal = true;
 const chalk = require( 'chalk' );
-const archiver = require( 'archiver' );
+const { ZipArchive } = require( 'archiver' );
 const fs = require( 'fs' );
 
 const pluginSlug = process.env.npm_package_name;
@@ -53,6 +53,10 @@ mkdir( targetFolder );
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
 
+// QIT's PHPStan run reads phpstan.neon from the zip root. The repo-root
+// phpstan.neon is the dev config, so ship the QIT one under that name instead.
+cp( 'tests/qit/phpstan.neon', targetFolder + '/phpstan.neon' );
+
 // these files are only needed by `combine-pot-files.php`, keeping them out of the zip.
 rm(
 	'-f',
@@ -67,7 +71,7 @@ rm( '-rf', targetFolder + '/includes/multi-currency/client' );
 const output = fs.createWriteStream(
 	releaseFolder + '/' + pluginSlug + '.zip'
 );
-const archive = archiver( 'zip', { zlib: { level: 9 } } );
+const archive = new ZipArchive( { zlib: { level: 9 } } );
 
 output.on( 'close', () => {
 	console.log(

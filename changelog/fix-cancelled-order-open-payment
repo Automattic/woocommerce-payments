@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Cancel a WooPayments payment that is still open when its order is cancelled, so the order can no longer be paid afterwards.

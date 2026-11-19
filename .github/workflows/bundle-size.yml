@@ -1,5 +1,8 @@
 name: Compressed Size
 
+permissions:
+  contents: read
+
 on:
     pull_request:
     workflow_dispatch:
@@ -12,6 +15,9 @@ jobs:
     build:
         name: Bundle size check
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            issues: write
 
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

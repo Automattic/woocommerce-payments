@@ -1040,6 +1040,77 @@ ${ data.merchantName }`;
 
 // --- Main Cover Letter Generation ---
 
+const formatLetterDate = ( unixTimestamp: number ): string =>
+	formatDateTimeFromTimestamp( unixTimestamp, {
+		separator: ', ',
+		includeTime: false,
+	} );
+
+const getNowInSeconds = (): number => Math.floor( Date.now() / 1000 );
+
+// A draft is only compared while the dispute still takes evidence, which lasts weeks. An older
+// date counts as an edit, so the worst case is the warning, never an overwritten letter.
+const savedLetterMaxAgeInDays = 90;
+const halfDayInSeconds = 12 * 60 * 60;
+
+// Formats past dates rather than matching a pattern, so only a real date in the store's format
+// passes, whatever the language. Half-day steps keep a day shortened by daylight saving from
+// being skipped.
+const isRecentLetterDate = ( line: string ): boolean => {
+	const nowInSeconds = getNowInSeconds();
+	const oldestInSeconds =
+		nowInSeconds - savedLetterMaxAgeInDays * 2 * halfDayInSeconds;
+	for (
+		let timestamp = nowInSeconds;
+		timestamp >= oldestInSeconds;
+		timestamp -= halfDayInSeconds
+	) {
+		if ( formatLetterDate( timestamp ) === line ) {
+			return true;
+		}
+	}
+	return false;
+};
+
+/**
+ * Compares a saved cover letter with one generated now, ignoring the date line, which changes
+ * every day. Without this, a letter saved on an earlier day would look hand-edited and stop
+ * updating with the evidence. The saved date line must still hold a recent date in the same
+ * format.
+ *
+ * @param savedLetter     The cover letter saved with the dispute evidence.
+ * @param generatedLetter A cover letter generated now from the same evidence.
+ * @return Whether the letters match apart from the date line.
+ */
+export const isSameCoverLetterIgnoringDate = (
+	savedLetter: string,
+	generatedLetter: string
+): boolean => {
+	if ( savedLetter === generatedLetter ) {
+		return true;
+	}
+	const savedLines = savedLetter.split( '\n' );
+	const generatedLines = generatedLetter.split( '\n' );
+	if ( savedLines.length !== generatedLines.length ) {
+		return false;
+	}
+	// Find the date by its content rather than a fixed line number, so a newline in a header
+	// field such as the site title can't shift it.
+	const dateLineIndex = generatedLines.indexOf(
+		formatLetterDate( getNowInSeconds() )
+	);
+	if ( dateLineIndex === -1 ) {
+		return false;
+	}
+	const [ savedDateLine ] = savedLines.splice( dateLineIndex, 1 );
+	generatedLines.splice( dateLineIndex, 1 );
+	if ( savedLines.join( '\n' ) !== generatedLines.join( '\n' ) ) {
+		return false;
+	}
+	// Anything else the merchant typed on the date line still counts as an edit.
+	return isRecentLetterDate( savedDateLine );
+};
+
 export const generateCoverLetter = (
 	dispute: ExtendedDispute,
 	accountDetails: AccountDetails,
@@ -1049,11 +1120,6 @@ export const generateCoverLetter = (
 	duplicateStatus?: string,
 	productType?: string
 ): string => {
-	const todayUnixTimestamp = Math.floor( Date.now() / 1000 );
-	const todayFormatted = formatDateTimeFromTimestamp( todayUnixTimestamp, {
-		separator: ', ',
-		includeTime: false,
-	} );
 	const data: CoverLetterData = {
 		merchantAddress: formatMerchantAddress( accountDetails ),
 		merchantName: accountDetails.name,
@@ -1063,7 +1129,7 @@ export const generateCoverLetter = (
 		merchantPhone:
 			settings?.account_business_support_phone ||
 			__( '<Business Phone Number>', 'woocommerce-payments' ),
-		today: todayFormatted,
+		today: formatLetterDate( getNowInSeconds() ),
 		acquiringBank: bankName || __( '<Bank Name>', 'woocommerce-payments' ),
 		caseNumber:
 			dispute?.id || __( '<Case Number>', 'woocommerce-payments' ),

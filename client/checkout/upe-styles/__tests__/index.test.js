@@ -230,9 +230,7 @@ describe( 'Getting styles for automated theming', () => {
 			1: { href: null },
 		};
 		const scope = {
-			styleSheets: {
-				get: jest.fn( () => mockStyleSheets ),
-			},
+			styleSheets: mockStyleSheets,
 		};
 
 		const fontRules = upeStyles.getFontRulesFromPage( scope );
