@@ -14,12 +14,14 @@ import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ) )
 );
 jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
-	showErrorMessage: () => null,
+	...jest.requireActual( 'wcpay/checkout/woopay/express-button/utils' ),
+	showErrorMessage: jest.fn(),
 } ) );
 jest.mock( 'wcpay/checkout/woopay/connect/woopay-connect-iframe', () => ( {
 	WooPayConnectIframe: () => null,
@@ -285,6 +287,76 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				appearance: null,
 			} );
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'when the store refuses the session', () => {
+		const STORE_MESSAGE =
+			'WooPay couldn’t load this order. Please reload the page and try again.';
+
+		const clickButton = async ( context ) => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ {
+						...buttonSettings,
+						context,
+					} }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+				/>
+			);
+
+			await userEvent.click(
+				screen.queryByRole( 'link', { name: 'WooPay' } )
+			);
+		};
+
+		test( "shows the store's message", async () => {
+			request.mockResolvedValueOnce( {
+				success: false,
+				data: STORE_MESSAGE,
+				code: 'woopay_pay_for_order_unavailable',
+			} );
+
+			await clickButton( 'pay_for_order' );
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'pay_for_order',
+					'WooPay couldn’t load this order. Please reload the page and try again.'
+				);
+			} );
+		} );
+
+		test( 'keeps the generic message for other refusals, such as an expired nonce', async () => {
+			request.mockResolvedValueOnce( {
+				success: false,
+				data: 'You aren’t authorized to do that.',
+			} );
+
+			await clickButton( 'pay_for_order' );
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'pay_for_order',
+					'Something went wrong. Please try again.'
+				);
+			} );
+		} );
+
+		test( 'shows a generic message when the store sends none', async () => {
+			request.mockResolvedValueOnce( {} );
+
+			await clickButton( 'pay_for_order' );
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'pay_for_order',
+					'Something went wrong. Please try again.'
+				);
+			} );
 		} );
 	} );
 

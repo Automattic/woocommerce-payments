@@ -30,3 +30,8 @@ RUN apt-get update \
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
 	&& chmod +x wp-cli.phar \
 	&& mv wp-cli.phar /usr/local/bin/wp
+
+# Compose supplies the public HTTP port when the container starts.
+ENV WORDPRESS_PORT=8082
+RUN echo 'Listen ${WORDPRESS_PORT} http' >> /etc/apache2/ports.conf \
+	&& sed -i 's|^<VirtualHost \*:80>$|<VirtualHost *:80 *:${WORDPRESS_PORT}>|' /etc/apache2/sites-available/000-default.conf
