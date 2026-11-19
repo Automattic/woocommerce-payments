@@ -131,6 +131,51 @@ describe( 'resolveEvidenceStatuses', () => {
 		).toBe( 'refund_has_been_issued' );
 	} );
 
+	it( 'picks the refund layout for the product type when no status is saved', () => {
+		expect(
+			resolveEvidenceStatuses(
+				{
+					reason: 'credit_not_processed',
+					metadata: {},
+					evidence: { refund_policy: 'file_policy' },
+				},
+				'digital_product_or_service'
+			).refundStatus
+		).toBe( 'refund_was_not_owed' );
+	} );
+
+	it( 'keeps the default refund status for a Visa compliance dispute', () => {
+		expect(
+			resolveEvidenceStatuses(
+				{
+					reason: 'credit_not_processed',
+					metadata: {},
+					evidence: { refund_policy: 'file_policy' },
+					enhanced_eligibility_types: [ 'visa_compliance' ],
+				},
+				'digital_product_or_service'
+			).refundStatus
+		).toBe( 'refund_has_been_issued' );
+	} );
+
+	// Known limitation: "Proof of acceptance" uses a slot the "Refund has been issued" layout also has, so only a
+	// file under "Other documents" identifies "Refund was not owed" on a dispute saved before the status was stored.
+	it( 'keeps the default refund status when the saved documents fit both layouts', () => {
+		expect(
+			resolveEvidenceStatuses(
+				{
+					reason: 'credit_not_processed',
+					metadata: {},
+					evidence: {
+						uncategorized_file: 'file_proof_of_acceptance',
+						refund_policy: 'file_policy',
+					},
+				},
+				physicalProduct
+			).refundStatus
+		).toBe( 'refund_has_been_issued' );
+	} );
+
 	it( 'ignores the saved statuses of other dispute reasons', () => {
 		expect(
 			resolveEvidenceStatuses(

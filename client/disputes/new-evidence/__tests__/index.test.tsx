@@ -1209,6 +1209,32 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 				).not.toBeInTheDocument();
 			} );
 
+			it( 'regenerates an untouched letter written for a non-default refund status', async () => {
+				const notOwedDispute = {
+					...regularDispute,
+					reason: 'credit_not_processed',
+					metadata: {
+						__product_type: 'physical_product',
+						__refund_status: 'refund_was_not_owed',
+					},
+				};
+				mockApiFetch.mockResolvedValue( notOwedDispute );
+				const letterSavedYesterday = await getLetterSavedYesterday();
+				mockApiFetch.mockResolvedValue( {
+					...notOwedDispute,
+					evidence: { uncategorized_text: letterSavedYesterday },
+				} );
+
+				const coverLetter = await openCoverLetter();
+
+				expect( coverLetter ).not.toHaveValue( letterSavedYesterday );
+				expect(
+					screen.queryByRole( 'button', {
+						name: 'Restore generated letter',
+					} )
+				).not.toBeInTheDocument();
+			} );
+
 			it( 'shows a submitted letter as it was sent', async () => {
 				const submittedLetter = await getLetterSavedYesterday();
 				mockApiFetch.mockResolvedValue( {
