@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect, useId, useRef } from 'react';
+import React, { useContext, useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
@@ -169,9 +169,9 @@ export const BalanceReport = ( {
 	onReload = () => undefined,
 }: BalanceReportProps ): JSX.Element => {
 	const contextDateFilterNow = useContext( BalanceDateFilterNowContext );
-	const stableDateFilterNow = useRef(
-		contextDateFilterNow ?? new Date()
-	).current;
+	const [ stableDateFilterNow ] = useState(
+		() => contextDateFilterNow ?? new Date()
+	);
 	const { value, period, hasDateFilterValue, setValue } =
 		useBalanceDateFilter( stableDateFilterNow );
 	const requestCurrency = wcpaySettings.accountDefaultCurrency || '';
@@ -203,12 +203,6 @@ export const BalanceReport = ( {
 	const loadingRequestKeyRef = useRef< string | null >(
 		isLoading ? activeRequestKey : null
 	);
-	const completedActiveRequest =
-		previousLoadingRef.current &&
-		! isLoading &&
-		! hasError &&
-		activeRequestKey !== null &&
-		loadingRequestKeyRef.current === activeRequestKey;
 	// Marks that the user just pressed Reload, so the next error→loading
 	// transition should restore focus to the loading heading (the Reload
 	// button itself unmounts before the useEffect runs).
@@ -259,6 +253,22 @@ export const BalanceReport = ( {
 	};
 
 	useEffect( () => {
+		// Compute edge flags inside the effect so the ref reads happen after
+		// commit rather than during render. The two subsequent effects below
+		// recompute the same flags from the same refs; both effects run in
+		// order on each commit so they observe matching values before the
+		// terminal effect (second one) finally updates the refs.
+		const completedActiveRequest =
+			previousLoadingRef.current &&
+			! isLoading &&
+			! hasError &&
+			activeRequestKey !== null &&
+			loadingRequestKeyRef.current === activeRequestKey;
+		const reachedErrorTerminal =
+			hasError &&
+			! isLoading &&
+			( ! previousErrorRef.current || previousLoadingRef.current );
+
 		if ( isLoading && activeRequestKey ) {
 			loadingRequestKeyRef.current = activeRequestKey;
 		} else if ( ! activeRequestKey ) {
@@ -277,10 +287,6 @@ export const BalanceReport = ( {
 			} );
 		}
 
-		const reachedErrorTerminal =
-			hasError &&
-			! isLoading &&
-			( ! previousErrorRef.current || previousLoadingRef.current );
 		if ( reachedErrorTerminal ) {
 			recordEvent( 'wcpay_reports_balance_load_error', {
 				error_type: hasStoreError ? 'store' : 'malformed',
@@ -289,7 +295,6 @@ export const BalanceReport = ( {
 		}
 	}, [
 		activeRequestKey,
-		completedActiveRequest,
 		currency,
 		displayPeriod.end,
 		displayPeriod.start,
@@ -303,6 +308,17 @@ export const BalanceReport = ( {
 	] );
 
 	useEffect( () => {
+		const completedActiveRequest =
+			previousLoadingRef.current &&
+			! isLoading &&
+			! hasError &&
+			activeRequestKey !== null &&
+			loadingRequestKeyRef.current === activeRequestKey;
+		const reachedErrorTerminal =
+			hasError &&
+			! isLoading &&
+			( ! previousErrorRef.current || previousLoadingRef.current );
+
 		// Focus the error heading when the failure interrupts the user inside
 		// the report. `reloadRequestedRef` covers the Reload → loading → fail
 		// path: the focused loading heading unmounts with the skeleton, so by
@@ -359,10 +375,6 @@ export const BalanceReport = ( {
 			}, 500 );
 		}
 
-		const reachedErrorTerminal =
-			hasError &&
-			! isLoading &&
-			( ! previousErrorRef.current || previousLoadingRef.current );
 		// Consume the ref on the error terminal too, so a subsequent
 		// non-Reload error doesn't inherit the previous click's intent.
 		if ( reachedErrorTerminal ) {
@@ -375,7 +387,7 @@ export const BalanceReport = ( {
 
 		previousLoadingRef.current = isLoading;
 		previousErrorRef.current = hasError;
-	}, [ activeRequestKey, completedActiveRequest, hasError, isLoading ] );
+	}, [ activeRequestKey, hasError, isLoading ] );
 
 	useEffect( () => {
 		if ( ! printScopeActive ) {
