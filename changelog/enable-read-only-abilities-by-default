@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-Enable WooPayments read-only agent abilities (Abilities API) by default, and add a filter to opt in to write abilities. The previous abilities filter is deprecated but still honored.
+Enable WooPayments read-only agent abilities (Abilities API) by default. The woocommerce_payments_abilities_enabled filter now controls only the read-only abilities, and write abilities need the new woocommerce_payments_write_abilities_enabled filter.

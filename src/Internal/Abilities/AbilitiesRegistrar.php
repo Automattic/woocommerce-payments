@@ -17,9 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * Registers WooPayments read and write abilities under the shared
  * `woocommerce` category.
  * All abilities gate on `manage_woocommerce`. Read abilities are registered
- * by default (`woocommerce_payments_read_abilities_enabled`); write abilities
- * are opt-in (`woocommerce_payments_write_abilities_enabled`). The deprecated
- * `woocommerce_payments_abilities_enabled` filter still toggles both.
+ * by default (`woocommerce_payments_abilities_enabled`); write abilities are
+ * opt-in (`woocommerce_payments_write_abilities_enabled`).
  *
  * Delegation errors are logged under the `woopayments-abilities` source.
  */
@@ -117,50 +116,24 @@ class AbilitiesRegistrar {
 	}
 
 	/**
-	 * Ability classes enabled by the read, write and deprecated filters.
+	 * Ability classes enabled by the read and write filters.
 	 *
 	 * @return class-string<AbilityDefinition>[]
 	 */
 	private static function get_enabled_classes(): array {
-		$read_enabled  = true;
-		$write_enabled = false;
-
-		// Only consult the deprecated filter when something is hooked to it, so
-		// its `false` default does not switch off the new read default.
-		if ( has_filter( 'woocommerce_payments_abilities_enabled' ) ) {
-			/**
-			 * Filter whether WooPayments' Abilities API registrations are active.
-			 *
-			 * Any value other than `false` enables both read and write abilities,
-			 * and `false` disables both. Both remain overridable by the filters below.
-			 *
-			 * @since 10.8.0
-			 * @deprecated 11.4.0 Read abilities are enabled by default. Use `woocommerce_payments_write_abilities_enabled`
-			 *                    to enable write abilities, or `woocommerce_payments_read_abilities_enabled` to disable read abilities.
-			 *
-			 * @param bool $enabled Whether to register WooPayments abilities. Default false.
-			 * @return bool
-			 */
-			$legacy_enabled = false !== apply_filters_deprecated(
-				'woocommerce_payments_abilities_enabled',
-				[ false ],
-				'11.4.0',
-				'woocommerce_payments_read_abilities_enabled and woocommerce_payments_write_abilities_enabled'
-			);
-			$read_enabled   = $legacy_enabled;
-			$write_enabled  = $legacy_enabled;
-		}
-
 		/**
-		 * Filter whether WooPayments' read-only abilities are registered.
+		 * Filter whether WooPayments' read-only Abilities API registrations are active.
 		 *
-		 * @since 11.4.0
+		 * Any value other than `false` enables the read-only abilities. Write
+		 * abilities are controlled separately by `woocommerce_payments_write_abilities_enabled`.
 		 *
-		 * @param bool $enabled Whether to register read-only abilities. Default true,
-		 *                      or the result of the deprecated `woocommerce_payments_abilities_enabled` filter when it is used.
+		 * @since 10.8.0
+		 * @since 11.4.0 Default changed to true, and the filter no longer enables write abilities.
+		 *
+		 * @param bool $enabled Whether to register WooPayments read-only abilities. Default true.
 		 * @return bool
 		 */
-		$read_enabled = self::to_bool( apply_filters( 'woocommerce_payments_read_abilities_enabled', $read_enabled ), $read_enabled );
+		$read_enabled = false !== apply_filters( 'woocommerce_payments_abilities_enabled', true );
 
 		/**
 		 * Filter whether WooPayments' write abilities are registered. Write
@@ -169,11 +142,10 @@ class AbilitiesRegistrar {
 		 *
 		 * @since 11.4.0
 		 *
-		 * @param bool $enabled Whether to register write abilities. Default false,
-		 *                      or the result of the deprecated `woocommerce_payments_abilities_enabled` filter when it is used.
+		 * @param bool $enabled Whether to register write abilities. Default false.
 		 * @return bool
 		 */
-		$write_enabled = self::to_bool( apply_filters( 'woocommerce_payments_write_abilities_enabled', $write_enabled ), $write_enabled );
+		$write_enabled = self::to_bool( apply_filters( 'woocommerce_payments_write_abilities_enabled', false ), false );
 
 		return array_merge(
 			$read_enabled ? self::READ_ABILITY_CLASSES : [],

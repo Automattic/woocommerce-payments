@@ -15,9 +15,8 @@ use WCPay\Internal\Abilities\AbilitiesRegistrar;
  */
 class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
-	const FEATURE_FILTER = 'woocommerce_payments_abilities_enabled';
-	const READ_FILTER    = 'woocommerce_payments_read_abilities_enabled';
-	const WRITE_FILTER   = 'woocommerce_payments_write_abilities_enabled';
+	const READ_FILTER  = 'woocommerce_payments_abilities_enabled';
+	const WRITE_FILTER = 'woocommerce_payments_write_abilities_enabled';
 
 	/**
 	 * Reset filters and the current user between tests, then restore the
@@ -26,7 +25,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	 * assertions are suite post-conditions, not per-test.
 	 */
 	public function tear_down(): void {
-		remove_all_filters( self::FEATURE_FILTER );
 		remove_all_filters( self::READ_FILTER );
 		remove_all_filters( self::WRITE_FILTER );
 		remove_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] );
@@ -68,7 +66,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			++$calls;
 			return $enabled;
 		};
-		add_filter( self::FEATURE_FILTER, $callback );
 		add_filter( self::READ_FILTER, $callback );
 		add_filter( self::WRITE_FILTER, $callback );
 
@@ -125,10 +122,31 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertContains( 'woocommerce-payments/upload-dispute-evidence-file', $names );
 	}
 
-	public function test_read_filter_disables_read_abilities(): void {
+	public function test_read_filter_false_disables_read_abilities(): void {
 		add_filter( self::READ_FILTER, '__return_false' );
 
 		$this->assertSame( [], AbilitiesRegistrar::append_classes( [] ) );
+	}
+
+	/**
+	 * Existing callbacks that returned true to opt in now enable the
+	 * read-only abilities only.
+	 */
+	public function test_read_filter_true_does_not_enable_write_abilities(): void {
+		add_filter( self::READ_FILTER, '__return_true' );
+
+		$names = $this->get_enabled_ability_names();
+		$this->assertCount( 18, $names );
+		$this->assertNotContains( 'woocommerce-payments/refund-charge', $names );
+	}
+
+	/**
+	 * The read filter keeps its existing check: only `false` disables.
+	 */
+	public function test_read_filter_non_false_value_keeps_read_abilities(): void {
+		add_filter( self::READ_FILTER, '__return_zero' );
+
+		$this->assertCount( 18, $this->get_enabled_ability_names() );
 	}
 
 	public function test_read_filter_off_and_write_filter_on_registers_only_write_abilities(): void {
@@ -141,78 +159,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertContains( 'woocommerce-payments/refund-charge', $names );
 	}
 
-	public function test_legacy_filter_true_enables_read_and_write_abilities(): void {
-		$this->setExpectedDeprecated( self::FEATURE_FILTER );
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-
-		$names = $this->get_enabled_ability_names();
-		$this->assertCount( 22, $names );
-		$this->assertContains( 'woocommerce-payments/get-transactions', $names );
-		$this->assertContains( 'woocommerce-payments/refund-charge', $names );
-	}
-
-	/**
-	 * The legacy filter enabled abilities for any value other than `false`.
-	 */
-	public function test_legacy_filter_non_false_value_enables_read_and_write_abilities(): void {
-		$this->setExpectedDeprecated( self::FEATURE_FILTER );
-		add_filter( self::FEATURE_FILTER, '__return_zero' );
-
-		$this->assertCount( 22, $this->get_enabled_ability_names() );
-	}
-
-	public function test_legacy_filter_false_disables_all_abilities(): void {
-		$this->setExpectedDeprecated( self::FEATURE_FILTER );
-		add_filter( self::FEATURE_FILTER, '__return_false' );
-
-		$this->assertSame( [], AbilitiesRegistrar::append_classes( [] ) );
-	}
-
-	public function test_legacy_filter_receives_false_as_default(): void {
-		$this->setExpectedDeprecated( self::FEATURE_FILTER );
-		$received = null;
-		add_filter(
-			self::FEATURE_FILTER,
-			function ( $enabled ) use ( &$received ) {
-				$received = $enabled;
-				return $enabled;
-			}
-		);
-
-		AbilitiesRegistrar::append_classes( [] );
-
-		$this->assertFalse( $received );
-	}
-
-	public function test_new_filters_receive_legacy_result_and_can_override_it(): void {
-		$this->setExpectedDeprecated( self::FEATURE_FILTER );
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-		$received_read  = null;
-		$received_write = null;
-		add_filter(
-			self::READ_FILTER,
-			function ( $enabled ) use ( &$received_read ) {
-				$received_read = $enabled;
-				return $enabled;
-			}
-		);
-		add_filter(
-			self::WRITE_FILTER,
-			function ( $enabled ) use ( &$received_write ) {
-				$received_write = $enabled;
-				return false;
-			}
-		);
-
-		$names = $this->get_enabled_ability_names();
-
-		$this->assertTrue( $received_read );
-		$this->assertTrue( $received_write );
-		$this->assertCount( 18, $names );
-		$this->assertNotContains( 'woocommerce-payments/refund-charge', $names );
-	}
-
-	public function test_new_filters_receive_defaults_without_legacy_filter(): void {
+	public function test_filters_receive_their_defaults(): void {
 		$received_read  = null;
 		$received_write = null;
 		add_filter(
