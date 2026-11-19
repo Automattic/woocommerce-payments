@@ -159,7 +159,7 @@ This will:
 
 #### Customizing your worktree config
 
-Edit `.env` to customize:
+Choose an available public port other than 80 when editing `.env`. Apache already listens on port 80 inside the container.
 ```bash
 # Port for this worktree's WordPress instance
 WORDPRESS_PORT=8086
