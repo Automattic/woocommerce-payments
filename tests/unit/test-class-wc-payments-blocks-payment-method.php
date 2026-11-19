@@ -85,6 +85,13 @@ class WC_Payments_Blocks_Payment_Method_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'pk_test', $data['publishableKey'] );
 	}
 
+	public function stripe_js_flag_provider(): array {
+		return [
+			'flag off' => [ '0', 'https://js.stripe.com/v3/', '3.0' ],
+			'flag on'  => [ '1', 'https://js.stripe.com/dahlia/stripe.js', null ],
+		];
+	}
+
 	/**
 	 * Replaces the checkout service the system under test reads its config from.
 	 *
@@ -94,12 +101,5 @@ class WC_Payments_Blocks_Payment_Method_Test extends WCPAY_UnitTestCase {
 		$property = new ReflectionProperty( WC_Payments_Blocks_Payment_Method::class, 'wc_payments_checkout' );
 		$property->setAccessible( true );
 		$property->setValue( $this->system_under_test, $checkout );
-	}
-
-	public function stripe_js_flag_provider(): array {
-		return [
-			'flag off' => [ '0', 'https://js.stripe.com/v3/', '3.0' ],
-			'flag on'  => [ '1', 'https://js.stripe.com/dahlia/stripe.js', null ],
-		];
 	}
 }
