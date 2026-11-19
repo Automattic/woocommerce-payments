@@ -20,8 +20,8 @@ import {
 } from 'wcpay/utils/appearance-cache';
 import { useStripeAsync } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'utils/checkout';
-import WCPayAPI from '../../checkout/api';
-import request from '../../checkout/utils/request';
+import WCPayAPI from 'wcpay/checkout/api';
+import request from 'wcpay/checkout/utils/request';
 
 import { useEffect, useState } from 'react';
 
@@ -47,7 +47,7 @@ const normalizeAmount = ( amount, decimalPlaces = 2 ) => {
 	return amount * Math.pow( 10, 2 - decimalPlaces );
 };
 
-const ProductDetail = ( { cart, context } ) => {
+const BNPLCartBlockMessage = ( { cart, context } ) => {
 	const [ appearance, setAppearance ] = useState( () =>
 		getCachedAppearance(
 			'bnpl_cart_block',
@@ -133,7 +133,7 @@ export const renderBNPLCartMessaging = () => {
 	}
 	return (
 		<ExperimentalOrderMeta>
-			<ProductDetail />
+			<BNPLCartBlockMessage />
 		</ExperimentalOrderMeta>
 	);
 };
