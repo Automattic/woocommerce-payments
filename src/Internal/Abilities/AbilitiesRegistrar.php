@@ -18,7 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * `woocommerce` category.
  * All abilities gate on `manage_woocommerce`. Read abilities are registered
  * by default (`woocommerce_payments_abilities_enabled`); write abilities are
- * opt-in (`woocommerce_payments_write_abilities_enabled`).
+ * opt-in (`woocommerce_payments_write_abilities_enabled`) and bring the read
+ * abilities with them.
  *
  * Delegation errors are logged under the `woopayments-abilities` source.
  */
@@ -188,8 +189,8 @@ class AbilitiesRegistrar {
 		/**
 		 * Filter whether WooPayments' read-only Abilities API registrations are active.
 		 *
-		 * Any value other than `false` enables the read-only abilities. Write
-		 * abilities are controlled separately by `woocommerce_payments_write_abilities_enabled`.
+		 * Any value other than `false` enables the read-only abilities. Enabling
+		 * `woocommerce_payments_write_abilities_enabled` also enables them.
 		 *
 		 * @since 10.8.0
 		 * @since 11.4.0 Default changed to true, and the filter no longer enables write abilities.
@@ -202,7 +203,8 @@ class AbilitiesRegistrar {
 		/**
 		 * Filter whether WooPayments' write abilities are registered. Write
 		 * abilities perform consequential actions, such as refunds and
-		 * dispute responses. Only `true` enables them.
+		 * dispute responses. Only `true` enables them, and it also enables the
+		 * read-only abilities, which agents need to find charge and dispute IDs.
 		 *
 		 * @since 11.4.0
 		 *
@@ -210,6 +212,7 @@ class AbilitiesRegistrar {
 		 * @return bool
 		 */
 		$write_enabled = true === apply_filters( 'woocommerce_payments_write_abilities_enabled', false );
+		$read_enabled  = $read_enabled || $write_enabled;
 
 		return array_merge(
 			$read_enabled ? self::READ_ABILITY_CLASSES : [],

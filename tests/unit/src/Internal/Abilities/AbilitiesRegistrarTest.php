@@ -151,13 +151,17 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertCount( 18, $this->get_enabled_ability_names() );
 	}
 
-	public function test_read_filter_off_and_write_filter_on_registers_only_write_abilities(): void {
+	/**
+	 * Write abilities need charge and dispute IDs that agents get from the
+	 * read abilities, so enabling writes keeps reads on.
+	 */
+	public function test_write_filter_on_enables_read_abilities_even_when_read_filter_is_off(): void {
 		add_filter( self::READ_FILTER, '__return_false' );
 		add_filter( self::WRITE_FILTER, '__return_true' );
 
 		$names = $this->get_enabled_ability_names();
-		$this->assertCount( 4, $names );
-		$this->assertNotContains( 'woocommerce-payments/get-transactions', $names );
+		$this->assertCount( 22, $names );
+		$this->assertContains( 'woocommerce-payments/get-transactions', $names );
 		$this->assertContains( 'woocommerce-payments/refund-charge', $names );
 	}
 
