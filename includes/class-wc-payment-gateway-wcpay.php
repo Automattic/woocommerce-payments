@@ -6049,16 +6049,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// if credit card payment method is not enabled, we don't use stripe link.
-		if (
-			! in_array( CardDefinition::get_id(), $enabled_payment_methods, true ) &&
-			in_array( LinkDefinition::get_id(), $enabled_payment_methods, true ) ) {
-			$link_stripe_id          = LinkDefinition::get_id();
-			$enabled_payment_methods = array_filter(
-				$enabled_payment_methods,
-				static function ( $method ) use ( $link_stripe_id ) {
-					return $link_stripe_id !== $method;
-				}
-			);
+		if ( ! in_array( CardDefinition::get_id(), $enabled_payment_methods, true ) ) {
+			$link_index = array_search( LinkDefinition::get_id(), $enabled_payment_methods, true );
+			if ( false !== $link_index ) {
+				unset( $enabled_payment_methods[ $link_index ] );
+			}
 		}
 
 		return $enabled_payment_methods;
