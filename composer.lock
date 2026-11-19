@@ -4671,8 +4671,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-25T14:11:13+00:00",
-            "published-time": "2024-11-27T12:25:26+00:00"
+            "time": "2024-09-25T14:11:13+00:00"
         },
         {
             "name": "symfony/finder",
@@ -4818,8 +4817,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-10T16:19:22+00:00",
-            "published-time": "2026-04-26T14:44:50+00:00"
+            "time": "2026-04-10T16:19:22+00:00"
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
@@ -5235,8 +5233,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-25T15:50:05+00:00",
-            "published-time": "2026-09-30T10:23:35+00:00"
+            "time": "2026-09-25T15:50:05+00:00"
         },
         {
             "name": "symfony/process",
@@ -5550,8 +5547,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-11-03T13:19:21+00:00",
-            "published-time": "2026-11-04T10:51:46+00:00"
+            "time": "2026-11-03T13:19:21+00:00"
         },
         {
             "name": "szepeviktor/phpstan-wordpress",
@@ -5715,16 +5711,16 @@
         },
         {
             "name": "woocommerce/php-stubs",
-            "version": "v2026.10.23.4",
+            "version": "v2026.11.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/php-stubs.git",
-                "reference": "71b58e28da692342af5d3ca78d9d60e72eb450b5"
+                "reference": "be4aecc0cfb19d1a871b6939e7925adb6a137413"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/71b58e28da692342af5d3ca78d9d60e72eb450b5",
-                "reference": "71b58e28da692342af5d3ca78d9d60e72eb450b5",
+                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/be4aecc0cfb19d1a871b6939e7925adb6a137413",
+                "reference": "be4aecc0cfb19d1a871b6939e7925adb6a137413",
                 "shasum": ""
             },
             "type": "library",
@@ -5743,9 +5739,9 @@
             ],
             "support": {
                 "issues": "https://github.com/woocommerce/php-stubs/issues",
-                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.10.23.4"
+                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.11.12"
             },
-            "time": "2026-10-23T21:12:23+00:00"
+            "time": "2026-11-12T03:13:52+00:00"
         },
         {
             "name": "woocommerce/qit-cli",
@@ -6021,5 +6017,5 @@
     "platform-overrides": {
         "php": "7.4"
     },
-    "plugin-api-version": "2.11.0"
+    "plugin-api-version": "2.9.0"
 }
