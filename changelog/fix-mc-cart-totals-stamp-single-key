@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Multi-Currency: detect and recalculate cart totals left in the previous currency when a currency switch overlaps a cart change on WooCommerce 11.4 and later.

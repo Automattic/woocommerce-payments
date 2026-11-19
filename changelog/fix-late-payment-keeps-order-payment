@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep an order's payment details when an earlier WooPayments payment for it completes after the order was paid.

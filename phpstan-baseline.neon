@@ -253,12 +253,6 @@ parameters:
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
-			rawMessage: 'Parameter #1 $arr1 of function array_merge expects array, string given.'
-			identifier: argument.type
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
 			rawMessage: 'Parameter #1 $order_id of method WC_Payment_Gateway_WCPay::get_payment_method_ids_enabled_at_checkout() expects string|null, int|null given.'
 			identifier: argument.type
 			count: 1
@@ -1131,6 +1125,12 @@ parameters:
 		-
 			rawMessage: 'Call to function is_countable() with array will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: 'Call to internal static method Automattic\WooCommerce\StoreApi\StoreApi::container() from outside its root namespace Automattic.'
+			identifier: staticMethod.internal
 			count: 1
 			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
 

@@ -287,10 +287,9 @@ const TextBox = ( { children, maxHeight, themedStyle } ) => {
 		<div
 			className="preview-layout__text-box"
 			style={ { maxHeight, ...themedStyle } }
-			dangerouslySetInnerHTML={ {
-				__html: children,
-			} }
-		/>
+		>
+			{ children }
+		</div>
 	);
 };
 
@@ -312,40 +311,66 @@ const CheckoutButton = ( { height } ) => {
 	);
 };
 
+const PREVIEW_SHORTCODES = new Map( [
+	[ '[terms]', 'Terms of Service' ],
+	[ '[terms_of_service_link]', 'Terms of Service' ],
+	[ '[privacy_policy]', 'Privacy Policy' ],
+	[ '[privacy_policy_link]', 'Privacy Policy' ],
+] );
+
 /**
- * Sanitizes HTML for the preview.
+ * Keep message text in React's escaping path so malformed HTML cannot run.
  *
- * @param {string} input The HTML to sanitize.
- * @return {string} The sanitized HTML.
+ * @param {Node}   node The parsed message node.
+ * @param {number} key  The React key.
+ * @return {React.ReactNode} The safe preview content.
  */
-function sanitizeHtmlForPreview( input ) {
-	return input.replace(
-		/<\/?([a-zA-Z]+)[^>]*>/g,
-		function ( fullMatch, tagName ) {
-			tagName = tagName.toLowerCase();
-			const allowedTags = [ 'a', 'em', 'strong', 'b', 'i' ];
-			// Only allow allowedTags.
-			if ( ! allowedTags.includes( tagName ) ) {
-				return '';
-			}
+function renderPreviewNode( node, key ) {
+	if ( node.nodeType === Node.TEXT_NODE ) {
+		const parts = node.textContent.split(
+			/(\[(?:terms|terms_of_service_link|privacy_policy|privacy_policy_link)\])/g
+		);
+		return (
+			<React.Fragment key={ key }>
+				{ parts.map( ( part, index ) => {
+					const label = PREVIEW_SHORTCODES.get( part );
+					if ( label ) {
+						return (
+							<span
+								className="preview-layout__shortcode-link"
+								key={ index }
+							>
+								{ label }
+							</span>
+						);
+					}
 
-			// 'a' tags are converted to 'span' tags with a class, in the preview.
-			if ( tagName === 'a' ) {
-				if ( fullMatch.startsWith( '</' ) ) {
-					return `</span>`;
-				}
+					return part;
+				} ) }
+			</React.Fragment>
+		);
+	}
 
-				return `<span class="preview-layout__shortcode-link">`;
-			}
+	if ( node.nodeType !== Node.ELEMENT_NODE ) {
+		return null;
+	}
 
-			// Remaining tags are stripped of attributes, in the preview.
-			if ( fullMatch.startsWith( '</' ) ) {
-				return `</${ tagName }>`;
-			}
+	const children = Array.from( node.childNodes, renderPreviewNode );
+	const tagName = node.tagName.toLowerCase();
 
-			return `<${ tagName }>`;
-		}
-	);
+	if ( tagName === 'a' ) {
+		return (
+			<span className="preview-layout__shortcode-link" key={ key }>
+				{ children }
+			</span>
+		);
+	}
+
+	if ( [ 'em', 'strong', 'b', 'i' ].includes( tagName ) ) {
+		return React.createElement( tagName, { key }, children );
+	}
+
+	return <React.Fragment key={ key }>{ children }</React.Fragment>;
 }
 
 const ALLOWED_FONT_DOMAINS = [
@@ -405,21 +430,13 @@ export default ( {
 	}, [ fontRules ] );
 
 	const preparedCustomMessage = useMemo( () => {
-		let rawCustomMessage = ( customMessage || '' ).trim();
-
-		if ( rawCustomMessage ) {
-			rawCustomMessage = sanitizeHtmlForPreview( rawCustomMessage );
-			rawCustomMessage = rawCustomMessage.replace(
-				/\[(terms|terms_of_service_link)\]/g,
-				'<span class="preview-layout__shortcode-link">Terms of Service</span>'
-			);
-			rawCustomMessage = rawCustomMessage.replace(
-				/\[(privacy_policy|privacy_policy_link)\]/g,
-				'<span class="preview-layout__shortcode-link">Privacy Policy</span>'
-			);
+		const message = ( customMessage || '' ).trim();
+		if ( ! message ) {
+			return null;
 		}
 
-		return rawCustomMessage;
+		const parsed = new DOMParser().parseFromString( message, 'text/html' );
+		return Array.from( parsed.body.childNodes, renderPreviewNode );
 	}, [ customMessage ] );
 
 	let storeHeader;

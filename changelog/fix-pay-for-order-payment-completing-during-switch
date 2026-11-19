@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep a WooPayments payment that goes through while the pay for order page is paying the order with another payment method, and take no second payment.

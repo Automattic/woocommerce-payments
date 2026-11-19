@@ -49,12 +49,12 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			return;
 		}
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_BNPL_SITE_MESSAGING', 'dist/bnpl-site-messaging', [ 'stripe' ] );
 		wp_register_style(
-			'wcpay-product-details',
-			plugins_url( 'dist/product-details.css', WCPAY_PLUGIN_FILE ),
+			'wcpay-bnpl-site-messaging',
+			plugins_url( 'dist/bnpl-site-messaging.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/product-details.css' )
+			WC_Payments::get_file_version( 'dist/bnpl-site-messaging.css' )
 		);
 
 		$bnpl_payment_methods = WC_Payments_Utils::get_active_bnpl_payment_method_ids( $this->gateway );
@@ -117,8 +117,8 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			}
 		}
 
-		wp_enqueue_script( 'WCPAY_PRODUCT_DETAILS' );
-		wp_enqueue_style( 'wcpay-product-details' );
+		wp_enqueue_script( 'WCPAY_BNPL_SITE_MESSAGING' );
+		wp_enqueue_style( 'wcpay-bnpl-site-messaging' );
 
 		$country = empty( $billing_country ) ? $store_country : $billing_country;
 
@@ -149,7 +149,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 
 		// Create a script tag with config.
 		wp_localize_script(
-			'WCPAY_PRODUCT_DETAILS',
+			'WCPAY_BNPL_SITE_MESSAGING',
 			'wcpayStripeSiteMessaging',
 			$script_data
 		);
