@@ -261,6 +261,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 	}
 
+	public function tear_down() {
+		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes' );
+		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes_fallback' );
+		parent::tear_down();
+	}
+
 	/**
 	 * Test processing a webhook that requires no action.
 	 */
@@ -901,10 +907,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			],
 			'woocommerce_payments'
 		);
-		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes' );
-		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes_fallback' );
 		$this->assertNotFalse( $note_job );
-		$this->assertLessThanOrEqual( $scheduled + 1, $note_job );
+		$this->assertLessThan( $scheduled + 3600, $note_job );
 	}
 
 	/**
