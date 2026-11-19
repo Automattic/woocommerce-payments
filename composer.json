@@ -39,7 +39,7 @@
         "phpstan/phpstan": "^2.2",
         "phpstan/extension-installer": "^1.3",
         "php-stubs/wordpress-stubs": "7.1.2",
-        "php-stubs/woocommerce-stubs": "11.2.1",
+        "php-stubs/woocommerce-stubs": "11.3.0",
         "rregeer/phpunit-coverage-check": "0.3.1",
         "yoast/phpunit-polyfills": "2.0.5",
         "cweagans/composer-patches": "1.7.3",

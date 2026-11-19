@@ -1273,7 +1273,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 			// From WooCommerce 11.3 the Store API applies the addresses through this method, which also
 			// ships to billing on stores that ship to the billing address only.
-			if ( null !== $order_controller && method_exists( $order_controller, 'update_existing_order_addresses' ) ) {
+			if ( null !== $order_controller && method_exists( $order_controller, 'update_existing_order_addresses' ) ) { // @phpstan-ignore function.alreadyNarrowedType (the stubs describe the latest WooCommerce only)
 				$order_controller->update_existing_order_addresses( $candidate, $addresses['billing'], $addresses['shipping'] );
 				return true;
 			}
