@@ -395,11 +395,12 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Stores orders in the HPOS tables, with HPOS data caching on where WooCommerce has it, for the rest of the
-	 * test. With that caching, even a forced read of an order's meta answers from this process's cache.
+	 * Uses HPOS where the feature is already enabled, with data caching on where WooCommerce supports it.
+	 * With that caching, even a forced read of an order's meta answers from this process's cache.
 	 */
 	protected function store_orders_in_hpos_with_data_caching(): void {
-		$this->set_order_storage( true );
+		// Keep WooCommerce 7.6 on its default store unless a test explicitly enables experimental HPOS.
+		add_filter( 'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, [ $this, 'return_yes' ] );
 		// HPOS data caching arrived after WooCommerce 7.6, the oldest version supported.
 		if ( defined( CustomOrdersTableController::class . '::HPOS_DATASTORE_CACHING_ENABLED_OPTION' ) ) {
 			add_filter( 'pre_option_' . CustomOrdersTableController::HPOS_DATASTORE_CACHING_ENABLED_OPTION, [ $this, 'return_yes' ] );
