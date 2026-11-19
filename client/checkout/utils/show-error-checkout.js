@@ -1,5 +1,7 @@
 /* global jQuery */
 
+import DOMPurify from 'dompurify';
+
 // Show error notice at top of checkout form.
 const showErrorCheckout = (
 	errorMessage,
@@ -36,7 +38,7 @@ const showErrorCheckout = (
 	).remove();
 	$container.prepend(
 		'<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' +
-			messageWrapper +
+			DOMPurify.sanitize( messageWrapper ) +
 			'</div>'
 	);
 	if ( validateFields ) {

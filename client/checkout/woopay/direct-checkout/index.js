@@ -9,131 +9,28 @@ import { debounce } from 'lodash';
  * Internal dependencies
  */
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
-import {
-	waitMilliseconds,
-	waitForSelector,
-} from 'wcpay/checkout/woopay/direct-checkout/utils';
+import { waitMilliseconds } from 'wcpay/checkout/woopay/direct-checkout/utils';
 import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
 
 let isThirdPartyCookieEnabled = false;
 
 /**
- * Handle the WooPay direct checkout for the given checkout buttons.
- *
- * @param {HTMLElement[]} checkoutButtons An array of checkout button elements.
+ * Prefetches the WooPay session if the shopper is logged in to WooPay, and sends clicks on the
+ * checkout buttons to WooPay.
  */
-const handleWooPayDirectCheckout = async ( checkoutButtons ) => {
-	if ( ! checkoutButtons ) {
-		return;
-	}
-
-	// Filter out null/undefined elements (e.g. when a button getter returns null).
-	checkoutButtons = checkoutButtons.filter( Boolean );
-
+const handleWooPayDirectCheckout = async () => {
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-			WooPayDirectCheckout.addRedirectToWooPayEventListener(
-				checkoutButtons,
-				true
-			);
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( true );
 		}
 
 		return;
 	}
 
 	// Pass false to indicate we are not sure if the user is logged in or not.
-	WooPayDirectCheckout.addRedirectToWooPayEventListener(
-		checkoutButtons,
-		false
-	);
-};
-
-/**
- * Add an event listener to the mini cart checkout button.
- */
-const addMiniCartEventListener = () => {
-	const checkoutButton =
-		WooPayDirectCheckout.getMiniCartProceedToCheckoutButton();
-	handleWooPayDirectCheckout( [ checkoutButton ] );
-};
-
-/**
- * Add an event listener to the footer mini cart checkout button.
- */
-const addFooterCartEventListener = () => {
-	const checkoutButton =
-		WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton();
-	handleWooPayDirectCheckout( [ checkoutButton ] );
-};
-
-/**
- * If the mini cart widget is available on the page, attach event listeners to the checkout buttons.
- *
- * Supports two rendering modes:
- * - iAPI (WooCommerce 10.4+): The overlay and buttons are server-side rendered and already in the
- *   DOM at page load. Returns the button elements so the caller can merge them into a single
- *   handleWooPayDirectCheckout call (avoids concurrent isUserLoggedIn races).
- * - Legacy React: The drawer is dynamically injected into the DOM when opened, so we use a
- *   MutationObserver to detect insertion and then wait for the buttons to render.
- *
- * @return {HTMLElement[]} iAPI mini-cart buttons (empty array for legacy/absent mini-cart).
- */
-const maybeObserveMiniCart = () => {
-	// iAPI mini-cart (WC 10.4+): overlay & buttons are SSR'd, already in the DOM.
-	// Return them so the caller can batch all buttons into one handleWooPayDirectCheckout call.
-	if (
-		document.querySelector(
-			'[data-wp-interactive="woocommerce/mini-cart"]'
-		)
-	) {
-		return [
-			WooPayDirectCheckout.getMiniCartProceedToCheckoutButton(),
-			WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton(),
-		];
-	}
-
-	// Legacy React mini-cart: check if the widget is available on the page.
-	if (
-		! document.querySelector( '[data-block-name="woocommerce/mini-cart"]' )
-	) {
-		return [];
-	}
-
-	// Create a MutationObserver to check when the mini cart drawer is added to the DOM.
-	const observer = new MutationObserver( ( mutations ) => {
-		for ( const mutation of mutations ) {
-			if ( mutation?.addedNodes?.length > 0 ) {
-				for ( const node of mutation.addedNodes ) {
-					// Check if the mini cart drawer parent selector was added to the DOM.
-					if (
-						node.nodeType === 1 &&
-						node.matches(
-							'.wc-block-components-drawer__screen-overlay'
-						)
-					) {
-						// Wait until the button is rendered and add the event listener to it.
-						waitForSelector(
-							WooPayDirectCheckout.redirectElements
-								.BLOCKS_MINI_CART_PROCEED_BUTTON,
-							addMiniCartEventListener
-						);
-						waitForSelector(
-							WooPayDirectCheckout.redirectElements
-								.BLOCKS_FOOTER_MINI_CART_PROCEED_BUTTON,
-							addFooterCartEventListener
-						);
-						return;
-					}
-				}
-			}
-		}
-	} );
-
-	observer.observe( document.body, { childList: true } );
-
-	return [];
+	WooPayDirectCheckout.addRedirectToWooPayEventListener( false );
 };
 
 /**
@@ -149,19 +46,18 @@ const shouldPrefetchEncryptedSessionData = async () => {
 };
 
 /**
- * The callback function to be called when an item is added to the cart.
- * Note: the 'experimental__woocommerce_blocks-cart-add-item' hook is triggered
- * after an item is added to the cart. So, no special handling is needed here.
- *
- * @return {Promise<void>} A promise that resolves when the callback is complete.
+ * Prefetches the WooPay session again once the cart settles.
+ * Several events often report the same change, so this waits for them to stop.
  */
-const addItemCallback = async () => {
-	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
-		return;
-	}
+const refreshAfterCartChange = debounce( handleWooPayDirectCheckout, 400 );
 
-	WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
+/**
+ * The prefetched session carries a copy of the cart, which WooPay shows first.
+ * Drop it right away, so a click before the refresh fetches a fresh one.
+ */
+const handleCartChange = () => {
+	WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+	refreshAfterCartChange();
 };
 
 /**
@@ -173,8 +69,8 @@ const addItemCallback = async () => {
  * @type {DebouncedFunc<(function({product: *}): Promise<void>)|*>} The debounced callback function.
  */
 const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
+	WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 		return;
 	}
 
@@ -198,10 +94,7 @@ const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
 	const isItemQtyUpdatedBeforeOutOfAttempts = attempts > 0;
 	if ( isItemQtyUpdatedBeforeOutOfAttempts ) {
 		// Only prefetch the WooPay session data if the item's quantity is updated.
-		WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-	} else {
-		// Force the WooPay session data to be fetched upon button click.
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+		handleCartChange();
 	}
 }, 400 );
 
@@ -212,8 +105,8 @@ const debounceSetItemQtyCallback = debounce( async ( { product } ) => {
  * @return {Promise<void>} A promise that resolves when the callback is complete.
  */
 const removeItemCallback = async ( { product } ) => {
+	WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 	if ( ! ( await shouldPrefetchEncryptedSessionData() ) ) {
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
 		return;
 	}
 
@@ -237,10 +130,7 @@ const removeItemCallback = async ( { product } ) => {
 	const isItemRemovedBeforeOutOfAttempts = attempts > 0;
 	if ( isItemRemovedBeforeOutOfAttempts ) {
 		// Only prefetch the WooPay session data if the item is removed.
-		WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
-	} else {
-		// Force the WooPay session data to be fetched upon button click.
-		WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched();
+		handleCartChange();
 	}
 };
 
@@ -261,7 +151,7 @@ window.addEventListener( 'load', async () => {
 	addAction(
 		'experimental__woocommerce_blocks-cart-add-item',
 		'wcpay_woopay_direct_checkout',
-		addItemCallback
+		handleCartChange
 	);
 
 	addAction(
@@ -276,25 +166,33 @@ window.addEventListener( 'load', async () => {
 		removeItemCallback
 	);
 
-	// Collect iAPI mini-cart buttons (if present) and merge with checkout buttons
-	// into a single handleWooPayDirectCheckout call to avoid concurrent isUserLoggedIn races.
-	// Legacy React mini-cart sets up a MutationObserver internally and returns [].
-	const miniCartButtons = maybeObserveMiniCart();
+	// The hooks above only fire from the React cart and product button. These events also cover
+	// the Interactivity API cart (WC 9.8+), classic add-to-cart buttons and the classic mini-cart.
+	// `wc-blocks_store_sync_required` also fires on any other cart data change, such as a coupon or
+	// shipping rate. Those change the totals in the prefetched session too, so it isn't filtered by type.
+	document.body.addEventListener(
+		'wc-blocks_added_to_cart',
+		handleCartChange
+	);
+	window.addEventListener(
+		'wc-blocks_store_sync_required',
+		handleCartChange
+	);
+	jQuery( document.body ).on(
+		'added_to_cart removed_from_cart',
+		handleCartChange
+	);
 
-	const checkoutButtons = WooPayDirectCheckout.getCheckoutButtonElements();
-	handleWooPayDirectCheckout( [ ...checkoutButtons, ...miniCartButtons ] );
+	handleWooPayDirectCheckout();
 } );
 
 jQuery( ( $ ) => {
-	$( document.body ).on( 'updated_cart_totals', async () => {
+	// The classic cart fires only this after "Update cart" or removing an item.
+	$( document.body ).on( 'updated_cart_totals', () => {
 		if ( shouldSkipWooPay() ) {
 			return;
 		}
 
-		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
-		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
-		const checkoutButton =
-			WooPayDirectCheckout.getClassicProceedToCheckoutButton();
-		handleWooPayDirectCheckout( [ checkoutButton ] );
+		handleCartChange();
 	} );
 } );

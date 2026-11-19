@@ -58,6 +58,9 @@ export default class ExpressCheckoutOrderApi {
 		// merchant-created pay-for-order may be missing (email, phone). The Store API needs them to
 		// take payment and the wallet provides them, so backfilling is safe and tax stays untouched.
 		// See https://github.com/woocommerce/woocommerce/issues/48540
+		// The PHP side hides the buttons when the Store API would reject what is sent here, so keep
+		// it in step with these rules: see `can_store_api_accept_order_addresses()` in
+		// `WC_Payments_Express_Checkout_Button_Helper`.
 		const walletEmail = paymentData.billing_address?.email;
 		const walletPhone = paymentData.billing_address?.phone;
 
