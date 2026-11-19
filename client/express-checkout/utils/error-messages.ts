@@ -7,7 +7,9 @@
 export const getErrorMessageFromNotice = ( notice: string | undefined ) => {
 	if ( ! notice ) return '';
 
-	const div = document.createElement( 'div' );
-	div.innerHTML = notice.trim();
-	return div.firstChild ? div.firstChild.textContent : '';
+	const parsed = new DOMParser().parseFromString(
+		notice.trim(),
+		'text/html'
+	);
+	return parsed.body.firstChild ? parsed.body.firstChild.textContent : '';
 };

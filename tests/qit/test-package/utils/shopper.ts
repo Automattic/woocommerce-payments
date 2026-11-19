@@ -365,6 +365,12 @@ export const fillCardDetailsWCB = async (
 	const newPaymentMethodRadioButton = page.locator(
 		'#radio-control-wc-payment-method-options-woocommerce_payments'
 	);
+	// With a saved card the payment options render late and the new card is not selected.
+	await expect(
+		newPaymentMethodRadioButton
+			.or( page.locator( '.__PrivateStripeElement' ) )
+			.first()
+	).toBeVisible();
 	if ( await newPaymentMethodRadioButton.isVisible() ) {
 		await newPaymentMethodRadioButton.click();
 	}
