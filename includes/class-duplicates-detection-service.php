@@ -194,10 +194,11 @@ class Duplicates_Detection_Service {
 	}
 
 	/**
-	 * Check the wallet settings of plugins known to keep them on another gateway.
+	 * Check the wallet settings of WooCommerce-maintained plugins that keep them on another gateway.
 	 *
-	 * These settings are internal to each plugin and may change without notice. A plugin that renames
-	 * one stops being detected, so only its duplicate notice is lost.
+	 * Third-party plugins are left out on purpose: these settings are internal to each plugin and may
+	 * change without notice. A plugin that renames one stops being detected, so only its duplicate
+	 * notice is lost.
 	 *
 	 * @param \WC_Payment_Gateway $gateway Enabled gateway.
 	 *
@@ -226,11 +227,6 @@ class Duplicates_Detection_Service {
 
 			case 'braintree_credit_card':
 				return 'yes' === get_option( 'sv_wc_apple_pay_enabled' ) || 'yes' === get_option( 'sv_wc_google_pay_enabled' );
-
-			case 'airwallex_express_checkout':
-				$wallets = (array) $gateway->get_option( 'payment_methods', [] );
-
-				return ! empty( array_intersect( [ 'apple_pay', 'google_pay' ], $wallets ) );
 		}
 
 		return false;

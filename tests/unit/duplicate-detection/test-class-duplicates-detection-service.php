@@ -198,8 +198,6 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 			'braintree apple pay on'           => [ 'braintree_credit_card', [ 'title' => 'Braintree' ], [ 'sv_wc_apple_pay_enabled' => 'yes' ], true ],
 			'braintree google pay on'          => [ 'braintree_credit_card', [ 'title' => 'Braintree' ], [ 'sv_wc_google_pay_enabled' => 'yes' ], true ],
 			'braintree wallets off'            => [ 'braintree_credit_card', [ 'title' => 'Braintree' ], [ 'sv_wc_apple_pay_enabled' => 'no' ], false ],
-			'airwallex wallet selected'        => [ 'airwallex_express_checkout', [ 'payment_methods' => [ 'google_pay' ] ], [], true ],
-			'airwallex no wallet selected'     => [ 'airwallex_express_checkout', [ 'payment_methods' => [] ], [], false ],
 			'express_checkout_enabled option'  => [ 'cpsw_express_checkout', [ 'express_checkout_enabled' => 'yes' ], [], true ],
 			'unknown gateway'                  => [ 'square_cash_app_pay', [ 'title' => 'Cash App' ], [], false ],
 		];
