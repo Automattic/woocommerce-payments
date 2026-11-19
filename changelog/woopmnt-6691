@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show express checkout buttons and let WooPay open on a guest order's payment page when WooCommerce doesn't ask the shopper to confirm their email. WooPay now shows an error if it can't load the order.
