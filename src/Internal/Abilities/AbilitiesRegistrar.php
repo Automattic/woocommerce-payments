@@ -88,18 +88,40 @@ class AbilitiesRegistrar {
 	];
 
 	/**
-	 * Ability classes enabled by the filters evaluated in `init()`.
-	 *
-	 * @var class-string<AbilityDefinition>[]
-	 */
-	private static $enabled_classes = [];
-
-	/**
 	 * Initialize the abilities registration.
+	 *
+	 * The enablement filters are read in `append_classes()`, when WooCommerce
+	 * registers abilities on `wp_abilities_api_init` (after `init`), so
+	 * callbacks added from a theme's `functions.php` take effect.
 	 *
 	 * @return void
 	 */
 	public static function init() {
+		if ( self::woo_abilities_loader_available() ) {
+			add_filter( 'woocommerce_ability_definition_classes', [ __CLASS__, 'append_classes' ] );
+		}
+	}
+
+	/**
+	 * Filter callback for `woocommerce_ability_definition_classes`.
+	 *
+	 * @param mixed $classes Class names accumulated by the loader.
+	 * @return array
+	 */
+	public static function append_classes( $classes ): array {
+		if ( ! is_array( $classes ) ) {
+			$classes = [];
+		}
+
+		return array_merge( $classes, self::get_enabled_classes() );
+	}
+
+	/**
+	 * Ability classes enabled by the read, write and deprecated filters.
+	 *
+	 * @return class-string<AbilityDefinition>[]
+	 */
+	private static function get_enabled_classes(): array {
 		$read_enabled  = true;
 		$write_enabled = false;
 
@@ -153,28 +175,10 @@ class AbilitiesRegistrar {
 		 */
 		$write_enabled = self::to_bool( apply_filters( 'woocommerce_payments_write_abilities_enabled', $write_enabled ), $write_enabled );
 
-		self::$enabled_classes = array_merge(
+		return array_merge(
 			$read_enabled ? self::READ_ABILITY_CLASSES : [],
 			$write_enabled ? self::WRITE_ABILITY_CLASSES : []
 		);
-
-		if ( [] === self::$enabled_classes ) {
-			return;
-		}
-
-		if ( self::woo_abilities_loader_available() ) {
-			add_filter( 'woocommerce_ability_definition_classes', [ __CLASS__, 'append_classes' ] );
-		}
-	}
-
-	/**
-	 * Filter callback for `woocommerce_ability_definition_classes`.
-	 *
-	 * @param array $classes Class names accumulated by the loader.
-	 * @return array
-	 */
-	public static function append_classes( array $classes ): array {
-		return array_merge( $classes, self::$enabled_classes );
 	}
 
 	/**
