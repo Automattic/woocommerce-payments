@@ -19,10 +19,17 @@ describe( 'WooPay Utils', () => {
 	it.each( [
 		[ 'user@example.com', true ],
 		[ 'user+tag@sub.example.co.uk', true ],
+		[ 'first.last@my-store.example.com', true ],
 		[ 'user@example.co.', true ],
 		[ 'user@example.c', false ],
 		[ 'user@example.com-', false ],
 		[ 'user@example', false ],
+		[ '.user@example.com', false ],
+		[ 'user.@example.com', false ],
+		[ 'user..name@example.com', false ],
+		[ 'user@-example.com', false ],
+		[ 'user@example-.com', false ],
+		[ 'user@example..com', false ],
 		[ '用户@example.com', false ],
 		[ '!@' + '0.0.'.repeat( 14 ) + '!', false ],
 	] )( 'validates WooPay email %s', ( email, expected ) => {

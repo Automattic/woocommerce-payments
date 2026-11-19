@@ -64,10 +64,10 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 	public function tear_down(): void {
 		parent::tear_down();
 		wp_reset_postdata();
-		wp_dequeue_script( 'WCPAY_PRODUCT_DETAILS' );
-		wp_deregister_script( 'WCPAY_PRODUCT_DETAILS' );
-		wp_dequeue_style( 'wcpay-product-details' );
-		wp_deregister_style( 'wcpay-product-details' );
+		wp_dequeue_script( 'WCPAY_BNPL_SITE_MESSAGING' );
+		wp_deregister_script( 'WCPAY_BNPL_SITE_MESSAGING' );
+		wp_dequeue_style( 'wcpay-bnpl-site-messaging' );
+		wp_deregister_style( 'wcpay-bnpl-site-messaging' );
 	}
 
 	private function setup_gateway_mocks() {
@@ -87,7 +87,7 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 	private function get_script_data() {
 		// this returns a string with value `var wcpayStripeSiteMessaging = {[...]};`.
 		// but we just need the object within this string, so we can parse it through `json_decode`.
-		$script_data_string = wp_scripts()->get_data( 'WCPAY_PRODUCT_DETAILS', 'data' );
+		$script_data_string = wp_scripts()->get_data( 'WCPAY_BNPL_SITE_MESSAGING', 'data' );
 
 		// finding the position of the first '{' and the last '}'.
 		$start_pos = strpos( $script_data_string, '{' );
@@ -137,8 +137,10 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$script_data = $this->get_script_data();
 
 		$this->assertSame( '<div id="payment-method-message"></div>', $result );
-		$this->assertTrue( wp_script_is( 'WCPAY_PRODUCT_DETAILS', 'enqueued' ) );
-		$this->assertTrue( wp_style_is( 'wcpay-product-details', 'enqueued' ) );
+		$this->assertTrue( wp_script_is( 'WCPAY_BNPL_SITE_MESSAGING', 'enqueued' ) );
+		$this->assertStringEndsWith( '/dist/bnpl-site-messaging.js', wp_scripts()->registered['WCPAY_BNPL_SITE_MESSAGING']->src );
+		$this->assertTrue( wp_style_is( 'wcpay-bnpl-site-messaging', 'enqueued' ) );
+		$this->assertStringEndsWith( '/dist/bnpl-site-messaging.css', wp_styles()->registered['wcpay-bnpl-site-messaging']->src );
 		$this->assertContains( 'affirm', $script_data['paymentMethods'], 'Affirm should be included' );
 		$this->assertContains( 'klarna', $script_data['paymentMethods'], 'Klarna should be included' );
 		$this->assertNotContains( 'afterpay_clearpay', $script_data['paymentMethods'], 'Afterpay should not be included' );
@@ -177,11 +179,11 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$result = $this->messaging_element->init();
 
 		$this->assertNull( $result );
-		$this->assertTrue( wp_script_is( 'WCPAY_PRODUCT_DETAILS', 'registered' ) );
-		$this->assertFalse( wp_script_is( 'WCPAY_PRODUCT_DETAILS', 'enqueued' ) );
-		$this->assertTrue( wp_style_is( 'wcpay-product-details', 'registered' ) );
-		$this->assertFalse( wp_style_is( 'wcpay-product-details', 'enqueued' ) );
-		$this->assertFalse( wp_scripts()->get_data( 'WCPAY_PRODUCT_DETAILS', 'data' ) );
+		$this->assertTrue( wp_script_is( 'WCPAY_BNPL_SITE_MESSAGING', 'registered' ) );
+		$this->assertFalse( wp_script_is( 'WCPAY_BNPL_SITE_MESSAGING', 'enqueued' ) );
+		$this->assertTrue( wp_style_is( 'wcpay-bnpl-site-messaging', 'registered' ) );
+		$this->assertFalse( wp_style_is( 'wcpay-bnpl-site-messaging', 'enqueued' ) );
+		$this->assertFalse( wp_scripts()->get_data( 'WCPAY_BNPL_SITE_MESSAGING', 'data' ) );
 	}
 
 	/**
@@ -230,8 +232,8 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 
 		$this->messaging_element->init();
 
-		// No inline script should be added before WCPAY_PRODUCT_DETAILS.
-		$registered = wp_scripts()->registered['WCPAY_PRODUCT_DETAILS'];
+		// No inline script should be added before WCPAY_BNPL_SITE_MESSAGING.
+		$registered = wp_scripts()->registered['WCPAY_BNPL_SITE_MESSAGING'];
 		$before     = $registered->extra['before'] ?? [];
 		$inline_js  = implode( '', $before );
 
