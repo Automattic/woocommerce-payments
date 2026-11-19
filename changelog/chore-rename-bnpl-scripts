@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Notice: BNPL messaging uses new asset names and handles. Update custom enqueues to match.
+Notice: BNPL script handles changed from WCPAY_PRODUCT_DETAILS to WCPAY_BNPL_SITE_MESSAGING and from WCPAY_CART_BLOCK (script) to WCPAY_BNPL_CART_BLOCK. The wcpay-product-details style handle changed to wcpay-bnpl-site-messaging. Update custom enqueues.
