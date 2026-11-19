@@ -6190,9 +6190,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * WooPayments refunds its fee on non-card Amazon Pay payments when the platform handles Stripe's event, a
-	 * second or two after the payment. A note written before that shows the fee from before the refund, so
-	 * completing the payment only schedules a delayed backup: the forwarded event writes the note.
+	 * Completing an Amazon Pay payment only schedules the backup: the webhook writes the note, after the fee refund.
 	 */
 	public function test_completed_amazon_pay_payment_leaves_the_fee_details_note_to_the_webhook() {
 		$this->order->set_payment_method( self::AMAZON_PAY_GATEWAY_ID );
@@ -6262,8 +6260,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * The webhook's job and the backup job can both run, and Stripe can deliver the event again: a payment
-	 * gets one Fee details note.
+	 * Both jobs can run, and Stripe can deliver the event again: a payment gets one Fee details note.
 	 */
 	public function test_add_fee_breakdown_to_order_notes_adds_the_note_once_per_payment() {
 		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
@@ -7029,8 +7026,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Completing an authorized Amazon Pay order captures it, and Stripe's event for that capture triggers the
-	 * platform's fee refund, so the capture only schedules the backup and leaves the note to the forwarded event.
+	 * Capturing an Amazon Pay order on status change also leaves the note to the webhook.
 	 */
 	public function test_capture_authorization_on_order_status_change_leaves_the_amazon_pay_fee_details_note_to_the_webhook() {
 		$this->order->set_payment_method( self::AMAZON_PAY_GATEWAY_ID );

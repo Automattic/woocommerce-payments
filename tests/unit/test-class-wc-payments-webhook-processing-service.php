@@ -886,8 +886,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * The platform refunds WooPayments' fee on non-card Amazon Pay payments before it forwards this event, so the
-	 * Fee details note written from it shows the fee after the refund.
+	 * The webhook writes the Amazon Pay Fee details note: the platform forwards it after the fee refund.
 	 */
 	public function test_payment_intent_succeeded_adds_the_amazon_pay_fee_details_note() {
 		$order = $this->create_order_settled_with_another_payment( Order_Status::PENDING, Intent_Status::SUCCEEDED, '' );

@@ -30,9 +30,8 @@ class WC_Payments_Order_Service {
 	const ADD_FEE_BREAKDOWN_TO_ORDER_NOTES = 'wcpay_add_fee_breakdown_to_order_notes';
 
 	/**
-	 * Delayed backup for the Fee details note of a payment whose note the forwarded `payment_intent.succeeded`
-	 * event writes, for when that event never arrives. A hook of its own, so that scheduling one job never
-	 * replaces the other: the scheduler drops a pending job when the same hook and arguments are scheduled again.
+	 * Delayed backup for a Fee details note the webhook writes, in case the webhook never arrives. A separate
+	 * hook, so scheduling one job doesn't replace the other.
 	 *
 	 * @const string
 	 */
@@ -1054,8 +1053,8 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Schedules the Fee details note from the forwarded `payment_intent.succeeded` event, for a payment whose fee the
-	 * platform may change before forwarding it. See is_fee_breakdown_note_written_from_webhook().
+	 * Schedules the Fee details note from the forwarded `payment_intent.succeeded` webhook, when that is where the
+	 * order's note is written (see is_fee_breakdown_note_written_from_webhook()).
 	 *
 	 * @param WC_Order $order     The order the payment is for.
 	 * @param string   $intent_id The payment's intent ID.
@@ -1094,7 +1093,7 @@ class WC_Payments_Order_Service {
 		if ( ! $order ) {
 			return;
 		}
-		// The webhook's job and the backup job can both run for a payment, and Stripe can deliver its event again.
+		// Both jobs can run for a payment, and Stripe can deliver its event again.
 		if ( $intent_id === $order->get_meta( self::FEE_BREAKDOWN_NOTE_INTENT_META_KEY ) ) {
 			return;
 		}
@@ -4255,9 +4254,7 @@ class WC_Payments_Order_Service {
 
 	/**
 	 * Schedules an action to add the fee breakdown to order notes, once the payment completes or is captured.
-	 *
-	 * For a payment whose note the forwarded event writes (see is_fee_breakdown_note_written_from_webhook()), this
-	 * only schedules a delayed backup, for when that event never arrives.
+	 * When the webhook writes the note, this only schedules the delayed backup.
 	 *
 	 * @param WC_Order $order The order to add the note to.
 	 * @param string   $intent_id The intent ID for the order.
@@ -4282,15 +4279,10 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Whether the forwarded `payment_intent.succeeded` event, rather than the checkout or capture, writes the
-	 * order's Fee details note.
+	 * Whether the forwarded webhook, not the checkout or capture, writes the order's Fee details note.
 	 *
-	 * The platform can change the fee in its own handling of Stripe's event, after the payment has succeeded: today
-	 * it refunds WooPayments' fee on non-card Amazon Pay payments. The timeline shows the fee from before that until
-	 * the refund is saved, a second or two after the payment, and a note job scheduled at checkout usually runs
-	 * first. The platform only forwards the event once the refund is done, so a note written from it is right.
-	 * Other payments keep their note right after the payment. Payments made on WooPay could not move anyway: the
-	 * platform never forwards their event.
+	 * For Amazon Pay, the platform refunds WooPayments' fee a second or two after the payment, and forwards the
+	 * webhook only after that. A note written at checkout shows the fee from before the refund.
 	 *
 	 * @param WC_Order $order The order.
 	 *
@@ -4301,8 +4293,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Arguments of the Fee details note jobs. Both hooks take the same ones, in the order
-	 * add_fee_breakdown_to_order_notes() reads them.
+	 * Arguments of both Fee details note jobs, in the order add_fee_breakdown_to_order_notes() takes them.
 	 *
 	 * @param WC_Order $order     The order.
 	 * @param string   $intent_id The intent ID for the order.
