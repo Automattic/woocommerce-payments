@@ -15,6 +15,7 @@ import {
 } from './utils';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
+import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -39,7 +40,21 @@ export const handleWooPayEmailInput = async (
 
 	const spinner = document.createElement( 'div' );
 	const parentDiv = woopayEmailInput.parentNode;
+	const isFirstPartyAuth = getConfig( 'isWoopayFirstPartyAuthEnabled' );
 	spinner.classList.add( 'wc-block-components-spinner' );
+
+	const continueButton = document.createElement( 'button' );
+	continueButton.type = 'button';
+	continueButton.textContent = __(
+		'Continue with WooPay',
+		'woocommerce-payments'
+	);
+	continueButton.classList.add( 'woopay-email-continue-button' );
+	continueButton.hidden = true;
+	if ( isFirstPartyAuth ) {
+		parentDiv.insertAdjacentElement( 'afterend', continueButton );
+		WooPayFirstPartyAuth.init();
+	}
 
 	// Make the otp iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
@@ -185,31 +200,6 @@ export const handleWooPayEmailInput = async (
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
-		const appearance = resolveWoopayAppearance();
-
-		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
-			request(
-				buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
-				{
-					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-					order_id: getConfig( 'order_id' ),
-					key: getConfig( 'key' ),
-					billing_email: getConfig( 'billing_email' ),
-					appearance: appearance,
-				}
-			).then( ( response ) => {
-				if ( response?.data?.session ) {
-					iframe.contentWindow.postMessage(
-						{
-							action: 'setSessionData',
-							value: response,
-						},
-						getConfig( 'woopayHost' )
-					);
-				}
-			} );
-		}
-
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
 
@@ -294,8 +284,67 @@ export const handleWooPayEmailInput = async (
 	const showErrorMessage = () => {
 		const node = isBlocksCheckout ? parentDiv.parentNode : parentDiv;
 
-		node.insertBefore( errorMessage, null );
+		if ( ! node.contains( errorMessage ) ) {
+			node.insertBefore( errorMessage, null );
+		}
 	};
+
+	continueButton.addEventListener( 'click', async () => {
+		if ( continueButton.disabled ) {
+			return;
+		}
+
+		if ( ! validateEmail( woopayEmailInput.value ) ) {
+			return;
+		}
+
+		const email = woopayEmailInput.value;
+		continueButton.disabled = true;
+		try {
+			const response =
+				await WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
+					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+					order_id: getConfig( 'order_id' ),
+					key: getConfig( 'key' ),
+					billing_email: getConfig( 'billing_email' ),
+					email,
+					appearance: resolveWoopayAppearance(),
+				} );
+			if ( ! response?.blog_id ) {
+				throw new Error( 'WooPay session unavailable' );
+			}
+			if ( ! response?.data?.session ) {
+				throw new Error( 'WooPay session unavailable' );
+			}
+
+			const sessionResponse =
+				await WooPayFirstPartyAuth.sendPreemptiveSessionDataToWooPay(
+					response
+				);
+			if ( sessionResponse?.is_error ) {
+				throw new Error( 'WooPay checkout unavailable' );
+			}
+			if ( ! sessionResponse?.redirect_url ) {
+				throw new Error( 'WooPay checkout unavailable' );
+			}
+			if ( email !== woopayEmailInput.value ) {
+				continueButton.disabled = false;
+				return;
+			}
+			if ( signal.aborted ) {
+				continueButton.disabled = false;
+				return;
+			}
+
+			deleteSkipWooPayCookie();
+			window.location.href = appendRedirectionParams(
+				sessionResponse.redirect_url
+			);
+		} catch ( error ) {
+			showErrorMessage();
+			continueButton.disabled = false;
+		}
+	} );
 
 	document.addEventListener( 'keyup', ( event ) => {
 		if ( event.key === 'Escape' && closeIframe() ) {
@@ -310,6 +359,7 @@ export const handleWooPayEmailInput = async (
 
 	signal.addEventListener( 'abort', () => {
 		spinner.remove();
+		continueButton.remove();
 		closeIframe( false );
 	} );
 
@@ -409,11 +459,21 @@ export const handleWooPayEmailInput = async (
 				return response.json();
 			} )
 			.then( ( data ) => {
+				if ( email !== woopayEmailInput.value ) {
+					return;
+				}
+				if ( signal.aborted ) {
+					return;
+				}
+
 				// Dispatch an event after we get the response.
 				dispatchUserExistEvent( data[ 'user-exists' ] );
 
 				if ( data[ 'user-exists' ] ) {
-					if ( shouldOpenIframe ) {
+					if ( isFirstPartyAuth ) {
+						continueButton.hidden =
+							customerClickedBackButton && ! shouldOpenIframe;
+					} else if ( shouldOpenIframe ) {
 						openIframe( email );
 					}
 				} else if ( data.code !== 'rest_invalid_param' ) {
@@ -427,6 +487,12 @@ export const handleWooPayEmailInput = async (
 				}
 			} )
 			.catch( ( err ) => {
+				if ( email !== woopayEmailInput.value ) {
+					return;
+				}
+				if ( signal.aborted ) {
+					return;
+				}
 				// Only show the error if it's a connection related error
 				// connecting to WooPay.
 				if (
@@ -448,6 +514,8 @@ export const handleWooPayEmailInput = async (
 
 		clearTimeout( timer );
 		spinner.remove();
+		continueButton.hidden = true;
+		continueButton.disabled = false;
 
 		timer = setTimeout( () => {
 			dispatchUserExistEvent( false ); // Always show checkbox until the email is from a valid WooPay user.

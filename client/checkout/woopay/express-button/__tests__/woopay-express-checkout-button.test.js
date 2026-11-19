@@ -288,6 +288,28 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 	} );
 
+	test( 'does not open the OTP iframe when first-party session setup fails', async () => {
+		render(
+			<WoopayExpressCheckoutButton
+				isPreview={ false }
+				buttonSettings={ buttonSettings }
+				api={ api }
+				isProductPage={ false }
+				emailSelector="#email"
+			/>
+		);
+
+		await userEvent.click( screen.getByRole( 'link', { name: 'WooPay' } ) );
+
+		await waitFor( () => {
+			expect( request ).toHaveBeenCalled();
+			expect(
+				screen.getByRole( 'link', { name: 'WooPay' } )
+			).not.toHaveAttribute( 'aria-disabled' );
+		} );
+		expect( expressCheckoutIframe ).not.toHaveBeenCalled();
+	} );
+
 	test( 'call `expressCheckoutIframe` on button click when `isPreview` is false', async () => {
 		getConfig.mockImplementation( ( v ) => {
 			return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
