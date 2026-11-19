@@ -206,7 +206,7 @@
 		"msw": "1.3.2",
 		"node-wp-i18n": "1.2.8",
 		"parse5": "7.3.0",
-		"playwright": "1.64.1",
+		"playwright": "1.65.0",
 		"postcss": "8.5.33",
 		"prettier": "npm:wp-prettier@3.9.6",
 		"process": "0.11.10",
