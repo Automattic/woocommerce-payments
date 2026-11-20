@@ -8,6 +8,8 @@
 namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use WC_Payments_Account;
+use WCPay\Internal\Service\AgentPurchases\Feature;
+use WCPay\Internal\Service\AgentPurchases\QuoteService;
 use WCPay\Core\Mode;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Logger;
@@ -30,6 +32,8 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	 * @var string[]
 	 */
 	protected $provides = [
+		Feature::class,
+		QuoteService::class,
 		Logger::class,
 		LoggerContext::class,
 		OrderService::class,
@@ -44,6 +48,9 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 
 		$container = $this->getContainer();
+
+		$container->addShared( QuoteService::class );
+		$container->addShared( Feature::class )->addArgument( QuoteService::class );
 
 		$container->add( 'wc_get_logger', 'wc_get_logger' );
 		$container->addShared( Logger::class )
