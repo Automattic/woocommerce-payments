@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Run the WordPress.org deploy step in a separate job behind the wporg-deploy environment, so the build never sees the WordPress.org login.
