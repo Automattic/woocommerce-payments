@@ -1510,7 +1510,14 @@ class WC_Payments_Utils {
 			return;
 		}
 
-		wp_add_inline_script( 'stripe', 'window.wcpayStripeJsOriginCheckDisabled = true;', 'before' );
+		// Checkout, blocks and express checkout all register the handle on one request.
+		$flag   = 'window.wcpayStripeJsOriginCheckDisabled = true;';
+		$before = wp_scripts()->get_data( 'stripe', 'before' );
+		if ( is_array( $before ) && in_array( $flag, $before, true ) ) {
+			return;
+		}
+
+		wp_add_inline_script( 'stripe', $flag, 'before' );
 	}
 
 	/**

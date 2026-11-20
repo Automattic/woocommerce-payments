@@ -1562,14 +1562,15 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( wp_scripts()->get_data( 'stripe', 'before' ) );
 	}
 
-	public function test_register_stripe_js_adds_the_inline_flag_when_the_filter_returns_false() {
+	public function test_register_stripe_js_adds_the_inline_flag_once_when_the_filter_returns_false() {
 		add_filter( 'wcpay_enforce_stripe_js_origin', '__return_false' );
 
 		WC_Payments_Utils::register_stripe_js();
+		WC_Payments_Utils::register_stripe_js();
 
-		$this->assertContains(
-			'window.wcpayStripeJsOriginCheckDisabled = true;',
-			wp_scripts()->get_data( 'stripe', 'before' )
+		$this->assertSame(
+			[ 'window.wcpayStripeJsOriginCheckDisabled = true;' ],
+			array_values( array_filter( wp_scripts()->get_data( 'stripe', 'before' ) ) )
 		);
 	}
 
