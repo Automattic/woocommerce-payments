@@ -41,7 +41,6 @@ jobs:
           ref: ${{ inputs.branch }}
           persist-credentials: false
 
-      # The branch can move while the deploy waits for approval; deploy the commit we built.
       - name: Record the built commit
         id: commit
         shell: bash
