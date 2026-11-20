@@ -2214,12 +2214,6 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_REFERER'] = $referer;
 
 		try {
-			if ( method_exists( WC(), 'is_store_api_request' ) && WC()->is_store_api_request() ) {
-				// Since 11.3.1, WooCommerce matches the Store API prefix case-insensitively, so `init_hooks()` already
-				// treats a mixed-case URL as a Store API request and the route matching below never runs.
-				$this->markTestSkipped( 'WooCommerce already reads this URL as a Store API request.' );
-			}
-
 			$this->init_multi_currency( null, true, null, null, null, false );
 			$this->multi_currency->init_hooks();
 			$this->multi_currency->init();
@@ -2247,7 +2241,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$admin = 'http://example.org/wp-admin/';
 
 		return [
-			'mixed-case route'                   => [ '/wp-json/wc/Store/v1/cart/update-item', '/wc/Store/v1/cart/update-item', $shop, 'speed' ],
+			'mixed-case rest_route parameter'    => [ '/wp-json/', '/wc/Store/v1/cart/update-item', $shop, 'speed' ],
 			'rest_route parameter'               => [ '/wp-json/', '/wc/store/v1/cart/update-item', $shop, 'speed' ],
 			'batched in batch/v1'                => [ '/wp-json/batch/v1', '/wc/store/v1/cart/update-item', $shop, 'speed' ],
 			'batched in batch/v1, admin referer' => [ '/wp-json/batch/v1', '/wc/store/v1/cart/update-item', $admin, 'speed' ],
@@ -2289,10 +2283,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$admin = 'http://example.org/wp-admin/';
 
 		return [
-			'mixed-case route'                   => [ '/wp-json/wc/Store/v1/mc-stub', $shop, 'direct' ],
-			'mixed-case route, admin referer'    => [ '/wp-json/wc/Store/v1/mc-stub', $admin, 'direct' ],
-			'batched in batch/v1'                => [ '/wp-json/batch/v1', $shop, 'batch' ],
-			'batched in batch/v1, admin referer' => [ '/wp-json/batch/v1', $admin, 'batch' ],
+			'mixed-case rest_route parameter'      => [ '/wp-json/', $shop, 'direct' ],
+			'mixed-case rest_route, admin referer' => [ '/wp-json/', $admin, 'direct' ],
+			'batched in batch/v1'                  => [ '/wp-json/batch/v1', $shop, 'batch' ],
+			'batched in batch/v1, admin referer'   => [ '/wp-json/batch/v1', $admin, 'batch' ],
 		];
 	}
 
@@ -4446,11 +4440,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$request = new WP_REST_Request( 'POST', '/wc/Store/v1/mc-stub' );
 		}
 
+		// WooCommerce 11.3.1+ refuses Store API routes in `batch/v1`; older versions still send them to our code.
+		remove_filter( 'rest_request_before_callbacks', [ \Automattic\WooCommerce\StoreApi\StoreApi::container()->get( \Automattic\WooCommerce\StoreApi\Authentication::class ), 'sanitize_batch_request' ] );
 		$response = rest_do_request( $request );
-		if ( 'batch' === $dispatch && 'woocommerce_rest_invalid_path' === ( $response->get_data()['code'] ?? null ) ) {
-			// Since 11.3.1, WooCommerce refuses Store API routes sent through `batch/v1`, so this path can't reach one.
-			$this->markTestSkipped( 'WooCommerce refuses Store API requests sent through batch/v1.' );
-		}
 		$this->assertContains( $response->get_status(), [ 200, 207 ], wp_json_encode( $response->get_data() ) );
 		if ( 'batch' === $dispatch ) {
 			$this->assertSame( [ 200, 200 ], wp_list_pluck( $response->get_data()['responses'], 'status' ), wp_json_encode( $response->get_data() ) );
