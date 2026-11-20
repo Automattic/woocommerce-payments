@@ -4,7 +4,7 @@
 /**
  * Internal dependencies
  */
-import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
+import { initializeBnplSiteMessaging } from './stripe-element';
 import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 

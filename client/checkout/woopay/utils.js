@@ -41,9 +41,26 @@ export const validateEmail = ( value ) => {
 		return false;
 	}
 
+	const [ localPart, domain ] = value.split( '@' );
+	if ( localPart.split( '.' ).includes( '' ) ) {
+		return false;
+	}
+
+	const domainWithoutTrailingDot = domain.endsWith( '.' )
+		? domain.slice( 0, -1 )
+		: domain;
+	const domainLabels = domainWithoutTrailingDot.split( '.' );
+	if (
+		domainLabels.some(
+			( label ) =>
+				! label || label.startsWith( '-' ) || label.endsWith( '-' )
+		)
+	) {
+		return false;
+	}
+
 	// Keep the two-character TLD check before skipping WooPay email entry.
-	const address = value.endsWith( '.' ) ? value.slice( 0, -1 ) : value;
-	const topLevelDomain = address.slice( address.lastIndexOf( '.' ) + 1 );
+	const topLevelDomain = domainLabels[ domainLabels.length - 1 ];
 	return /^[a-z][a-z\d-]*[a-z\d]$/i.test( topLevelDomain );
 };
 
