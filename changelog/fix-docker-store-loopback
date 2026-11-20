@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Enable loopback requests so background jobs start automatically on local Docker stores.

@@ -16,6 +16,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Mode;
 use WCPay\Constants\Payment_Method;
 
 /**
@@ -212,6 +213,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Update the order: set the payment method and attach intent attributes.
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
+			// An earlier online attempt can leave the other mode on the order. The intent was just fetched
+			// in the store's mode, and attaching it saves the order.
+			$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 			$this->order_service->attach_intent_info_to_order( $order, $intent );
 
 			$this->order_service->update_order_status_from_intent( $order, $intent );
