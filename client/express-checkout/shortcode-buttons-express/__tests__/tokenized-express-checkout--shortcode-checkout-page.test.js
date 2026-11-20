@@ -657,6 +657,58 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			expect( global.jQuery.unblockUI ).not.toHaveBeenCalled();
 		} );
 
+		it( 'should reject address and rate changes from a sheet still open on the old button', async () => {
+			openWallet();
+			const onStaleAddressChange = stripeElementMock.__getRegisteredEvent(
+				'shippingaddresschange'
+			);
+			const onStaleRateChange =
+				stripeElementMock.__getRegisteredEvent( 'shippingratechange' );
+			await refresh();
+			const newElements = stripeInstance.elements.mock.results[ 1 ].value;
+			newElements.update = jest.fn();
+			apiFetch.mockClear();
+			const addressEvent = {
+				name: 'Jane Doe',
+				address: { country: 'US', postal_code: '94110' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+			const rateEvent = {
+				shippingRate: { id: 'flat_rate:1' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+
+			await onStaleAddressChange( addressEvent );
+			await onStaleRateChange( rateEvent );
+
+			expect( addressEvent.reject ).toHaveBeenCalledTimes( 1 );
+			expect( addressEvent.resolve ).not.toHaveBeenCalled();
+			expect( rateEvent.reject ).toHaveBeenCalledTimes( 1 );
+			expect( rateEvent.resolve ).not.toHaveBeenCalled();
+			expect( apiFetch ).not.toHaveBeenCalled();
+			expect( newElements.update ).not.toHaveBeenCalled();
+		} );
+
+		it( 'should not place an order from a sheet still open on the old button', async () => {
+			openWallet();
+			const onStaleConfirm =
+				stripeElementMock.__getRegisteredEvent( 'confirm' );
+			await refresh();
+			const newElements = stripeInstance.elements.mock.results[ 1 ].value;
+			newElements.submit = jest.fn( () => Promise.resolve( {} ) );
+			apiFetch.mockClear();
+
+			await onStaleConfirm( {} );
+
+			expect( newElements.submit ).not.toHaveBeenCalled();
+			expect( apiFetch ).not.toHaveBeenCalled();
+			expect(
+				screen.getByText( 'Your cart changed. Please try again.' )
+			).toBeInTheDocument();
+		} );
+
 		it( 'should still mount the new button when Stripe already destroyed the old one', async () => {
 			// Stripe destroys the Element itself after `loaderror`, and a second
 			// `destroy()` throws.
