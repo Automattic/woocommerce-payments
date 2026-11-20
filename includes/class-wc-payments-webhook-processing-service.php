@@ -850,6 +850,9 @@ class WC_Payments_Webhook_Processing_Service {
 			$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 		}
 
+		// The platform forwards this event only after its own handling, which can change the fee.
+		$this->order_service->enqueue_add_fee_breakdown_to_order_notes_from_webhook( $order, $intent_id );
+
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		// Send the customer a card reader receipt if it's an in person payment type.
 		if ( Payment_Method::CARD_PRESENT === $payment_method || Payment_Method::INTERAC_PRESENT === $payment_method ) {
