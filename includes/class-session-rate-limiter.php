@@ -10,9 +10,15 @@ namespace WCPay;
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 use WC_Order;
+use WC_Payments_Utils;
 
 /**
- * A wrapper class for keeping track of events in registries, and to trigger a rate limiter after a threshold.
+ * Counts events for the current WooCommerce session, and limits further attempts after a threshold.
+ *
+ * The session count is kept in the `wc_rate_limits` table, not in session data. Each request saves its session data
+ * whole at shutdown, so overlapping requests would overwrite each other's count.
+ *
+ * When given an order, events are also counted in its meta, so attempts to pay it are counted across sessions.
  */
 class Session_Rate_Limiter {
 
@@ -62,6 +68,13 @@ class Session_Rate_Limiter {
 	protected $delay;
 
 	/**
+	 * Keys of attempts this request reserved and has not yet counted or released.
+	 *
+	 * @var string[]
+	 */
+	private $reserved_keys = [];
+
+	/**
 	 * Session_Rate_Limiter constructor.
 	 *
 	 * @param string $key        - Key for the registry.
@@ -79,26 +92,64 @@ class Session_Rate_Limiter {
 	}
 
 	/**
-	 * Saves an event in the session registry and, when given, in the order's registry.
-	 * Once a registry holds as many events as the threshold, the rate limiter is enabled with the given delay.
+	 * Counts an event for the current session and, when given, for the order.
+	 *
+	 * Uses the attempt reserved by `is_limited_or_reserve()`, if there is one.
 	 *
 	 * @param WC_Order|null $order The order being paid, if any.
 	 */
 	public function bump( ?WC_Order $order = null ) {
-		if ( isset( WC()->session ) ) {
-			$registry   = WC()->session->get( $this->key ) ?? [];
-			$registry[] = time();
-			WC()->session->set( $this->key, $registry );
+		global $wpdb;
+
+		if ( null !== $order ) {
+			// The order keeps its own count, so attempts to pay it are counted across sessions. Each decline gets
+			// a row of its own: parallel attempts each add a row, where rewriting one list would drop the others' declines.
+			$order->add_meta_data( $this->get_order_meta_key(), (string) time() );
+			$order->save_meta_data();
 		}
 
-		if ( null === $order ) {
+		$now    = time();
+		$expiry = $now + $this->delay;
+
+		$reserved_key = array_pop( $this->reserved_keys );
+		if ( null !== $reserved_key ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
+			$counted = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->prefix}wc_rate_limits SET rate_limit_expiry = %d WHERE rate_limit_key = %s",
+					$expiry,
+					$reserved_key
+				)
+			);
+			if ( false === $counted ) {
+				$this->log_query_failure( 'extend the limit after a counted attempt' );
+			}
 			return;
 		}
 
-		// The order keeps its own count, so attempts to pay it are counted across sessions. Each decline gets
-		// a row of its own: parallel attempts each add a row, where rewriting one list would drop the others' declines.
-		$order->add_meta_data( $this->get_order_meta_key(), (string) time() );
-		$order->save_meta_data();
+		$rate_limit_key = $this->get_rate_limit_key();
+		if ( null === $rate_limit_key ) {
+			return;
+		}
+
+		// `rate_limit_remaining` is assigned first, so it still compares the stored expiry.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
+		$counted = $wpdb->query(
+			$wpdb->prepare(
+				"INSERT INTO {$wpdb->prefix}wc_rate_limits (rate_limit_key, rate_limit_expiry, rate_limit_remaining)
+				VALUES (%s, %d, %d)
+				ON DUPLICATE KEY UPDATE
+					rate_limit_remaining = IF( rate_limit_expiry < %d, VALUES( rate_limit_remaining ), GREATEST( rate_limit_remaining - 1, 0 ) ),
+					rate_limit_expiry = VALUES( rate_limit_expiry )",
+				$rate_limit_key,
+				$expiry,
+				max( 0, $this->threshold - 1 ),
+				$now
+			)
+		);
+		if ( false === $counted ) {
+			$this->log_query_failure( 'count an attempt' );
+		}
 	}
 
 	/**
@@ -112,42 +163,179 @@ class Session_Rate_Limiter {
 	 * @return bool   The rate limiter is in use.
 	 */
 	public function is_limited( ?WC_Order $order = null ): bool {
-		if ( 'yes' === get_option( 'wcpay_session_rate_limiter_disabled_' . $this->key ) ) {
+		global $wpdb;
+
+		if ( $this->is_disabled() ) {
 			return false;
 		}
 
-		if ( $this->is_session_limited() ) {
+		if ( null !== $order && $this->is_order_limited( $order ) ) {
 			return true;
 		}
 
-		if ( null === $order ) {
+		$rate_limit_key = $this->get_rate_limit_key();
+		if ( null === $rate_limit_key ) {
 			return false;
 		}
 
-		return $this->is_order_limited( $order );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT rate_limit_expiry, rate_limit_remaining FROM {$wpdb->prefix}wc_rate_limits WHERE rate_limit_key = %s",
+				$rate_limit_key
+			)
+		);
+
+		return null !== $row && time() <= (int) $row->rate_limit_expiry && (int) $row->rate_limit_remaining <= 0;
 	}
 
 	/**
-	 * Checks the session registry, and clears it once the delay is over.
+	 * Checks if the rate limiter is enabled and, when it is not, reserves an attempt for this request.
 	 *
-	 * @return bool
+	 * Checking and reserving is one update, so overlapping requests cannot all pass before any is counted.
+	 * `bump()` keeps the attempt and `release()` hands it back. If the count cannot be stored, the attempt is let through.
+	 *
+	 * The order count is only checked, not reserved. Its meta is reloaded, as in `is_limited()`.
+	 *
+	 * @param WC_Order|null $order The order being paid, if any.
+	 *
+	 * @return bool True when the rate limiter is enabled and nothing was reserved.
 	 */
-	private function is_session_limited(): bool {
-		if ( ! isset( WC()->session ) ) {
+	public function is_limited_or_reserve( ?WC_Order $order = null ): bool {
+		global $wpdb;
+
+		if ( $this->is_disabled() ) {
 			return false;
 		}
 
-		$registry = WC()->session->get( $this->key ) ?? [];
-		if ( ! $this->has_reached_threshold( $registry ) ) {
-			return false;
-		}
-
-		if ( $this->is_within_delay( $registry ) ) {
+		if ( null !== $order && $this->is_order_limited( $order ) ) {
 			return true;
 		}
 
-		WC()->session->set( $this->key, [] );
+		$rate_limit_key = $this->get_rate_limit_key();
+		if ( null === $rate_limit_key ) {
+			return false;
+		}
+
+		$now    = time();
+		$expiry = $now + $this->delay;
+
+		// Start a new allowance if the session has none or the last one expired.
+		// `rate_limit_remaining` is assigned first, so it still compares the stored expiry.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
+		$started = $wpdb->query(
+			$wpdb->prepare(
+				"INSERT INTO {$wpdb->prefix}wc_rate_limits (rate_limit_key, rate_limit_expiry, rate_limit_remaining)
+				VALUES (%s, %d, %d)
+				ON DUPLICATE KEY UPDATE
+					rate_limit_remaining = IF( rate_limit_expiry < %d, VALUES( rate_limit_remaining ), rate_limit_remaining ),
+					rate_limit_expiry = IF( rate_limit_expiry < %d, VALUES( rate_limit_expiry ), rate_limit_expiry )",
+				$rate_limit_key,
+				$expiry,
+				$this->threshold,
+				$now,
+				$now
+			)
+		);
+		if ( false === $started ) {
+			$this->log_query_failure( 'start an allowance' );
+			return false;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
+		$reserved = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}wc_rate_limits
+				SET rate_limit_remaining = rate_limit_remaining - 1, rate_limit_expiry = %d
+				WHERE rate_limit_key = %s AND rate_limit_remaining > 0",
+				$expiry,
+				$rate_limit_key
+			)
+		);
+		if ( false === $reserved ) {
+			$this->log_query_failure( 'reserve an attempt' );
+			return false;
+		}
+		if ( 0 === $reserved ) {
+			return true;
+		}
+
+		$this->reserved_keys[] = $rate_limit_key;
 		return false;
+	}
+
+	/**
+	 * Hands back the attempt reserved by `is_limited_or_reserve()` when `bump()` did not count it.
+	 */
+	public function release() {
+		global $wpdb;
+
+		$reserved_key = array_pop( $this->reserved_keys );
+		if ( null === $reserved_key ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
+		$released = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}wc_rate_limits
+				SET rate_limit_remaining = LEAST( rate_limit_remaining + 1, %d )
+				WHERE rate_limit_key = %s AND rate_limit_expiry >= %d",
+				$this->threshold,
+				$reserved_key,
+				time()
+			)
+		);
+		if ( false === $released ) {
+			$this->log_query_failure( 'hand back a reserved attempt' );
+		}
+	}
+
+	/**
+	 * Logs a failed `wc_rate_limits` query, which is otherwise silent.
+	 *
+	 * Uses the WooCommerce log, since the WooPayments logger is off by default.
+	 *
+	 * @param string $action What the limiter could not do.
+	 */
+	private function log_query_failure( string $action ) {
+		global $wpdb;
+
+		WC_Payments_Utils::log_to_wc(
+			sprintf(
+				'Session rate limiter %1$s could not %2$s: %3$s',
+				$this->key,
+				$action,
+				$wpdb->last_error
+			)
+		);
+	}
+
+	/**
+	 * Whether the merchant turned this limiter off.
+	 *
+	 * @return bool
+	 */
+	private function is_disabled(): bool {
+		return 'yes' === get_option( 'wcpay_session_rate_limiter_disabled_' . $this->key );
+	}
+
+	/**
+	 * The `wc_rate_limits` key for the current session, or null when there is no session.
+	 *
+	 * @return string|null
+	 */
+	private function get_rate_limit_key(): ?string {
+		if ( ! function_exists( 'WC' ) || ! isset( WC()->session ) ) {
+			return null;
+		}
+
+		$customer_id = (string) WC()->session->get_customer_id();
+		if ( '' === $customer_id ) {
+			return null;
+		}
+
+		return $this->key . '_' . $customer_id;
 	}
 
 	/**
