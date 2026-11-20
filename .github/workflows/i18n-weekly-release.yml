@@ -1,4 +1,7 @@
 name: I18N Weekly Release
+
+permissions:
+  contents: read
 on:
   schedule:
     - cron: '0 20 * * 0'
@@ -7,6 +10,8 @@ jobs:
   i18n-release:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       # clone the repository
@@ -122,6 +127,7 @@ jobs:
           echo "Translations update triggered."
 
   notify-failure:
+    permissions: {}
     name: "Notify Slack on failure"
     needs: i18n-release
     if: failure()

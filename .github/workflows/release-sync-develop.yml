@@ -1,5 +1,8 @@
 name: "Release - Sync develop"
 
+permissions:
+  contents: read
+
 # Runs from the release PR and changelog workflows, or manually to refresh the
 # sync PR right before merging it.
 on:

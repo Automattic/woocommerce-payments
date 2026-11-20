@@ -277,6 +277,39 @@ describe( 'WooPayPreview', () => {
 		);
 	} );
 
+	it( 'renders formatting and policy links without accepting injected HTML', () => {
+		const customMessage =
+			'<em title="x" onclick="x()">Welcome</em> <a href="javascript:alert(1)">Terms</a>' +
+			' [terms] [terms_of_service_link] [privacy_policy] [privacy_policy_link]' +
+			' <<img src=x onerror=alert(1)>img src=x onerror=alert(1)>' +
+			' <script>alert(1)</script>';
+		const { container } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo=""
+				customMessage={ customMessage }
+				appearance={ null }
+			/>
+		);
+
+		const textBox = container.querySelector( '.preview-layout__text-box' );
+		const em = textBox.querySelector( 'em' );
+		const [ convertedLink, ...policyLinks ] = textBox.querySelectorAll(
+			'.preview-layout__shortcode-link'
+		);
+
+		expect( em ).toHaveTextContent( 'Welcome' );
+		expect( em.attributes ).toHaveLength( 0 );
+		expect( textBox.querySelector( 'a, img, script' ) ).toBeNull();
+		expect( convertedLink ).toHaveTextContent( 'Terms' );
+		expect( policyLinks.map( ( link ) => link.textContent ) ).toEqual( [
+			'Terms of Service',
+			'Terms of Service',
+			'Privacy Policy',
+			'Privacy Policy',
+		] );
+	} );
+
 	it( 'handles appearance with empty variables and rules', () => {
 		const appearance = {
 			variables: {},

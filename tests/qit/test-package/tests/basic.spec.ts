@@ -8,9 +8,8 @@ test.describe(
 	() => {
 		test( 'Load the home page', async ( { page } ) => {
 			await page.goto( '/' );
-			// Verify the page loaded by checking that a site title exists
 			const title = page.locator( 'h1.site-title' );
-			await expect( title ).toBeVisible();
+			await expect( title ).toHaveText( /WooPayments E2E site/i );
 		} );
 
 		test.describe( 'Sign in as admin', () => {

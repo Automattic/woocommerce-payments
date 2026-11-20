@@ -72,10 +72,21 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	const LATE_PAYMENT_METHOD_ID = 'pm_late_payment';
 
 	/**
-	 * The intent and payment method of the payment an order is on hold for.
+	 * The intent, charge and payment method of the payment an order was settled with.
 	 */
 	const ORDER_INTENT_ID         = 'pi_order_payment';
+	const ORDER_CHARGE_ID         = 'ch_order_payment';
 	const ORDER_PAYMENT_METHOD_ID = 'pm_order_payment';
+
+	/**
+	 * The fee stored with the payment an order was settled with.
+	 */
+	const ORDER_TRANSACTION_FEE = '0.74';
+
+	/**
+	 * The intent of an earlier attempt that was declined.
+	 */
+	const DECLINED_INTENT_ID = 'pi_declined_attempt';
 
 	/**
 	 * The intent of an authorization the `amount_capturable_updated` tests send.
@@ -796,6 +807,165 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'pending', $order->get_status() );
 		$this->assertSame( 'pi_late_payment', $order->get_meta( '_wcpay_superseded_payment_succeeded' ) );
 		$this->assertSame( 1, substr_count( $this->get_order_notes_text( $order ), 'switched to another payment method' ) );
+	}
+
+	/**
+	 * A payment that completes after the order was paid with another WooPayments payment, such as a 3DS
+	 * challenge finished after the shopper paid with a second card, leaves the order's payment alone. Refunds
+	 * and disputes follow the charge stored on the order. The merchant gets a note naming both payments.
+	 */
+	public function test_payment_intent_succeeded_keeps_the_payment_of_an_order_settled_with_another_payment() {
+		$order = $this->create_order_settled_with_another_payment( Order_Status::PROCESSING, Intent_Status::SUCCEEDED );
+		$this->set_up_late_payment_intent_succeeded( $order, time() );
+		$this->event_body['data']['object']['charges']['data'][0]['application_fee_amount'] = 99;
+		// A recurring order is where the late payment's card would otherwise be saved for renewals.
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_recurring' )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'ensure_payment_method_token_for_order' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_order_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'ch_order_payment', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'pm_order_payment', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '0.74', $order->get_meta( '_wcpay_transaction_fee' ) );
+		$this->assertSame( 'pi_order_payment', $order->get_transaction_id() );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertSame( '', $order->get_meta( '_wcpay_superseded_payment_succeeded' ) );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*ch_late_payment.*pi_order_payment.*needs a refund/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An order on hold with an authorized payment is settled too: a late payment does not complete it or
+	 * replace the authorization the merchant captures.
+	 */
+	public function test_payment_intent_succeeded_keeps_the_authorization_of_an_order_on_hold() {
+		$order = $this->create_order_settled_with_another_payment( Order_Status::ON_HOLD, Intent_Status::REQUIRES_CAPTURE );
+		$this->set_up_late_payment_intent_succeeded( $order, time() );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_order_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'requires_capture', $order->get_meta( '_intention_status' ) );
+		$this->assertSame( 'on-hold', $order->get_status() );
+		$this->assertMatchesRegularExpression( '/pi_late_payment.*needs a refund/s', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * An order that names another payment, but is not settled with it, is completed by the payment that does
+	 * succeed.
+	 *
+	 * @dataProvider provider_orders_naming_a_payment_they_are_not_settled_with
+	 *
+	 * @param string $order_status   The order's status.
+	 * @param string $intent_status  The stored status of the order's payment.
+	 * @param string $transaction_id The order's transaction ID.
+	 */
+	public function test_payment_intent_succeeded_completes_an_order_not_settled_with_the_payment_it_names( string $order_status, string $intent_status, string $transaction_id ) {
+		$order = $this->create_order_settled_with_another_payment( $order_status, $intent_status, $transaction_id );
+		$this->set_up_late_payment_intent_succeeded( $order, time() );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'ch_late_payment', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertStringNotContainsString( 'needs a refund', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * Orders that name a payment they are not settled with.
+	 *
+	 * @return array
+	 */
+	public function provider_orders_naming_a_payment_they_are_not_settled_with(): array {
+		return [
+			// A bank debit is processed for days and can still fail. The payment that does succeed takes the
+			// order, so a failed debit can't leave a charged shopper with a Failed order.
+			'an order on hold on a payment still being processed' => [ Order_Status::ON_HOLD, Intent_Status::PROCESSING, self::ORDER_INTENT_ID ],
+			// As a renewal that copied the payment details of its subscription.
+			'an unpaid order carrying a payment it was not paid with' => [ Order_Status::PENDING, Intent_Status::SUCCEEDED, '' ],
+		];
+	}
+
+	/**
+	 * A redelivered event for the extra payment leaves a single note.
+	 */
+	public function test_payment_intent_succeeded_notes_an_extra_payment_once_when_the_event_is_redelivered() {
+		$order = $this->create_order_settled_with_another_payment( Order_Status::PROCESSING, Intent_Status::SUCCEEDED );
+		$this->set_up_late_payment_intent_succeeded( $order, time() );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 1, substr_count( $this->get_order_notes_text( $order ), 'needs a refund' ) );
+	}
+
+	/**
+	 * An order whose own WooPayments attempt was declined gets the payment that succeeds.
+	 *
+	 * @dataProvider provider_orders_naming_a_declined_attempt
+	 *
+	 * @param string $payment_method The order's payment method.
+	 * @param string $order_status   The order's status.
+	 */
+	public function test_payment_intent_succeeded_attaches_the_payment_to_an_order_naming_a_declined_attempt( string $payment_method, string $order_status ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( $payment_method );
+		$order->set_status( $order_status );
+		$order->update_meta_data( '_intent_id', self::DECLINED_INTENT_ID );
+		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_PAYMENT_METHOD );
+		$order->update_meta_data( '_wcpay_mode', 'prod' );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, time() );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pi_late_payment', $order->get_meta( '_intent_id' ) );
+		$this->assertSame( 'ch_late_payment', $order->get_meta( '_charge_id' ) );
+		$this->assertSame( 'processing', $order->get_status() );
+		$this->assertStringNotContainsString( 'needs a refund', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * Orders that still name a declined WooPayments attempt.
+	 *
+	 * @return array
+	 */
+	public function provider_orders_naming_a_declined_attempt(): array {
+		return [
+			// The event can arrive before the checkout request saves its intent on the order.
+			'an unpaid order, completed by whichever payment succeeds' => [ WC_Payment_Gateway_WCPay::GATEWAY_ID, Order_Status::FAILED ],
+			// Such as a cash on delivery order that kept a declined attempt, collected on a card reader.
+			'a paid order whose WooPayments payment never went through' => [ 'cod', Order_Status::PROCESSING ],
+		];
+	}
+
+	/**
+	 * Creates an order that names a WooPayments payment of its own, with the charge and fee recorded for it.
+	 *
+	 * @param string $status         The order's status.
+	 * @param string $intent_status  The stored status of the order's payment.
+	 * @param string $transaction_id The order's transaction ID.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_settled_with_another_payment( string $status, string $intent_status, string $transaction_id = self::ORDER_INTENT_ID ): WC_Order {
+		$order = $this->create_order_waiting_on_a_payment( $status, $intent_status );
+		$order->set_transaction_id( $transaction_id );
+		$order->update_meta_data( '_charge_id', self::ORDER_CHARGE_ID );
+		$order->update_meta_data( '_wcpay_transaction_fee', self::ORDER_TRANSACTION_FEE );
+		$order->update_meta_data( '_wcpay_mode', 'prod' );
+		$order->save();
+
+		return $order;
 	}
 
 	/**
@@ -2482,12 +2652,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ 'on-hold' ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ 'cancelled', 'refunded' ] ],
 				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
@@ -2505,6 +2676,87 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'update_status' )
 			->with( Order_Status::FAILED );
+
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for an order that was cancelled in the meantime,
+	 * for example a webhook delivered late, leaves the order status alone and only adds a note.
+	 */
+	public function test_payment_intent_fails_on_cancelled_order_keeps_order_status() {
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_123123123123123', // Payment method ID.
+						'payment_method_details' => [
+							'type' => Payment_Method::CARD,
+						],
+					],
+				],
+			],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'message'        => 'error message',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => Payment_Method::CARD,
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( 'pm_123123123123123' );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		// The order is cancelled: only the cancelled/refunded check matches.
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturnCallback(
+				function ( $status ) {
+					return [ 'cancelled', 'refunded' ] === $status;
+				}
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'arrived after this order was cancelled or refunded, so the order status was not changed' ),
+					$this->stringContains( 'With the following message: <code>error message</code>' )
+				)
+			);
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -2555,12 +2807,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ 'on-hold' ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ 'cancelled', 'refunded' ] ],
 				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );
@@ -2644,12 +2897,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ 'on-hold' ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
 				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ 'cancelled', 'refunded' ] ],
 				[ [ Order_Status::FAILED ] ]
 			)
 			->willReturn( false );

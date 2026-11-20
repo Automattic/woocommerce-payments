@@ -1,5 +1,8 @@
 name: E2E Playwright Tests - Pull Request
 
+permissions:
+  contents: read
+
 on:
     pull_request:
         branches:

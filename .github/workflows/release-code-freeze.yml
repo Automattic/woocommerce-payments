@@ -1,5 +1,8 @@
 name: "Release - Code freeze"
 
+permissions:
+  contents: read
+
 # This action will run according to the cron schedule or when triggered manually
 on:
   # schedule:
@@ -73,6 +76,9 @@ jobs:
     name: "Raise a PR to trunk"
     needs: check-code-freeze
     if: needs.check-code-freeze.outputs.freeze == 1
+    permissions:
+      contents: write
+      pull-requests: write
     uses: ./.github/workflows/release-pr.yml
     with:
       releaseVersion: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}

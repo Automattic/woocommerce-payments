@@ -1,5 +1,8 @@
 name: "E2E Tests on Atomic - All"
 
+permissions:
+  contents: read
+
 # This action will run when it is triggered manually
 on:
   workflow_dispatch:
