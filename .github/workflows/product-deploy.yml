@@ -25,7 +25,6 @@ jobs:
   # Build here and hand the zip to the action, so QIT tests the file that ships.
   # Left to itself, the action builds twice in a target-repo folder, which also
   # ends up as the plugin slug in the POT header.
-  # The build runs the branch's install scripts, so this job gets no secrets.
   build:
     permissions:
       contents: read
@@ -70,7 +69,6 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  # wporg-deploy holds the WordPress.org login and needs a second person's approval.
   deploy:
     needs: build
     environment: wporg-deploy
