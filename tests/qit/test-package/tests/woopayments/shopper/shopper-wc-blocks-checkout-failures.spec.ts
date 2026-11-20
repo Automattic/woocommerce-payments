@@ -136,11 +136,11 @@ test.describe(
 			await fillCardDetailsWCB( shopperPage, config.cards.declined );
 			await placeOrderWCB( shopperPage, false );
 
-			await expect(
-				shopperPage
-					.locator( '.wc-block-checkout__form' )
-					.getByText( 'Your card was declined.' )
-			).toBeVisible();
+			await assertCheckoutError(
+				shopperPage,
+				config.cards.declined,
+				'Your card was declined.'
+			);
 
 			// Second attempt: valid card, same page, no refresh.
 			await fillCardDetailsWCB( shopperPage, config.cards.basic );
