@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show the "enabled by other extensions" notice for Apple Pay / Google Pay only when another plugin offers them, including wallets enabled through the Stripe, Square and Braintree plugins.
