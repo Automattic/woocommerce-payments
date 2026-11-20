@@ -26,7 +26,7 @@ const failures = [
 	},
 	{
 		card: config.cards[ 'invalid-exp-date' ],
-		error: /Your card.s expiration year is in the past\./,
+		error: 'Your card’s expiration year is in the past.',
 	},
 	{
 		card: config.cards[ 'invalid-cvv-number' ],
@@ -55,71 +55,36 @@ const failures = [
 	},
 	{
 		card: config.cards[ 'declined-3ds' ],
-		error: /Your card (?:was|has been) declined\./,
+		error: 'Your card has been declined.',
 		auth: true,
 	},
 ];
 
+const errorsInsideStripeFrame = [
+	config.cards[ 'invalid-cvv-number' ],
+	config.cards[ 'declined-incorrect' ],
+];
+
 const paymentElementFrameSelector =
 	'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]';
-const generalNoticeMatcher = /Your payment (?:was not|wasn't|could not be|couldn't be) processed\./i;
 
 const assertCheckoutError = async (
 	page: Page,
-	errorMessage: string | RegExp
+	card: typeof config.cards.basic,
+	errorMessage: string
 ) => {
-	const stripeErrorLocator = page
-		.frameLocator( paymentElementFrameSelector )
-		.getByText( errorMessage )
-		.first();
-
-	try {
-		await expect( stripeErrorLocator ).toBeVisible( { timeout: 5000 } );
-		return;
-	} catch ( _error ) {
-		// Fall through to check for notices rendered outside the Stripe iframe.
-	}
-
-	const checkoutForm = page.locator( '.wc-block-checkout__form' );
-	try {
-		await expect( checkoutForm.getByText( errorMessage ) ).toBeVisible( {
-			timeout: 3000,
-		} );
-		return;
-	} catch ( _error ) {
-		// If the specific message is not surfaced, ensure the generic
-		// decline banner rendered so the customer receives feedback.
-	}
-
-	const generalNoticeCandidates = [
-		checkoutForm.locator( '.wc-block-store-notice' ).first(),
-		checkoutForm.locator( '.wc-block-components-notice-banner' ).first(),
-		page
-			.getByRole( 'status' )
-			.filter( { hasText: generalNoticeMatcher } )
-			.first(),
-	];
-
-	for ( const candidate of generalNoticeCandidates ) {
-		const count = await candidate.count().catch( () => 0 );
-		if ( count === 0 ) {
-			continue;
-		}
-		const visible = await candidate.isVisible().catch( () => false );
-		if ( ! visible ) {
-			continue;
-		}
-		await expect( candidate ).toContainText( generalNoticeMatcher );
+	if ( errorsInsideStripeFrame.includes( card ) ) {
+		await expect(
+			page
+				.frameLocator( paymentElementFrameSelector )
+				.getByText( errorMessage )
+		).toBeVisible();
 		return;
 	}
 
-	if ( page.isClosed() ) {
-		throw new Error(
-			'Checkout page closed before the decline notice rendered.'
-		);
-	}
-
-	await expect( page.getByText( generalNoticeMatcher ) ).toBeVisible();
+	await expect(
+		page.locator( '.wc-block-checkout__form' ).getByText( errorMessage )
+	).toBeVisible();
 };
 
 test.describe(
@@ -162,7 +127,7 @@ test.describe(
 					await confirmCardAuthenticationWCB( shopperPage, true );
 				}
 
-				await assertCheckoutError( shopperPage, error );
+				await assertCheckoutError( shopperPage, card, error );
 			} );
 		}
 
@@ -171,11 +136,11 @@ test.describe(
 			await fillCardDetailsWCB( shopperPage, config.cards.declined );
 			await placeOrderWCB( shopperPage, false );
 
-			await expect(
-				shopperPage
-					.locator( '.wc-block-checkout__form' )
-					.getByText( 'Your card was declined.' )
-			).toBeVisible();
+			await assertCheckoutError(
+				shopperPage,
+				config.cards.declined,
+				'Your card was declined.'
+			);
 
 			// Second attempt: valid card, same page, no refresh.
 			await fillCardDetailsWCB( shopperPage, config.cards.basic );
