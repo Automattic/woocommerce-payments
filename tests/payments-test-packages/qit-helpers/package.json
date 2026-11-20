@@ -1,0 +1,22 @@
+{
+  "name": "@qit/helpers",
+  "version": "1.0.0",
+  "description": "Helper utilities for QIT test packages",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.54.2",
+    "axios": "^1.6.0"
+  },
+  "keywords": [
+    "qit",
+    "testing",
+    "playwright",
+    "woocommerce"
+  ],
+  "author": "QIT Team",
+  "license": "ISC"
+}
