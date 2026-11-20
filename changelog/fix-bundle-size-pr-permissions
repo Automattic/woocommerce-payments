@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+fix: Restore bundle size comments on pull requests.
