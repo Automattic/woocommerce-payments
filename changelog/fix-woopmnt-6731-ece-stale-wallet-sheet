@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ask shoppers to try again when the cart updates while the Apple Pay sheet is open, instead of updating the cart from that sheet.
