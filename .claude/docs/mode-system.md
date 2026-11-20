@@ -1,8 +1,14 @@
 # WooPayments Mode System
 
-**Last updated:** 2026-02-13
+**Last updated:** 2026-11-18
 
 Reference for how WooPayments determines its operating mode (live, test, dev). Source: `includes/core/class-mode.php`.
+
+## Order payment mode
+
+`_wcpay_mode` (`prod` or `test`) is the store mode when a WooPayments attempt started, not proof of how an order was paid. `process_payment_for_order()` writes it before the charge, so a declined attempt keeps it, and `capture_terminal_payment()` writes it before attaching a card reader payment. A takeover by another gateway at checkout removes it.
+
+Permanent test-order deletion therefore also requires a WooPayments gateway, a transaction ID equal to `_intent_id`, and an accepted `_intention_status` (succeeded, requires_capture or processing). Known limit: a test-mode attempt that declines on an order already paid live rewrites the tag while the live payment stays current. That needs the store to switch from live to test while the order is still payable.
 
 ## Mode Hierarchy
 

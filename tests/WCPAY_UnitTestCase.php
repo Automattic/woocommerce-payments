@@ -6,7 +6,7 @@
  */
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
-use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Response;
@@ -380,13 +380,26 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Stores orders in the HPOS tables, with HPOS data caching on where WooCommerce has it, for the rest of the
-	 * test. With that caching, even a forced read of an order's meta answers from this process's cache.
+	 * Select the order store for this test without forcing a sync of existing orders.
+	 *
+	 * @param bool $hpos Whether to use the HPOS tables.
+	 */
+	protected function set_order_storage( bool $hpos ): void {
+		$option_value = static function () use ( $hpos ) {
+			return $hpos ? 'yes' : 'no';
+		};
+		// WooCommerce 7.6 checks the feature flag as well as the storage setting.
+		add_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $option_value );
+		add_filter( 'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, $option_value );
+		$this->assertSame( $hpos, OrderUtil::custom_orders_table_usage_is_enabled() );
+	}
+
+	/**
+	 * Uses HPOS where the feature is already enabled, with data caching on where WooCommerce supports it.
+	 * With that caching, even a forced read of an order's meta answers from this process's cache.
 	 */
 	protected function store_orders_in_hpos_with_data_caching(): void {
-		wc_get_container()->get( DataSynchronizer::class )->create_database_tables();
-		// Filtered, not saved: WooCommerce refuses to switch storage while orders made earlier in the test are
-		// only in the posts table, and the filters go away with the test.
+		// Keep WooCommerce 7.6 on its default store unless a test explicitly enables experimental HPOS.
 		add_filter( 'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, [ $this, 'return_yes' ] );
 		// HPOS data caching arrived after WooCommerce 7.6, the oldest version supported.
 		if ( defined( CustomOrdersTableController::class . '::HPOS_DATASTORE_CACHING_ENABLED_OPTION' ) ) {

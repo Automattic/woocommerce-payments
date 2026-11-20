@@ -12,6 +12,7 @@ use WCPay\Core\Server\Request\Prepare_Terminal_Payment;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Mode;
 use WCPay\Constants\Payment_Method;
 
 /**
@@ -162,6 +163,67 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::COMPLETED, $result_order->get_status() );
 		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/' . $this->mock_intent_id;
 		$this->assertStringEndsWith( $url, $result_order->get_meta( 'receipt_url' ) );
+	}
+
+	/**
+	 * An earlier online attempt can leave the other mode on the order the reader payment completes.
+	 *
+	 * @dataProvider provide_terminal_capture_store_modes
+	 */
+	public function test_capture_terminal_payment_stores_mode_before_payment_complete( bool $store_is_live, string $stale_mode, string $expected_mode ): void {
+		$mode     = WC_Payments::mode();
+		$was_dev  = $mode->is_dev();
+		$was_test = $mode->is_test();
+		$store_is_live ? $mode->live() : $mode->test();
+
+		$order = $this->create_mock_order();
+		$order->set_total( 50 );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $stale_mode );
+		$order->save();
+		$intent = WC_Helper_Intention::create_intention( [ 'metadata' => [ 'order_id' => $order->get_id() ] ] );
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' )->method( 'format_response' )->willReturn( $intent );
+		$controller = new WC_REST_Payments_Orders_Controller(
+			$this->mock_api_client,
+			$this->mock_gateway,
+			$this->mock_customer_service,
+			new WC_Payments_Order_Service( $this->mock_api_client )
+		);
+		$request    = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => 'pi_mock',
+			]
+		);
+		$observed = [];
+		$observe  = static function ( $order_id ) use ( &$observed, $order ) {
+			if ( $order_id === $order->get_id() ) {
+				$observed[] = wc_get_order( $order_id )->get_meta( '_wcpay_mode' );
+			}
+		};
+		add_action( 'woocommerce_payment_complete', $observe );
+		try {
+			$response = $controller->capture_terminal_payment( $request );
+
+			$this->assertSame( 200, $response->get_status() );
+			$this->assertSame( [ $expected_mode ], $observed );
+		} finally {
+			remove_action( 'woocommerce_payment_complete', $observe );
+			if ( $was_dev ) {
+				$mode->dev();
+			} elseif ( $was_test ) {
+				$mode->test();
+			} else {
+				$mode->live();
+			}
+		}
+	}
+
+	public function provide_terminal_capture_store_modes(): array {
+		return [
+			'live reader payment after a test attempt' => [ true, Order_Mode::TEST, 'prod' ],
+			'test reader payment after a live attempt' => [ false, Order_Mode::PRODUCTION, 'test' ],
+		];
 	}
 
 	public function test_capture_terminal_payment_succeeded_intent() {
