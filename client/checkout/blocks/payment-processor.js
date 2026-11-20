@@ -223,6 +223,18 @@ const PaymentProcessor = ( {
 					try {
 						await validateElements( elements );
 					} catch ( e ) {
+						// Stripe already shows validation errors under each field. An error
+						// without a message stops checkout without adding a second notice,
+						// and without a notice WooCommerce won't scroll, so show the fields
+						// ('nearest' leaves the page alone when they're already in view).
+						if ( e.type === 'validation_error' ) {
+							wrapperRef.current?.scrollIntoView?.( {
+								behavior: 'smooth',
+								block: 'nearest',
+							} );
+							return { type: 'error' };
+						}
+
 						return {
 							type: 'error',
 							message: e.message,

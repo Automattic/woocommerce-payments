@@ -52,7 +52,9 @@ const failures = [
 	},
 ];
 
+// Card field validation errors show only under the field, not in a checkout notice.
 const errorsInsideStripeFrame = [
+	config.cards[ 'invalid-exp-date' ],
 	config.cards[ 'invalid-cvv-number' ],
 	config.cards[ 'declined-incorrect' ],
 ];

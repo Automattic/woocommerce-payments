@@ -112,7 +112,8 @@ export const upeRestrictedProperties = {
 		'outlineWidth',
 		'outlineStyle',
 	],
-	'.Error': upeSupportedProperties[ '.Error' ],
+	// Only text and color: padding or borders would change Stripe's spacing around field errors.
+	'.Error': [ 'color', ...textFontTransitionProps ],
 	'.Tab': [ ...restrictedTabProperties ],
 	'.Tab--selected': [
 		...restrictedTabSelectedProperties,
