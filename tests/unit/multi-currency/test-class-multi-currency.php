@@ -2241,7 +2241,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$admin = 'http://example.org/wp-admin/';
 
 		return [
-			'mixed-case route'                   => [ '/wp-json/wc/Store/v1/cart/update-item', '/wc/Store/v1/cart/update-item', $shop, 'speed' ],
+			'mixed-case rest_route parameter'    => [ '/wp-json/', '/wc/Store/v1/cart/update-item', $shop, 'speed' ],
 			'rest_route parameter'               => [ '/wp-json/', '/wc/store/v1/cart/update-item', $shop, 'speed' ],
 			'batched in batch/v1'                => [ '/wp-json/batch/v1', '/wc/store/v1/cart/update-item', $shop, 'speed' ],
 			'batched in batch/v1, admin referer' => [ '/wp-json/batch/v1', '/wc/store/v1/cart/update-item', $admin, 'speed' ],
@@ -2283,10 +2283,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$admin = 'http://example.org/wp-admin/';
 
 		return [
-			'mixed-case route'                   => [ '/wp-json/wc/Store/v1/mc-stub', $shop, 'direct' ],
-			'mixed-case route, admin referer'    => [ '/wp-json/wc/Store/v1/mc-stub', $admin, 'direct' ],
-			'batched in batch/v1'                => [ '/wp-json/batch/v1', $shop, 'batch' ],
-			'batched in batch/v1, admin referer' => [ '/wp-json/batch/v1', $admin, 'batch' ],
+			'mixed-case rest_route parameter'      => [ '/wp-json/', $shop, 'direct' ],
+			'mixed-case rest_route, admin referer' => [ '/wp-json/', $admin, 'direct' ],
+			'batched in batch/v1'                  => [ '/wp-json/batch/v1', $shop, 'batch' ],
+			'batched in batch/v1, admin referer'   => [ '/wp-json/batch/v1', $admin, 'batch' ],
 		];
 	}
 
@@ -2342,7 +2342,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$this->multi_currency->init_hooks();
 			$this->multi_currency->init();
 
-			$seen = $this->dispatch_stub_routes( 'batch' );
+			$seen = $this->dispatch_stub_routes( 'store_batch' );
 
 			// The restore hook engages on the batched Store API sub-routes even though `rest_route` made the request
 			// look like a plain batch call, so the cart runs in the shopper's currency rather than the store default.
@@ -4360,7 +4360,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Dispatches stub routes through a real REST server, recording the currency each of them is handled in.
 	 *
-	 * @param string $dispatch `direct` calls the Store API stub route, `batch` sends it through `batch/v1`.
+	 * @param string $dispatch `direct` calls the Store API stub route, `batch` sends it through `batch/v1`, and
+	 *                         `store_batch` sends it through the Store API's own `/wc/store/v1/batch`.
 	 *
 	 * @return array The currencies seen by the `merchant_before` and `store` routes.
 	 */
@@ -4419,14 +4420,34 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 					]
 				)
 			);
+		} elseif ( 'store_batch' === $dispatch ) {
+			// The Store API batch only accepts `/wc/store` paths, so there is no merchant sub-request here.
+			$request = new WP_REST_Request( 'POST', '/wc/store/v1/batch' );
+			$request->set_header( 'content-type', 'application/json' );
+			$request->set_body(
+				wp_json_encode(
+					[
+						'requests' => [
+							[
+								'method' => 'POST',
+								'path'   => '/wc/store/v1/mc-stub',
+							],
+						],
+					]
+				)
+			);
 		} else {
 			$request = new WP_REST_Request( 'POST', '/wc/Store/v1/mc-stub' );
 		}
 
+		// WooCommerce 11.3.1+ refuses Store API routes in `batch/v1`; older versions still send them to our code.
+		remove_filter( 'rest_request_before_callbacks', [ \Automattic\WooCommerce\StoreApi\StoreApi::container()->get( \Automattic\WooCommerce\StoreApi\Authentication::class ), 'sanitize_batch_request' ] );
 		$response = rest_do_request( $request );
 		$this->assertContains( $response->get_status(), [ 200, 207 ], wp_json_encode( $response->get_data() ) );
 		if ( 'batch' === $dispatch ) {
 			$this->assertSame( [ 200, 200 ], wp_list_pluck( $response->get_data()['responses'], 'status' ), wp_json_encode( $response->get_data() ) );
+		} elseif ( 'store_batch' === $dispatch ) {
+			$this->assertSame( [ 200 ], wp_list_pluck( $response->get_data()['responses'], 'status' ), wp_json_encode( $response->get_data() ) );
 		}
 
 		return $seen;
