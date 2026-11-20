@@ -2652,7 +2652,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ 'on-hold' ],
@@ -2807,7 +2807,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ 'on-hold' ],
@@ -2897,7 +2897,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 5 ) )
 			->method( 'has_status' )
 			->withConsecutive(
 				[ 'on-hold' ],
