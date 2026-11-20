@@ -1,7 +1,12 @@
 /**
  * External dependencies
  */
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import {
+	test,
+	expect,
+	getAuthState,
+	recreateCustomer,
+} from '../../../fixtures/auth';
 import type { Page, BrowserContext } from '@playwright/test';
 
 /**
@@ -35,7 +40,11 @@ test.describe( 'Saved cards', { tag: [ '@shopper', '@critical' ] }, () => {
 				let shopperContext: BrowserContext;
 				let shopperPage: Page;
 
+				// A retry recreates the customer, so it must rerun the tests that saved the card.
+				test.describe.configure( { mode: 'serial' } );
+
 				test.beforeAll( async ( { browser } ) => {
+					await recreateCustomer();
 					shopperContext = await browser.newContext( {
 						storageState: await getAuthState( browser, 'customer' ),
 					} );

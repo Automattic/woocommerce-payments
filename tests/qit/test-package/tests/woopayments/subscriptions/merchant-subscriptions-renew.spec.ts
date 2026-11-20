@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import qit from '@qit/helpers';
-
-/**
  * Internal dependencies
  */
 import { test, expect } from '../../../fixtures/auth';
@@ -27,16 +22,6 @@ test.describe(
 		let subscriptionId: string;
 
 		test.beforeAll( async ( { customerPage } ) => {
-			// Delete existing subscriptions customer if exists to ensure clean state
-			try {
-				await qit.wp(
-					`user delete $( wp user get ${ customerBillingConfig.email } --field=ID 2>/dev/null ) --yes 2>/dev/null || true`,
-					true
-				);
-			} catch ( e ) {
-				// User might not exist, continue
-			}
-
 			await emptyCart( customerPage );
 			await setupProductCheckout(
 				customerPage,
