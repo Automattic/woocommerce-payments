@@ -35,6 +35,16 @@ jobs:
       zip: ${{ steps.build_plugin.outputs.release-filename }}
       zip-sha256: ${{ steps.checksum.outputs.sha256 }}
     steps:
+      - name: Check the branch to deploy
+        shell: bash
+        env:
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          case "$BRANCH" in
+            trunk|release/*) ;;
+            *) echo "::error::Deploy from trunk or a release/x.y.z branch, not '$BRANCH'."; exit 1 ;;
+          esac
+
       - name: Checkout branch to deploy
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
