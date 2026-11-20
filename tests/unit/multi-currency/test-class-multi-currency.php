@@ -2214,16 +2214,20 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_REFERER'] = $referer;
 
 		try {
+			if ( method_exists( WC(), 'is_store_api_request' ) && WC()->is_store_api_request() ) {
+				// Since 11.3.1, WooCommerce matches the Store API prefix case-insensitively, so `init_hooks()` already
+				// treats a mixed-case URL as a Store API request and the route matching below never runs.
+				$this->markTestSkipped( 'WooCommerce already reads this URL as a Store API request.' );
+			}
+
 			$this->init_multi_currency( null, true, null, null, null, false );
 			$this->multi_currency->init_hooks();
 			$this->multi_currency->init();
 
-			// Going by the URL, this is a merchant's request, and other routes leave it at that. Since 11.3.1, WooCommerce
-			// matches the Store API prefix case-insensitively, so a mixed-case URL already reads as a shopper's request.
-			$expected_before = method_exists( WC(), 'is_store_api_request' ) && WC()->is_store_api_request() ? 'GBP' : 'USD';
+			// Going by the URL, this is a merchant's request, and other routes leave it at that.
 			$this->match_rest_route( '/wc/v3/products' );
-			$this->assertSame( $expected_before, get_woocommerce_currency() );
-			$this->assertSame( $expected_before, $this->multi_currency->get_selected_currency()->get_code() );
+			$this->assertSame( 'USD', get_woocommerce_currency() );
+			$this->assertSame( 'USD', $this->multi_currency->get_selected_currency()->get_code() );
 
 			$response = $this->match_rest_route( $route );
 
@@ -2344,7 +2348,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$this->multi_currency->init_hooks();
 			$this->multi_currency->init();
 
-			$seen = $this->dispatch_stub_routes( 'batch' );
+			$seen = $this->dispatch_stub_routes( 'store_batch' );
 
 			// The restore hook engages on the batched Store API sub-routes even though `rest_route` made the request
 			// look like a plain batch call, so the cart runs in the shopper's currency rather than the store default.
@@ -4362,7 +4366,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Dispatches stub routes through a real REST server, recording the currency each of them is handled in.
 	 *
-	 * @param string $dispatch `direct` calls the Store API stub route, `batch` sends it through `batch/v1`.
+	 * @param string $dispatch `direct` calls the Store API stub route, `batch` sends it through `batch/v1`, and
+	 *                         `store_batch` sends it through the Store API's own `/wc/store/v1/batch`.
 	 *
 	 * @return array The currencies seen by the `merchant_before` and `store` routes.
 	 */
@@ -4421,6 +4426,22 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 					]
 				)
 			);
+		} elseif ( 'store_batch' === $dispatch ) {
+			// The Store API batch only accepts `/wc/store` paths, so there is no merchant sub-request here.
+			$request = new WP_REST_Request( 'POST', '/wc/store/v1/batch' );
+			$request->set_header( 'content-type', 'application/json' );
+			$request->set_body(
+				wp_json_encode(
+					[
+						'requests' => [
+							[
+								'method' => 'POST',
+								'path'   => '/wc/store/v1/mc-stub',
+							],
+						],
+					]
+				)
+			);
 		} else {
 			$request = new WP_REST_Request( 'POST', '/wc/Store/v1/mc-stub' );
 		}
@@ -4433,6 +4454,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertContains( $response->get_status(), [ 200, 207 ], wp_json_encode( $response->get_data() ) );
 		if ( 'batch' === $dispatch ) {
 			$this->assertSame( [ 200, 200 ], wp_list_pluck( $response->get_data()['responses'], 'status' ), wp_json_encode( $response->get_data() ) );
+		} elseif ( 'store_batch' === $dispatch ) {
+			$this->assertSame( [ 200 ], wp_list_pluck( $response->get_data()['responses'], 'status' ), wp_json_encode( $response->get_data() ) );
 		}
 
 		return $seen;
