@@ -326,6 +326,115 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->call_ajax_tracks( $tracker );
 	}
 
+	public function test_checkout_order_processed_records_the_order_after_the_response(): void {
+		$this->setup_woopay_environment( false, true );
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method_title( 'Card' );
+		$order->save();
+		$requests = $this->capture_pixel_requests();
+
+		$this->tracker->checkout_order_processed( $order->get_id() );
+		// Processing the payment can rename the method, for example to the card brand.
+		$order->set_payment_method_title( 'Visa credit card' );
+		$order->save();
+
+		$this->assertCount( 0, $requests );
+		$this->assertSame( PHP_INT_MAX, has_action( 'shutdown', [ $this->tracker, 'send_tracks_after_response' ] ) );
+
+		$this->tracker->send_tracks_after_response();
+		$query = [];
+		parse_str( (string) wp_parse_url( $requests[0]['url'], PHP_URL_QUERY ), $query );
+
+		$this->assertCount( 1, $requests );
+		$this->assertSame( 'wcpay_checkout_order_placed', $query['_en'] );
+		$this->assertSame( 'Card', $query['payment_title'] );
+	}
+
+	public function test_checkout_order_processed_resolves_guest_identity_before_the_response(): void {
+		$this->setup_woopay_environment( false, true );
+		wp_set_current_user( 0 );
+		$identity_lookups = 0;
+		$http_client      = $this->createMock( WC_Payments_Http::class );
+		$http_client->method( 'is_user_connected' )->willReturnCallback(
+			function () use ( &$identity_lookups ) {
+				++$identity_lookups;
+				return false;
+			}
+		);
+		$tracker = new WooPay_Tracker( $http_client );
+		$order   = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->save();
+		$requests = $this->capture_pixel_requests();
+
+		$tracker->checkout_order_processed( $order->get_id() );
+
+		$this->assertSame( 1, $identity_lookups );
+		$this->assertCount( 0, $requests );
+
+		$tracker->send_tracks_after_response();
+
+		$this->assertCount( 1, $requests );
+	}
+
+	public function test_checkout_order_processed_counts_other_gateway_orders_after_the_response(): void {
+		$this->setup_woopay_environment( false, true );
+		WC_Payments::mode()->live();
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'bacs' );
+		$order->save();
+		$requests = $this->capture_pixel_requests();
+
+		$this->tracker->checkout_order_processed( $order->get_id() );
+
+		$this->assertCount( 0, $requests );
+		$this->assertSame( PHP_INT_MAX, has_action( 'shutdown', [ $this->tracker, 'send_tracks_after_response' ] ) );
+
+		$this->tracker->send_tracks_after_response();
+
+		$this->assertSame(
+			[
+				[
+					'url'     => 'https://pixel.wp.com/g.gif?v=wpcom-no-pv&x_wcpay_order_completed_gateway=other',
+					'timeout' => 1,
+				],
+			],
+			$requests->getArrayCopy()
+		);
+	}
+
+	/**
+	 * Answers requests to the Tracks pixel with a 200, and records their URL and timeout.
+	 */
+	private function capture_pixel_requests(): ArrayObject {
+		$requests = new ArrayObject();
+		add_filter(
+			'pre_http_request',
+			function ( $response, $args, $url ) use ( $requests ) {
+				if ( 0 !== strpos( $url, 'https://pixel.wp.com/' ) ) {
+					return $response;
+				}
+
+				$requests[] = [
+					'url'     => $url,
+					'timeout' => $args['timeout'],
+				];
+
+				return [
+					'body'     => '',
+					'response' => [ 'code' => 200 ],
+					'headers'  => [],
+					'cookies'  => [],
+				];
+			},
+			10,
+			3
+		);
+
+		return $requests;
+	}
+
 	/**
 	 * @return WooPay_Tracker&\PHPUnit\Framework\MockObject\MockObject
 	 */

@@ -58,6 +58,13 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	const MAX_BATCHED_EVENTS = 20;
 
 	/**
+	 * Tracks calls queued by record_after_response().
+	 *
+	 * @var callable[]
+	 */
+	private $tracks_after_response = [];
+
+	/**
 	 * Constructor.
 	 *
 	 * @param \WC_Payments_Http_Interface $http    A class implementing WC_Payments_Http_Interface.
@@ -628,7 +635,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$stat_name
 		);
 
-		$response = wp_remote_get( esc_url_raw( $pixel_url ) );
+		// A counter isn't worth holding the request for WordPress's default timeout of 5 seconds.
+		$response = wp_remote_get( esc_url_raw( $pixel_url ), [ 'timeout' => 1 ] );
 
 		if ( is_wp_error( $response ) ) {
 			return false;
@@ -660,12 +668,64 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 			// Don't track WooPay orders. They will be tracked on WooPay side with more details.
 			if ( ! $is_woopay_order ) {
-				$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties, false );
+				if ( $this->should_enable_tracking( false, true ) ) {
+					// A guest's identity cookie must be set before shutdown sends the response.
+					$this->tracks_get_identity();
+				}
+
+				$this->record_after_response(
+					function () use ( $properties ) {
+						$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties, false );
+					}
+				);
 			}
 			// If the order was placed using a different payment gateway, just increment a counter.
 		} else {
-			$this->bump_stats( 'wcpay_order_completed_gateway', 'other' );
+			$this->record_after_response(
+				function () {
+					$this->bump_stats( 'wcpay_order_completed_gateway', 'other' );
+				}
+			);
 		}
+	}
+
+	/**
+	 * Runs the Tracks calls queued during the request, after the response is sent.
+	 *
+	 * Hooked to `shutdown` by record_after_response().
+	 */
+	public function send_tracks_after_response() {
+		$records                     = $this->tracks_after_response;
+		$this->tracks_after_response = [];
+
+		if ( empty( $records ) ) {
+			return;
+		}
+
+		// Hand the shopper their response before calling the Tracks service. Servers without either
+		// function still send the response only once these calls are done.
+		if ( function_exists( 'fastcgi_finish_request' ) ) {
+			fastcgi_finish_request();
+		} elseif ( function_exists( 'litespeed_finish_request' ) ) {
+			litespeed_finish_request();
+		}
+
+		foreach ( $records as $record ) {
+			$record();
+		}
+	}
+
+	/**
+	 * Queues a Tracks call so a slow Tracks service can't hold up the request the shopper is waiting on,
+	 * like placing their order.
+	 *
+	 * @param callable $record Sends the event.
+	 */
+	private function record_after_response( callable $record ) {
+		$this->tracks_after_response[] = $record;
+
+		// Last, so every other shutdown callback can still write to the response before it is finished.
+		add_action( 'shutdown', [ $this, 'send_tracks_after_response' ], PHP_INT_MAX );
 	}
 
 	/**
