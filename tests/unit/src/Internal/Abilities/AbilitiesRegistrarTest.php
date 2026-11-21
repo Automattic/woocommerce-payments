@@ -15,32 +15,206 @@ use WCPay\Internal\Abilities\AbilitiesRegistrar;
  */
 class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
-	const FEATURE_FILTER = 'woocommerce_payments_abilities_enabled';
+	const READ_FILTER  = 'woocommerce_payments_abilities_enabled';
+	const WRITE_FILTER = 'woocommerce_payments_write_abilities_enabled';
 
 	/**
-	 * Reset filters and the current user between tests. The upstream
-	 * `WP_Abilities_Registry` singleton keeps registrations across tests,
-	 * so ability-presence assertions are suite post-conditions, not
-	 * per-test.
+	 * Reset filters and the current user between tests, then restore the
+	 * loader filter wired at plugin bootstrap. The upstream `WP_Abilities_Registry`
+	 * singleton keeps registrations across tests, so ability-presence
+	 * assertions are suite post-conditions, not per-test.
 	 */
 	public function tear_down(): void {
-		remove_all_filters( self::FEATURE_FILTER );
+		remove_all_filters( self::READ_FILTER );
+		remove_all_filters( self::WRITE_FILTER );
+		remove_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] );
+		AbilitiesRegistrar::init();
 		wp_set_current_user( 0 );
 		parent::tear_down();
 	}
 
-	public function test_init_is_no_op_when_feature_flag_disabled(): void {
-		remove_all_filters( self::FEATURE_FILTER );
+	public function test_registers_only_read_abilities_by_default(): void {
+		$names = $this->get_enabled_ability_names();
+		$this->assertCount( 18, $names );
+		$this->assertContains( 'woocommerce-payments/get-transactions', $names );
+		$this->assertNotContains( 'woocommerce-payments/refund-charge', $names );
+		$this->assertNotContains( 'woocommerce-payments/submit-dispute-evidence', $names );
+		$this->assertNotContains( 'woocommerce-payments/accept-dispute', $names );
+		$this->assertNotContains( 'woocommerce-payments/upload-dispute-evidence-file', $names );
+	}
+
+	public function test_init_wires_filter_by_default_when_loader_present(): void {
+		if ( ! class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
+			$this->markTestSkipped( 'WooCommerce 10.9 AbilitiesLoader required.' );
+		}
+
+		remove_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] );
+		AbilitiesRegistrar::init();
+
+		$this->assertNotFalse(
+			has_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] )
+		);
+	}
+
+	/**
+	 * `init()` runs on `plugins_loaded`, before the theme's `functions.php`
+	 * loads, so it must not read the enablement filters.
+	 */
+	public function test_init_does_not_read_enablement_filters(): void {
+		$calls    = 0;
+		$callback = function ( $enabled ) use ( &$calls ) {
+			++$calls;
+			return $enabled;
+		};
+		add_filter( self::READ_FILTER, $callback );
+		add_filter( self::WRITE_FILTER, $callback );
 
 		AbilitiesRegistrar::init();
 
-		$this->assertFalse(
-			has_filter(
-				'woocommerce_ability_definition_classes',
-				[ AbilitiesRegistrar::class, 'append_classes' ]
-			),
-			'Expected init() to skip the WC 10.9 filter wire when the feature filter is unset.'
+		$this->assertSame( 0, $calls );
+	}
+
+	/**
+	 * A theme adds its callbacks after `init()` has run; the loader applies
+	 * `woocommerce_ability_definition_classes` later, on `wp_abilities_api_init`.
+	 */
+	public function test_read_opt_out_added_after_init_takes_effect(): void {
+		if ( ! class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
+			$this->markTestSkipped( 'WooCommerce 10.9 AbilitiesLoader required.' );
+		}
+
+		AbilitiesRegistrar::init();
+		add_filter( self::READ_FILTER, '__return_false' );
+
+		/** This filter is documented in WooCommerce's AbilitiesLoader. */
+		$classes = apply_filters( 'woocommerce_ability_definition_classes', [] );
+
+		$this->assertNotContains( 'WCPay\\Internal\\Abilities\\Domain\\GetTransactions', $classes );
+		$this->assertNotContains( 'WCPay\\Internal\\Abilities\\Domain\\RefundCharge', $classes );
+	}
+
+	public function test_write_opt_in_added_after_init_takes_effect(): void {
+		if ( ! class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
+			$this->markTestSkipped( 'WooCommerce 10.9 AbilitiesLoader required.' );
+		}
+
+		AbilitiesRegistrar::init();
+		add_filter( self::WRITE_FILTER, '__return_true' );
+
+		/** This filter is documented in WooCommerce's AbilitiesLoader. */
+		$classes = apply_filters( 'woocommerce_ability_definition_classes', [] );
+
+		$this->assertContains( 'WCPay\\Internal\\Abilities\\Domain\\GetTransactions', $classes );
+		$this->assertContains( 'WCPay\\Internal\\Abilities\\Domain\\RefundCharge', $classes );
+	}
+
+	public function test_append_classes_ignores_non_array_input(): void {
+		$this->assertCount( 18, AbilitiesRegistrar::append_classes( null ) );
+	}
+
+	public function test_write_filter_adds_write_abilities(): void {
+		add_filter( self::WRITE_FILTER, '__return_true' );
+
+		$names = $this->get_enabled_ability_names();
+		$this->assertCount( 22, $names );
+		$this->assertContains( 'woocommerce-payments/get-transactions', $names );
+		$this->assertContains( 'woocommerce-payments/refund-charge', $names );
+		$this->assertContains( 'woocommerce-payments/submit-dispute-evidence', $names );
+		$this->assertContains( 'woocommerce-payments/accept-dispute', $names );
+		$this->assertContains( 'woocommerce-payments/upload-dispute-evidence-file', $names );
+	}
+
+	public function test_read_filter_false_disables_read_abilities(): void {
+		add_filter( self::READ_FILTER, '__return_false' );
+
+		$this->assertSame( [], AbilitiesRegistrar::append_classes( [] ) );
+	}
+
+	/**
+	 * Existing callbacks that returned true to opt in now enable the
+	 * read-only abilities only.
+	 */
+	public function test_read_filter_true_does_not_enable_write_abilities(): void {
+		add_filter( self::READ_FILTER, '__return_true' );
+
+		$names = $this->get_enabled_ability_names();
+		$this->assertCount( 18, $names );
+		$this->assertNotContains( 'woocommerce-payments/refund-charge', $names );
+	}
+
+	/**
+	 * The read filter keeps its existing check: only `false` disables.
+	 */
+	public function test_read_filter_non_false_value_keeps_read_abilities(): void {
+		add_filter( self::READ_FILTER, '__return_zero' );
+
+		$this->assertCount( 18, $this->get_enabled_ability_names() );
+	}
+
+	/**
+	 * Write abilities need charge and dispute IDs that agents get from the
+	 * read abilities, so enabling writes keeps reads on.
+	 */
+	public function test_write_filter_on_enables_read_abilities_even_when_read_filter_is_off(): void {
+		add_filter( self::READ_FILTER, '__return_false' );
+		add_filter( self::WRITE_FILTER, '__return_true' );
+
+		$names = $this->get_enabled_ability_names();
+		$this->assertCount( 22, $names );
+		$this->assertContains( 'woocommerce-payments/get-transactions', $names );
+		$this->assertContains( 'woocommerce-payments/refund-charge', $names );
+	}
+
+	public function test_filters_receive_their_defaults(): void {
+		$received_read  = null;
+		$received_write = null;
+		add_filter(
+			self::READ_FILTER,
+			function ( $enabled ) use ( &$received_read ) {
+				$received_read = $enabled;
+				return $enabled;
+			}
 		);
+		add_filter(
+			self::WRITE_FILTER,
+			function ( $enabled ) use ( &$received_write ) {
+				$received_write = $enabled;
+				return $enabled;
+			}
+		);
+
+		AbilitiesRegistrar::append_classes( [] );
+
+		$this->assertTrue( $received_read );
+		$this->assertFalse( $received_write );
+	}
+
+	/**
+	 * Write abilities can refund charges and accept disputes, so a truthy
+	 * value other than `true` must not enable them.
+	 *
+	 * @dataProvider provider_truthy_non_true_values
+	 *
+	 * @param mixed $value Value returned by the write filter.
+	 */
+	public function test_truthy_non_true_write_filter_value_does_not_enable_write_abilities( $value ): void {
+		add_filter(
+			self::WRITE_FILTER,
+			function () use ( $value ) {
+				return $value;
+			}
+		);
+
+		$this->assertNotContains( 'woocommerce-payments/refund-charge', $this->get_enabled_ability_names() );
+	}
+
+	public function provider_truthy_non_true_values(): array {
+		return [
+			'yes string' => [ 'yes' ],
+			'one'        => [ 1 ],
+			'one string' => [ '1' ],
+			'array'      => [ [ 'yes' ] ],
+		];
 	}
 
 	public function test_current_user_can_manage_woocommerce_matches_capability(): void {
@@ -194,26 +368,11 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	// Coordinator-level tests (Phase 8)
 	// -------------------------------------------------------------------------
 
-	public function test_init_wires_filter_when_loader_present_and_feature_enabled(): void {
-		if ( ! class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
-			$this->markTestSkipped( 'WooCommerce 10.9 AbilitiesLoader required.' );
-		}
+	public function test_append_classes_returns_all_ability_classes_when_writes_enabled(): void {
+		add_filter( self::WRITE_FILTER, '__return_true' );
 
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-		AbilitiesRegistrar::init();
-
-		$this->assertNotFalse(
-			has_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] )
-		);
-
-		remove_filter( self::FEATURE_FILTER, '__return_true' );
-	}
-
-	public function test_append_classes_returns_all_ability_classes(): void {
-		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
-		$expected   = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
-
-		$this->assertCount( 22, $expected, 'ABILITY_CLASSES should contain all registered abilities.' );
+		$expected = $this->get_all_ability_classes();
+		$this->assertCount( 22, $expected, 'READ_ABILITY_CLASSES and WRITE_ABILITY_CLASSES should contain all registered abilities.' );
 
 		// Empty input → returns just the WCPay classes.
 		$result = AbilitiesRegistrar::append_classes( [] );
@@ -226,13 +385,32 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertCount( 23, $result );
 	}
 
+	/**
+	 * Guards the read/write split: a write ability added to the read list
+	 * would be registered by default.
+	 */
+	public function test_ability_lists_match_readonly_annotations(): void {
+		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
+			$this->markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
+		}
+
+		foreach ( $this->get_ability_class_constant( 'READ_ABILITY_CLASSES' ) as $class ) {
+			$args = $class::get_registration_args();
+			$this->assertTrue( $args['meta']['annotations']['readonly'] ?? null, "$class is in READ_ABILITY_CLASSES but is not annotated readonly." );
+		}
+
+		foreach ( $this->get_ability_class_constant( 'WRITE_ABILITY_CLASSES' ) as $class ) {
+			$args = $class::get_registration_args();
+			$this->assertFalse( $args['meta']['annotations']['readonly'] ?? null, "$class is in WRITE_ABILITY_CLASSES but is not annotated as non-readonly." );
+		}
+	}
+
 	public function test_every_ability_class_implements_ability_definition(): void {
 		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
 			$this->markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
 		}
 
-		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
-		$classes    = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
+		$classes = $this->get_all_ability_classes();
 
 		foreach ( $classes as $class ) {
 			$this->assertContains(
@@ -248,8 +426,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			$this->markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
 		}
 
-		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
-		$classes    = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
+		$classes = $this->get_all_ability_classes();
 
 		foreach ( $classes as $class ) {
 			$this->assertTrue( method_exists( $class, 'get_name' ), "$class should define get_name()." );
@@ -259,5 +436,37 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			// discoverability bucket and would not match here.
 			$this->assertStringStartsWith( 'woocommerce-payments/', $name );
 		}
+	}
+
+	/**
+	 * Names of the abilities `init()` enabled, via the loader filter callback.
+	 *
+	 * @return string[]
+	 */
+	private function get_enabled_ability_names(): array {
+		return array_map(
+			function ( $ability_class ) {
+				return $ability_class::get_name();
+			},
+			AbilitiesRegistrar::append_classes( [] )
+		);
+	}
+
+	/**
+	 * @return string[]
+	 */
+	private function get_all_ability_classes(): array {
+		return array_merge(
+			$this->get_ability_class_constant( 'READ_ABILITY_CLASSES' ),
+			$this->get_ability_class_constant( 'WRITE_ABILITY_CLASSES' )
+		);
+	}
+
+	/**
+	 * @param string $name Private constant name on AbilitiesRegistrar.
+	 * @return string[]
+	 */
+	private function get_ability_class_constant( string $name ): array {
+		return ( new \ReflectionClass( AbilitiesRegistrar::class ) )->getReflectionConstant( $name )->getValue();
 	}
 }

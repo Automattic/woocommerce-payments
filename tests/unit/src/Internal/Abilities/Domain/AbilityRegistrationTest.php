@@ -20,7 +20,10 @@ class AbilityRegistrationTest extends WCPAY_UnitTestCase {
 
 	public function test_table_covers_every_registered_ability(): void {
 		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
-		$registered = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
+		$registered = array_merge(
+			$reflection->getReflectionConstant( 'READ_ABILITY_CLASSES' )->getValue(),
+			$reflection->getReflectionConstant( 'WRITE_ABILITY_CLASSES' )->getValue()
+		);
 
 		$tested = array_column( $this->provider_abilities(), 0 );
 
