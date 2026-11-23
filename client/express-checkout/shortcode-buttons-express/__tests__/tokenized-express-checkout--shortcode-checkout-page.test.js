@@ -718,6 +718,66 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			).toBeInTheDocument();
 		} );
 
+		it( 'should handle address, rate and payment events from the current button', async () => {
+			const currentElements =
+				stripeInstance.elements.mock.results[ 0 ].value;
+			currentElements.update = jest.fn();
+			currentElements.submit = jest.fn( () =>
+				Promise.resolve( { error: { message: 'Submit failed' } } )
+			);
+			openWallet();
+			apiFetch.mockClear();
+			const addressEvent = {
+				name: 'Jane Doe',
+				address: { country: 'US', postal_code: '94110' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+			const rateEvent = {
+				shippingRate: { id: 'flat_rate:1' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+			const confirmEvent = { paymentFailed: jest.fn() };
+
+			await stripeElementMock.__getRegisteredEvent(
+				'shippingaddresschange'
+			)( addressEvent );
+			await stripeElementMock.__getRegisteredEvent(
+				'shippingratechange'
+			)( rateEvent );
+			await stripeElementMock.__getRegisteredEvent( 'confirm' )(
+				confirmEvent
+			);
+
+			expect( addressEvent.resolve ).toHaveBeenCalledTimes( 1 );
+			expect( addressEvent.reject ).not.toHaveBeenCalled();
+			expect( rateEvent.resolve ).toHaveBeenCalledTimes( 1 );
+			expect( rateEvent.reject ).not.toHaveBeenCalled();
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					path: expect.stringContaining(
+						'/wc/store/v1/cart/update-customer'
+					),
+				} )
+			);
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					path: expect.stringContaining(
+						'/wc/store/v1/cart/select-shipping-rate'
+					),
+				} )
+			);
+			expect( currentElements.update ).toHaveBeenCalledTimes( 2 );
+			expect( currentElements.submit ).toHaveBeenCalledTimes( 1 );
+			expect( confirmEvent.paymentFailed ).not.toHaveBeenCalled();
+			expect(
+				screen.queryByText(
+					'Please reopen the payment window and try again.'
+				)
+			).not.toBeInTheDocument();
+		} );
+
 		it( 'should still mount the new button when Stripe already destroyed the old one', async () => {
 			// Stripe destroys the Element itself after `loaderror`, and a second
 			// `destroy()` throws.
