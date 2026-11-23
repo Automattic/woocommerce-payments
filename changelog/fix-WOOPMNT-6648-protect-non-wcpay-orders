@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Protect orders paid through another gateway from test-order deletion after a failed WooPayments attempt.
