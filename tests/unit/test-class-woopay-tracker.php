@@ -270,7 +270,9 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 			)
 		);
 
-		$this->call_ajax_tracks( $tracker );
+		$response = $this->call_ajax_tracks( $tracker );
+
+		$this->assertSame( [ 'success' => true ], $response );
 	}
 
 	/**
@@ -281,7 +283,9 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$tracker->expects( $this->never() )->method( 'maybe_record_event' );
 		$_REQUEST['tracksEventName'] = $event_name;
 
-		$this->call_ajax_tracks( $tracker );
+		$response = $this->call_ajax_tracks( $tracker );
+
+		$this->assertSame( [ 'success' => true ], $response );
 	}
 
 	public function provider_invalid_single_event_names(): array {
