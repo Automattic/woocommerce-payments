@@ -83,7 +83,7 @@ jobs:
     environment: wporg-deploy
     permissions:
       contents: read
-    name: "Deploy ${{ inputs.version }} from ${{ inputs.branch }}${{ inputs.simulate && ' (simulation)' || '' }}"
+    name: "Deploy ${{ inputs.version }} from ${{ inputs.branch }} at ${{ needs.build.outputs.commit }}${{ inputs.simulate && ' (simulation)' || '' }}"
     runs-on: ubuntu-latest
     steps:
       - name: Validate QIT credentials
