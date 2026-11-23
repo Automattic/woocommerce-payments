@@ -12,8 +12,9 @@ const getForeignStripeJsSrc = (): string | null => {
 		document.querySelector< HTMLScriptElement >( 'script#stripe-js' );
 
 	// Script optimizers move `src` to a data attribute and may leave it empty.
-	// Read the attribute: `.src` resolves an empty value to the page URL.
-	if ( ! tag?.getAttribute( 'src' )?.trim() ) {
+	// Read the attribute: `.src` resolves an empty value to the page's base URL.
+	// Per spec only an exactly empty value skips the fetch, so blank ones are judged.
+	if ( ! tag?.getAttribute( 'src' ) ) {
 		return null;
 	}
 

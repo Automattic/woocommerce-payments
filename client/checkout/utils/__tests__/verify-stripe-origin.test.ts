@@ -100,17 +100,26 @@ describe( 'assertStripeJsOrigin', () => {
 		expect( assertStripeJsOrigin ).not.toThrow();
 	} );
 
-	it.each( [ '', ' ' ] )(
-		'passes when an optimizer left the src attribute empty (%j)',
-		( src ) => {
-			addScript( {
-				id: stripeJsHandleId,
-				src,
-				'data-src': 'https://js.stripe.com/v3/',
-			} );
+	it( 'passes when an optimizer left the src attribute empty', () => {
+		addScript( {
+			id: stripeJsHandleId,
+			src: '',
+			'data-src': 'https://js.stripe.com/v3/',
+		} );
 
-			expect( assertStripeJsOrigin ).not.toThrow();
-			expect( warn ).not.toHaveBeenCalled();
+		expect( assertStripeJsOrigin ).not.toThrow();
+		expect( warn ).not.toHaveBeenCalled();
+	} );
+
+	// A blank value is not empty: a non-breaking space loads a script from the page's origin.
+	it.each( [ ' ', '\u00a0', '\u000b', '\u2003' ] )(
+		'throws when the src attribute is blank but not empty (%j)',
+		( src ) => {
+			addScript( { id: stripeJsHandleId, src } );
+
+			expect( assertStripeJsOrigin ).toThrow(
+				new Error( 'Stripe.js provenance check failed.' )
+			);
 		}
 	);
 
