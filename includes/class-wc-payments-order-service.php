@@ -1093,7 +1093,7 @@ class WC_Payments_Order_Service {
 		if ( ! $order ) {
 			return;
 		}
-		// Both jobs can run for a payment, and Stripe can deliver its event again.
+		// Early exit if the note has already been added for this payment.
 		if ( $intent_id === $order->get_meta( self::FEE_BREAKDOWN_NOTE_INTENT_META_KEY ) ) {
 			return;
 		}
