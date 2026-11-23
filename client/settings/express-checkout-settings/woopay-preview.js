@@ -9,7 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
-import { NAMESPACE } from 'wcpay/data/constants';
+import { getFileUrl } from 'wcpay/utils';
 import PreviewProductImage from 'assets/images/woopay-preview-product.svg?asset';
 import VisaIconImage from 'assets/images/woopay-preview-visa.svg?asset';
 import WoopayLogoImage from 'assets/images/woopay-preview-logo.svg?asset';
@@ -439,13 +439,10 @@ export default ( {
 		return Array.from( parsed.body.childNodes, renderPreviewNode );
 	}, [ customMessage ] );
 
+	const storeLogoUrl = getFileUrl( storeLogo );
+
 	let storeHeader;
-	if ( storeLogo ) {
-		const storeLogoUrl =
-			wcpaySettings.restUrl +
-			NAMESPACE.substring( 1 ) +
-			'/file/' +
-			storeLogo;
+	if ( storeLogoUrl ) {
 		storeHeader = <img src={ storeLogoUrl } alt="Store logo" />;
 	} else if ( wcpaySettings?.siteLogoUrl ) {
 		storeHeader = (

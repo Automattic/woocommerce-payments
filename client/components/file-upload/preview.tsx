@@ -8,7 +8,7 @@ import React from 'react';
 /**
  * Internal dependencies.
  */
-import { NAMESPACE } from 'wcpay/data/constants';
+import { getFileUrl } from 'wcpay/utils';
 
 interface FileUploadProps {
 	fileName: string;
@@ -19,12 +19,11 @@ const FileUploadPreview = ( {
 	fileName,
 	showPreview,
 }: FileUploadProps ): JSX.Element => {
-	const url =
-		wcpaySettings.restUrl + NAMESPACE.substring( 1 ) + '/file/' + fileName;
+	const url = showPreview ? getFileUrl( fileName ) : '';
 
 	return (
 		<>
-			{ showPreview && fileName && (
+			{ url && (
 				<img
 					src={ url }
 					style={ { maxWidth: 100, marginTop: 12 } }

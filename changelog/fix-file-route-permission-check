@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Update the permission check on the file endpoint.

@@ -668,7 +668,8 @@ class WC_Payments_Admin {
 			'all'
 		);
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings' );
+		// wp-api-request defines wpApiSettings, whose REST nonce the store logo previews need.
+		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings', [ 'wp-api-request' ] );
 		wp_add_inline_script(
 			'WCPAY_ADMIN_SETTINGS',
 			new Woo_Payments_Payment_Method_Definitions(),
