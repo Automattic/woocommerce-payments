@@ -22,10 +22,68 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  # Build here and hand the zip to the action, so QIT tests the file that ships.
+  # Left to itself, the action builds twice in a target-repo folder, which also
+  # ends up as the plugin slug in the POT header.
+  build:
     permissions:
       contents: read
-    name: "Deploy ${{ inputs.version }} from ${{ inputs.branch }}${{ inputs.simulate && ' (simulation)' || '' }}"
+    name: "Build ${{ inputs.version }} from ${{ inputs.branch }}"
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.commit.outputs.sha }}
+      zip: ${{ steps.build_plugin.outputs.release-filename }}
+      zip-sha256: ${{ steps.checksum.outputs.sha256 }}
+    steps:
+      - name: Check the branch to deploy
+        shell: bash
+        env:
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          case "$BRANCH" in
+            trunk|release/*) ;;
+            *) echo "::error::Deploy from trunk or a release/x.y.z branch, not '$BRANCH'."; exit 1 ;;
+          esac
+
+      - name: Checkout branch to deploy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.branch }}
+          persist-credentials: false
+
+      - name: Record the built commit
+        id: commit
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up repository
+        uses: ./.github/actions/setup-repo
+
+      - name: Build the plugin
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: Record the zip checksum
+        id: checksum
+        shell: bash
+        env:
+          ZIP: ${{ steps.build_plugin.outputs.release-filename }}
+        run: echo "sha256=$(sha256sum "$ZIP" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the zip file as an artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          path: ${{ steps.build_plugin.outputs.release-filename }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
+
+  deploy:
+    needs: build
+    environment: wporg-deploy
+    permissions:
+      contents: read
+    name: "Deploy ${{ inputs.version }} from ${{ inputs.branch }} at ${{ needs.build.outputs.commit }}${{ inputs.simulate && ' (simulation)' || '' }}"
     runs-on: ubuntu-latest
     steps:
       - name: Validate QIT credentials
@@ -39,29 +97,11 @@ jobs:
             exit 1
           fi
 
-      # Build here and hand the zip to the action, so QIT tests the file that ships.
-      # Left to itself, the action builds twice in a target-repo folder, which also
-      # ends up as the plugin slug in the POT header.
-      - name: Checkout branch to deploy
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download the built zip
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          ref: ${{ inputs.branch }}
-          persist-credentials: false
-
-      - name: Set up repository
-        uses: ./.github/actions/setup-repo
-
-      - name: Build the plugin
-        id: build_plugin
-        uses: ./.github/actions/build
-
-      - name: Upload the zip file as an artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          path: ${{ steps.build_plugin.outputs.release-filename }}
-          archive: false
-          if-no-files-found: error
-          retention-days: 14
+          name: ${{ needs.build.outputs.zip }}
+          skip-decompress: true
 
       # woo-product-deploy is a private repo, so it needs a token to check out
       - name: Checkout woo-product-deploy action
@@ -78,8 +118,10 @@ jobs:
         with:
           repo_url: ${{ github.server_url }}/${{ github.repository }}
           branch: ${{ inputs.branch }}
+          commit: ${{ needs.build.outputs.commit }}
           version: ${{ inputs.version }}
-          zip: ${{ steps.build_plugin.outputs.release-filename }}
+          zip: ${{ needs.build.outputs.zip }}
+          zip_sha256: ${{ needs.build.outputs.zip-sha256 }}
           node_version: '24'
           npm_version: '11'
           simulate: ${{ inputs.simulate }}

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+Comment: Split the WordPress.org deploy workflow into separate build and deploy jobs.
+
