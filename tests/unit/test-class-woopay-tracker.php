@@ -254,6 +254,48 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->call_ajax_tracks( $tracker );
 	}
 
+	public function test_ajax_tracks_skips_batched_events_with_invalid_names(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->once() )
+			->method( 'maybe_record_event' )
+			->with( 'cart_page_view', [] );
+		$_REQUEST['tracksEvents'] = wp_slash(
+			wp_json_encode(
+				[
+					[ 'name' => 'random' ],
+					[ 'name' => 'Cart-Page-View' ],
+					[ 'name' => ' ' ],
+					[ 'name' => 'cart_page_view' ],
+				]
+			)
+		);
+
+		$response = $this->call_ajax_tracks( $tracker );
+
+		$this->assertSame( [ 'success' => true ], $response );
+	}
+
+	/**
+	 * @dataProvider provider_invalid_single_event_names
+	 */
+	public function test_ajax_tracks_does_not_record_a_single_event_with_an_invalid_name( string $event_name ): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->never() )->method( 'maybe_record_event' );
+		$_REQUEST['tracksEventName'] = $event_name;
+
+		$response = $this->call_ajax_tracks( $tracker );
+
+		$this->assertSame( [ 'success' => true ], $response );
+	}
+
+	public function provider_invalid_single_event_names(): array {
+		return [
+			'empty'          => [ '' ],
+			'single segment' => [ 'random' ],
+			'invalid chars'  => [ 'Cart-Page-View' ],
+		];
+	}
+
 	public function test_ajax_tracks_drops_the_admin_event_flag_sent_by_the_browser(): void {
 		$tracker = $this->get_tracker_with_mocked_recording();
 		$tracker->expects( $this->exactly( 2 ) )
