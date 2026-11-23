@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Fix the HTTP method in the REST API docs examples for the transactions and authorizations reports.
+Comment: fix the HTTP method in the REST API docs examples for the transactions and authorizations reports.
