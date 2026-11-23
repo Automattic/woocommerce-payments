@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Update jQuery in the REST API docs site to 3.7.1.
+Comment: update jQuery in the REST API docs site to 3.7.1.
