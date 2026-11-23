@@ -1062,6 +1062,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function enqueue_add_fee_breakdown_to_order_notes_from_webhook( WC_Order $order, string $intent_id ): void {
+		// Card-funded too: the checkout may not have known the funding, and a payment still gets one note.
 		if ( ! $this->should_write_fee_breakdown_note_from_webhook( $order ) ) {
 			return;
 		}
@@ -2545,7 +2546,7 @@ class WC_Payments_Order_Service {
 		}
 
 		// Update the note with the fee breakdown details async, update order status, add order note.
-		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_data['intent_id'] );
+		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_data['intent_id'], $intent_data['amazon_pay_funding_type'] ?? null );
 
 		$this->update_fraud_data_for_successful_payment( $order, $intent_data );
 		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
@@ -2767,7 +2768,7 @@ class WC_Payments_Order_Service {
 		}
 
 		// Update the note with the fee breakdown details async.
-		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
+		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id, $this->get_amazon_pay_funding_type( $intent->get_charge() ) );
 
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
@@ -3061,7 +3062,7 @@ class WC_Payments_Order_Service {
 						$intent = $request->send();
 
 						$this->post_unique_capture_complete_note( $order, $intent_id, $charge->get_id() );
-						$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
+						$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id, $this->get_amazon_pay_funding_type( $intent->get_charge() ) );
 					}
 
 					$this->set_intention_status_for_order( $order, $intent->get_status() );
@@ -4231,9 +4232,10 @@ class WC_Payments_Order_Service {
 		];
 
 		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
-			$charge                   = $intent->get_charge();
-			$intent_data['charge_id'] = $charge ? $charge->get_id() : null;
-			$intent_data['error']     = $intent->get_last_payment_error();
+			$charge                                 = $intent->get_charge();
+			$intent_data['charge_id']               = $charge ? $charge->get_id() : null;
+			$intent_data['error']                   = $intent->get_last_payment_error();
+			$intent_data['amazon_pay_funding_type'] = $this->get_amazon_pay_funding_type( $charge );
 		}
 
 		return $intent_data;
@@ -4256,13 +4258,14 @@ class WC_Payments_Order_Service {
 	 * Schedules an action to add the fee breakdown to order notes, once the payment completes or is captured.
 	 * When the webhook writes the note, this only schedules the delayed backup.
 	 *
-	 * @param WC_Order $order The order to add the note to.
-	 * @param string   $intent_id The intent ID for the order.
+	 * @param WC_Order    $order                   The order to add the note to.
+	 * @param string      $intent_id               The intent ID for the order.
+	 * @param string|null $amazon_pay_funding_type The charge's Amazon Pay funding type, if known.
 	 *
 	 * @return void
 	 */
-	private function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id ) {
-		if ( $this->should_write_fee_breakdown_note_from_webhook( $order ) ) {
+	private function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id, ?string $amazon_pay_funding_type = null ) {
+		if ( $this->should_write_fee_breakdown_note_from_webhook( $order, $amazon_pay_funding_type ) ) {
 			WC_Payments::get_action_scheduler_service()->schedule_job(
 				time() + HOUR_IN_SECONDS,
 				self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES_FALLBACK,
@@ -4282,14 +4285,33 @@ class WC_Payments_Order_Service {
 	 * Whether the forwarded webhook, not the checkout or capture, writes the order's Fee details note.
 	 *
 	 * For Amazon Pay, the platform refunds WooPayments' fee a second or two after the payment, and forwards the
-	 * webhook only after that. A note written at checkout shows the fee from before the refund.
+	 * webhook only after that. A note written at checkout shows the fee from before the refund. Card-funded
+	 * payments keep the immediate note, since their fee is never refunded. An unknown funding type, as in test
+	 * mode, waits for the webhook.
 	 *
-	 * @param WC_Order $order The order.
+	 * @param WC_Order    $order                   The order.
+	 * @param string|null $amazon_pay_funding_type The charge's Amazon Pay funding type, if known.
 	 *
 	 * @return bool
 	 */
-	private function should_write_fee_breakdown_note_from_webhook( WC_Order $order ): bool {
-		return WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY === $order->get_payment_method();
+	private function should_write_fee_breakdown_note_from_webhook( WC_Order $order, ?string $amazon_pay_funding_type = null ): bool {
+		return WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY === $order->get_payment_method()
+			&& 'card' !== $amazon_pay_funding_type;
+	}
+
+	/**
+	 * The Amazon Pay funding type of a charge (`card`, or another for non-card funding), or null when unknown.
+	 *
+	 * @param WC_Payments_API_Charge|null $charge The charge.
+	 *
+	 * @return string|null
+	 */
+	private function get_amazon_pay_funding_type( $charge ): ?string {
+		if ( ! $charge instanceof WC_Payments_API_Charge ) {
+			return null;
+		}
+		$type = $charge->get_payment_method_details()['amazon_pay']['funding']['type'] ?? null;
+		return is_string( $type ) ? $type : null;
 	}
 
 	/**

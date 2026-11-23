@@ -198,6 +198,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	const FEE_NOTE_OTHER_INTENT_ID = 'pi_test_fee_note_other';
 
 	/**
+	 * Payment method details of a card-funded Amazon Pay charge, whose fee the platform never refunds.
+	 */
+	const CARD_FUNDED_AMAZON_PAY_DETAILS = [
+		'type'       => 'amazon_pay',
+		'amazon_pay' => [ 'funding' => [ 'type' => 'card' ] ],
+	];
+
+	/**
 	 * A timeline captured event, as the platform reports it once WooPayments has refunded its fee.
 	 */
 	const FEE_NOTE_CAPTURED_EVENT = [
@@ -6216,6 +6224,49 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$note_job = $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes', $this->order );
 		$this->assertNotFalse( $note_job );
 		$this->assertLessThan( $scheduled + 3600, $note_job );
+		$this->assertFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes_fallback', $this->order ) );
+	}
+
+	/**
+	 * A card-funded Amazon Pay payment keeps the note right after the payment: its fee is never refunded.
+	 */
+	public function test_completed_card_funded_amazon_pay_payment_adds_the_fee_details_note_right_away() {
+		$this->order->set_payment_method( self::AMAZON_PAY_GATEWAY_ID );
+		$this->order->save();
+		$intent    = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::FEE_NOTE_INTENT_ID,
+				'charge' => [ 'payment_method_details' => self::CARD_FUNDED_AMAZON_PAY_DETAILS ],
+			]
+		);
+		$scheduled = time();
+
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		$note_job = $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes', $this->order );
+		$this->assertNotFalse( $note_job );
+		$this->assertLessThanOrEqual( $scheduled + 1, $note_job );
+		$this->assertFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes_fallback', $this->order ) );
+	}
+
+	/**
+	 * Capturing a card-funded Amazon Pay payment also keeps the note right after the capture.
+	 */
+	public function test_captured_card_funded_amazon_pay_payment_adds_the_fee_details_note_right_away() {
+		$this->order->set_payment_method( self::AMAZON_PAY_GATEWAY_ID );
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::FEE_NOTE_INTENT_ID,
+				'charge' => [ 'payment_method_details' => self::CARD_FUNDED_AMAZON_PAY_DETAILS ],
+			]
+		);
+
+		$this->order_service->process_captured_payment( $this->order, $intent );
+
+		$this->assertNotFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes', $this->order ) );
 		$this->assertFalse( $this->get_fee_note_job_time( 'wcpay_add_fee_breakdown_to_order_notes_fallback', $this->order ) );
 	}
 
