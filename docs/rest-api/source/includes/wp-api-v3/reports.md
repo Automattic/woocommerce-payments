@@ -42,7 +42,7 @@ Fetch a detailed overview of transactions.
 - `direction`: Direction on which to sort.
 
 ```shell
-curl -X POST https://example.com/wp-json/wc/v3/payments/reports/transactions?page=1 \
+curl -X GET https://example.com/wp-json/wc/v3/payments/reports/transactions?page=1 \
 	-u consumer_key:consumer_secret
 ```
 
@@ -100,7 +100,7 @@ Fetch a detailed overview of single transaction.
 </div>
 
 ```shell
-curl -X POST https://example.com/wp-json/wc/v3/payments/reports/transactions/txn_1234567890abcdef \
+curl -X GET https://example.com/wp-json/wc/v3/payments/reports/transactions/txn_1234567890abcdef \
 	-u consumer_key:consumer_secret
 ```
 
@@ -173,7 +173,7 @@ Fetch a detailed overview of authorizations.
 - `direction`: Direction on which to sort the authorizations.
 
 ```shell
-curl -X POST https://example.com/wp-json/wc/v3/payments/reports/authorizations?page=1 \
+curl -X GET https://example.com/wp-json/wc/v3/payments/reports/authorizations?page=1 \
 	-u consumer_key:consumer_secret
 ```
 
@@ -225,7 +225,7 @@ Fetch a detailed overview of single authorization.
 </div>
 
 ```shell
-curl -X POST https://example.com/wp-json/wc/v3/payments/reports/authorizations/auth_98765 \
+curl -X GET https://example.com/wp-json/wc/v3/payments/reports/authorizations/auth_98765 \
 	-u consumer_key:consumer_secret
 ```
 

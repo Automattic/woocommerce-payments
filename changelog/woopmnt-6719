@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show the fee after WooPayments' refund in the Fee details note of Amazon Pay orders.
