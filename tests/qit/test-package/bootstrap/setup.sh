@@ -194,7 +194,7 @@ wp theme activate storefront
 
 # The site-editor checkout and currency switcher tests switch to a block theme.
 if ! wp theme is-installed twentytwentyfour > /dev/null 2>&1; then
-    wp theme install twentytwentyfour
+    retry wp theme install twentytwentyfour
 fi
 
 # WooCommerce only applies Storefront's 3x4 product grid on `after_switch_theme`, which never fires
