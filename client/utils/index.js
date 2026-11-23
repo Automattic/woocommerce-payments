@@ -138,6 +138,29 @@ export const getDocumentUrl = ( documentId ) => {
 	);
 };
 
+/**
+ * Returns the URL of a WooPayments file, for use as an image source.
+ *
+ * Carries the REST nonce: without it WordPress treats an image request as logged out.
+ *
+ * @param {string} fileId The file ID.
+ *
+ * @return {string} The URL of the file, or an empty string when the ID cannot be used in the URL.
+ */
+export const getFileUrl = ( fileId ) => {
+	let fileSegment;
+	try {
+		fileSegment = encodePathSegment( fileId );
+	} catch ( error ) {
+		return '';
+	}
+
+	const baseUrl = `${ wpApiSettings.root.replace( /\/$/, '' ) }`;
+	return addQueryArgs( `${ baseUrl }${ NAMESPACE }/file/${ fileSegment }`, {
+		_wpnonce: wpApiSettings.nonce,
+	} );
+};
+
 export const getConnectUrl = ( urlParams, from ) => {
 	// Ensure urlParams is an object.
 	const queryParams = typeof urlParams === 'object' ? urlParams : {};
