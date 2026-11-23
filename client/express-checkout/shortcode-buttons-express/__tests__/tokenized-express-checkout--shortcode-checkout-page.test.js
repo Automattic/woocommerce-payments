@@ -689,6 +689,11 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			expect( rateEvent.resolve ).not.toHaveBeenCalled();
 			expect( apiFetch ).not.toHaveBeenCalled();
 			expect( newElements.update ).not.toHaveBeenCalled();
+			expect(
+				screen.getByText(
+					'Please reopen the payment window and try again.'
+				)
+			).toBeInTheDocument();
 		} );
 
 		it( 'should not place an order from a sheet still open on the old button', async () => {
@@ -699,13 +704,17 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			const newElements = stripeInstance.elements.mock.results[ 1 ].value;
 			newElements.submit = jest.fn( () => Promise.resolve( {} ) );
 			apiFetch.mockClear();
+			const confirmEvent = { paymentFailed: jest.fn() };
 
-			await onStaleConfirm( {} );
+			await onStaleConfirm( confirmEvent );
 
 			expect( newElements.submit ).not.toHaveBeenCalled();
 			expect( apiFetch ).not.toHaveBeenCalled();
+			expect( confirmEvent.paymentFailed ).toHaveBeenCalledTimes( 1 );
 			expect(
-				screen.getByText( 'Your cart changed. Please try again.' )
+				screen.getByText(
+					'Please reopen the payment window and try again.'
+				)
 			).toBeInTheDocument();
 		} );
 

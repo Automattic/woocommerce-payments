@@ -305,6 +305,13 @@ jQuery( ( $ ) => {
 			// Apple Pay keeps its sheet open after the button is replaced.
 			// Stripe checks that sheet against the old Elements, so its events can't use the new one.
 			const isReplaced = () => elements !== buttonElements;
+			const abortReplacedPayment = () =>
+				wcpayECE.abortPayment(
+					__(
+						'Please reopen the payment window and try again.',
+						'woocommerce-payments'
+					)
+				);
 
 			const eceButton = elements.create(
 				'expressCheckout',
@@ -450,6 +457,7 @@ jQuery( ( $ ) => {
 				}
 
 				if ( isReplaced() ) {
+					abortReplacedPayment();
 					return event.reject();
 				}
 
@@ -462,6 +470,7 @@ jQuery( ( $ ) => {
 
 			eceButton.on( 'shippingratechange', async ( event ) => {
 				if ( isReplaced() ) {
+					abortReplacedPayment();
 					return event.reject();
 				}
 
@@ -483,12 +492,8 @@ jQuery( ( $ ) => {
 				}
 
 				if ( isReplaced() ) {
-					wcpayECE.abortPayment(
-						__(
-							'Your cart changed. Please try again.',
-							'woocommerce-payments'
-						)
-					);
+					abortReplacedPayment();
+					event.paymentFailed();
 					return;
 				}
 
