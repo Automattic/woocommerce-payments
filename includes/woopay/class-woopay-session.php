@@ -487,13 +487,18 @@ class WooPay_Session {
 	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 *
-	 * @return array The cart data.
+	 * @return array|null The cart data, or null when the Store API refused the pay-for-order order.
 	 */
 	private static function get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request ) {
 		if ( ! $woopay_request ) {
-			return ! $is_pay_for_order
-			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
-			: rest_preload_api_request( [], '/wc/store/v1/order/' . rawurlencode( $order_id ) . '?key=' . rawurlencode( $key ) . '&billing_email=' . rawurlencode( $billing_email ) )[ '/wc/store/v1/order/' . rawurlencode( $order_id ) . '?key=' . rawurlencode( $key ) . '&billing_email=' . rawurlencode( $billing_email ) ]['body'];
+			if ( ! $is_pay_for_order ) {
+				return rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
+			}
+
+			$order_path = '/wc/store/v1/order/' . rawurlencode( (string) $order_id ) . '?key=' . rawurlencode( (string) $key ) . '&billing_email=' . rawurlencode( (string) $billing_email );
+
+			// The preload keeps only 200 responses, so a refused order leaves no entry.
+			return rest_preload_api_request( [], $order_path )[ $order_path ]['body'] ?? null;
 		}
 
 		$cart_request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
@@ -673,7 +678,19 @@ class WooPay_Session {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
-		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
+		$cart_data = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
+
+		// WooPay rejects a session without the order, and would leave the shopper with no explanation.
+		if ( $is_pay_for_order && null === $cart_data ) {
+			Logger::log( sprintf( 'WooPay session refused: the Store API did not return order %d (billing email sent: %s).', $order_id, '' === (string) $billing_email ? 'no' : 'yes' ) );
+
+			return new \WP_Error(
+				'woopay_pay_for_order_unavailable',
+				__( 'WooPay couldn’t load this order. Please reload the page and try again.', 'woocommerce-payments' ),
+				[ 'status' => 403 ]
+			);
+		}
+
 		$checkout_data = self::get_checkout_data( $woopay_request );
 
 		$email = self::get_user_email( $user, $woopay_request );
@@ -951,6 +968,25 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Sends a refused session request as a JSON error.
+	 *
+	 * Like wp_send_json_error(), plus the error code, so the button can tell which messages are
+	 * written for the shopper.
+	 *
+	 * @param \WP_Error $error The reason the session can't be created.
+	 */
+	private static function send_session_error( \WP_Error $error ): void {
+		wp_send_json(
+			[
+				'success' => false,
+				'data'    => $error->get_error_message(),
+				'code'    => $error->get_error_code(),
+			],
+			403
+		);
+	}
+
+	/**
 	 * Used to initialize woopay session.
 	 *
 	 * @return void
@@ -976,7 +1012,7 @@ class WooPay_Session {
 		$body = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance, $font_rules );
 
 		if ( is_wp_error( $body ) ) {
-			wp_send_json_error( $body->get_error_message(), 403 );
+			self::send_session_error( $body );
 		}
 
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
@@ -1036,7 +1072,7 @@ class WooPay_Session {
 		$session = self::get_frontend_init_session_request();
 
 		if ( is_wp_error( $session ) ) {
-			wp_send_json_error( $session->get_error_message(), 403 );
+			self::send_session_error( $session );
 		}
 
 		wp_send_json( $session );
