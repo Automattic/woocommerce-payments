@@ -1054,7 +1054,7 @@ class WC_Payments_Order_Service {
 
 	/**
 	 * Schedules the Fee details note from the forwarded `payment_intent.succeeded` webhook, when that is where the
-	 * order's note is written (see is_fee_breakdown_note_written_from_webhook()).
+	 * order's note is written (see should_write_fee_breakdown_note_from_webhook()).
 	 *
 	 * @param WC_Order $order     The order the payment is for.
 	 * @param string   $intent_id The payment's intent ID.
@@ -1062,7 +1062,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function enqueue_add_fee_breakdown_to_order_notes_from_webhook( WC_Order $order, string $intent_id ): void {
-		if ( ! $this->is_fee_breakdown_note_written_from_webhook( $order ) ) {
+		if ( ! $this->should_write_fee_breakdown_note_from_webhook( $order ) ) {
 			return;
 		}
 
@@ -4262,7 +4262,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id ) {
-		if ( $this->is_fee_breakdown_note_written_from_webhook( $order ) ) {
+		if ( $this->should_write_fee_breakdown_note_from_webhook( $order ) ) {
 			WC_Payments::get_action_scheduler_service()->schedule_job(
 				time() + HOUR_IN_SECONDS,
 				self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES_FALLBACK,
@@ -4288,7 +4288,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return bool
 	 */
-	private function is_fee_breakdown_note_written_from_webhook( WC_Order $order ): bool {
+	private function should_write_fee_breakdown_note_from_webhook( WC_Order $order ): bool {
 		return WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY === $order->get_payment_method();
 	}
 
