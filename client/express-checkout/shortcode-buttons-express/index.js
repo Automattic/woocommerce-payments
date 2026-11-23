@@ -285,7 +285,7 @@ jQuery( ( $ ) => {
 			destroyMountedElement?.();
 
 			// https://docs.stripe.com/js/elements_object/create_without_intent
-			elements = stripe.elements( {
+			const buttonElements = stripe.elements( {
 				mode: 'payment',
 				amount: creationOptions.total,
 				currency: rememberElementCurrency( creationOptions.currency ),
@@ -301,6 +301,17 @@ jQuery( ( $ ) => {
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );
+			elements = buttonElements;
+			// Apple Pay keeps its sheet open after the button is replaced.
+			// Stripe checks that sheet against the old Elements, so its events can't use the new one.
+			const isReplaced = () => elements !== buttonElements;
+			const abortReplacedPayment = () =>
+				wcpayECE.abortPayment(
+					__(
+						'Please reopen the payment window and try again.',
+						'woocommerce-payments'
+					)
+				);
 
 			const eceButton = elements.create(
 				'expressCheckout',
@@ -445,6 +456,11 @@ jQuery( ( $ ) => {
 					return event.resolve();
 				}
 
+				if ( isReplaced() ) {
+					abortReplacedPayment();
+					return event.reject();
+				}
+
 				return shippingAddressChangeHandler(
 					event,
 					elements,
@@ -452,14 +468,19 @@ jQuery( ( $ ) => {
 				);
 			} );
 
-			eceButton.on( 'shippingratechange', async ( event ) =>
-				shippingRateChangeHandler(
+			eceButton.on( 'shippingratechange', async ( event ) => {
+				if ( isReplaced() ) {
+					abortReplacedPayment();
+					return event.reject();
+				}
+
+				return shippingRateChangeHandler(
 					event,
 					elements,
 					cachedCartData,
 					wcpayECE.abortPayment
-				)
-			);
+				);
+			} );
 
 			eceButton.on( 'confirm', async ( event ) => {
 				isWalletOpen = false;
@@ -467,6 +488,12 @@ jQuery( ( $ ) => {
 				if ( addToCartErrorMessage ) {
 					// the message should have already been displayed earlier, but this will also remove any additional overlays.
 					wcpayECE.abortPayment( addToCartErrorMessage );
+					return;
+				}
+
+				if ( isReplaced() ) {
+					abortReplacedPayment();
+					event.paymentFailed();
 					return;
 				}
 
