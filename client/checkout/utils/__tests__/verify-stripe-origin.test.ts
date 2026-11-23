@@ -100,6 +100,20 @@ describe( 'assertStripeJsOrigin', () => {
 		expect( assertStripeJsOrigin ).not.toThrow();
 	} );
 
+	it.each( [ '', ' ' ] )(
+		'passes when an optimizer left the src attribute empty (%j)',
+		( src ) => {
+			addScript( {
+				id: stripeJsHandleId,
+				src,
+				'data-src': 'https://js.stripe.com/v3/',
+			} );
+
+			expect( assertStripeJsOrigin ).not.toThrow();
+			expect( warn ).not.toHaveBeenCalled();
+		}
+	);
+
 	it( 'passes for a repointed handle when the filter turned the check off', () => {
 		window.wcpayStripeJsOriginCheckDisabled = true;
 		addScript( { id: stripeJsHandleId, src: repointedSrc } );

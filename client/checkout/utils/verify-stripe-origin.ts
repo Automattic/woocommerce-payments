@@ -7,13 +7,17 @@ const stripeJsOrigin = 'https://js.stripe.com';
 
 // Returns the Stripe.js tag's `src` when it points away from Stripe, else null.
 const getForeignStripeJsSrc = (): string | null => {
-	// `script#`: another element may share the id. Script optimizers move `src`
-	// to a data attribute, so a tag without `src` passes.
-	const src =
-		document.querySelector< HTMLScriptElement >( 'script#stripe-js' )?.src;
-	if ( ! src ) {
+	// `script#`: another element may share the id.
+	const tag =
+		document.querySelector< HTMLScriptElement >( 'script#stripe-js' );
+
+	// Script optimizers move `src` to a data attribute and may leave it empty.
+	// Read the attribute: `.src` resolves an empty value to the page URL.
+	if ( ! tag?.getAttribute( 'src' )?.trim() ) {
 		return null;
 	}
+
+	const src = tag.src;
 
 	try {
 		return new URL( src ).origin === stripeJsOrigin ? null : src;
