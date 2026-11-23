@@ -6,6 +6,25 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# wordpress.org downloads flake on CI; retry them before failing the bootstrap.
+retry() {
+    local attempt=1
+    local exit_code
+    while true; do
+        if "$@"; then
+            return 0
+        else
+            exit_code=$?
+        fi
+        if (( attempt >= 3 )); then
+            return "$exit_code"
+        fi
+        echo "Warning: attempt ${attempt}/3 failed (exit ${exit_code}); retrying in 10s: $*" >&2
+        sleep 10
+        attempt=$(( attempt + 1 ))
+    done
+}
+
 echo "Setting up WooPayments for E2E testing..."
 
 # Ensure environment is marked as development so dev-only CLI commands are available.
@@ -26,7 +45,7 @@ wp wc hpos status || true
 # Install WordPress importer and import sample products.
 echo "Installing WordPress importer for sample data..."
 if ! wp plugin is-installed wordpress-importer >/dev/null 2>&1; then
-    wp plugin install wordpress-importer --activate
+    retry wp plugin install wordpress-importer --activate
 else
     wp plugin activate wordpress-importer
 fi
@@ -169,7 +188,7 @@ echo "Setting up WooPayments configuration..."
 
 # Ensure Storefront theme is active for consistent storefront markup.
 if ! wp theme is-installed storefront > /dev/null 2>&1; then
-    wp theme install storefront --force
+    retry wp theme install storefront --force
 fi
 wp theme activate storefront
 
