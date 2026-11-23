@@ -23,7 +23,7 @@ This repo pins its pnpm version via the `packageManager` field in `package.json`
 
 If you run into errors with `pnpm install` it may be due to node version, try `nvm install` followed by `nvm use` then try again.
 
-If you installed pnpm standalone (e.g. via Homebrew) and see an error like `The packageManager dependency "pnpm@..." in pnpm-lock.yaml must use a registry package path and an integrity-only resolution`, you're on a newer pnpm than the repo pins. Run `corepack enable pnpm` to use the pinned version instead.
+The git hooks run `corepack enable pnpm` when the pnpm on your `PATH` doesn't match the pinned version, so pnpm switches after you pull or change branches. If it doesn't, for example because a standalone pnpm (Homebrew, `~/Library/pnpm`) comes first on your `PATH`, run `corepack enable pnpm` and remove the standalone install.
 
 When running the `composer install/update`, composer may prompt you for a GitHub OAuth token before it can fetch the `subscriptions-core` package from github.
 
