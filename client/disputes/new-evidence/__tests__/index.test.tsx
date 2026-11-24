@@ -879,6 +879,139 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
+	describe( 'refund and duplicate status', () => {
+		const creditNotProcessedDispute = {
+			...regularDispute,
+			reason: 'credit_not_processed',
+			metadata: { __product_type: 'physical_product' },
+		};
+		const duplicateDispute = {
+			...regularDispute,
+			reason: 'duplicate',
+			metadata: { __product_type: 'physical_product' },
+		};
+
+		const renderLoaded = async ( dispute: Record< string, unknown > ) => {
+			mockApiFetch.mockResolvedValue( dispute );
+			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+			await waitFor( () => {
+				expect(
+					screen.getByText( "Let's gather the basics" )
+				).toBeInTheDocument();
+			} );
+		};
+
+		const saveForLater = () =>
+			fireEvent.click(
+				screen.getByRole( 'button', { name: /Save for later/i } )
+			);
+
+		it( 'saves the refund status in the dispute metadata', async () => {
+			await renderLoaded( creditNotProcessedDispute );
+
+			fireEvent.click(
+				screen.getByRole( 'radio', { name: 'Refund was not owed' } )
+			);
+			saveForLater();
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							metadata: {
+								__product_type: 'physical_product',
+								__refund_status: 'refund_was_not_owed',
+							},
+						} ),
+					} )
+				);
+			} );
+		} );
+
+		it( 'restores the saved refund status and its document slots', async () => {
+			await renderLoaded( {
+				...creditNotProcessedDispute,
+				metadata: {
+					__product_type: 'physical_product',
+					__refund_status: 'refund_was_not_owed',
+				},
+			} );
+
+			expect(
+				screen.getByRole( 'radio', { name: 'Refund was not owed' } )
+			).toBeChecked();
+			expect(
+				screen.getByText( 'Proof of acceptance' )
+			).toBeInTheDocument();
+			expect( screen.queryByText( 'Order receipt' ) ).toBeNull();
+		} );
+
+		it( 'shows the layout that holds every saved document when no refund status was saved', async () => {
+			await renderLoaded( {
+				...creditNotProcessedDispute,
+				evidence: {
+					uncategorized_file: 'file_proof',
+					service_documentation: 'file_other',
+				},
+			} );
+
+			expect(
+				screen.getByRole( 'radio', { name: 'Refund was not owed' } )
+			).toBeChecked();
+		} );
+
+		it( 'saves and restores the duplicate status', async () => {
+			await renderLoaded( {
+				...duplicateDispute,
+				metadata: {
+					__product_type: 'physical_product',
+					__duplicate_status: 'is_not_duplicate',
+				},
+			} );
+
+			expect(
+				screen.getByRole( 'radio', { name: /not a duplicate/i } )
+			).toBeChecked();
+
+			saveForLater();
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							metadata: {
+								__product_type: 'physical_product',
+								__duplicate_status: 'is_not_duplicate',
+							},
+						} ),
+					} )
+				);
+			} );
+		} );
+
+		it( 'does not save a status for other dispute reasons', async () => {
+			await renderLoaded( {
+				...regularDispute,
+				metadata: { __product_type: 'physical_product' },
+			} );
+
+			saveForLater();
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							metadata: { __product_type: 'physical_product' },
+						} ),
+					} )
+				);
+			} );
+		} );
+	} );
+
 	it( 'keeps typed evidence when settings finish loading after the dispute', async () => {
 		const loadedSettings = {
 			account_country: 'US',
@@ -1069,6 +1202,32 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 				expect( coverLetter.value ).toContain(
 					'ordered Handmade mug on'
 				);
+				expect(
+					screen.queryByRole( 'button', {
+						name: 'Restore generated letter',
+					} )
+				).not.toBeInTheDocument();
+			} );
+
+			it( 'regenerates an untouched letter written for a non-default refund status', async () => {
+				const notOwedDispute = {
+					...regularDispute,
+					reason: 'credit_not_processed',
+					metadata: {
+						__product_type: 'physical_product',
+						__refund_status: 'refund_was_not_owed',
+					},
+				};
+				mockApiFetch.mockResolvedValue( notOwedDispute );
+				const letterSavedYesterday = await getLetterSavedYesterday();
+				mockApiFetch.mockResolvedValue( {
+					...notOwedDispute,
+					evidence: { uncategorized_text: letterSavedYesterday },
+				} );
+
+				const coverLetter = await openCoverLetter();
+
+				expect( coverLetter ).not.toHaveValue( letterSavedYesterday );
 				expect(
 					screen.queryByRole( 'button', {
 						name: 'Restore generated letter',
