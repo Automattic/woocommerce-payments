@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Multi-Currency: in cache-optimized mode, let scripts that calculate prices in the browser convert and format them in the customer's currency with window.wcpayAsyncCurrency.convert(), format() and getCurrency().

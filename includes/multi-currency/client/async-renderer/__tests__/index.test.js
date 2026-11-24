@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { WCPayAsyncPriceRenderer } from '../index';
+import { WCPayAsyncPriceRenderer, createAsyncCurrencyApi } from '../index';
 
 describe( 'WCPayAsyncPriceRenderer', () => {
 	let renderer;
@@ -327,6 +327,98 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			renderer.convertPrice( '999.99', 'product' );
 			expect( renderer.cache.size ).toBe( 500 );
 			expect( renderer.cache.has( '0.01_product' ) ).toBe( false );
+		} );
+	} );
+
+	describe( 'convertAmount', () => {
+		it( 'returns the converted amount as an unformatted number', () => {
+			// 10.00 USD * 0.85 = 8.50, ceil to 9, charm -0.01 = 8.99.
+			expect(
+				renderer.convertAmount( '10.00', 'product' ).toNumber()
+			).toBe( 8.99 );
+		} );
+
+		it( 'returns the amount unchanged in the default currency', () => {
+			renderer.config = { ...mockConfig, selected_currency: 'USD' };
+
+			expect(
+				renderer.convertAmount( '10.00', 'product' ).toNumber()
+			).toBe( 10 );
+		} );
+	} );
+
+	describe( 'getEffectiveCurrency', () => {
+		it( 'returns the selected currency', () => {
+			expect( renderer.getEffectiveCurrency().code ).toBe( 'EUR' );
+		} );
+
+		it( 'falls back to the default currency when the selected one is missing', () => {
+			renderer.config = { ...mockConfig, selected_currency: 'GBP' };
+
+			expect( renderer.getEffectiveCurrency().code ).toBe( 'USD' );
+		} );
+	} );
+
+	describe( 'createAsyncCurrencyApi', () => {
+		const ready = Promise.resolve( 'eur' );
+
+		beforeEach( () => {
+			global.wcpayAsyncPriceConfig = {
+				apiUrl: '',
+				defaultCurrency: mockConfig.currencies.USD,
+			};
+		} );
+
+		afterEach( () => {
+			delete global.wcpayAsyncPriceConfig;
+		} );
+
+		it( 'exposes the ready promise', () => {
+			const api = createAsyncCurrencyApi( renderer, ready );
+
+			expect( api.ready ).toBe( ready );
+		} );
+
+		it( 'converts amounts like skeleton prices, as numbers', () => {
+			const api = createAsyncCurrencyApi( renderer, ready );
+
+			expect( api.convert( 10 ) ).toBe( 8.99 );
+			expect( api.convert( '10.00', 'shipping' ) ).toBe( 9 );
+			expect( api.convert( '1.50', 'tax' ) ).toBe( 1.28 );
+		} );
+
+		it( 'formats converted amounts in the selected currency', () => {
+			const api = createAsyncCurrencyApi( renderer, ready );
+
+			// 2000.00 USD * 0.85 = 1700, charm -0.01 = 1699.99.
+			expect( api.format( api.convert( 2000 ) ) ).toBe( '1.699,99 €' );
+		} );
+
+		it( 'returns a copy of the selected currency', () => {
+			const api = createAsyncCurrencyApi( renderer, ready );
+			const currency = api.getCurrency();
+
+			expect( currency.code ).toBe( 'EUR' );
+			currency.rate = 2;
+			expect( mockConfig.currencies.EUR.rate ).toBe( 0.85 );
+		} );
+
+		it( 'keeps store-currency amounts when the config did not load', () => {
+			renderer.config = null;
+			const api = createAsyncCurrencyApi( renderer, ready );
+
+			expect( api.convert( '10.00' ) ).toBe( 10 );
+			expect( api.format( 10 ) ).toBe( '$10.00' );
+			expect( api.getCurrency().symbol ).toBe( '$' );
+		} );
+
+		it( 'returns null and plain amounts without any currency data', () => {
+			renderer.config = null;
+			delete global.wcpayAsyncPriceConfig.defaultCurrency;
+			const api = createAsyncCurrencyApi( renderer, ready );
+
+			expect( api.getCurrency() ).toBeNull();
+			expect( api.format( 10 ) ).toBe( '10' );
 		} );
 	} );
 
