@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ask shoppers to reopen Apple Pay when the cart or checkout updates while its sheet is open, instead of updating the cart from that sheet.
