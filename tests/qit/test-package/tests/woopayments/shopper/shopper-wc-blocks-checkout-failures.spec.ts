@@ -61,6 +61,7 @@ const failures = [
 ];
 
 const errorsInsideStripeFrame = [
+	config.cards[ 'invalid-exp-date' ],
 	config.cards[ 'invalid-cvv-number' ],
 	config.cards[ 'declined-incorrect' ],
 ];
