@@ -1,7 +1,10 @@
 /**
  * Internal dependencies
  */
-import { assertStripeJsOrigin } from '../verify-stripe-origin';
+import {
+	assertStripeJsOrigin,
+	isStripeJsSrcPending,
+} from '../verify-stripe-origin';
 
 const stripeJsHandleId = 'stripe-js';
 const repointedSrc = 'https://js.evil.example/v3/?ver=3.0';
@@ -87,39 +90,62 @@ describe( 'assertStripeJsOrigin', () => {
 		);
 	} );
 
-	it( 'passes when there is no tag', () => {
-		expect( assertStripeJsOrigin ).not.toThrow();
-	} );
-
-	it( 'passes when an optimizer moved the src to a data attribute', () => {
-		addScript( {
-			id: stripeJsHandleId,
-			'data-src': 'https://js.stripe.com/v3/',
+	// A tag without `src` can sit next to a clone printed in a second tag.
+	describe.each( [
+		[ 'there is no tag', null ],
+		[
+			'an optimizer moved the src to a data attribute',
+			{ id: stripeJsHandleId, 'data-src': 'https://js.stripe.com/v3/' },
+		],
+		[
+			'the src attribute is empty',
+			{
+				id: stripeJsHandleId,
+				src: '',
+				'data-src': 'https://js.stripe.com/v3/',
+			},
+		],
+	] )( 'when %s', ( caseName, attrs ) => {
+		beforeEach( () => {
+			if ( attrs ) {
+				addScript( attrs );
+			}
 		} );
 
-		expect( assertStripeJsOrigin ).not.toThrow();
-	} );
-
-	it( 'passes when an optimizer left the src attribute empty', () => {
-		addScript( {
-			id: stripeJsHandleId,
-			src: '',
-			'data-src': 'https://js.stripe.com/v3/',
+		it( 'throws and says the tag has no src', () => {
+			expect( assertStripeJsOrigin ).toThrow(
+				new Error( 'Stripe.js provenance check failed.' )
+			);
+			expect( warn ).toHaveBeenCalledWith(
+				expect.stringContaining( 'is missing or has no src' )
+			);
 		} );
 
-		expect( assertStripeJsOrigin ).not.toThrow();
-		expect( warn ).not.toHaveBeenCalled();
+		it( 'passes when the caller allows no src', () => {
+			expect( () =>
+				assertStripeJsOrigin( { allowNoSrc: true } )
+			).not.toThrow();
+			expect( warn ).not.toHaveBeenCalled();
+		} );
+	} );
+
+	it( 'throws for a repointed handle when the caller allows no src', () => {
+		addScript( { id: stripeJsHandleId, src: repointedSrc } );
+
+		expect( () => assertStripeJsOrigin( { allowNoSrc: true } ) ).toThrow(
+			new Error( 'Stripe.js provenance check failed.' )
+		);
 	} );
 
 	// A blank value is not empty: a non-breaking space loads a script from the page's origin.
 	it.each( [ ' ', '\u00a0', '\u000b', '\u2003' ] )(
-		'throws when the src attribute is blank but not empty (%j)',
+		'throws when the src attribute is blank but not empty (%j), even when the caller allows no src',
 		( src ) => {
 			addScript( { id: stripeJsHandleId, src } );
 
-			expect( assertStripeJsOrigin ).toThrow(
-				new Error( 'Stripe.js provenance check failed.' )
-			);
+			expect( () =>
+				assertStripeJsOrigin( { allowNoSrc: true } )
+			).toThrow( new Error( 'Stripe.js provenance check failed.' ) );
 		}
 	);
 
@@ -129,5 +155,37 @@ describe( 'assertStripeJsOrigin', () => {
 
 		expect( assertStripeJsOrigin ).not.toThrow();
 		expect( warn ).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'isStripeJsSrcPending', () => {
+	afterEach( () => {
+		delete window.wcpayStripeJsOriginCheckDisabled;
+		document.getElementById( stripeJsHandleId )?.remove();
+	} );
+
+	it( 'is pending when the tag has no src', () => {
+		addScript( {
+			id: stripeJsHandleId,
+			'data-src': 'https://js.stripe.com/v3/',
+		} );
+
+		expect( isStripeJsSrcPending() ).toBe( true );
+	} );
+
+	it( 'is pending when there is no tag', () => {
+		expect( isStripeJsSrcPending() ).toBe( true );
+	} );
+
+	it( 'is not pending once the tag has a src', () => {
+		addScript( { id: stripeJsHandleId, src: repointedSrc } );
+
+		expect( isStripeJsSrcPending() ).toBe( false );
+	} );
+
+	it( 'is not pending when the filter turned the check off', () => {
+		window.wcpayStripeJsOriginCheckDisabled = true;
+
+		expect( isStripeJsSrcPending() ).toBe( false );
 	} );
 } );

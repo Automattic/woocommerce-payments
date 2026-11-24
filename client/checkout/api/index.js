@@ -8,7 +8,10 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
-import { assertStripeJsOrigin } from '../utils/verify-stripe-origin';
+import {
+	assertStripeJsOrigin,
+	isStripeJsSrcPending,
+} from '../utils/verify-stripe-origin';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -62,18 +65,20 @@ export default class WCPayAPI {
 	}
 
 	async getStripe( forceAccountRequest = false ) {
-		// Fail now rather than after waiting for a `window.Stripe` that may never load.
-		assertStripeJsOrigin();
+		// Fail now on a foreign `src` rather than wait for a `window.Stripe` that may
+		// never load. A missing `src` is waited for: an optimizer may restore it.
+		assertStripeJsOrigin( { allowNoSrc: true } );
 
 		const maxWaitTime = 600 * 1000; // 600 seconds
 		const waitInterval = 100;
 		let currentWaitTime = 0;
-		while ( ! window.Stripe ) {
+		while ( ! window.Stripe || isStripeJsSrcPending() ) {
 			await new Promise( ( resolve ) =>
 				setTimeout( resolve, waitInterval )
 			);
 			currentWaitTime += waitInterval;
 			if ( currentWaitTime > maxWaitTime ) {
+				assertStripeJsOrigin();
 				throw new Error( 'Stripe object not found' );
 			}
 		}
