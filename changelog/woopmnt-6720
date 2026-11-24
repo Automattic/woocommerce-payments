@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix saved and submitted dispute responses reopening with the default refund or duplicate answer, which listed uploaded documents under the wrong heading or hid them.
+Keep the refund and duplicate status chosen on the dispute challenge form after saving or submitting, so the form and the submitted evidence show the right documents.
