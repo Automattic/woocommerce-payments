@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Retry wordpress.org theme and plugin installs in the QIT E2E bootstrap.
