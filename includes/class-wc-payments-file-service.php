@@ -32,4 +32,15 @@ class WC_Payments_File_Service {
 	public function is_file_public( string $purpose ): bool {
 		return in_array( $purpose, static::FILE_PURPOSE_PUBLIC, true );
 	}
+
+	/**
+	 * Check if a file ID is the saved WooPay store logo, the only file logged-out shoppers may load.
+	 *
+	 * @param string $file_id - file ID.
+	 *
+	 * @return bool
+	 */
+	public function is_saved_store_logo( string $file_id ): bool {
+		return '' !== $file_id && WC_Payments::get_gateway()->get_option( 'platform_checkout_store_logo' ) === $file_id;
+	}
 }

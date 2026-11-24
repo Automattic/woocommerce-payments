@@ -59,14 +59,24 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_file' ],
-				// Intentionally public: authorization is enforced per file purpose inside get_file().
-				// Public branding assets (business_logo/business_icon) must be served to logged-out
-				// shoppers (e.g. the WooPay checkout store logo); every other purpose still requires
-				// manage_woocommerce. A static permission_callback can't express that split because the
-				// decision depends on the fetched file's purpose.
-				'permission_callback' => [],
+				'permission_callback' => [ $this, 'check_get_file_permission' ],
 			]
 		);
+	}
+
+	/**
+	 * Anyone may request the saved WooPay store logo; any other file needs manage_woocommerce before
+	 * the file is looked up. get_file() still checks the logo's purpose.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
+	 * @return bool
+	 */
+	public function check_get_file_permission( WP_REST_Request $request ): bool {
+		// Same value get_file() reads: a query `file_id` overrides the path's, and may be an array.
+		$file_id = $request->get_param( 'file_id' );
+
+		return ( is_string( $file_id ) && ( new WC_Payments_File_Service() )->is_saved_store_logo( $file_id ) ) || $this->check_permission();
 	}
 
 	/**

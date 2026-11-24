@@ -95,7 +95,7 @@ All pnpm settings live in `pnpm-workspace.yaml` — since pnpm 11 the `package.j
 - **`blockExoticSubdeps: true`** — transitive dependencies must resolve from the registry; a transitive git/tarball URL fails the install.
 - **`allowBuilds`** — the build-script allowlist (`strictDepBuilds` is on by default, so a dependency whose install script is not listed here fails the install). List a package as `true` to let it build, `false` to silence it.
 
-After updating `pnpm-lock.yaml`, check `rg -n 'tarball:' pnpm-lock.yaml`. Remove explicit `registry.npmjs.org` tarball URLs from registry packages, but keep their integrity hashes. Those URLs make pnpm 11 reject frozen installs through a different registry with `ERR_PNPM_TARBALL_URL_MISMATCH`. Run `pnpm install --frozen-lockfile` with a non-default registry when such URLs were present. The JS linting job fails while any remain, which includes Dependabot PRs: strip the URLs on the PR branch before merging.
+After updating `pnpm-lock.yaml`, check `rg -n 'tarball:' pnpm-lock.yaml`. Remove explicit `registry.npmjs.org` tarball URLs from registry packages, but keep their integrity hashes. Those URLs make pnpm reject frozen installs through a different registry with `ERR_PNPM_TARBALL_URL_MISMATCH`. Run `pnpm install --frozen-lockfile` with a non-default registry when such URLs were present. The JS linting job fails while any remain, which includes Dependabot PRs: strip the URLs on the PR branch before merging.
 
 **Pushing an urgent security bump through the cooldown:** add the package to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` (bare name or exact `pkg@version`), or run `pnpm audit --fix`, which auto-exempts advisory-patched versions. Remove the exclude once the version ages past the window.
 
