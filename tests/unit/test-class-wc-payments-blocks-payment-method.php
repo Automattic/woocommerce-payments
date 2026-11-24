@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
+
 /**
  * WC_Payments_Blocks_Payment_Method unit tests.
  */
@@ -29,6 +31,15 @@ class WC_Payments_Blocks_Payment_Method_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Features::STRIPE_JS_DAHLIA_FLAG_NAME );
 
 		parent::tear_down();
+	}
+
+	public function test_registers_under_gateway_id_before_initialize() {
+		$registry = new PaymentMethodRegistry();
+
+		$registry->register( new WC_Payments_Blocks_Payment_Method() );
+
+		$this->assertTrue( $registry->is_registered( 'woocommerce_payments' ) );
+		$this->assertFalse( $registry->is_registered( '' ) );
 	}
 
 	/**

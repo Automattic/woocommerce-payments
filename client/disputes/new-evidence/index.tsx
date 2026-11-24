@@ -47,6 +47,11 @@ import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
 import { resolveProductType } from './resolve-product-type';
 import {
+	resolveEvidenceStatuses,
+	refundStatuses,
+	duplicateStatuses,
+} from './resolve-evidence-status';
+import {
 	Button,
 	HorizontalRule,
 	Spinner,
@@ -138,10 +143,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	const settings = useGetSettings();
 	const { isLoading: isLoadingSettings } = useSettings();
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
-	const [ refundStatus, setRefundStatus ] = useState(
-		'refund_has_been_issued'
+	const [ refundStatus, setRefundStatus ] = useState< string >(
+		refundStatuses[ 0 ]
 	);
-	const [ duplicateStatus, setDuplicateStatus ] = useState( 'is_duplicate' );
+	const [ duplicateStatus, setDuplicateStatus ] = useState< string >(
+		duplicateStatuses[ 0 ]
+	);
 
 	// Refs for heading elements to focus on step navigation
 	const stepHeadingRef = useRef< HTMLHeadingElement >( null );
@@ -186,6 +193,12 @@ export default ( { query }: { query: { id: string } } ) => {
 					isFeatureFlagEnabled
 				);
 				setProductType( suggestedProductType );
+				const savedStatuses = resolveEvidenceStatuses(
+					d,
+					suggestedProductType
+				);
+				setRefundStatus( savedStatuses.refundStatus );
+				setDuplicateStatus( savedStatuses.duplicateStatus );
 				// Load saved product description from evidence or level3 line items
 				const level3ProductNames = d.charge?.level3?.line_items
 					?.map( ( item: any ) => item.product_description )
@@ -276,8 +289,8 @@ export default ( { query }: { query: { id: string } } ) => {
 							getBusinessDetails(),
 							settings,
 							fetchedBankName,
-							refundStatus,
-							duplicateStatus,
+							savedStatuses.refundStatus,
+							savedStatuses.duplicateStatus,
 							suggestedProductType
 						);
 						setIsCoverLetterManuallyEdited(
@@ -301,8 +314,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						getBusinessDetails(),
 						settings,
 						fetchedBankName,
-						refundStatus,
-						duplicateStatus,
+						savedStatuses.refundStatus,
+						savedStatuses.duplicateStatus,
 						suggestedProductType
 					);
 					setCoverLetter( generatedCoverLetter );
@@ -684,10 +697,16 @@ export default ( { query }: { query: { id: string } } ) => {
 				} )
 			);
 
-			// Update metadata with the current productType
+			// Save the choices that pick the document layout, so it shows the same slots on reload.
 			const updatedMetadata = {
 				...dispute.metadata,
 				__product_type: productType,
+				...( dispute.reason === 'credit_not_processed' && {
+					__refund_status: refundStatus,
+				} ),
+				...( dispute.reason === 'duplicate' && {
+					__duplicate_status: duplicateStatus,
+				} ),
 			};
 
 			// Save to the dispute the server returned, not the ID from the page URL.

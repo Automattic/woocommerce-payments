@@ -121,6 +121,10 @@ export interface Dispute {
 		__evidence_submitted_at?: string;
 		/** Product type the merchant selected via the response wizard. */
 		__product_type?: string;
+		/** Refund status the merchant selected via the response wizard, for credit not processed disputes. */
+		__refund_status?: string;
+		/** Duplicate status the merchant selected via the response wizard, for duplicate disputes. */
+		__duplicate_status?: string;
 		/* eslint-enable @typescript-eslint/naming-convention */
 	};
 	order: null | OrderDetails;
