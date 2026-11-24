@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Response;
@@ -375,5 +377,111 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 */
 	protected function reset_payment_method_registry() {
 		$this->get_payment_method_registry_instance_property()->setValue( null, null );
+	}
+
+	/**
+	 * Select the order store for this test without forcing a sync of existing orders.
+	 *
+	 * @param bool $hpos Whether to use the HPOS tables.
+	 */
+	protected function set_order_storage( bool $hpos ): void {
+		$option_value = static function () use ( $hpos ) {
+			return $hpos ? 'yes' : 'no';
+		};
+		// WooCommerce 7.6 checks the feature flag as well as the storage setting.
+		add_filter( 'pre_option_woocommerce_feature_custom_order_tables_enabled', $option_value );
+		add_filter( 'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, $option_value );
+		$this->assertSame( $hpos, OrderUtil::custom_orders_table_usage_is_enabled() );
+	}
+
+	/**
+	 * Uses HPOS where the feature is already enabled, with data caching on where WooCommerce supports it.
+	 * With that caching, even a forced read of an order's meta answers from this process's cache.
+	 */
+	protected function store_orders_in_hpos_with_data_caching(): void {
+		// Keep WooCommerce 7.6 on its default store unless a test explicitly enables experimental HPOS.
+		add_filter( 'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, [ $this, 'return_yes' ] );
+		// HPOS data caching arrived after WooCommerce 7.6, the oldest version supported.
+		if ( defined( CustomOrdersTableController::class . '::HPOS_DATASTORE_CACHING_ENABLED_OPTION' ) ) {
+			add_filter( 'pre_option_' . CustomOrdersTableController::HPOS_DATASTORE_CACHING_ENABLED_OPTION, [ $this, 'return_yes' ] );
+		}
+	}
+
+	/**
+	 * The value of an enabled WooCommerce option.
+	 *
+	 * @return string
+	 */
+	public function return_yes(): string {
+		return 'yes';
+	}
+
+	/**
+	 * Changes the stored intent of an order as another request would: the row changes, and none of this
+	 * process's caches hear of it.
+	 *
+	 * @param int    $order_id  The order.
+	 * @param string $intent_id The intent the other request writes.
+	 */
+	protected function write_intent_id_in_another_request( int $order_id, string $intent_id ): void {
+		$this->write_meta_in_another_request( $order_id, '_intent_id', $intent_id );
+	}
+
+	/**
+	 * Changes a stored meta value of an order as another request would: the row changes, or is added when the
+	 * order has none, and none of this process's caches hear of it.
+	 *
+	 * @param int    $order_id   The order.
+	 * @param string $meta_key   The meta key.
+	 * @param string $meta_value The value the other request writes.
+	 */
+	protected function write_meta_in_another_request( int $order_id, string $meta_key, string $meta_value ): void {
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.SlowDBQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- One row of a test order; the table and column are fixed.
+		[ $table, $column ] = $this->order_meta_table();
+		$row                = [
+			$column    => $order_id,
+			'meta_key' => $meta_key,
+		];
+
+		$stored = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE {$column} = %d AND meta_key = %s", $order_id, $meta_key ) );
+		if ( 0 < $stored ) {
+			$wpdb->update( $table, [ 'meta_value' => $meta_value ], $row );
+		} else {
+			$wpdb->insert( $table, $row + [ 'meta_value' => $meta_value ] );
+		}
+		// phpcs:enable WordPress.DB.SlowDBQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	}
+
+	/**
+	 * Reads a meta value of an order from its table, past every cache, as the next request would see it.
+	 *
+	 * @param int    $order_id The order.
+	 * @param string $meta_key The meta key.
+	 *
+	 * @return string|null The first stored value, or null when the order has none.
+	 */
+	protected function get_stored_meta( int $order_id, string $meta_key ): ?string {
+		global $wpdb;
+
+		[ $table, $column, $row_id ] = $this->order_meta_table();
+
+		// The lowest row ID first, as `get_meta()` returns the first of several values.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- The table and columns are fixed.
+		return $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$table} WHERE {$column} = %d AND meta_key = %s ORDER BY {$row_id} ASC LIMIT 1", $order_id, $meta_key ) );
+	}
+
+	/**
+	 * The table order meta is stored in, its order ID column and its row ID column.
+	 *
+	 * @return string[]
+	 */
+	private function order_meta_table(): array {
+		global $wpdb;
+
+		return WC_Payments_Utils::is_hpos_tables_usage_enabled()
+			? [ $wpdb->prefix . 'wc_orders_meta', 'order_id', 'id' ]
+			: [ $wpdb->postmeta, 'post_id', 'meta_id' ];
 	}
 }

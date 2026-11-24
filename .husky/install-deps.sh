@@ -14,3 +14,17 @@ if echo "$changed_files" | grep --quiet "pnpm-lock.yaml"; then
     printf '     Run: pnpm install\n'
     printf '*********************************************\033[0m\n\n'
 fi
+
+# JS: switch to the pnpm version pinned in package.json through corepack
+pinned_pnpm="$(sed -nE 's/.*"packageManager": *"pnpm@([0-9.]+).*/\1/p' package.json)"
+# no download prompt here; a hook can't answer it
+current_pnpm="$(COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version 2>/dev/null)" || current_pnpm=
+if [ -n "$pinned_pnpm" ] && [ "$current_pnpm" != "$pinned_pnpm" ]; then
+    printf '\033[1;33mThe repo pins pnpm %s (current version %s).\033[0m\n' "$pinned_pnpm" "${current_pnpm:-unavailable}"
+    if command -v corepack > /dev/null; then
+        printf 'Enabling Corepack. Run "pnpm --version" to check which version your shell uses.\n'
+        corepack enable pnpm
+    else
+        printf 'Install pnpm %s, or a Node version that ships corepack.\n' "$pinned_pnpm"
+    fi
+fi

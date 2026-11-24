@@ -751,6 +751,28 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		// A payment that completes after the order was settled with another one, such as a 3DS challenge finished
+		// after the shopper paid with a second card, must not replace the order's payment: refunds and disputes
+		// follow the charge stored on the order. An order still awaiting payment is completed by whichever
+		// payment succeeds, since this event can arrive before the checkout request saves its intent on it.
+		if ( $this->order_service->is_settled_with_another_payment( $order, $intent_id ) ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the ID of a WooPayments payment, %2: the ID of its charge, %3: the ID of the payment the order was paid with. */
+					__( 'A WooPayments payment <code>%1$s</code> (charge <code>%2$s</code>) succeeded for this order, but the order\'s payment is <code>%3$s</code>, so the order was not updated. Check whether payment <code>%1$s</code> needs a refund.', 'woocommerce-payments' ),
+					[ 'code' => '<code>' ]
+				),
+				$intent_id,
+				$charge_id,
+				$this->order_service->get_intent_id_for_order( $order )
+			);
+			// A redelivered event would only repeat the note.
+			if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
+				$order->add_order_note( $note );
+			}
+			return;
+		}
+
 		// Update missing intents because webhook can be delivered before order is processed on the client.
 		$meta_data_to_update = [
 			'_intent_id'         => $intent_id,
@@ -827,6 +849,9 @@ class WC_Payments_Webhook_Processing_Service {
 			$this->ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id );
 			$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 		}
+
+		// The platform forwards this event only after its own handling, which can change the fee.
+		$this->order_service->enqueue_add_fee_breakdown_to_order_notes_from_webhook( $order, $intent_id );
 
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		// Send the customer a card reader receipt if it's an in person payment type.

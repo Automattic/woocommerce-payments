@@ -3,6 +3,7 @@
  */
 import {
 	test as base,
+	expect as baseExpect,
 	Browser,
 	BrowserContext,
 	Page,
@@ -30,12 +31,21 @@ const roles: Record< Role, RoleConfig > = {
 		login: async ( page ) => {
 			const { username, password } = config.users.customer;
 			await qit.loginAs( page, username, password );
+			await page.goto( '/my-account' );
+			await baseExpect(
+				page.locator(
+					'.woocommerce-MyAccount-navigation-link--customer-logout'
+				)
+			).toBeVisible();
 		},
 	},
 	editor: {
 		login: async ( page ) => {
 			const { username, password } = config.users.editor;
 			await qit.loginAs( page, username, password );
+			await baseExpect(
+				page.getByRole( 'heading', { name: 'Dashboard' } )
+			).toBeVisible();
 		},
 	},
 };

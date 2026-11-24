@@ -43,7 +43,9 @@ module.exports = {
 				'./client/subscription-product-onboarding/modal.js',
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
-			'product-details': './client/product-details/index.js',
+			'bnpl-site-messaging':
+				'./client/bnpl-site-messaging/product-and-classic-cart.js',
+			'bnpl-cart-block': './client/bnpl-site-messaging/cart-block.js',
 			'cart-block': './client/cart/blocks/index.js',
 			'plugins-page': './client/plugins-page/index.js',
 			'frontend-tracks': './client/frontend-tracks/index.js',

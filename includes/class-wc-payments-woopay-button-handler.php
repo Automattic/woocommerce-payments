@@ -302,6 +302,11 @@ class WC_Payments_WooPay_Button_Handler {
 			return false;
 		}
 
+		// Pay for Order page, but the Store API would reject the order as WooPay sends it.
+		if ( $this->express_checkout_helper->is_pay_for_order_page() && ! $this->express_checkout_helper->is_pay_for_order_supported_by_woopay() ) {
+			return false;
+		}
+
 		if ( ! is_user_logged_in() ) {
 			// On product page for a subscription product, but not logged in, making WooPay unavailable.
 			if ( $this->express_checkout_helper->is_product() ) {

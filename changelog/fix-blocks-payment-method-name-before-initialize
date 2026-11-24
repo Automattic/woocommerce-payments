@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+WooPayments could be missing from the Checkout block when another payment method registered without a name.

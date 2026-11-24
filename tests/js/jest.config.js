@@ -87,6 +87,7 @@ module.exports = {
 			// d3 packages bumped for ReDoS fix ship pure ESM and need Babel transform.
 			'|d3-(color|interpolate|scale|scale-chromatic|format|time|time-format|array)/',
 			'|internmap/',
+			'|marked/',
 			'))',
 		].join( '' ),
 	],

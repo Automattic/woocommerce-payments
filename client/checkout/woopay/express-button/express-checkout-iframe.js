@@ -8,7 +8,10 @@ import { __ } from '@wordpress/i18n';
  */
 import { getConfig } from 'utils/checkout';
 import request from 'wcpay/checkout/utils/request';
-import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
+import {
+	getSessionErrorMessage,
+	showErrorMessage,
+} from 'wcpay/checkout/woopay/express-button/utils';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import {
 	getTargetElement,
@@ -252,10 +255,12 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 						);
 					} else {
 						// Set the notice text.
-						const errorMessage = __(
-							'WooPay is unavailable at this time. Sorry for the inconvenience.',
-							'woocommerce-payments'
-						);
+						const errorMessage =
+							getSessionErrorMessage( response ) ||
+							__(
+								'WooPay is unavailable at this time. Sorry for the inconvenience.',
+								'woocommerce-payments'
+							);
 						showErrorMessage( context, errorMessage );
 						closeIframe( false );
 					}
