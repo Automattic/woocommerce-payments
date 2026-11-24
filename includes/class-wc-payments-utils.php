@@ -1481,6 +1481,9 @@ class WC_Payments_Utils {
 	 * The WooCommerce Stripe Gateway registers Stripe.js under the same handle, so a store running both
 	 * plugins only loads it once, from whichever plugin registers first. With the Dahlia flag on, the URL
 	 * and the (empty) version match what that plugin registers, so either way the page gets the same tag.
+	 *
+	 * The origin check's off switch rides on the handle as an inline flag, so it reaches every page
+	 * that loads Stripe.js whichever plugin registered it.
 	 */
 	public static function register_stripe_js() {
 		wp_register_script(
@@ -1490,6 +1493,31 @@ class WC_Payments_Utils {
 			WC_Payments_Features::is_stripe_js_dahlia_enabled() ? null : '3.0',
 			true
 		);
+
+		/**
+		 * Filters whether checkout verifies that Stripe.js was served from js.stripe.com.
+		 *
+		 * Return false when a script optimizer rewrites the Stripe.js tag and the check blocks checkout.
+		 *
+		 * @since 11.4.0
+		 *
+		 * @param bool $enforce Whether to enforce the check. Default true.
+		 */
+		$enforce = apply_filters( 'wcpay_enforce_stripe_js_origin', true );
+
+		// Only a strict false turns the check off, so a callback returning nothing leaves it on.
+		if ( false !== $enforce ) {
+			return;
+		}
+
+		// Checkout, blocks and express checkout all register the handle on one request.
+		$flag   = 'window.wcpayStripeJsOriginCheckDisabled = true;';
+		$before = wp_scripts()->get_data( 'stripe', 'before' );
+		if ( is_array( $before ) && in_array( $flag, $before, true ) ) {
+			return;
+		}
+
+		wp_add_inline_script( 'stripe', $flag, 'before' );
 	}
 
 	/**

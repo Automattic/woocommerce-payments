@@ -311,6 +311,7 @@ declare global {
 	};
 
 	interface Window {
+		wcpayStripeJsOriginCheckDisabled?: boolean;
 		wcpaySettings: typeof wcpaySettings;
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
