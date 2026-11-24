@@ -1,10 +1,16 @@
 /** @format */
 
 /**
+ * External dependencies
+ */
+import apiFetch from '@wordpress/api-fetch';
+
+/**
  * Internal dependencies
  */
 import {
 	getDocumentUrl,
+	getFileUrl,
 	getPaymentMethodSettingsUrl,
 	hasTestAccount,
 	hasSandboxAccount,
@@ -38,6 +44,38 @@ describe( 'Utilities', () => {
 		expect( () => getDocumentUrl( invalidId ) ).toThrow(
 			expect.objectContaining( { code: 'wcpay_invalid_path_segment' } )
 		);
+	} );
+
+	test( 'file url carries the REST nonce', () => {
+		expect( getFileUrl( 'file_1' ) ).toEqual(
+			'https://site.com/wp-json/wc/v3/payments/file/file_1?_wpnonce=random_wp_rest_nonce'
+		);
+	} );
+
+	test( 'file url prefers the nonce api-fetch renews', () => {
+		apiFetch.nonceMiddleware = { nonce: 'renewed_nonce' };
+
+		try {
+			expect( getFileUrl( 'file_1' ) ).toEqual(
+				'https://site.com/wp-json/wc/v3/payments/file/file_1?_wpnonce=renewed_nonce'
+			);
+		} finally {
+			delete apiFetch.nonceMiddleware;
+		}
+	} );
+
+	test( 'file url encodes characters that would change the request', () => {
+		const traversalId = '../content?x=1#';
+
+		expect( getFileUrl( traversalId ) ).toEqual(
+			'https://site.com/wp-json/wc/v3/payments/file/..%2Fcontent%3Fx%3D1%23?_wpnonce=random_wp_rest_nonce'
+		);
+	} );
+
+	test( 'file url is empty for an ID that cannot be a path segment', () => {
+		const invalidId = '..';
+
+		expect( getFileUrl( invalidId ) ).toEqual( '' );
 	} );
 } );
 
