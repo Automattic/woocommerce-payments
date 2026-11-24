@@ -38,13 +38,17 @@ const resolveStatus = (
 	if ( saved && statuses.includes( saved ) ) {
 		return saved;
 	}
-	// Disputes saved before the choice was stored in metadata: pick the first
-	// layout that has a slot for every saved document, so none is hidden.
-	return (
-		statuses.find( ( status ) => {
-			const layoutKeys = getLayoutKeys( status );
-			return savedFileKeys.every( ( key ) => layoutKeys.includes( key ) );
-		} ) ?? statuses[ 0 ]
+	// Disputes saved before the choice was stored in metadata: pick the layout
+	// that shows the most saved documents, so as few as possible are hidden.
+	// A tie keeps the earlier status, so the default wins unless another layout
+	// shows more.
+	const countVisible = ( status: string ) => {
+		const layoutKeys = getLayoutKeys( status );
+		return savedFileKeys.filter( ( key ) => layoutKeys.includes( key ) )
+			.length;
+	};
+	return statuses.reduce( ( best, status ) =>
+		countVisible( status ) > countVisible( best ) ? status : best
 	);
 };
 
@@ -55,9 +59,9 @@ const resolveStatus = (
  * Source priority:
  *   1. `metadata.__refund_status` / `metadata.__duplicate_status` — written by
  *      the form on save.
- *   2. The first status whose document layout has a slot for every document
- *      saved on the dispute.
- *   3. The form's default.
+ *   2. The status whose document layout shows the most documents saved on
+ *      the dispute.
+ *   3. The form's default, when no other layout shows more.
  */
 export const resolveEvidenceStatuses = (
 	dispute: DisputeLike,

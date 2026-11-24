@@ -115,7 +115,24 @@ describe( 'resolveEvidenceStatuses', () => {
 		).toBe( 'is_duplicate' );
 	} );
 
-	it( 'keeps the default when no layout shows every saved document', () => {
+	it( 'picks the refund layout that shows the most saved documents when none shows them all', () => {
+		expect(
+			resolveEvidenceStatuses(
+				{
+					reason: 'credit_not_processed',
+					metadata: {},
+					evidence: {
+						uncategorized_file: 'file_proof_of_acceptance',
+						refund_policy: 'file_policy',
+						receipt: 'file_receipt',
+					},
+				},
+				'digital_product_or_service'
+			).refundStatus
+		).toBe( 'refund_was_not_owed' );
+	} );
+
+	it( 'keeps the default when no other layout shows more saved documents', () => {
 		expect(
 			resolveEvidenceStatuses(
 				{
