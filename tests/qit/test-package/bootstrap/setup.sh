@@ -11,11 +11,8 @@ retry() {
     local attempt=1
     local exit_code
     while true; do
-        if "$@"; then
-            return 0
-        else
-            exit_code=$?
-        fi
+        "$@" && return 0
+        exit_code=$?
         if (( attempt >= 3 )); then
             return "$exit_code"
         fi
