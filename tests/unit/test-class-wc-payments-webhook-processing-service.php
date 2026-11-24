@@ -261,6 +261,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 	}
 
+	public function tear_down() {
+		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes' );
+		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes_fallback' );
+		parent::tear_down();
+	}
+
 	/**
 	 * Test processing a webhook that requires no action.
 	 */
@@ -877,6 +883,31 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'ch_late_payment', $order->get_meta( '_charge_id' ) );
 		$this->assertSame( 'processing', $order->get_status() );
 		$this->assertStringNotContainsString( 'needs a refund', $this->get_order_notes_text( $order ) );
+	}
+
+	/**
+	 * The webhook writes the Amazon Pay Fee details note: the platform forwards it after the fee refund.
+	 */
+	public function test_payment_intent_succeeded_adds_the_amazon_pay_fee_details_note() {
+		$order = $this->create_order_settled_with_another_payment( Order_Status::PENDING, Intent_Status::SUCCEEDED, '' );
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY );
+		$order->save();
+		$this->set_up_late_payment_intent_succeeded( $order, time() );
+		$scheduled = time();
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$note_job = as_next_scheduled_action(
+			'wcpay_add_fee_breakdown_to_order_notes',
+			[
+				'order_id'     => $order->get_id(),
+				'intent_id'    => self::LATE_INTENT_ID,
+				'is_test_mode' => WC_Payments::mode()->is_test(),
+			],
+			'woocommerce_payments'
+		);
+		$this->assertNotFalse( $note_job );
+		$this->assertLessThan( $scheduled + 3600, $note_job );
 	}
 
 	/**
