@@ -182,7 +182,8 @@ class Session_Rate_Limiter {
 	 * Checks if the rate limiter is enabled and, when it is not, reserves an attempt for this request.
 	 *
 	 * Checking and reserving is one update, so overlapping requests cannot all pass before any is counted.
-	 * `bump()` keeps the attempt and `release()` hands it back. If the count cannot be stored, the attempt is let through.
+	 * `bump()` keeps the attempt and `release()` hands it back. A request that ends first, such as on `exit`,
+	 * hands it back at shutdown. If the count cannot be stored, the attempt is let through.
 	 *
 	 * The order count is only checked, not reserved. Its meta is reloaded, as in `is_limited()`.
 	 *
@@ -250,7 +251,20 @@ class Session_Rate_Limiter {
 		}
 
 		$this->reserved_keys[] = $rate_limit_key;
+		// The gateway releases the attempt in a `finally`, which `exit` and fatal errors skip.
+		add_action( 'shutdown', [ $this, 'release_all' ] );
 		return false;
+	}
+
+	/**
+	 * Hands back every attempt this request reserved and has not yet counted or released.
+	 *
+	 * Hooked on `shutdown` once an attempt is reserved.
+	 */
+	public function release_all() {
+		while ( [] !== $this->reserved_keys ) {
+			$this->release();
+		}
 	}
 
 	/**

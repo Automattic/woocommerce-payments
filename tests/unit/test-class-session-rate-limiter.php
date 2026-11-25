@@ -72,6 +72,7 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 		global $wpdb;
 
 		$this->restore_rate_limit_queries();
+		remove_action( 'shutdown', [ $this->rate_limiter, 'release_all' ] );
 		remove_filter( 'woocommerce_logger_log_message', [ $this, 'capture_log_message' ] );
 		WC()->session = $this->original_session;
 		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_rate_limits WHERE rate_limit_key LIKE 'wcpay_card_declined_registry_%'" );
@@ -181,6 +182,44 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 
 		remove_filter( 'query', $count_query );
 		$this->assertSame( [], $queries );
+		$this->assertSame( 1, $this->get_remaining_attempts() );
+	}
+
+	public function test_reserving_an_attempt_hooks_its_release_on_shutdown() {
+		$this->assertFalse( has_action( 'shutdown', [ $this->rate_limiter, 'release_all' ] ) );
+
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+
+		$this->assertSame( 10, has_action( 'shutdown', [ $this->rate_limiter, 'release_all' ] ) );
+	}
+
+	public function test_limited_check_does_not_hook_a_release_on_shutdown() {
+		$this->rate_limiter->bump();
+		$this->rate_limiter->bump();
+
+		$this->assertTrue( $this->rate_limiter->is_limited_or_reserve() );
+
+		$this->assertFalse( has_action( 'shutdown', [ $this->rate_limiter, 'release_all' ] ) );
+	}
+
+	public function test_release_all_hands_back_every_reserved_attempt() {
+		// A request that exits skips the gateway's `finally`, so the shutdown release finds its reservations.
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+
+		$this->rate_limiter->release_all();
+
+		$this->assertSame( 2, $this->get_remaining_attempts() );
+	}
+
+	public function test_release_all_keeps_counted_and_released_attempts() {
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+		$this->rate_limiter->bump();
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+		$this->rate_limiter->release();
+
+		$this->rate_limiter->release_all();
+
 		$this->assertSame( 1, $this->get_remaining_attempts() );
 	}
 

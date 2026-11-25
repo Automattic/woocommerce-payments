@@ -1534,7 +1534,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			// Reserves an attempt: bump() keeps it for a decline, and the `finally` below releases it otherwise.
+			// Reserves an attempt: bump() keeps it for a decline, and the `finally` below releases it otherwise. If the
+			// request exits first, as a card change that needs 3DS does, the limiter releases it at shutdown.
 			if ( $this->failed_transaction_rate_limiter->is_limited_or_reserve( $rate_limited_order ) ) {
 				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
