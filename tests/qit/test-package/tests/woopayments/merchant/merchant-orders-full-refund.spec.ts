@@ -3,6 +3,7 @@
  */
 import { test, expect } from '../../../fixtures/auth';
 import {
+	activateMulticurrency,
 	deactivateMulticurrency,
 	goToOrder,
 	goToPaymentDetails,
@@ -18,11 +19,19 @@ test.describe(
 		let orderId: string;
 		let orderAmount: string;
 		let paymentIntentId: string;
+		let wasMulticurrencyEnabled = false;
 
 		test.beforeAll( async ( { adminPage } ) => {
 			// The timeline amount carries a currency code when multi-currency is on.
-			if ( await isMulticurrencyEnabled( adminPage ) ) {
+			wasMulticurrencyEnabled = await isMulticurrencyEnabled( adminPage );
+			if ( wasMulticurrencyEnabled ) {
 				await deactivateMulticurrency( adminPage );
+			}
+		} );
+
+		test.afterAll( async ( { adminPage } ) => {
+			if ( wasMulticurrencyEnabled ) {
+				await activateMulticurrency( adminPage );
 			}
 		} );
 
