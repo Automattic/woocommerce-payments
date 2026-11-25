@@ -166,6 +166,24 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1, $this->get_remaining_attempts() );
 	}
 
+	public function test_bump_keeps_a_reserved_attempt_without_another_query() {
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+		$queries     = [];
+		$count_query = function ( $query ) use ( &$queries ) {
+			if ( false !== strpos( $query, 'wc_rate_limits' ) ) {
+				$queries[] = $query;
+			}
+			return $query;
+		};
+		add_filter( 'query', $count_query );
+
+		$this->rate_limiter->bump();
+
+		remove_filter( 'query', $count_query );
+		$this->assertSame( [], $queries );
+		$this->assertSame( 1, $this->get_remaining_attempts() );
+	}
+
 	public function test_sessions_are_counted_separately() {
 		$this->rate_limiter->bump();
 		$this->rate_limiter->bump();
