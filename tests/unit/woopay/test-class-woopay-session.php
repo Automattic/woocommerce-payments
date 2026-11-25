@@ -586,6 +586,51 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WooPay_Session::is_valid_request_with_cart_token() );
 	}
 
+	/**
+	 * @dataProvider provider_checkout_phone_fields
+	 */
+	public function test_session_payload_carries_the_stores_phone_setting( string $phone_field ) {
+		update_option( 'woocommerce_checkout_phone_field', $phone_field );
+
+		try {
+			$request = WooPay_Session::get_init_session_request();
+		} finally {
+			delete_option( 'woocommerce_checkout_phone_field' );
+		}
+
+		$this->assertSame( $phone_field, $request['store_data']['checkout_phone_field'] );
+	}
+
+	public function provider_checkout_phone_fields(): array {
+		return [
+			'required' => [ 'required' ],
+			'optional' => [ 'optional' ],
+			'hidden'   => [ 'hidden' ],
+		];
+	}
+
+	public function test_session_payload_carries_the_phone_setting_over_stale_checkout_block_attributes() {
+		$checkout_page_id = self::factory()->post->create(
+			[
+				'post_type'    => 'page',
+				'post_content' => '<!-- wp:woocommerce/checkout {"requirePhoneField":true,"showPhoneField":true} /-->',
+			]
+		);
+		$previous_page_id = get_option( 'woocommerce_checkout_page_id' );
+		update_option( 'woocommerce_checkout_page_id', $checkout_page_id );
+		update_option( 'woocommerce_checkout_phone_field', 'hidden' );
+
+		try {
+			$request = WooPay_Session::get_init_session_request();
+		} finally {
+			update_option( 'woocommerce_checkout_page_id', $previous_page_id );
+			delete_option( 'woocommerce_checkout_phone_field' );
+		}
+
+		$this->assertSame( 'required', $request['store_data']['optional_fields_status']['phone'] );
+		$this->assertSame( 'hidden', $request['store_data']['checkout_phone_field'] );
+	}
+
 	public function test_session_payload_carries_the_store_version() {
 		// WooPay decides whether to sign by comparing this against its own minimum, and
 		// treats a payload without it as too old. Dropping it would leave every store on
