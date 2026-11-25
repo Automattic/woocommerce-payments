@@ -18,6 +18,11 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	const CUSTOMER_LIVE_META_KEY = '_wcpay_customer_id_live';
 	const CUSTOMER_TEST_META_KEY = '_wcpay_customer_id_test';
 
+	private const ORDER_BILLING_EMAIL  = 'guest-778@example.com';
+	private const CUSTOMER_EMAIL       = 'customer-778@example.com';
+	private const INSIDE_GRACE_PERIOD  = MINUTE_IN_SECONDS;
+	private const OUTSIDE_GRACE_PERIOD = 15 * MINUTE_IN_SECONDS;
+
 	/**
 	 * System under test.
 	 *
@@ -87,7 +92,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tear_down() {
-		unset( $_GET['pay_for_order'], $_GET['key'] );
+		unset( $_GET['pay_for_order'], $_GET['key'], $_POST['check_submission'], $_POST['email'] );
 
 		global $wp, $wp_query;
 		$wp->query_vars       = $this->original_wp_query_vars;
@@ -946,6 +951,224 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->customer_service->get_prepared_customer_data();
 
 		$this->assert_order_data_withheld( $result );
+	}
+
+	public function test_get_prepared_customer_data_withholds_the_order_address_on_the_add_payment_method_page() {
+		// Inside the grace period, so the pay page itself would show the address.
+		$order = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+		$this->log_in_another_customer();
+		$this->open_payment_link_on_add_payment_method_page( $order );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertSame( 'customer-778@example.com', $result['email'] );
+		$this->assertNull( $result['address'] );
+	}
+
+	/**
+	 * A POST that looks like a checkout defines WOOCOMMERCE_CHECKOUT, and is_checkout() is then true on any page.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_get_prepared_customer_data_withholds_the_order_address_on_the_add_payment_method_page_posted_as_a_checkout() {
+		define( 'WOOCOMMERCE_CHECKOUT', true );
+		$order = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+		$this->log_in_another_customer();
+		$this->open_payment_link_on_add_payment_method_page( $order );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertSame( 'customer-778@example.com', $result['email'] );
+		$this->assertNull( $result['address'] );
+	}
+
+	public function test_get_prepared_customer_data_withholds_guest_order_data_while_woocommerce_asks_for_the_email() {
+		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
+		wp_set_current_user( 0 );
+		$this->setup_pay_for_order_request( $order );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assert_order_data_withheld( $result );
+	}
+
+	public function test_get_prepared_customer_data_returns_guest_order_data_once_the_visitor_verifies_the_email() {
+		$this->skip_without_woocommerce_email_verification();
+
+		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
+		wp_set_current_user( 0 );
+		$this->setup_pay_for_order_request( $order );
+		$_POST['check_submission'] = wp_create_nonce( 'wc_verify_email' );
+		$_POST['email']            = strtoupper( self::ORDER_BILLING_EMAIL );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertSame( 'guest-778@example.com', $result['email'] );
+		$this->assertSame( 'US', $result['address']['country'] );
+	}
+
+	public function test_get_prepared_customer_data_returns_guest_order_data_when_the_woocommerce_check_fails() {
+		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
+		wp_set_current_user( 0 );
+		$this->setup_pay_for_order_request( $order );
+		$throw = function () {
+			throw new Exception( 'A third-party callback failed.' );
+		};
+		add_filter( 'woocommerce_order_email_verification_required', $throw );
+
+		try {
+			$result = $this->customer_service->get_prepared_customer_data();
+		} finally {
+			remove_filter( 'woocommerce_order_email_verification_required', $throw );
+		}
+
+		$this->assertSame( 'guest-778@example.com', $result['email'] );
+		$this->assertSame( 'US', $result['address']['country'] );
+	}
+
+	/**
+	 * @dataProvider provider_failed_email_verifications
+	 *
+	 * @param callable $post_verification Fills $_POST as the verify form would.
+	 */
+	public function test_get_prepared_customer_data_withholds_guest_order_data_when_the_email_verification_fails( callable $post_verification ) {
+		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
+		wp_set_current_user( 0 );
+		$this->setup_pay_for_order_request( $order );
+		$post_verification();
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assert_order_data_withheld( $result );
+	}
+
+	/**
+	 * @return array<string, array{callable}>
+	 */
+	public function provider_failed_email_verifications(): array {
+		return [
+			'wrong email'   => [
+				function () {
+					$_POST['check_submission'] = wp_create_nonce( 'wc_verify_email' );
+					$_POST['email']            = self::CUSTOMER_EMAIL;
+				},
+			],
+			'no nonce'      => [
+				function () {
+					$_POST['email'] = self::ORDER_BILLING_EMAIL;
+				},
+			],
+			'invalid nonce' => [
+				function () {
+					$_POST['check_submission'] = 'not-a-nonce';
+					$_POST['email']            = self::ORDER_BILLING_EMAIL;
+				},
+			],
+			'array email'   => [
+				function () {
+					$_POST['check_submission'] = wp_create_nonce( 'wc_verify_email' );
+					$_POST['email']            = [ self::ORDER_BILLING_EMAIL ];
+				},
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_visitors_who_may_see_the_order
+	 *
+	 * @param callable $log_in Receives the order and logs the visitor in.
+	 */
+	public function test_get_prepared_customer_data_returns_order_data_to_its_owner_and_store_managers( callable $log_in ) {
+		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
+		$log_in( $order );
+		$this->setup_pay_for_order_request( $order );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertSame( 'guest-778@example.com', $result['email'] );
+		$this->assertSame( 'US', $result['address']['country'] );
+	}
+
+	/**
+	 * @return array<string, array{callable}>
+	 */
+	public function provider_visitors_who_may_see_the_order(): array {
+		return [
+			'owner'         => [
+				function ( WC_Order $order ) {
+					$owner_id = self::factory()->user->create( [ 'role' => 'customer' ] );
+					$order->set_customer_id( $owner_id );
+					$order->save();
+					wp_set_current_user( $owner_id );
+				},
+			],
+			'store manager' => [
+				function () {
+					wp_set_current_user( self::factory()->user->create( [ 'role' => 'shop_manager' ] ) );
+				},
+			],
+			'administrator' => [
+				function () {
+					wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+				},
+			],
+		];
+	}
+
+	public function test_get_prepared_customer_data_withholds_order_data_for_an_order_that_needs_no_payment() {
+		$order = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+		$order->set_status( 'completed' );
+		$order->save();
+		$this->log_in_another_customer();
+		$this->setup_pay_for_order_request( $order );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assert_order_data_withheld( $result );
+	}
+
+	/**
+	 * Creates a pending guest order with a billing email.
+	 *
+	 * @param int $age_in_seconds How long ago the order was created.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_guest_order( int $age_in_seconds ): WC_Order {
+		// Not WC_Helper_Order: a test in a separate process doesn't load the helpers.
+		$order = wc_create_order();
+		$order->set_total( '50.00' );
+		$order->set_billing_email( self::ORDER_BILLING_EMAIL );
+		$order->set_billing_country( Country_Code::UNITED_STATES );
+		$order->set_status( 'pending' );
+		$order->set_date_created( time() - $age_in_seconds );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Logs in a customer who does not own the orders under test.
+	 */
+	private function log_in_another_customer(): void {
+		wp_set_current_user(
+			self::factory()->user->create(
+				[
+					'role'       => 'customer',
+					'user_email' => self::CUSTOMER_EMAIL,
+				]
+			)
+		);
+	}
+
+	/**
+	 * Skips a test that needs WooCommerce's pay-page email verification check, public from WooCommerce 8.6.
+	 */
+	private function skip_without_woocommerce_email_verification(): void {
+		if ( ! is_callable( [ 'Automattic\WooCommerce\Internal\Utilities\Users', 'should_user_verify_order_email' ] ) ) {
+			$this->markTestSkipped( 'WooCommerce has no callable pay-page email verification check before 8.6.' );
+		}
 	}
 
 	/**

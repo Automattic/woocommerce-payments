@@ -425,6 +425,18 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		];
 	}
 
+	public function test_pay_for_order_config_is_not_added_on_the_add_payment_method_page() {
+		// Inside the grace period, so the pay page itself would give the email.
+		$order = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'customer' ] ) );
+		$this->open_payment_link_on_add_payment_method_page( $order );
+
+		$js_config = $this->get_pay_for_order_js_config( $order );
+
+		$this->assertArrayNotHasKey( 'billing_email', $js_config );
+		$this->assertArrayNotHasKey( 'order_id', $js_config );
+	}
+
 	public function test_pay_for_order_config_is_not_added_for_a_deleted_order() {
 		$order    = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
 		$order_id = $order->get_id();

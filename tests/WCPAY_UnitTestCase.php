@@ -473,6 +473,43 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Opens the order's payment link on the My account "Add payment method" page.
+	 *
+	 * WooCommerce reads `?order-pay=` on any page, so the order lands in the query vars there too.
+	 *
+	 * @param WC_Order $order The order the link is for.
+	 */
+	protected function open_payment_link_on_add_payment_method_page( WC_Order $order ): void {
+		$my_account_page_id = self::factory()->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+			]
+		);
+		update_option( 'woocommerce_myaccount_page_id', $my_account_page_id );
+
+		// It sets a cookie for any `?order-pay=` request, and headers are long sent in tests.
+		$session_cookie = [ WC()->session, 'maybe_set_customer_session_cookie' ];
+		$priority       = has_action( 'wp', $session_cookie );
+		if ( false !== $priority ) {
+			remove_action( 'wp', $session_cookie, $priority );
+		}
+
+		$this->go_to(
+			add_query_arg(
+				[
+					'page_id'            => $my_account_page_id,
+					'add-payment-method' => '',
+					'order-pay'          => $order->get_id(),
+					'pay_for_order'      => 'true',
+					'key'                => $order->get_order_key(),
+				],
+				home_url( '/' )
+			)
+		);
+	}
+
+	/**
 	 * The table order meta is stored in, its order ID column and its row ID column.
 	 *
 	 * @return string[]

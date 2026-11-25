@@ -1534,6 +1534,12 @@ class WC_Payments_Utils {
 		// own order. `??` because $wp is unset off a routed request, e.g. cron and WP-CLI.
 		global $wp;
 
+		// WooCommerce reads `?order-pay=` on every page, but only its pay page checks who may see the order.
+		// Adding a payment method never pays one.
+		if ( is_add_payment_method_page() ) {
+			return null;
+		}
+
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
 		$key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : null;
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
@@ -1571,6 +1577,42 @@ class WC_Payments_Utils {
 		}
 
 		return current_user_can( 'pay_for_order', $order->get_id() ) ? $order : null;
+	}
+
+	/**
+	 * Whether the visitor may see the billing details of an order they hold the payment link for.
+	 *
+	 * Follows WooCommerce's pay page, which shows a guest order's pay form without asking for
+	 * the email in the first minutes after the order is created, or when the merchant turns email
+	 * verification off. Its order-received page shows the billing details under the same rule.
+	 * Orders that no longer need payment get no pay form, so no details.
+	 *
+	 * @param WC_Order    $order          The order, already authorized by its key.
+	 * @param string|null $supplied_email The email the visitor proved on WooCommerce's verify form, if any.
+	 * @param bool        $if_unchecked   The answer when WooCommerce's email check is missing (before 8.6) or fails.
+	 *
+	 * @return bool
+	 */
+	public static function may_see_order_billing_details( WC_Order $order, ?string $supplied_email = null, bool $if_unchecked = false ): bool {
+		if ( current_user_can( 'read_private_shop_orders' ) ) {
+			return true;
+		}
+
+		if ( 0 !== get_current_user_id() && $order->get_customer_id() === get_current_user_id() ) {
+			return true;
+		}
+
+		if ( ! $order->needs_payment() ) {
+			return false;
+		}
+
+		try {
+			// WooCommerce 8.6+.
+			return ! \Automattic\WooCommerce\Internal\Utilities\Users::should_user_verify_order_email( $order->get_id(), $supplied_email, 'order-pay' );
+		} catch ( \Throwable $e ) {
+			// Users is internal to WooCommerce and may change, and its filters run third-party code.
+			return $if_unchecked;
+		}
 	}
 
 	/**
