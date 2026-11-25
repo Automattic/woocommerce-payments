@@ -337,8 +337,11 @@ class WC_Payments_Checkout {
 	 * @return array
 	 */
 	public function get_enabled_payment_method_config() {
-		$settings                = [];
-		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$settings = [];
+		// Amount limits are left out so a method that the billing country or a coupon later brings within its limits is
+		// already registered on block checkout and has its Stripe element on shortcode checkout. The available gateways
+		// list still decides whether each method is shown.
+		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits();
 
 		// When "express checkout in payment methods" setting is enabled, add express checkout
 		// methods to the list. They're not in upe_enabled_payment_method_ids by default since
@@ -382,38 +385,6 @@ class WC_Payments_Checkout {
 			}
 
 			$settings[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
-		}
-
-		return $settings;
-	}
-
-	/**
-	 * Gets the config for payment methods left out of `get_enabled_payment_method_config()` only because the
-	 * order total is outside their amount limits (e.g. Klarna over the customer country's maximum).
-	 *
-	 * Block checkout registers these too, so they can appear once the billing country or total brings the order
-	 * within limits. The Store API's available payment methods still decide whether each one is shown.
-	 *
-	 * @return array
-	 */
-	public function get_amount_limited_payment_method_config() {
-		$settings = [];
-
-		$amount_limited_payment_methods = array_diff(
-			$this->gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits(),
-			$this->gateway->get_payment_method_ids_enabled_at_checkout()
-		);
-
-		foreach ( $amount_limited_payment_methods as $payment_method_id ) {
-			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
-			if ( ! $payment_method || $payment_method->is_express_checkout() ) {
-				continue;
-			}
-
-			$config = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
-			if ( [] !== $config ) {
-				$settings[ $payment_method_id ] = $config;
-			}
 		}
 
 		return $settings;

@@ -89,13 +89,6 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			];
 		}
 
-		$payment_fields_config = $this->wc_payments_checkout->get_payment_fields_js_config();
-		if ( is_array( $payment_fields_config['paymentMethodsConfig'] ?? null ) ) {
-			// Block checkout registers payment methods once, so it also needs the ones hidden by the current total.
-			// `+` keeps entries already adjusted by the `wcpay_payment_fields_js_config` filter.
-			$payment_fields_config['paymentMethodsConfig'] += $this->wc_payments_checkout->get_amount_limited_payment_method_config();
-		}
-
 		return array_merge(
 			[
 				'title'       => $this->gateway->get_option( 'title', '' ),
@@ -103,7 +96,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 				'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
 			],
 			$woopay_config,
-			$payment_fields_config
+			$this->wc_payments_checkout->get_payment_fields_js_config()
 		);
 	}
 }

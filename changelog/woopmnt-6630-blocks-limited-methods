@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Show amount-limited payment methods such as Klarna on the block checkout when a billing country or total change brings the order within their limits.
+Show amount-limited payment methods such as Klarna on the block and shortcode checkouts when a billing country or total change brings the order within their limits.

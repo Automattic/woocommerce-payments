@@ -1451,6 +1451,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( [ 'card' ], array_values( $this->card_gateway->get_payment_method_ids_enabled_at_checkout() ) );
 		$this->assertSame( [ 'card', 'affirm' ], array_values( $this->card_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() ) );
+
+		WC()->cart->empty_cart();
 	}
 
 	public function test_payment_methods_ignore_order_total_in_order_pay_without_order_key() {
