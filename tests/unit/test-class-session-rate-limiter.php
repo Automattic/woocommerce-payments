@@ -11,8 +11,9 @@ use WCPay\Session_Rate_Limiter;
  * Session_Rate_Limiter unit tests.
  */
 class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
-	const THRESHOLD = 2;
-	const DELAY     = 600;
+	const THRESHOLD  = 2;
+	const DELAY      = 600;
+	const EXPIRES_IN = 60;
 
 	/**
 	 * System under test.
@@ -167,22 +168,40 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1, $this->get_remaining_attempts() );
 	}
 
-	public function test_bump_keeps_a_reserved_attempt_without_another_query() {
+	public function test_payments_that_are_not_declined_do_not_move_the_expiry() {
+		// A request that was killed never hands its attempt back.
+		$killed_request = new Session_Rate_Limiter( $this->key, self::THRESHOLD, self::DELAY );
+		$this->assertFalse( $killed_request->is_limited_or_reserve() );
+		remove_action( 'shutdown', [ $killed_request, 'release_all' ] );
+		$expiry = time() + self::EXPIRES_IN;
+		$this->set_rate_limit_expiry( $expiry );
+
 		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
-		$queries     = [];
-		$count_query = function ( $query ) use ( &$queries ) {
-			if ( false !== strpos( $query, 'wc_rate_limits' ) ) {
-				$queries[] = $query;
-			}
-			return $query;
-		};
-		add_filter( 'query', $count_query );
+		$this->rate_limiter->release();
+
+		$this->assertSame( $expiry, $this->get_rate_limit_expiry() );
+	}
+
+	public function test_counted_decline_restarts_the_delay() {
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+		$this->set_rate_limit_expiry( time() + self::EXPIRES_IN );
+		$counted_at = time();
 
 		$this->rate_limiter->bump();
 
-		remove_filter( 'query', $count_query );
-		$this->assertSame( [], $queries );
+		$this->assertGreaterThanOrEqual( $counted_at + 600, $this->get_rate_limit_expiry() );
 		$this->assertSame( 1, $this->get_remaining_attempts() );
+	}
+
+	public function test_failure_to_extend_the_limit_after_a_counted_attempt_is_logged() {
+		$this->assertFalse( $this->rate_limiter->is_limited_or_reserve() );
+		$this->capture_log();
+		$this->break_rate_limit_queries( 'UPDATE' );
+
+		$this->rate_limiter->bump();
+
+		$this->assertCount( 1, $this->logged );
+		$this->assertStringStartsWith( 'Session rate limiter wcpay_card_declined_registry could not extend the limit after a counted attempt: ', $this->logged[0] );
 	}
 
 	public function test_reserving_an_attempt_hooks_its_release_on_shutdown() {
@@ -525,6 +544,41 @@ class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 			$this->logged[] = $message;
 		}
 		return $message;
+	}
+
+	/**
+	 * The current session's rate limit expiry.
+	 *
+	 * @return int|null
+	 */
+	private function get_rate_limit_expiry(): ?int {
+		global $wpdb;
+
+		$expiry = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT rate_limit_expiry FROM {$wpdb->prefix}wc_rate_limits WHERE rate_limit_key = %s",
+				$this->key . '_' . WC()->session->get_customer_id()
+			)
+		);
+
+		return null === $expiry ? null : (int) $expiry;
+	}
+
+	/**
+	 * Sets the current session's rate limit expiry.
+	 *
+	 * @param int $expiry Unix timestamp.
+	 */
+	private function set_rate_limit_expiry( int $expiry ) {
+		global $wpdb;
+
+		$wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}wc_rate_limits SET rate_limit_expiry = %d WHERE rate_limit_key = %s",
+				$expiry,
+				$this->key . '_' . WC()->session->get_customer_id()
+			)
+		);
 	}
 
 	/**

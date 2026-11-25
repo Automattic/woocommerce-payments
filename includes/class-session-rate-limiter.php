@@ -94,8 +94,7 @@ class Session_Rate_Limiter {
 	/**
 	 * Counts an event for the current session and, when given, for the order.
 	 *
-	 * Uses the attempt reserved by `is_limited_or_reserve()`, if there is one. That attempt is already taken
-	 * and its limit already runs from the reservation, so keeping it needs no query.
+	 * Uses the attempt reserved by `is_limited_or_reserve()`, if there is one, and restarts the limit's delay.
 	 *
 	 * @param WC_Order|null $order The order being paid, if any.
 	 */
@@ -109,7 +108,22 @@ class Session_Rate_Limiter {
 			$order->save_meta_data();
 		}
 
-		if ( null !== array_pop( $this->reserved_keys ) ) {
+		$now    = time();
+		$expiry = $now + $this->delay;
+
+		$reserved_key = array_pop( $this->reserved_keys );
+		if ( null !== $reserved_key ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
+			$extended = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->prefix}wc_rate_limits SET rate_limit_expiry = %d WHERE rate_limit_key = %s",
+					$expiry,
+					$reserved_key
+				)
+			);
+			if ( false === $extended ) {
+				$this->log_query_failure( 'extend the limit after a counted attempt' );
+			}
 			return;
 		}
 
@@ -117,9 +131,6 @@ class Session_Rate_Limiter {
 		if ( null === $rate_limit_key ) {
 			return;
 		}
-
-		$now    = time();
-		$expiry = $now + $this->delay;
 
 		// `rate_limit_remaining` is assigned first, so it still compares the stored expiry.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
@@ -232,13 +243,14 @@ class Session_Rate_Limiter {
 			return false;
 		}
 
+		// The expiry stays as it is: payments that succeed must not keep alive a slot that a killed request never
+		// handed back. Only `bump()` moves it.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The count must not be cached.
 		$reserved = $wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->prefix}wc_rate_limits
-				SET rate_limit_remaining = rate_limit_remaining - 1, rate_limit_expiry = %d
+				SET rate_limit_remaining = rate_limit_remaining - 1
 				WHERE rate_limit_key = %s AND rate_limit_remaining > 0",
-				$expiry,
 				$rate_limit_key
 			)
 		);
