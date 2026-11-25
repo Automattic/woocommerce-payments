@@ -133,6 +133,7 @@ class WC_Payments_Action_Scheduler_Service {
 		add_action( 'wcpay_track_new_order', [ $this, 'track_new_order_action' ] );
 		add_action( 'wcpay_track_update_order', [ $this, 'track_update_order_action' ] );
 		add_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this->order_service, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
+		add_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES_FALLBACK, [ $this->order_service, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
 		add_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->compatibility_service, 'update_compatibility_data_hook' ], 10, 0 );
 
 		// The ActionScheduler queue runner processes many actions in a single PHP process. Reset the

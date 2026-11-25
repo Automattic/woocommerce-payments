@@ -23,6 +23,11 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
+		// The Stripe.js origin check needs a genuine tag before Stripe is created.
+		const stripeJsTag = document.createElement( 'script' );
+		stripeJsTag.id = 'stripe-js';
+		stripeJsTag.src = 'https://js.stripe.com/v3/';
+		document.head.appendChild( stripeJsTag );
 		apiFetch.mockReset();
 		// ensuring jQuery is available globally.
 		global.$ = global.jQuery = $;
@@ -133,6 +138,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 	afterEach( () => {
 		delete global.Stripe;
+		document.getElementById( 'stripe-js' )?.remove();
 	} );
 
 	it( 'should not initialize Stripe if there is no publishable key', async () => {

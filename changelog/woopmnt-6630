@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide Klarna at checkout when the order total is over the limit for the customer's billing country, not the store's country.

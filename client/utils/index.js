@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { capitalize, partial } from 'lodash';
 import moment from 'moment';
@@ -136,6 +137,30 @@ export const getDocumentUrl = ( documentId ) => {
 			_wpnonce: wpApiSettings.nonce,
 		}
 	);
+};
+
+/**
+ * Returns the URL of a WooPayments file, for use as an image source.
+ *
+ * Carries the REST nonce: without it WordPress treats an image request as logged out. api-fetch's
+ * nonce comes first because api-fetch renews it when a request finds it expired.
+ *
+ * @param {string} fileId The file ID.
+ *
+ * @return {string} The URL of the file, or an empty string when the ID cannot be used in the URL.
+ */
+export const getFileUrl = ( fileId ) => {
+	let fileSegment;
+	try {
+		fileSegment = encodePathSegment( fileId );
+	} catch ( error ) {
+		return '';
+	}
+
+	const baseUrl = `${ wpApiSettings.root.replace( /\/$/, '' ) }`;
+	return addQueryArgs( `${ baseUrl }${ NAMESPACE }/file/${ fileSegment }`, {
+		_wpnonce: apiFetch.nonceMiddleware?.nonce ?? wpApiSettings.nonce,
+	} );
 };
 
 export const getConnectUrl = ( urlParams, from ) => {

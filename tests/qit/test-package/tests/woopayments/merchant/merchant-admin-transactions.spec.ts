@@ -18,16 +18,11 @@ test.describe( 'Admin transactions', { tag: '@merchant' }, () => {
 		).toBeVisible();
 
 		if ( shouldRunSubscriptionsTests ) {
-			// Check if the subscription column exists - it may not be present in all QIT environments
-			const subscriptionColumn = adminPage.getByRole( 'columnheader', {
-				name: 'Subscription number',
-			} );
-
-			// Only assert visibility if the element exists in the DOM
-			const columnCount = await subscriptionColumn.count();
-			if ( columnCount > 0 ) {
-				await expect( subscriptionColumn ).toBeVisible();
-			}
+			await expect(
+				adminPage.getByRole( 'columnheader', {
+					name: 'Subscription number',
+				} )
+			).toBeVisible();
 		}
 
 		// TODO: Uncomment this line after fixing the screenshot issue.

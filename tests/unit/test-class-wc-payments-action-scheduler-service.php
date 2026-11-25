@@ -60,6 +60,22 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10, has_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->mock_compatibility_service, 'update_compatibility_data_hook' ] ) );
 	}
 
+	/**
+	 * The Fee details note job and its one-hour backup run on separate hooks, and both write the note.
+	 */
+	public function test_init_hooks_registers_both_fee_details_note_jobs() {
+		$this->action_scheduler_service->init_hooks();
+		$callback = [ $this->mock_order_service, 'add_fee_breakdown_to_order_notes' ];
+
+		try {
+			$this->assertSame( 10, has_action( 'wcpay_add_fee_breakdown_to_order_notes', $callback ) );
+			$this->assertSame( 10, has_action( 'wcpay_add_fee_breakdown_to_order_notes_fallback', $callback ) );
+		} finally {
+			remove_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, $callback, 10 );
+			remove_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES_FALLBACK, $callback, 10 );
+		}
+	}
+
 	public function test_init_hooks_registers_dedupe_reset_on_action_scheduler_begin_execute() {
 		$this->action_scheduler_service->init_hooks();
 

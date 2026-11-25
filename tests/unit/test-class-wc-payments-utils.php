@@ -35,6 +35,8 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			$_SERVER['REQUEST_URI'] = $this->original_request_uri;
 		}
 		unset( $_REQUEST['rest_route'] );
+		remove_all_filters( 'wcpay_enforce_stripe_js_origin' );
+		wp_deregister_script( 'stripe' );
 
 		parent::tear_down();
 	}
@@ -1551,6 +1553,61 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 				[],
 				'',
 			],
+		];
+	}
+
+	public function test_register_stripe_js_adds_no_inline_flag_by_default() {
+		WC_Payments_Utils::register_stripe_js();
+
+		$this->assertFalse( wp_scripts()->get_data( 'stripe', 'before' ) );
+	}
+
+	public function test_register_stripe_js_adds_the_inline_flag_once_when_the_filter_returns_false() {
+		add_filter( 'wcpay_enforce_stripe_js_origin', '__return_false' );
+
+		WC_Payments_Utils::register_stripe_js();
+		WC_Payments_Utils::register_stripe_js();
+
+		$this->assertSame(
+			[ 'window.wcpayStripeJsOriginCheckDisabled = true;' ],
+			array_values( array_filter( wp_scripts()->get_data( 'stripe', 'before' ) ) )
+		);
+	}
+
+	public function test_register_stripe_js_adds_the_inline_flag_to_a_handle_another_plugin_registered() {
+		wp_register_script( 'stripe', 'https://js.stripe.com/clover/stripe.js', [], '1.0', true );
+		add_filter( 'wcpay_enforce_stripe_js_origin', '__return_false' );
+
+		WC_Payments_Utils::register_stripe_js();
+
+		$this->assertContains(
+			'window.wcpayStripeJsOriginCheckDisabled = true;',
+			wp_scripts()->get_data( 'stripe', 'before' )
+		);
+	}
+
+	/**
+	 * @dataProvider non_false_filter_value_provider
+	 */
+	public function test_register_stripe_js_keeps_the_check_on_unless_the_filter_returns_false( $filter_value ) {
+		add_filter(
+			'wcpay_enforce_stripe_js_origin',
+			function () use ( $filter_value ) {
+				return $filter_value;
+			}
+		);
+
+		WC_Payments_Utils::register_stripe_js();
+
+		$this->assertFalse( wp_scripts()->get_data( 'stripe', 'before' ) );
+	}
+
+	public function non_false_filter_value_provider(): array {
+		return [
+			'null'         => [ null ],
+			'empty string' => [ '' ],
+			'zero'         => [ 0 ],
+			'true'         => [ true ],
 		];
 	}
 }
