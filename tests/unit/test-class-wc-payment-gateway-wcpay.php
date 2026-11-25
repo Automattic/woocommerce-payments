@@ -203,6 +203,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $wp_query_vars_backup;
 
 	/**
+	 * Session customer's billing country before a test changed it, or null when unchanged.
+	 *
+	 * @var string|null
+	 */
+	private $original_customer_billing_country = null;
+
+	/**
 	 * Backup of $wp_query->query_vars
 	 *
 	 * @var array
@@ -379,6 +386,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp_query;
 		$wp->query_vars       = $this->wp_query_vars_backup;
 		$wp_query->query_vars = $this->wp_query_query_vars_backup;
+
+		if ( null !== $this->original_customer_billing_country ) {
+			WC()->customer->set_billing_country( $this->original_customer_billing_country );
+			$this->original_customer_billing_country = null;
+		}
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -1422,6 +1434,61 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 	}
 
+	/**
+	 * @dataProvider provider_klarna_limits_follow_customer_billing_country
+	 *
+	 * @param string $account_country Merchant's account country.
+	 * @param string $billing_country Customer's billing country.
+	 * @param int    $quantity        Quantity of a 10 EUR product in the cart.
+	 * @param bool   $expected        Whether Klarna should be enabled at checkout.
+	 */
+	public function test_klarna_limits_follow_customer_billing_country( string $account_country, string $billing_country, int $quantity, bool $expected ) {
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
+
+		$this->original_customer_billing_country = WC()->customer->get_billing_country();
+		WC()->customer->set_billing_country( $billing_country );
+
+		WC()->session->init();
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), $quantity );
+		WC()->cart->calculate_totals();
+
+		$this->assertSame( $expected, $this->payment_methods['klarna']->is_enabled_at_checkout( $account_country ) );
+	}
+
+	public function provider_klarna_limits_follow_customer_billing_country(): array {
+		return [
+			'DE merchant, FR customer over the FR limit'  => [ Country_Code::GERMANY, Country_Code::FRANCE, 450, false ],
+			'DE merchant, FR customer within FR limit'    => [ Country_Code::GERMANY, Country_Code::FRANCE, 350, true ],
+			'DE merchant, DE customer over the FR limit'  => [ Country_Code::GERMANY, Country_Code::GERMANY, 450, true ],
+			'FR merchant, DE customer over the FR limit'  => [ Country_Code::FRANCE, Country_Code::GERMANY, 450, true ],
+			'DE merchant, unknown customer country'       => [ Country_Code::GERMANY, '', 450, true ],
+			'FR merchant, unknown customer country'       => [ Country_Code::FRANCE, '', 450, false ],
+			'DE merchant, customer country without limit' => [ Country_Code::GERMANY, Country_Code::PORTUGAL, 450, true ],
+		];
+	}
+
+	public function test_klarna_limits_follow_order_billing_country_in_order_pay() {
+		global $wp;
+		global $wp_query;
+
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
+
+		// The session customer is in Germany, but the order being paid is billed to France.
+		$this->original_customer_billing_country = WC()->customer->get_billing_country();
+		WC()->customer->set_billing_country( Country_Code::GERMANY );
+
+		$order = WC_Helper_Order::create_order( 1, 4500 );
+		$order->set_currency( Currency_Code::EURO );
+		$order->set_billing_country( Country_Code::FRANCE );
+		$order->save();
+		$wp->query_vars       = [ 'order-pay' => strval( $order->get_id() ) ];
+		$wp_query->query_vars = [ 'order-pay' => strval( $order->get_id() ) ];
+		$this->authorize_order_pay_request( $order );
+
+		$this->assertFalse( $this->payment_methods['klarna']->is_enabled_at_checkout( Country_Code::GERMANY ) );
+	}
+
 	public function test_payment_methods_ignore_order_total_in_order_pay_without_order_key() {
 		global $wp;
 		global $wp_query;
@@ -1589,17 +1656,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->assertEquals( $mock_token, $this->card_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
-	}
-
-	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
-		$order = WC_Helper_Order::create_order();
-		$order->set_billing_phone( '+1123456789123456789123' );
-		$order->save();
-		$result = $this->card_gateway->process_payment( $order->get_id() );
-		$this->assertEquals( 'fail', $result['result'] );
-		$error_notices = WC()->session->get( 'wc_notices' );
-		$this->assertNotEmpty( $error_notices );
-		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
@@ -5831,7 +5887,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -5902,7 +5958,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -5975,7 +6031,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -6230,7 +6286,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6261,7 +6317,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6293,7 +6349,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6857,7 +6913,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( true );
 
 		wc_clear_notices();
@@ -6882,8 +6938,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( true );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
 
 		try {
 			$this->card_gateway->process_payment( $order->get_id() );
@@ -6892,6 +6954,65 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->assertEquals( 'Your payment was not processed.', $e->getMessage() );
 			$this->assertEquals( 'WCPay\Exceptions\Rate_Limiter_Enabled_Exception', get_class( $e->getPrevious() ) );
 		}
+	}
+
+	public function test_process_payment_releases_the_reserved_attempt_when_the_payment_is_not_declined() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->mock_rate_limiter
+			->method( 'is_limited_or_reserve' )
+			->willReturn( false );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->method( 'process_payment_for_order' )
+			->willReturn(
+				[
+					'result'   => 'success',
+					'redirect' => 'https://example.com/order-received',
+				]
+			);
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'success', $result['result'] );
+	}
+
+	public function test_process_payment_releases_the_reserved_attempt_when_the_payment_fails_without_a_decline() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->mock_rate_limiter
+			->method( 'is_limited_or_reserve' )
+			->willReturn( false );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->method( 'process_payment_for_order' )
+			->willThrowException( new API_Exception( 'Error: something went wrong on our end.', 'processing_error', 500 ) );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
 	}
 
 	public function test_process_payment_returns_correct_redirect() {

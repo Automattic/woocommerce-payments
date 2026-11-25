@@ -207,7 +207,8 @@ class UPE_Payment_Method {
 	 * Returns boolean dependent on whether payment method can be used at checkout.
 	 *
 	 * Payment method can be used at checkout if:
-	 *  - If there are payment amount limits, order total is within limits.
+	 *  - If there are payment amount limits, order total is within the limits for the customer's billing country,
+	 *    falling back to the merchant's account country when the customer's country has no limits of its own.
 	 *  - If it is a subscription order, payment method is either reusable, or subscription is manual.
 	 *
 	 * @param string $account_country Country of merchants account.
@@ -256,8 +257,12 @@ class UPE_Payment_Method {
 				$amount = WC_Payments_Utils::prepare_amount( $total, $currency );
 
 				if ( $amount > 0 ) {
-					$range = null;
-					if ( isset( $this->limits_per_currency[ $currency ][ $account_country ] ) ) {
+					$range            = null;
+					$customer_country = $this->get_customer_country( $order );
+					// Limits are set per customer country (e.g. cross-border Klarna), so the customer's row wins over the merchant's.
+					if ( '' !== $customer_country && isset( $this->limits_per_currency[ $currency ][ $customer_country ] ) ) {
+						$range = $this->limits_per_currency[ $currency ][ $customer_country ];
+					} elseif ( isset( $this->limits_per_currency[ $currency ][ $account_country ] ) ) {
 						$range = $this->limits_per_currency[ $currency ][ $account_country ];
 					} elseif ( isset( $this->limits_per_currency[ $currency ]['default'] ) ) {
 						$range = $this->limits_per_currency[ $currency ]['default'];
@@ -276,6 +281,27 @@ class UPE_Payment_Method {
 
 		return $order_is_within_currency_limits
 			&& ( ( ! $is_subscription_context ) || $is_available_for_subscription );
+	}
+
+	/**
+	 * Returns the customer's billing country, from the order on the pay-for-order page, or from the session customer otherwise.
+	 *
+	 * @param \WC_Order|null $order The order being paid, if any.
+	 *
+	 * @return string Upper-case country code, or an empty string when unknown.
+	 */
+	private function get_customer_country( $order ): string {
+		if ( $order ) {
+			return strtoupper( (string) $order->get_billing_country() );
+		}
+
+		/** @var \WC_Customer|null $customer */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+		$customer = WC()->customer;
+		if ( null === $customer ) {
+			return '';
+		}
+
+		return strtoupper( (string) $customer->get_billing_country() );
 	}
 
 	/**
