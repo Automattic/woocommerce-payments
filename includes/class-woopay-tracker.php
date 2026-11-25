@@ -177,6 +177,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
+		// Tracks rejects names that don't match its rule, so don't send them.
+		if ( ! Jetpack_Tracks_Event::event_name_is_valid( self::$user_prefix . '_' . $event ) ) {
+			return false;
+		}
+
 		// Shopper events the server queues for the browser carry `track_on_all_stores`, so that one stays.
 		// None is an admin event, which would skip the checks that keep admins and WooPay-off stores out.
 		if ( isset( $properties['record_event_data'] ) ) {

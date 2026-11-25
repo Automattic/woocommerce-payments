@@ -203,6 +203,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $wp_query_vars_backup;
 
 	/**
+	 * Session customer's billing country before a test changed it, or null when unchanged.
+	 *
+	 * @var string|null
+	 */
+	private $original_customer_billing_country = null;
+
+	/**
 	 * Backup of $wp_query->query_vars
 	 *
 	 * @var array
@@ -379,6 +386,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp_query;
 		$wp->query_vars       = $this->wp_query_vars_backup;
 		$wp_query->query_vars = $this->wp_query_query_vars_backup;
+
+		if ( null !== $this->original_customer_billing_country ) {
+			WC()->customer->set_billing_country( $this->original_customer_billing_country );
+			$this->original_customer_billing_country = null;
+		}
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -1420,6 +1432,61 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
+	}
+
+	/**
+	 * @dataProvider provider_klarna_limits_follow_customer_billing_country
+	 *
+	 * @param string $account_country Merchant's account country.
+	 * @param string $billing_country Customer's billing country.
+	 * @param int    $quantity        Quantity of a 10 EUR product in the cart.
+	 * @param bool   $expected        Whether Klarna should be enabled at checkout.
+	 */
+	public function test_klarna_limits_follow_customer_billing_country( string $account_country, string $billing_country, int $quantity, bool $expected ) {
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
+
+		$this->original_customer_billing_country = WC()->customer->get_billing_country();
+		WC()->customer->set_billing_country( $billing_country );
+
+		WC()->session->init();
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), $quantity );
+		WC()->cart->calculate_totals();
+
+		$this->assertSame( $expected, $this->payment_methods['klarna']->is_enabled_at_checkout( $account_country ) );
+	}
+
+	public function provider_klarna_limits_follow_customer_billing_country(): array {
+		return [
+			'DE merchant, FR customer over the FR limit'  => [ Country_Code::GERMANY, Country_Code::FRANCE, 450, false ],
+			'DE merchant, FR customer within FR limit'    => [ Country_Code::GERMANY, Country_Code::FRANCE, 350, true ],
+			'DE merchant, DE customer over the FR limit'  => [ Country_Code::GERMANY, Country_Code::GERMANY, 450, true ],
+			'FR merchant, DE customer over the FR limit'  => [ Country_Code::FRANCE, Country_Code::GERMANY, 450, true ],
+			'DE merchant, unknown customer country'       => [ Country_Code::GERMANY, '', 450, true ],
+			'FR merchant, unknown customer country'       => [ Country_Code::FRANCE, '', 450, false ],
+			'DE merchant, customer country without limit' => [ Country_Code::GERMANY, Country_Code::PORTUGAL, 450, true ],
+		];
+	}
+
+	public function test_klarna_limits_follow_order_billing_country_in_order_pay() {
+		global $wp;
+		global $wp_query;
+
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
+
+		// The session customer is in Germany, but the order being paid is billed to France.
+		$this->original_customer_billing_country = WC()->customer->get_billing_country();
+		WC()->customer->set_billing_country( Country_Code::GERMANY );
+
+		$order = WC_Helper_Order::create_order( 1, 4500 );
+		$order->set_currency( Currency_Code::EURO );
+		$order->set_billing_country( Country_Code::FRANCE );
+		$order->save();
+		$wp->query_vars       = [ 'order-pay' => strval( $order->get_id() ) ];
+		$wp_query->query_vars = [ 'order-pay' => strval( $order->get_id() ) ];
+		$this->authorize_order_pay_request( $order );
+
+		$this->assertFalse( $this->payment_methods['klarna']->is_enabled_at_checkout( Country_Code::GERMANY ) );
 	}
 
 	public function test_payment_methods_ignore_order_total_in_order_pay_without_order_key() {

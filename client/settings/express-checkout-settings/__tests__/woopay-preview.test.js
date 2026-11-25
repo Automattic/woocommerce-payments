@@ -36,6 +36,22 @@ describe( 'WooPayPreview', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'loads the store logo with the REST nonce', () => {
+		const { getByAltText } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo="file_logo"
+				customMessage=""
+				appearance={ null }
+			/>
+		);
+
+		expect( getByAltText( 'Store logo' ) ).toHaveAttribute(
+			'src',
+			'https://site.com/wp-json/wc/v3/payments/file/file_logo?_wpnonce=random_wp_rest_nonce'
+		);
+	} );
+
 	it( 'applies header background to container for seamless header strip', () => {
 		const appearance = {
 			variables: { colorBackground: '#f0f0f0' },

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep the refund and duplicate status chosen on the dispute challenge form after saving or submitting, so the form and the submitted evidence show the right documents.
