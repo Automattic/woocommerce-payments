@@ -6857,7 +6857,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( true );
 
 		wc_clear_notices();
