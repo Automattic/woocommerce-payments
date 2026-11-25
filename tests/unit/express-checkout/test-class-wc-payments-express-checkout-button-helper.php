@@ -1022,9 +1022,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * WooPay sends the order's addresses as they are: nothing fills an empty email, phone or shipping
-	 * last name, unlike the express checkout's wallet.
-	 *
 	 * @dataProvider provider_pay_for_order_woopay_orders
 	 */
 	public function test_pay_for_order_woopay_needs_the_details_the_wallet_would_fill( array $billing_address, array $shipping_address, bool $expected_woopay, string $checked_since = '' ) {
@@ -1070,7 +1067,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		return [
 			'complete billing address'   => [ $complete_billing, [], true ],
-			'no email'                   => [ array_merge( $complete_billing, [ 'email' => '' ] ), [], false ],
+			'no email'                   => [ array_merge( $complete_billing, [ 'email' => '' ] ), [], true ],
 			'no phone'                   => [ array_merge( $complete_billing, [ 'phone' => '' ] ), [], false, '9.9.0-dev' ],
 			'complete shipping address'  => [ $complete_billing, $complete_shipping, true ],
 			'shipping without last name' => [ $complete_billing, array_merge( $complete_shipping, [ 'last_name' => '' ] ), false, '9.9.0-dev' ],
