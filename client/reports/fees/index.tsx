@@ -3,7 +3,14 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { Button, Spinner } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
@@ -68,7 +75,7 @@ export const FeesReport = ( {
 }: FeesReportProps ): JSX.Element => {
 	// The report feedback survey is intentionally Balance-only.
 	const rootRef = useRef< HTMLDivElement >( null );
-	const stableDateFilterNow = useRef( new Date() ).current;
+	const [ stableDateFilterNow ] = useState( () => new Date() );
 	const [ view, setView ] = useFeesView( stableDateFilterNow );
 	const initialEmptyHeadingId = useId();
 	const initialEmptyDescriptionId = useId();

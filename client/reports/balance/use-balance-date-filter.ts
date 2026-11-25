@@ -185,7 +185,7 @@ export const useBalanceDateFilter = (
 	now?: Date
 ): UseBalanceDateFilterResult => {
 	const contextNow = useContext( BalanceDateFilterNowContext );
-	const stableNow = useRef( now ?? contextNow ?? new Date() ).current;
+	const [ stableNow ] = useState( () => now ?? contextNow ?? new Date() );
 	const isUpdatingUrlRef = useRef( false );
 	const [ navTick, setNavTick ] = useState( 0 );
 	const [ localValue, setLocalValue ] = useState<

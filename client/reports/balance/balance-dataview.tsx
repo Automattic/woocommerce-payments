@@ -137,7 +137,9 @@ export const BalanceDataView = ( {
 	// labelled group: assistive tech announces "Balance summary" on entry,
 	// standing in for the bespoke table's <caption>.
 	const captionId = useId();
-	const stableDateFilterNow = useRef( dateFilterNow ?? new Date() ).current;
+	const [ stableDateFilterNow ] = useState(
+		() => dateFilterNow ?? new Date()
+	);
 	// Gate the funnel-click workaround to a single run per mount so React
 	// 18 StrictMode's double-invoke in development doesn't fire it twice.
 	const filtersRowOpenedRef = useRef( false );
