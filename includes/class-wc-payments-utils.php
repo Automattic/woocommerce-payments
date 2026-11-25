@@ -1535,8 +1535,9 @@ class WC_Payments_Utils {
 		global $wp;
 
 		// WooCommerce reads `?order-pay=` on every page, but only its pay page checks who may see the order.
-		// Adding a payment method never pays one.
-		if ( is_add_payment_method_page() ) {
+		// Adding a payment method never pays one. Not is_add_payment_method_page(): any page with
+		// the My Account shortcode renders that form.
+		if ( is_wc_endpoint_url( 'add-payment-method' ) ) {
 			return null;
 		}
 

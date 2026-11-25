@@ -477,16 +477,20 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 *
 	 * WooCommerce reads `?order-pay=` on any page, so the order lands in the query vars there too.
 	 *
-	 * @param WC_Order $order The order the link is for.
+	 * @param WC_Order $order              The order the link is for.
+	 * @param bool     $is_my_account_page Whether the page is the one set as My account, or another page with its shortcode.
 	 */
-	protected function open_payment_link_on_add_payment_method_page( WC_Order $order ): void {
-		$my_account_page_id = self::factory()->post->create(
+	protected function open_payment_link_on_add_payment_method_page( WC_Order $order, bool $is_my_account_page = true ): void {
+		$page_id = self::factory()->post->create(
 			[
-				'post_type'   => 'page',
-				'post_status' => 'publish',
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_content' => '[woocommerce_my_account]',
 			]
 		);
-		update_option( 'woocommerce_myaccount_page_id', $my_account_page_id );
+		if ( $is_my_account_page ) {
+			update_option( 'woocommerce_myaccount_page_id', $page_id );
+		}
 
 		// It sets a cookie for any `?order-pay=` request, and headers are long sent in tests.
 		$session_cookie = [ WC()->session, 'maybe_set_customer_session_cookie' ];
@@ -498,7 +502,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		$this->go_to(
 			add_query_arg(
 				[
-					'page_id'            => $my_account_page_id,
+					'page_id'            => $page_id,
 					'add-payment-method' => '',
 					'order-pay'          => $order->get_id(),
 					'pay_for_order'      => 'true',

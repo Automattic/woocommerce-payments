@@ -965,6 +965,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $result['address'] );
 	}
 
+	public function test_get_prepared_customer_data_withholds_order_data_on_another_page_with_the_my_account_shortcode() {
+		$order = $this->create_guest_order( self::INSIDE_GRACE_PERIOD );
+		$this->log_in_another_customer();
+		$this->open_payment_link_on_add_payment_method_page( $order, false );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assert_order_data_withheld( $result );
+	}
+
 	/**
 	 * A POST that looks like a checkout defines WOOCOMMERCE_CHECKOUT, and is_checkout() is then true on any page.
 	 *
@@ -984,6 +994,8 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_prepared_customer_data_withholds_guest_order_data_while_woocommerce_asks_for_the_email() {
+		$this->skip_without_woocommerce_email_verification();
+
 		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
 		wp_set_current_user( 0 );
 		$this->setup_pay_for_order_request( $order );
@@ -1000,7 +1012,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 0 );
 		$this->setup_pay_for_order_request( $order );
 		$_POST['check_submission'] = wp_create_nonce( 'wc_verify_email' );
-		$_POST['email']            = strtoupper( self::ORDER_BILLING_EMAIL );
+		$_POST['email']            = self::ORDER_BILLING_EMAIL;
 
 		$result = $this->customer_service->get_prepared_customer_data();
 
@@ -1008,6 +1020,9 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'US', $result['address']['country'] );
 	}
 
+	/**
+	 * Before WooCommerce 8.6 there is no check to call, so the filter never runs and this covers that fallback too.
+	 */
 	public function test_get_prepared_customer_data_returns_guest_order_data_when_the_woocommerce_check_fails() {
 		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
 		wp_set_current_user( 0 );
@@ -1033,6 +1048,8 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	 * @param callable $post_verification Fills $_POST as the verify form would.
 	 */
 	public function test_get_prepared_customer_data_withholds_guest_order_data_when_the_email_verification_fails( callable $post_verification ) {
+		$this->skip_without_woocommerce_email_verification();
+
 		$order = $this->create_guest_order( self::OUTSIDE_GRACE_PERIOD );
 		wp_set_current_user( 0 );
 		$this->setup_pay_for_order_request( $order );
