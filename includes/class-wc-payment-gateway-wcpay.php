@@ -5306,10 +5306,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Returns the payment method types that would function with the current checkout if the order total were within their amount limits.
 	 *
-	 * Checkout scripts set up payment methods from the config sent on page load, so they need the methods that a
-	 * billing country or total change could bring within limits. The available gateways list then decides whether
-	 * each method is shown.
-	 *
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() {
