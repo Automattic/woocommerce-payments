@@ -29,7 +29,9 @@ test.describe( 'Multi-currency widget setup', { tag: '@merchant' }, () => {
 		await addMulticurrencyWidget( adminPage, true );
 	} );
 
-	test.afterAll( async ( { adminPage } ) => {
+	test.afterAll( async ( { adminPage, customerPage } ) => {
+		// The switching test leaves the shopper in EUR; later specs expect USD orders.
+		await goToShop( customerPage, { currency: 'USD' } );
 		await removeMultiCurrencyWidgets();
 
 		if ( ! wasMulticurrencyEnabled ) {
