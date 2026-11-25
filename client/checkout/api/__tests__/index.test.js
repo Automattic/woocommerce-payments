@@ -16,11 +16,156 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 
+const addStripeJsTag = ( src ) => {
+	const script = document.createElement( 'script' );
+	script.id = 'stripe-js';
+	script.src = src;
+	document.head.appendChild( script );
+};
+
 describe( 'WCPayAPI', () => {
+	describe( 'Stripe.js origin check', () => {
+		const REPOINTED_SRC = 'https://js.evil.example/v3/?ver=3.0';
+		const PUBLISHABLE_KEY = 'pk_test_123';
+		let StripeMock;
+
+		beforeEach( () => {
+			StripeMock = jest.fn();
+			window.Stripe = StripeMock;
+			jest.spyOn( console, 'warn' ).mockImplementation( () => {} );
+		} );
+
+		afterEach( () => {
+			jest.restoreAllMocks();
+			window.Stripe = undefined;
+			delete window.wcpayStripeJsOriginCheckDisabled;
+			document.head
+				.querySelectorAll( 'script' )
+				.forEach( ( script ) => script.remove() );
+		} );
+
+		test( 'getStripe rejects and never constructs Stripe when the handle is repointed', async () => {
+			addStripeJsTag( REPOINTED_SRC );
+			const api = new WCPayAPI( {}, request );
+
+			await expect( api.getStripe() ).rejects.toThrow(
+				'Stripe.js provenance check failed.'
+			);
+			expect( StripeMock ).not.toHaveBeenCalled();
+		} );
+
+		test( 'getStripe rejects without waiting when Stripe never loads', async () => {
+			window.Stripe = undefined;
+			addStripeJsTag( REPOINTED_SRC );
+			const api = new WCPayAPI( {}, request );
+
+			await expect( api.getStripe() ).rejects.toThrow(
+				'Stripe.js provenance check failed.'
+			);
+		} );
+
+		test( 'createStripe throws for callers that skip getStripe', () => {
+			addStripeJsTag( REPOINTED_SRC );
+			const api = new WCPayAPI( {}, request );
+
+			expect( () => api.createStripe( PUBLISHABLE_KEY, 'en' ) ).toThrow(
+				'Stripe.js provenance check failed.'
+			);
+			expect( StripeMock ).not.toHaveBeenCalled();
+		} );
+
+		test( 'loadStripeForExpressCheckout resolves with the error', async () => {
+			addStripeJsTag( REPOINTED_SRC );
+			const api = new WCPayAPI( {}, request );
+
+			const result = await api.loadStripeForExpressCheckout();
+
+			expect( result.error.message ).toBe(
+				'Stripe.js provenance check failed.'
+			);
+		} );
+
+		test( 'constructs Stripe when the tag is genuine', async () => {
+			addStripeJsTag( 'https://js.stripe.com/v3/?ver=3.0' );
+			const api = new WCPayAPI(
+				{ publishableKey: PUBLISHABLE_KEY },
+				request
+			);
+
+			await api.getStripe();
+
+			expect( StripeMock ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'createStripe throws when there is no Stripe.js tag', () => {
+			const api = new WCPayAPI( {}, request );
+
+			expect( () => api.createStripe( PUBLISHABLE_KEY, 'en' ) ).toThrow(
+				'Stripe.js provenance check failed.'
+			);
+			expect( StripeMock ).not.toHaveBeenCalled();
+		} );
+
+		describe( 'when another tag defined window.Stripe before the Stripe.js tag has a src', () => {
+			beforeEach( () => {
+				jest.useFakeTimers();
+				const script = document.createElement( 'script' );
+				script.id = 'stripe-js';
+				script.setAttribute( 'data-src', 'https://js.stripe.com/v3/' );
+				document.head.appendChild( script );
+			} );
+
+			afterEach( () => {
+				jest.useRealTimers();
+			} );
+
+			test( 'getStripe waits for an optimizer to restore the src, then constructs Stripe', async () => {
+				const api = new WCPayAPI(
+					{ publishableKey: PUBLISHABLE_KEY },
+					request
+				);
+
+				const stripePromise = api.getStripe();
+				await jest.advanceTimersByTimeAsync( 5000 );
+				expect( StripeMock ).not.toHaveBeenCalled();
+
+				document
+					.getElementById( 'stripe-js' )
+					.setAttribute( 'src', 'https://js.stripe.com/v3/' );
+				await jest.advanceTimersByTimeAsync( 100 );
+				await stripePromise;
+
+				expect( StripeMock ).toHaveBeenCalledTimes( 1 );
+			} );
+
+			// The longer timeout covers stepping through 6,000 polls of the 600-second wait.
+			test( 'getStripe rejects and never constructs Stripe when the src is never restored', async () => {
+				const api = new WCPayAPI(
+					{ publishableKey: PUBLISHABLE_KEY },
+					request
+				);
+
+				const failure = api.getStripe().catch( ( error ) => error );
+				await jest.advanceTimersByTimeAsync( 601 * 1000 );
+
+				expect( ( await failure ).message ).toBe(
+					'Stripe.js provenance check failed.'
+				);
+
+				expect( StripeMock ).not.toHaveBeenCalled();
+			}, 30000 );
+		} );
+	} );
+
 	describe( 'getStripe', () => {
+		beforeEach( () => {
+			addStripeJsTag( 'https://js.stripe.com/v3/' );
+		} );
+
 		afterEach( () => {
 			jest.useRealTimers();
 			window.Stripe = undefined;
+			document.getElementById( 'stripe-js' )?.remove();
 		} );
 
 		test( 'waits for Stripe to be available in the global scope', async () => {
@@ -60,12 +205,14 @@ describe( 'WCPayAPI', () => {
 		const PUBLISHABLE_KEY = 'pk_test_123';
 
 		beforeEach( () => {
+			addStripeJsTag( 'https://js.stripe.com/v3/' );
 			window.Stripe = jest.fn();
 			window.Stripe.version = 3;
 		} );
 
 		afterEach( () => {
 			window.Stripe = undefined;
+			document.getElementById( 'stripe-js' )?.remove();
 		} );
 
 		test( 'adds the Link autofill beta on v3', () => {

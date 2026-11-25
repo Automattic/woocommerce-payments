@@ -29,6 +29,11 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', () => {
 	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
+		// The Stripe.js origin check needs a genuine tag before Stripe is created.
+		const stripeJsTag = document.createElement( 'script' );
+		stripeJsTag.id = 'stripe-js';
+		stripeJsTag.src = 'https://js.stripe.com/v3/';
+		document.head.appendChild( stripeJsTag );
 		apiFetch.mockClear();
 		apiFetch.mockImplementation( async () =>
 			Promise.resolve( {
@@ -114,6 +119,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 	afterEach( async () => {
 		delete global.Stripe;
+		document.getElementById( 'stripe-js' )?.remove();
 		// removing all the registered event handlers so they don't leak between tests.
 		global.$( document.body ).off();
 	} );
