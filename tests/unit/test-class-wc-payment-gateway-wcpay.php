@@ -1712,6 +1712,30 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $link_gateway->get_payment_method_ids_enabled_at_checkout(), [] );
 	}
 
+	public function test_remove_duplicate_link_payment_methods_if_card_disabled() {
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
+
+		$link_gateway = $this->get_gateway( Payment_Method::LINK );
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
+			[
+				'capabilities' => [
+					'card_payments' => 'active',
+					'link_payments' => 'active',
+				],
+			]
+		);
+
+		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::LINK, Payment_Method::LINK, Payment_Method::CARD ];
+		$this->assertSame( [ 'link', 'link', 'card' ], $link_gateway->get_payment_method_ids_enabled_at_checkout() );
+		$this->assertSame( [ 'link', 'link', 'card' ], $link_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() );
+
+		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::LINK, Payment_Method::LINK ];
+		$this->assertSame( [], $link_gateway->get_payment_method_ids_enabled_at_checkout() );
+		$this->assertSame( [], $link_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() );
+	}
+
 	/**
 	 * @dataProvider available_payment_methods_provider
 	 */
