@@ -71,11 +71,14 @@ test.describe(
 
 			await adminPage.locator( '#search-submit' ).click();
 
-			// Find the action row matching our subscription ID in the args column.
-			const actionRow = adminPage
-				.locator( 'tr' )
-				.filter( { hasText: subscriptionId } )
-				.first();
+			// Match the whole argument, so subscription 12 skips rows for 120 or a date containing 12.
+			const actionRow = adminPage.locator( 'tr' ).filter( {
+				has: adminPage
+					.locator( 'td.column-args' )
+					.getByText( `'subscription_id' => ${ subscriptionId }`, {
+						exact: true,
+					} ),
+			} );
 			// WP keeps row actions off-screen until the row is hovered.
 			await actionRow.hover();
 			await actionRow.getByRole( 'link', { name: 'Run' } ).click();
