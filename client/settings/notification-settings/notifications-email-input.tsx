@@ -5,7 +5,7 @@
  */
 import { TextControl, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -32,16 +32,17 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 	const [ confirmEmail, setConfirmEmail ] = useState( '' );
 	const [ hasConfirmBlurred, setHasConfirmBlurred ] = useState( false );
 
-	// Baseline is captured once when settings finish loading. Held in a ref
-	// because it is never rendered, only compared for the emailHasChanged flag.
-	const initialEmailRef = useRef< string | null >( null );
-	if ( ! isLoading && initialEmailRef.current === null ) {
-		initialEmailRef.current = accountCommunicationsEmail ?? '';
+	// Baseline is captured once when settings finish loading. Stored in state
+	// so the comparison is a plain render-time read; the render-time setState
+	// is React's "store derived state during render" idiom and runs in a
+	// single pass without a cascading effect render.
+	const [ initialEmail, setInitialEmail ] = useState< string | null >( null );
+	if ( ! isLoading && initialEmail === null ) {
+		setInitialEmail( accountCommunicationsEmail ?? '' );
 	}
 
 	const emailHasChanged =
-		initialEmailRef.current !== null &&
-		accountCommunicationsEmail !== initialEmailRef.current;
+		initialEmail !== null && accountCommunicationsEmail !== initialEmail;
 
 	const savingError = useGetSavingError();
 	const serverError =
