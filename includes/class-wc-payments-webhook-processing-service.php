@@ -1456,7 +1456,8 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
+		$line_items = $is_partial_refund ? [] : $this->order_service->get_remaining_refund_line_items( $order, (float) $refunded_amount );
+		$wc_refund  = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $line_items );
 		// Process the refund in the order service.
 		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id, Refund_Status::PENDING === $refund['status'] );
 	}

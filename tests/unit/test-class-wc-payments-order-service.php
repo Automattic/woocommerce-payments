@@ -6067,6 +6067,130 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A lost full dispute refunds each line's total, quantity and tax, so the refund
+	 * carries the order's tax and shipping.
+	 */
+	public function test_mark_payment_dispute_closed_lost_refunds_each_line_with_tax(): void {
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order_with_shipping_and_fee();
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$refund = $refunds[0];
+		$this->assertEquals( -60.5, $refund->get_total() );
+		$this->assertEquals( -5.5, $refund->get_total_tax() );
+		$this->assertEquals( -10.0, (float) $refund->get_shipping_total() );
+
+		$this->assertSame( -2, $order->get_qty_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 40.0, $order->get_total_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 4.0, $order->get_tax_refunded_for_item( $item_ids['product'], $rate_id ) );
+		$this->assertEquals( 10.0, $order->get_total_refunded_for_item( $item_ids['shipping'], 'shipping' ) );
+		$this->assertEquals( 1.0, $order->get_tax_refunded_for_item( $item_ids['shipping'], $rate_id, 'shipping' ) );
+		$this->assertEquals( 5.0, $order->get_total_refunded_for_item( $item_ids['fee'], 'fee' ) );
+		$this->assertEquals( 0.5, $order->get_tax_refunded_for_item( $item_ids['fee'], $rate_id, 'fee' ) );
+
+		$this->clean_up_taxed_order( $order, $rate_id );
+	}
+
+	/**
+	 * A dispute for the full amount, given in the dispute summary, refunds per line too.
+	 */
+	public function test_mark_payment_dispute_closed_lost_with_full_dispute_summary_refunds_each_line(): void {
+		[ $order, $rate_id ] = $this->create_taxed_order_with_shipping_and_fee();
+		$disputed_cents      = 6050;
+
+		$this->order_service->mark_payment_dispute_closed(
+			$order,
+			'ch_123',
+			'lost',
+			[
+				'disputed_amount' => $disputed_cents,
+				'currency'        => 'usd',
+			]
+		);
+
+		$refund = $order->get_refunds()[0];
+		$this->assertEquals( -60.5, $refund->get_total() );
+		$this->assertEquals( -5.5, $refund->get_total_tax() );
+
+		$this->clean_up_taxed_order( $order, $rate_id );
+	}
+
+	/**
+	 * After a per-line refund, a lost dispute for the rest refunds only what each line has left.
+	 */
+	public function test_mark_payment_dispute_closed_lost_after_line_refund_refunds_the_remaining_lines(): void {
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order_with_shipping_and_fee();
+		wc_create_refund(
+			[
+				'order_id'   => $order->get_id(),
+				'amount'     => 11,
+				'line_items' => [
+					$item_ids['shipping'] => [
+						'refund_total' => 10,
+						'refund_tax'   => [ $rate_id => 1 ],
+					],
+				],
+			]
+		);
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refund = $this->get_dispute_lost_refund( $order );
+		$this->assertEquals( -49.5, $refund->get_total() );
+		$this->assertEquals( -4.5, $refund->get_total_tax() );
+		$this->assertEquals( 0.0, (float) $refund->get_shipping_total() );
+		$this->assertEquals( 10.0, $order->get_total_refunded_for_item( $item_ids['shipping'], 'shipping' ) );
+		$this->assertEquals( 40.0, $order->get_total_refunded_for_item( $item_ids['product'] ) );
+
+		$this->clean_up_taxed_order( $order, $rate_id );
+	}
+
+	/**
+	 * A lump-sum refund takes nothing from any line, so the lines no longer add up to
+	 * what's left. The dispute refund falls back to a lump sum for the remaining amount.
+	 */
+	public function test_mark_payment_dispute_closed_lost_after_lump_sum_refund_records_a_lump_sum(): void {
+		[ $order, $rate_id ] = $this->create_taxed_order_with_shipping_and_fee();
+		wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 20,
+			]
+		);
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refund = $this->get_dispute_lost_refund( $order );
+		$this->assertEquals( -40.5, $refund->get_total() );
+		$this->assertEmpty( $refund->get_items( [ 'line_item', 'shipping', 'fee' ] ) );
+
+		$this->clean_up_taxed_order( $order, $rate_id );
+	}
+
+	/**
+	 * The lines are only returned when they add up to the refund amount.
+	 */
+	public function test_get_remaining_refund_line_items_returns_nothing_when_lines_do_not_match_the_amount(): void {
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order_with_shipping_and_fee();
+
+		$this->assertSame( [], $this->order_service->get_remaining_refund_line_items( $order, 60.49 ) );
+
+		$line_items = $this->order_service->get_remaining_refund_line_items( $order, 60.5 );
+		$this->assertSame(
+			[
+				'qty'          => 2,
+				'refund_total' => 40.0,
+				'refund_tax'   => [ $rate_id => 4.0 ],
+			],
+			$line_items[ $item_ids['product'] ]
+		);
+
+		$this->clean_up_taxed_order( $order, $rate_id );
+	}
+
+	/**
 	 * Tests that mark_payment_dispute_closed handles partial refunds correctly.
 	 */
 	public function test_mark_payment_dispute_closed_with_partial_refund(): void {
@@ -7291,5 +7415,111 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
 
 		return implode( "\n", wp_list_pluck( $notes, 'content' ) );
+	}
+
+	/**
+	 * Creates an on-hold order with a taxed product line (2 x $20), taxed shipping
+	 * ($10) and a taxed fee ($5), all at 10%, for a total of $60.50.
+	 *
+	 * @return array The order, the tax rate ID and the item IDs keyed by line type.
+	 */
+	private function create_taxed_order_with_shipping_and_fee(): array {
+		update_option( 'woocommerce_calc_taxes', 'yes' );
+		$rate_id = WC_Tax::_insert_tax_rate(
+			[
+				'tax_rate_country'  => '',
+				'tax_rate_state'    => '',
+				'tax_rate'          => '10.0000',
+				'tax_rate_name'     => 'TAX',
+				'tax_rate_priority' => '1',
+				'tax_rate_compound' => '0',
+				'tax_rate_shipping' => '1',
+				'tax_rate_order'    => '1',
+				'tax_rate_class'    => '',
+			]
+		);
+
+		$order = new WC_Order();
+		$order->set_currency( 'USD' );
+
+		$product = new WC_Order_Item_Product();
+		$product->set_props(
+			[
+				'name'     => 'Taxed product',
+				'quantity' => 2,
+				'subtotal' => 40,
+				'total'    => 40,
+				'taxes'    => [
+					'subtotal' => [ $rate_id => 4 ],
+					'total'    => [ $rate_id => 4 ],
+				],
+			]
+		);
+		$order->add_item( $product );
+
+		$shipping = new WC_Order_Item_Shipping();
+		$shipping->set_props(
+			[
+				'method_title' => 'Flat rate',
+				'method_id'    => 'flat_rate',
+				'total'        => 10,
+				'taxes'        => [ 'total' => [ $rate_id => 1 ] ],
+			]
+		);
+		$order->add_item( $shipping );
+
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_props(
+			[
+				'name'      => 'Handling',
+				'total'     => 5,
+				'tax_class' => '',
+				'taxes'     => [ 'total' => [ $rate_id => 0.5 ] ],
+			]
+		);
+		$order->add_item( $fee );
+
+		$order->update_taxes();
+		$order->calculate_totals( false );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		return [
+			$order,
+			$rate_id,
+			[
+				'product'  => $product->get_id(),
+				'shipping' => $shipping->get_id(),
+				'fee'      => $fee->get_id(),
+			],
+		];
+	}
+
+	/**
+	 * Deletes an order made by create_taxed_order_with_shipping_and_fee() and its tax rate.
+	 *
+	 * @param WC_Order $order   The order.
+	 * @param int      $rate_id The tax rate ID.
+	 */
+	private function clean_up_taxed_order( WC_Order $order, int $rate_id ): void {
+		WC_Helper_Order::delete_order( $order->get_id() );
+		WC_Tax::_delete_tax_rate( $rate_id );
+		update_option( 'woocommerce_calc_taxes', 'no' );
+	}
+
+	/**
+	 * Finds the refund recorded for a lost dispute among an order's refunds.
+	 *
+	 * @param WC_Order $order The order.
+	 *
+	 * @return WC_Order_Refund
+	 */
+	private function get_dispute_lost_refund( WC_Order $order ): WC_Order_Refund {
+		foreach ( $order->get_refunds() as $refund ) {
+			if ( 'Dispute lost.' === $refund->get_reason() ) {
+				return $refund;
+			}
+		}
+		$this->fail( 'No refund was recorded for the lost dispute.' );
 	}
 }

@@ -85,13 +85,17 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 	 * @return WC_Order_Refund|WP_Error|false
 	 */
 	private function process_order_refund( WC_Order $order, $amount, $reason ) {
+		$refund_amount = WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() );
+
 		return wc_create_refund(
 			[
-				'amount'         => WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+				'amount'         => $refund_amount,
 				'reason'         => $reason,
 				'order_id'       => $order->get_id(),
+				'line_items'     => WC_Payments::get_order_service()->get_remaining_refund_line_items( $order, (float) $refund_amount ),
 				'refund_payment' => true,
-				'restock_items'  => true,
+				// Without line items this never restocked anything, so keep it that way now they're passed.
+				'restock_items'  => false,
 			]
 		);
 	}
