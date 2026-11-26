@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix missing WooPayments translations on the order screen, at classic checkout, and during WooPay sign-up.
