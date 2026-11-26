@@ -16,8 +16,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * Registers WooPayments read and write abilities under the shared
  * `woocommerce` category.
- * All abilities gate on `manage_woocommerce` and are gated by the
- * `woocommerce_payments_abilities_enabled` filter (default `false`).
+ * All abilities gate on `manage_woocommerce`. Read abilities are registered
+ * by default (`woocommerce_payments_abilities_enabled`); write abilities are
+ * opt-in (`woocommerce_payments_write_abilities_enabled`) and bring the read
+ * abilities with them.
  *
  * Delegation errors are logged under the `woopayments-abilities` source.
  */
@@ -47,11 +49,11 @@ class AbilitiesRegistrar {
 	];
 
 	/**
-	 * Ability definition classes appended to Woo Core's loader.
+	 * Read-only ability definition classes, registered by default.
 	 *
 	 * @var class-string<AbilityDefinition>[]
 	 */
-	private const ABILITY_CLASSES = [
+	private const READ_ABILITY_CLASSES = [
 		\WCPay\Internal\Abilities\Domain\GetAccount::class,
 		\WCPay\Internal\Abilities\Domain\GetDepositsOverview::class,
 		\WCPay\Internal\Abilities\Domain\GetActiveLoanSummary::class,
@@ -67,33 +69,34 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetDisputes::class,
 		\WCPay\Internal\Abilities\Domain\GetAuthorizations::class,
 		\WCPay\Internal\Abilities\Domain\GetDeposits::class,
-		\WCPay\Internal\Abilities\Domain\RefundCharge::class,
-		\WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence::class,
-		\WCPay\Internal\Abilities\Domain\AcceptDispute::class,
-		\WCPay\Internal\Abilities\Domain\UploadDisputeEvidenceFile::class,
 		\WCPay\Internal\Abilities\Domain\GetBalance::class,
 		\WCPay\Internal\Abilities\Domain\GetFraudOutcomes::class,
 		\WCPay\Internal\Abilities\Domain\GetFeesSummary::class,
 	];
 
 	/**
+	 * Write ability definition classes (annotated `readonly => false`),
+	 * registered only when explicitly enabled.
+	 *
+	 * @var class-string<AbilityDefinition>[]
+	 */
+	private const WRITE_ABILITY_CLASSES = [
+		\WCPay\Internal\Abilities\Domain\RefundCharge::class,
+		\WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence::class,
+		\WCPay\Internal\Abilities\Domain\AcceptDispute::class,
+		\WCPay\Internal\Abilities\Domain\UploadDisputeEvidenceFile::class,
+	];
+
+	/**
 	 * Initialize the abilities registration.
+	 *
+	 * The enablement filters are read in `append_classes()`, when WooCommerce
+	 * registers abilities on `wp_abilities_api_init` (after `init`), so
+	 * callbacks added from a theme's `functions.php` take effect.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		/**
-		 * Filter whether WooPayments' Abilities API registrations are active.
-		 *
-		 * @since 10.8.0
-		 *
-		 * @param bool $enabled Whether to register WooPayments abilities. Default false.
-		 * @return bool
-		 */
-		if ( false === apply_filters( 'woocommerce_payments_abilities_enabled', false ) ) {
-			return;
-		}
-
 		if ( self::woo_abilities_loader_available() ) {
 			add_filter( 'woocommerce_ability_definition_classes', [ __CLASS__, 'append_classes' ] );
 		}
@@ -102,11 +105,15 @@ class AbilitiesRegistrar {
 	/**
 	 * Filter callback for `woocommerce_ability_definition_classes`.
 	 *
-	 * @param array $classes Class names accumulated by the loader.
+	 * @param mixed $classes Class names accumulated by the loader.
 	 * @return array
 	 */
-	public static function append_classes( array $classes ): array {
-		return array_merge( $classes, self::ABILITY_CLASSES );
+	public static function append_classes( $classes ): array {
+		if ( ! is_array( $classes ) ) {
+			$classes = [];
+		}
+
+		return array_merge( $classes, self::get_enabled_classes() );
 	}
 
 	/**
@@ -171,6 +178,46 @@ class AbilitiesRegistrar {
 		}
 
 		return is_array( $response ) ? $response : [];
+	}
+
+	/**
+	 * Ability classes enabled by the read and write filters.
+	 *
+	 * @return class-string<AbilityDefinition>[]
+	 */
+	private static function get_enabled_classes(): array {
+		/**
+		 * Filter whether WooPayments' read-only Abilities API registrations are active.
+		 *
+		 * Any value other than `false` enables the read-only abilities. Enabling
+		 * `woocommerce_payments_write_abilities_enabled` also enables them.
+		 *
+		 * @since 10.8.0
+		 * @since 11.4.0 Default changed to true, and the filter no longer enables write abilities.
+		 *
+		 * @param bool $enabled Whether to register WooPayments read-only abilities. Default true.
+		 * @return bool
+		 */
+		$read_enabled = false !== apply_filters( 'woocommerce_payments_abilities_enabled', true );
+
+		/**
+		 * Filter whether WooPayments' write abilities are registered. Write
+		 * abilities perform consequential actions, such as refunds and
+		 * dispute responses. Only `true` enables them, and it also enables the
+		 * read-only abilities, which agents need to find charge and dispute IDs.
+		 *
+		 * @since 11.4.0
+		 *
+		 * @param bool $enabled Whether to register write abilities. Default false.
+		 * @return bool
+		 */
+		$write_enabled = true === apply_filters( 'woocommerce_payments_write_abilities_enabled', false );
+		$read_enabled  = $read_enabled || $write_enabled;
+
+		return array_merge(
+			$read_enabled ? self::READ_ABILITY_CLASSES : [],
+			$write_enabled ? self::WRITE_ABILITY_CLASSES : []
+		);
 	}
 
 	/**
