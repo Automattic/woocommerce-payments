@@ -30,7 +30,6 @@ use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	API_Exception,
 	Invalid_Address_Exception,
 	Fraud_Prevention_Enabled_Exception,
-	Invalid_Phone_Number_Exception,
 	Rate_Limiter_Enabled_Exception,
 	Order_ID_Mismatch_Exception,
 	Order_Not_Found_Exception};
@@ -350,7 +349,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Session_Rate_Limiter instance for limiting failed transactions.
 	 *
-	 * @var Session_Rate_Limiter
+	 * @var Session_Rate_Limiter|null
 	 */
 	protected $failed_transaction_rate_limiter;
 
@@ -1509,12 +1508,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			if ( 20 < strlen( $order->get_billing_phone() ) ) {
-				throw new Invalid_Phone_Number_Exception(
-					__( 'Invalid phone number.', 'woocommerce-payments' ),
-					'invalid_phone_number'
-				);
-			}
 			// Check if session exists and we're currently not processing a WooPay request before
 			// instantiating `Fraud_Prevention_Service`.
 			//
@@ -1534,7 +1527,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( $this->failed_transaction_rate_limiter->is_limited( $rate_limited_order ) ) {
+			// Reserves an attempt: bump() keeps it for a decline, and the `finally` below releases it otherwise. If the
+			// request exits first, as a card change that needs 3DS does, the limiter releases it at shutdown.
+			if ( $this->failed_transaction_rate_limiter->is_limited_or_reserve( $rate_limited_order ) ) {
 				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -1772,6 +1767,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'result'   => 'fail',
 				'redirect' => '',
 			];
+		} finally {
+			if ( $this->failed_transaction_rate_limiter ) {
+				$this->failed_transaction_rate_limiter->release();
+			}
 		}
 	}
 

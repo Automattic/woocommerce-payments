@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Payments no longer fail when the order's billing phone is longer than 20 characters.

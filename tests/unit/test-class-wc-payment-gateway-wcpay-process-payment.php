@@ -741,10 +741,25 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function test_failed_transaction_rate_limiter_bumped( $expected_notice, $error_code, $raw_message ) {
 		$order = WC_Helper_Order::create_order();
 
+		// The decline keeps the reserved attempt, so bump() must run before the attempt is released.
+		$calls = [];
 		$this->mock_rate_limiter
 			->expects( $this->once() )
 			->method( 'bump' )
-			->with( $this->callback( $this->is_order( $order->get_id() ) ) );
+			->with( $this->callback( $this->is_order( $order->get_id() ) ) )
+			->willReturnCallback(
+				function () use ( &$calls ) {
+					$calls[] = 'bump';
+				}
+			);
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' )
+			->willReturnCallback(
+				function () use ( &$calls ) {
+					$calls[] = 'release';
+				}
+			);
 
 		$this->mock_customer_service
 			->expects( $this->once() )
@@ -773,6 +788,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$error_notices = WC()->session->get( 'wc_notices' );
 		$this->assertNotEmpty( $error_notices );
 		$this->assertEquals( $expected_notice, $error_notices['error'][0]['notice'] );
+		$this->assertSame( [ 'bump', 'release' ], $calls );
 	}
 
 	public function rate_limiter_error_code_provider() {
@@ -837,7 +853,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Rate limiter is limited.
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->with( $this->callback( $this->is_order( $order->get_id() ) ) )
 			->willReturn( true );
 
@@ -1920,6 +1936,21 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->mock_wcpay_gateway->process_payment( $current_order_id );
+	}
+
+	public function test_process_payment_with_a_billing_phone_over_20_characters_creates_the_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_phone( '555-555-5555 or 555-555-5566' );
+		$order->save();
+
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'success', $result['result'] );
 	}
 
 	/**
