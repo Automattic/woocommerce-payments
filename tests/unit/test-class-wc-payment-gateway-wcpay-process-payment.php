@@ -741,10 +741,25 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function test_failed_transaction_rate_limiter_bumped( $expected_notice, $error_code, $raw_message ) {
 		$order = WC_Helper_Order::create_order();
 
+		// The decline keeps the reserved attempt, so bump() must run before the attempt is released.
+		$calls = [];
 		$this->mock_rate_limiter
 			->expects( $this->once() )
 			->method( 'bump' )
-			->with( $this->callback( $this->is_order( $order->get_id() ) ) );
+			->with( $this->callback( $this->is_order( $order->get_id() ) ) )
+			->willReturnCallback(
+				function () use ( &$calls ) {
+					$calls[] = 'bump';
+				}
+			);
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' )
+			->willReturnCallback(
+				function () use ( &$calls ) {
+					$calls[] = 'release';
+				}
+			);
 
 		$this->mock_customer_service
 			->expects( $this->once() )
@@ -773,6 +788,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$error_notices = WC()->session->get( 'wc_notices' );
 		$this->assertNotEmpty( $error_notices );
 		$this->assertEquals( $expected_notice, $error_notices['error'][0]['notice'] );
+		$this->assertSame( [ 'bump', 'release' ], $calls );
 	}
 
 	public function rate_limiter_error_code_provider() {
@@ -837,7 +853,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Rate limiter is limited.
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->with( $this->callback( $this->is_order( $order->get_id() ) ) )
 			->willReturn( true );
 

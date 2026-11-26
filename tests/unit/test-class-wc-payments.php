@@ -355,6 +355,59 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * @dataProvider scripts_using_wp_i18n
+	 *
+	 * @param string $script       Script path relative to the plugin, without extension.
+	 * @param array  $dependencies Extra dependencies passed by the caller.
+	 */
+	public function test_register_script_with_dependencies_sets_translations_for_scripts_using_wp_i18n( $script, $dependencies ) {
+		$handle = 'wcpay-test-i18n-script';
+
+		try {
+			WC_Payments::register_script_with_dependencies( $handle, $script, $dependencies );
+
+			$this->assertSame( 'woocommerce-payments', wp_scripts()->registered[ $handle ]->textdomain );
+		} finally {
+			wp_deregister_script( $handle );
+		}
+	}
+
+	public function scripts_using_wp_i18n() {
+		return [
+			'wp-i18n in the asset manifest' => [ 'tests/unit/fixtures/script-assets/i18n-script', [] ],
+			'wp-i18n passed by the caller'  => [ 'tests/unit/fixtures/script-assets/no-manifest-script', [ 'wp-i18n' ] ],
+		];
+	}
+
+	public function test_register_script_with_dependencies_leaves_scripts_without_wp_i18n_untouched() {
+		$handle = 'wcpay-test-no-i18n-script';
+
+		try {
+			WC_Payments::register_script_with_dependencies( $handle, 'tests/unit/fixtures/script-assets/no-manifest-script', [ 'jquery' ] );
+
+			$this->assertNull( wp_scripts()->registered[ $handle ]->textdomain );
+			$this->assertSame( [ 'jquery' ], wp_scripts()->registered[ $handle ]->deps );
+		} finally {
+			wp_deregister_script( $handle );
+		}
+	}
+
+	public function test_register_script_with_dependencies_leaves_a_handle_registered_by_another_plugin_untouched() {
+		$handle = 'wcpay-test-taken-script';
+		wp_register_script( $handle, 'https://example.org/other-plugin.js', [ 'jquery' ], '1.0', true );
+
+		try {
+			WC_Payments::register_script_with_dependencies( $handle, 'tests/unit/fixtures/script-assets/i18n-script' );
+
+			$this->assertSame( 'https://example.org/other-plugin.js', wp_scripts()->registered[ $handle ]->src );
+			$this->assertNull( wp_scripts()->registered[ $handle ]->textdomain );
+			$this->assertSame( [ 'jquery' ], wp_scripts()->registered[ $handle ]->deps );
+		} finally {
+			wp_deregister_script( $handle );
+		}
+	}
+
+	/**
 	 * Assert that all WooPayments gateways are in the result
 	 *
 	 * @param array $gateways Expected gateway IDs

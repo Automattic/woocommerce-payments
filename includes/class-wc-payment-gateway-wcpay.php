@@ -349,7 +349,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Session_Rate_Limiter instance for limiting failed transactions.
 	 *
-	 * @var Session_Rate_Limiter
+	 * @var Session_Rate_Limiter|null
 	 */
 	protected $failed_transaction_rate_limiter;
 
@@ -1527,7 +1527,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( $this->failed_transaction_rate_limiter->is_limited( $rate_limited_order ) ) {
+			// Reserves an attempt: bump() keeps it for a decline, and the `finally` below releases it otherwise. If the
+			// request exits first, as a card change that needs 3DS does, the limiter releases it at shutdown.
+			if ( $this->failed_transaction_rate_limiter->is_limited_or_reserve( $rate_limited_order ) ) {
 				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -1765,6 +1767,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'result'   => 'fail',
 				'redirect' => '',
 			];
+		} finally {
+			if ( $this->failed_transaction_rate_limiter ) {
+				$this->failed_transaction_rate_limiter->release();
+			}
 		}
 	}
 
@@ -5300,53 +5306,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
-		$upe_enabled_payment_methods = $this->get_upe_enabled_payment_method_ids_based_on_manual_capture();
-		if ( is_wc_endpoint_url( 'order-pay' ) ) {
-			$force_currency_check = true;
-		}
+		return $this->filter_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check, false );
+	}
 
-		$enabled_payment_methods = [];
-		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
-
-		foreach ( $upe_enabled_payment_methods as $payment_method_id ) {
-			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
-			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
-				// When creating a payment intent, we need to ensure the currency is matching
-				// with the payment methods which are sent with the payment intent request, otherwise
-				// Stripe returns an error.
-
-				// In order to allow payment methods to be displayed in admin pages (e.g. blocks editor),
-				// we need to skip the currency check (unless force_currency_check is true).
-				// force_currency_check = 0 is_admin = 0 -> skip_currency_check = 0.
-				// force_currency_check = 0 is_admin = 1 -> skip_currency_check = 1.
-				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
-				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
-
-				$skip_currency_check       = ! $force_currency_check && is_admin();
-				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
-					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
-					if ( 'active' === $status ) {
-						$enabled_payment_methods[] = $payment_method_id;
-					}
-				}
-			}
-		}
-
-		// if credit card payment method is not enabled, we don't use stripe link.
-		if (
-			! in_array( CardDefinition::get_id(), $enabled_payment_methods, true ) &&
-			in_array( LinkDefinition::get_id(), $enabled_payment_methods, true ) ) {
-			$link_stripe_id          = LinkDefinition::get_id();
-			$enabled_payment_methods = array_filter(
-				$enabled_payment_methods,
-				static function ( $method ) use ( $link_stripe_id ) {
-					return $link_stripe_id !== $method;
-				}
-			);
-		}
-
-		return $enabled_payment_methods;
+	/**
+	 * Returns the payment method types that would function with the current checkout if the order total were within their amount limits.
+	 *
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() {
+		return $this->filter_payment_method_ids_enabled_at_checkout( null, false, true );
 	}
 
 	/**
@@ -6029,5 +5998,56 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return true;
 		}
 		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
+	}
+
+	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout.
+	 *
+	 * @param string|null $order_id             Order ID.
+	 * @param bool        $force_currency_check Whether the currency check is required even if is_admin().
+	 * @param bool        $skip_amount_limits   Whether to ignore the payment methods' amount limits.
+	 *
+	 * @return string[]
+	 */
+	private function filter_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check, $skip_amount_limits ) {
+		$upe_enabled_payment_methods = $this->get_upe_enabled_payment_method_ids_based_on_manual_capture();
+		if ( is_wc_endpoint_url( 'order-pay' ) ) {
+			$force_currency_check = true;
+		}
+
+		$enabled_payment_methods = [];
+		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
+
+		foreach ( $upe_enabled_payment_methods as $payment_method_id ) {
+			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
+			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
+				// When creating a payment intent, we need to ensure the currency is matching
+				// with the payment methods which are sent with the payment intent request, otherwise
+				// Stripe returns an error.
+
+				// In order to allow payment methods to be displayed in admin pages (e.g. blocks editor),
+				// we need to skip the currency check (unless force_currency_check is true).
+				// force_currency_check = 0 is_admin = 0 -> skip_currency_check = 0.
+				// force_currency_check = 0 is_admin = 1 -> skip_currency_check = 1.
+				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
+				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
+
+				$skip_currency_check       = ! $force_currency_check && is_admin();
+				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check || $skip_amount_limits ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
+					if ( 'active' === $status ) {
+						$enabled_payment_methods[] = $payment_method_id;
+					}
+				}
+			}
+		}
+
+		// if credit card payment method is not enabled, we don't use stripe link.
+		if ( ! in_array( CardDefinition::get_id(), $enabled_payment_methods, true ) ) {
+			$enabled_payment_methods = array_diff( $enabled_payment_methods, [ LinkDefinition::get_id() ] );
+		}
+
+		return $enabled_payment_methods;
 	}
 }

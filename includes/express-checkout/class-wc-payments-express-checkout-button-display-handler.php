@@ -231,33 +231,15 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * Whether the pay page may give the visitor the order's billing email.
 	 *
 	 * The express checkout and WooPay buttons load the order from the Store API, which wants a
-	 * guest order's billing email on every request. WooCommerce's pay page doesn't always ask
-	 * for it: not in the first minutes after the order is created, nor when the merchant turns
-	 * email verification off. In those cases WooCommerce already shows a visitor holding the key
-	 * the pay form, and its order-received page shows them the billing details under the same
-	 * rule, so the email is given. Orders that no longer need payment get no pay form, so no email.
+	 * guest order's billing email on every request. See WC_Payments_Utils::may_see_order_billing_details().
+	 * This prints in the page head, before WooCommerce checks the visitor, so a check that can't run says no.
 	 *
 	 * @param WC_Order $order The order, already authorized by its key.
 	 *
 	 * @return bool
 	 */
 	private function may_see_order_billing_email( WC_Order $order ): bool {
-		if ( current_user_can( 'read_private_shop_orders' ) || ( get_current_user_id() !== 0 && $order->get_customer_id() === get_current_user_id() ) ) {
-			return true;
-		}
-
-		if ( ! $order->needs_payment() ) {
-			return false;
-		}
-
-		try {
-			// WooCommerce 8.6+.
-			return ! \Automattic\WooCommerce\Internal\Utilities\Users::should_user_verify_order_email( $order->get_id(), null, 'order-pay' );
-		} catch ( \Throwable $e ) {
-			// Users is internal to WooCommerce and may change, and its filters run third-party code.
-			// Assume the visitor still has to prove the email.
-			return false;
-		}
+		return WC_Payments_Utils::may_see_order_billing_details( $order );
 	}
 
 	/**

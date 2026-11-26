@@ -473,6 +473,56 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Opens the order's payment link on the My account "Add payment method" page.
+	 *
+	 * WooCommerce reads `?order-pay=` on any page, so the order lands in the query vars there too.
+	 *
+	 * @param WC_Order $order              The order the link is for.
+	 * @param bool     $is_my_account_page Whether the page is the one set as My account, or another page with its shortcode.
+	 */
+	protected function open_payment_link_on_add_payment_method_page( WC_Order $order, bool $is_my_account_page = true ): void {
+		$page_id = self::factory()->post->create(
+			[
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_content' => '[woocommerce_my_account]',
+			]
+		);
+		if ( $is_my_account_page ) {
+			update_option( 'woocommerce_myaccount_page_id', $page_id );
+		}
+
+		// It sets a cookie for any `?order-pay=` request, and headers are long sent in tests.
+		$session_cookie = [ WC()->session, 'maybe_set_customer_session_cookie' ];
+		$priority       = has_action( 'wp', $session_cookie );
+		if ( false !== $priority ) {
+			remove_action( 'wp', $session_cookie, $priority );
+		}
+
+		$this->go_to(
+			add_query_arg(
+				[
+					'page_id'            => $page_id,
+					'add-payment-method' => '',
+					'order-pay'          => $order->get_id(),
+					'pay_for_order'      => 'true',
+					'key'                => $order->get_order_key(),
+				],
+				home_url( '/' )
+			)
+		);
+	}
+
+	/**
+	 * Skips a test that needs WooCommerce's pay-page email verification check, public from WooCommerce 8.6.
+	 */
+	protected function skip_without_woocommerce_email_verification(): void {
+		if ( ! is_callable( [ 'Automattic\WooCommerce\Internal\Utilities\Users', 'should_user_verify_order_email' ] ) ) {
+			$this->markTestSkipped( 'WooCommerce has no callable pay-page email verification check before 8.6.' );
+		}
+	}
+
+	/**
 	 * The table order meta is stored in, its order ID column and its row ID column.
 	 *
 	 * @return string[]

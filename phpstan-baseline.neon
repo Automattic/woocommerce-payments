@@ -183,7 +183,7 @@ parameters:
 		-
 			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
 			identifier: isset.property
-			count: 2
+			count: 1
 			path: includes/class-session-rate-limiter.php
 
 		-
@@ -865,7 +865,7 @@ parameters:
 			path: includes/class-woopay-tracker.php
 
 		-
-			rawMessage: 'Call to function is_string() with float will always evaluate to false.'
+			rawMessage: 'Call to function is_string() with float<0.0, max> will always evaluate to false.'
 			identifier: function.impossibleType
 			count: 1
 			path: includes/class-woopay-tracker.php
@@ -1777,7 +1777,7 @@ parameters:
 			path: src/Internal/Service/Level3Service.php
 
 		-
-			rawMessage: Binary operation "/" between string and float results in an error.
+			rawMessage: 'Binary operation "/" between string and NAN|float<5.0E-324, max> results in an error.'
 			identifier: binaryOp.invalid
 			count: 1
 			path: src/Internal/Service/Level3Service.php
