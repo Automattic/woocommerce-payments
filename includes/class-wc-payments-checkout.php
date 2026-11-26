@@ -337,8 +337,11 @@ class WC_Payments_Checkout {
 	 * @return array
 	 */
 	public function get_enabled_payment_method_config() {
-		$settings                = [];
-		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$settings = [];
+		// Amount limits are left out so a method that the billing country or a coupon later brings within its limits is
+		// already registered on block checkout and has its Stripe element on shortcode checkout. The available gateways
+		// list still decides whether each method is shown.
+		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits();
 
 		// When "express checkout in payment methods" setting is enabled, add express checkout
 		// methods to the list. They're not in upe_enabled_payment_method_ids by default since
