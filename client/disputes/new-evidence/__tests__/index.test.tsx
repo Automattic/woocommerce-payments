@@ -771,6 +771,70 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
+	describe( 'when a file upload fails', () => {
+		const uploadError = ( code: string, message: string ) => {
+			mockApiFetch.mockImplementation( ( options: any ) =>
+				options?.path === '/wc/v3/payments/file'
+					? Promise.reject( { code, message, data: null } )
+					: Promise.resolve( regularDispute )
+			);
+		};
+
+		const uploadFile = async () => {
+			const mockCreateErrorNotice = jest.fn();
+			( mockUseDispatch as jest.Mock ).mockReturnValue( {
+				createSuccessNotice: jest.fn(),
+				createErrorNotice: mockCreateErrorNotice,
+				createInfoNotice: jest.fn(),
+			} );
+
+			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+			await screen.findByText( 'Order receipt' );
+			const input = document.querySelector(
+				'input[type="file"]'
+			) as HTMLInputElement;
+			await act( async () => {
+				fireEvent.change( input, {
+					target: {
+						files: [
+							new File( [ 'x' ], 'receipt.pdf', {
+								type: 'application/pdf',
+							} ),
+						],
+					},
+				} );
+			} );
+
+			return mockCreateErrorNotice;
+		};
+
+		it( 'shows the error message as it is', async () => {
+			uploadError(
+				'wcpay_evidence_file_max_size',
+				'This file exceeds the maximum upload size of 1 MB for this site.'
+			);
+
+			const createErrorNotice = await uploadFile();
+
+			expect( createErrorNotice ).toHaveBeenCalledWith(
+				'This file exceeds the maximum upload size of 1 MB for this site.'
+			);
+		} );
+
+		it( 'prefixes an error from Stripe', async () => {
+			uploadError(
+				'wcpay_evidence_file_stripe_error',
+				'Error: The file you uploaded was too large.'
+			);
+
+			const createErrorNotice = await uploadFile();
+
+			expect( createErrorNotice ).toHaveBeenCalledWith(
+				'Failed to upload file. (Error: The file you uploaded was too large.)'
+			);
+		} );
+	} );
+
 	it( 'should render regular dispute documents', async () => {
 		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
 

@@ -1127,10 +1127,32 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_http_client->expects( $this->never() )->method( 'remote_request' );
 
-		$this->expectException( API_Exception::class );
-		$this->expectExceptionMessage( "The file couldn't be uploaded. Please try again." );
+		try {
+			$this->payments_api_client->upload_file( $request );
+			$this->fail( 'Expected an API_Exception.' );
+		} catch ( API_Exception $e ) {
+			$this->assertSame( "The file couldn't be uploaded. Please try again.", $e->getMessage() );
+			$this->assertSame( 'wcpay_evidence_file_upload_error', $e->get_error_code() );
+		}
+	}
 
-		$this->payments_api_client->upload_file( $request );
+	public function test_upload_evidence_file_contents_marks_server_errors_as_stripe_errors() {
+		$this->set_http_mock_response(
+			400,
+			[
+				'code'    => 'wcpay_evidence_file_upload_error',
+				'message' => 'The file you uploaded was too large. Please upload a file smaller than 5 MB',
+				'data'    => [ 'status' => 400 ],
+			]
+		);
+
+		try {
+			$this->payments_api_client->upload_evidence_file_contents( 'eA==', 'receipt.pdf', 'application/pdf', 'dispute_evidence', true );
+			$this->fail( 'Expected an API_Exception.' );
+		} catch ( API_Exception $e ) {
+			$this->assertSame( 'Error: The file you uploaded was too large. Please upload a file smaller than 5 MB', $e->getMessage() );
+			$this->assertSame( 'wcpay_evidence_file_stripe_error', $e->get_error_code() );
+		}
 	}
 
 	public function provider_upload_file_over_site_limit(): array {

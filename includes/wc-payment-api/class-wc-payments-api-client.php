@@ -924,7 +924,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		} catch ( API_Exception $e ) {
 			throw new API_Exception(
 				$e->getMessage(),
-				'wcpay_evidence_file_upload_error',
+				'wcpay_evidence_file_stripe_error',
 				$e->get_http_code()
 			);
 		}

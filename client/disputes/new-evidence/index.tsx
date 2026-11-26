@@ -1018,12 +1018,20 @@ export default ( { query }: { query: { id: string } } ) => {
 				message: getErrorMessage( err ),
 			} );
 
-			// Display error as WordPress admin notice
+			// Stripe's messages don't say the upload failed, so they get a prefix.
+			const isStripeError =
+				( err as { code?: unknown } | null )?.code ===
+				'wcpay_evidence_file_stripe_error';
 			createErrorNotice(
-				sprintf(
-					__( 'Failed to upload file. (%s)', 'woocommerce-payments' ),
-					getErrorMessage( err )
-				)
+				isStripeError
+					? sprintf(
+							__(
+								'Failed to upload file. (%s)',
+								'woocommerce-payments'
+							),
+							getErrorMessage( err )
+						)
+					: getErrorMessage( err )
 			);
 
 			// Force reload evidence components.
