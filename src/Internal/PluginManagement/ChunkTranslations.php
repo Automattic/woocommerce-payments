@@ -141,10 +141,7 @@ class ChunkTranslations {
 		$entry_file = $this->hooks_proxy->apply_filters( 'load_script_translation_file', false, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
 		if ( is_string( $entry_file ) && is_readable( $entry_file ) ) {
 			// Some callbacks answer once per request, so read the file here like core does instead of asking again.
-			$entry_json = file_get_contents( $entry_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local translation file, as WordPress reads it.
-			if ( false === $entry_json ) {
-				return $translations;
-			}
+			$entry_json = (string) file_get_contents( $entry_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local translation file, as WordPress reads it.
 
 			return $this->hooks_proxy->apply_filters( 'load_script_translations', $entry_json, $entry_file, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
 		}
