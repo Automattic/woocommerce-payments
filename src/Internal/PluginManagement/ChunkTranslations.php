@@ -27,7 +27,7 @@ class ChunkTranslations {
 	];
 
 	/**
-	 * Chunks per entry, for builds without `dist/i18n-chunk-entries.json` (production builds write it).
+	 * Chunks per entry, for builds without `dist/i18n-chunk-entries.json` (the release zip ships it, local dev builds don't).
 	 */
 	private const FALLBACK_CHUNKS = [
 		'index.js'    => [
@@ -115,14 +115,15 @@ class ChunkTranslations {
 	 * Provides the chunks' strings for an entry that has no translation JSON of its own.
 	 *
 	 * WordPress calls this with a `false` file after it found no JSON for the entry. Plugins like Loco Translate can
-	 * still supply an entry file through `load_script_translation_file`, so it steps aside when one does.
+	 * still supply an entry file through `load_script_translation_file`. When one does, that file goes through the
+	 * normal `load_script_translations` filters, which include `merge_chunk_translations()`.
 	 *
 	 * @param mixed $translations Pre-filtered translations, `null` unless another callback set them.
 	 * @param mixed $file         Path of the JSON file, `false` when there is none.
 	 * @param mixed $handle       Script handle.
 	 * @param mixed $domain       Text domain.
 	 *
-	 * @return mixed The JSON built from the chunks, or the original value if no chunk has translations.
+	 * @return mixed The JSON built from the chunks or from the supplied entry file, or the original value if there is none.
 	 */
 	public function load_chunk_translations_only( $translations, $file, $handle, $domain ) {
 		if ( null !== $translations ) {
@@ -139,7 +140,13 @@ class ChunkTranslations {
 
 		$entry_file = $this->hooks_proxy->apply_filters( 'load_script_translation_file', false, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
 		if ( is_string( $entry_file ) && is_readable( $entry_file ) ) {
-			return $translations;
+			// Some callbacks answer once per request, so read the file here like core does instead of asking again.
+			$entry_json = file_get_contents( $entry_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local translation file, as WordPress reads it.
+			if ( false === $entry_json ) {
+				return $translations;
+			}
+
+			return $this->hooks_proxy->apply_filters( 'load_script_translations', $entry_json, $entry_file, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
 		}
 
 		return $this->merge( null, $this->get_languages_dirs(), self::HANDLE_ENTRIES[ $handle ] );
@@ -181,10 +188,11 @@ class ChunkTranslations {
 			}
 		}
 
+		$locale     = determine_locale();
 		$merged     = $entry;
 		$merged_key = $entry_key;
 		foreach ( $this->get_chunks( $entry_file ) as $chunk ) {
-			$chunk_data = $this->read_chunk( $dirs, $chunk );
+			$chunk_data = $this->read_chunk( $dirs, $chunk, $locale );
 			if ( null === $chunk_data ) {
 				continue;
 			}
@@ -217,13 +225,14 @@ class ChunkTranslations {
 	/**
 	 * Reads the first valid JSON file of a chunk found in the given directories.
 	 *
-	 * @param string[] $dirs  Directories to look in.
-	 * @param string   $chunk Chunk file relative to `dist/`, for example `chunks/wcpay-payouts.js`.
+	 * @param string[] $dirs   Directories to look in.
+	 * @param string   $chunk  Chunk file relative to `dist/`, for example `chunks/wcpay-payouts.js`.
+	 * @param string   $locale Locale of the translation files.
 	 *
 	 * @return array|null The decoded JSON, which has a message catalog, or `null` if there is none.
 	 */
-	private function read_chunk( array $dirs, string $chunk ): ?array {
-		$name = sprintf( '%s-%s-%s.json', self::DOMAIN, determine_locale(), md5( 'dist/' . $chunk ) );
+	private function read_chunk( array $dirs, string $chunk, string $locale ): ?array {
+		$name = sprintf( '%s-%s-%s.json', self::DOMAIN, $locale, md5( 'dist/' . $chunk ) );
 
 		foreach ( $dirs as $dir ) {
 			$path = trailingslashit( $dir ) . $name;

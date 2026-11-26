@@ -354,17 +354,66 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->sut->load_chunk_translations_only( null, false, self::HANDLE, self::DOMAIN ) );
 	}
 
-	public function test_load_chunk_translations_only_lets_wordpress_read_an_entry_file_another_plugin_supplies() {
+	public function test_load_chunk_translations_only_reads_an_entry_file_another_plugin_supplies_once() {
 		$payouts = $this->chunk( 'payouts' );
 		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
 		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
 		$entry_file = $this->languages_dir . '/custom-entry.json';
-		file_put_contents( $entry_file, $this->translation_json( [] ) );
+		file_put_contents( $entry_file, $this->translation_json( [ 'Own' => [ 'Propio' ] ] ) );
+		$asked_for_a_file = 0;
 		$this->hooks_proxy->method( 'apply_filters' )
-			->with( 'load_script_translation_file', false, self::HANDLE, self::DOMAIN )
-			->willReturn( $entry_file );
+			->willReturnCallback(
+				function ( $name, $value, ...$args ) use ( $entry_file, &$asked_for_a_file ) {
+					if ( 'load_script_translation_file' === $name ) {
+						// Like Loco Translate, only the first answer has the file.
+						return 0 === $asked_for_a_file++ ? $entry_file : false;
+					}
 
-		$this->assertNull( $this->sut->load_chunk_translations_only( null, false, self::HANDLE, self::DOMAIN ) );
+					return $this->sut->merge_chunk_translations( $value, ...$args );
+				}
+			);
+
+		$result = $this->sut->load_chunk_translations_only( null, false, self::HANDLE, self::DOMAIN );
+
+		$this->assertSame( [ '', 'Own', 'Payout history' ], array_keys( $this->messages( $result ) ) );
+		$this->assertSame( 1, $asked_for_a_file );
+	}
+
+	public function test_built_in_chunk_list_matches_the_lazy_imports() {
+		$imports  = function ( array $files ): array {
+			$names = [];
+			foreach ( $files as $file ) {
+				preg_match_all( '/webpackChunkName:\s*"([^"]+)"/', (string) file_get_contents( WCPAY_ABSPATH . $file ), $matches );
+				$names = array_merge( $names, $matches[1] );
+			}
+			$names = array_map(
+				function ( $name ) {
+					return 'chunks/' . $name . '.js';
+				},
+				array_unique( $names )
+			);
+			sort( $names );
+
+			return $names;
+		};
+		$built_in = ( new \ReflectionClassConstant( ChunkTranslations::class, 'FALLBACK_CHUNKS' ) )->getValue();
+		sort( $built_in['index.js'] );
+
+		$this->assertSame(
+			$imports(
+				array_merge(
+					[ 'client/index.js' ],
+					array_map(
+						function ( $path ) {
+							return 'client/reports/' . basename( $path );
+						},
+						glob( WCPAY_ABSPATH . 'client/reports/lazy-*.jsx' )
+					)
+				)
+			),
+			$built_in['index.js']
+		);
+		$this->assertSame( $imports( [ 'client/settings/phone-input/lazy.jsx' ] ), $built_in['settings.js'] );
 	}
 
 	public function test_load_chunk_translations_only_leaves_other_calls_alone() {
