@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop the declined-card rate limiter from letting more attempts through when a session sends several checkouts at once.
