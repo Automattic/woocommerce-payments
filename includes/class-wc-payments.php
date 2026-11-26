@@ -1213,13 +1213,20 @@ class WC_Payments {
 		$script_asset_path            = WCPAY_ABSPATH . $script . '.asset.php';
 		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ]; // nosemgrep: audit.php.lang.security.file.inclusion-arg -- server generated path is used.
 		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], $dependencies );
-		wp_register_script(
+		$registered                   = wp_register_script(
 			$handler,
 			$script_src_url,
 			$script_asset['dependencies'],
 			self::get_file_version( $script_file ),
 			true
 		);
+
+		// Only bundles that import @wordpress/i18n declare wp-i18n, and setting translations on any other bundle
+		// would add wp-i18n to its dependencies. Only set translations when this call registered the handle, so a
+		// handle another plugin registered first keeps its own dependencies and text domain.
+		if ( $registered && in_array( 'wp-i18n', $script_asset['dependencies'], true ) ) {
+			wp_set_script_translations( $handler, 'woocommerce-payments' );
+		}
 	}
 
 	/**
