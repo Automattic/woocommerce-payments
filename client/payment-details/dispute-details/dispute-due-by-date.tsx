@@ -10,7 +10,9 @@ import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 const DisputeDueByDate: React.FC< {
 	dueBy: number;
 	showRemainingDays?: boolean;
-} > = ( { dueBy, showRemainingDays = true } ) => {
+	/** Count down to an inquiry's resolution, which the merchant can't respond to. */
+	isResolutionWindow?: boolean;
+} > = ( { dueBy, showRemainingDays = true, isResolutionWindow = false } ) => {
 	const daysRemaining = Math.floor(
 		moment.unix( dueBy ).utc().diff( moment().utc(), 'days', true )
 	);
@@ -28,11 +30,24 @@ const DisputeDueByDate: React.FC< {
 					) }
 				>
 					{ daysRemaining > 0 &&
+						! isResolutionWindow &&
 						sprintf(
 							// Translators: %d is the number of days left to respond to the dispute.
 							_n(
 								' (%d day left to respond)',
 								' (%d days left to respond)',
+								daysRemaining,
+								'woocommerce-payments'
+							),
+							daysRemaining
+						) }
+					{ daysRemaining > 0 &&
+						isResolutionWindow &&
+						sprintf(
+							// Translators: %d is the number of days left to resolve the inquiry.
+							_n(
+								' (%d day left)',
+								' (%d days left)',
 								daysRemaining,
 								'woocommerce-payments'
 							),

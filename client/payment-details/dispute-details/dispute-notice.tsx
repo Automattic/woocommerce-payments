@@ -15,7 +15,7 @@ import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { reasons } from 'wcpay/disputes/strings';
 import type { Dispute } from 'wcpay/types/disputes';
-import { isInquiry } from 'wcpay/disputes/utils';
+import { isInquiry, isKlarnaInquiryPastDue } from 'wcpay/disputes/utils';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface DisputeNoticeProps {
@@ -52,8 +52,56 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		strong: <strong />,
 	};
 
+	const klarnaReasonClauses: Record< string, string > = {
+		credit_not_processed: __(
+			'reporting a return',
+			'woocommerce-payments'
+		),
+		fraudulent: __(
+			'claiming this transaction was unauthorized',
+			'woocommerce-payments'
+		),
+		product_not_received: __(
+			'claiming they did not receive the product',
+			'woocommerce-payments'
+		),
+		product_unacceptable: __(
+			'claiming the product was unacceptable',
+			'woocommerce-payments'
+		),
+		duplicate: __(
+			'claiming this transaction was duplicated',
+			'woocommerce-payments'
+		),
+	};
+	const klarnaReasonClause =
+		klarnaReasonClauses[ dispute.reason ] ??
+		__( 'regarding this transaction', 'woocommerce-payments' );
+
+	const isPastDueKlarnaInquiry = isKlarnaInquiryPastDue(
+		dispute.status,
+		paymentMethod,
+		dispute.evidence_details?.due_by
+	);
+
+	// Klarna can sit on an inquiry for days after its window closes, and the
+	// merchant still can't submit evidence, so this isn't a missed deadline.
+	if ( isPastDueKlarnaInquiry ) {
+		noticeText = sprintf(
+			/* translators: %s is the reason clause, eg "claiming this transaction was unauthorized" or "reporting a return". */
+			__(
+				"<strong>The resolution window for this inquiry has closed.</strong> The customer filed an inquiry through Klarna, %s. Contact the customer to work it out directly, or issue a refund. If you decide to wait, Klarna's escalation timelines can vary. If Klarna escalates this to a dispute, you'll be able to challenge it with evidence. <link>Learn more about Klarna inquiries and returns</link>",
+				'woocommerce-payments'
+			),
+			klarnaReasonClause
+		);
+		noticeElements.link = (
+			// @ts-expect-error: children is provided when interpolating the component
+			<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns" />
+		);
+	}
 	// Handle Klarna inquiries specifically — per-reason copy
-	if ( paymentMethod === 'klarna' && isInquiry( dispute.status ) ) {
+	else if ( paymentMethod === 'klarna' && isInquiry( dispute.status ) ) {
 		if ( dispute.reason === 'credit_not_processed' ) {
 			/* translators: %s is the deadline date, eg "11:59 PM on Aug 5, 2026". */
 			noticeText = sprintf(
@@ -68,36 +116,13 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 				<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns" />
 			);
 		} else {
-			const klarnaReasonClauses: Record< string, string > = {
-				fraudulent: __(
-					'claiming this transaction was unauthorized',
-					'woocommerce-payments'
-				),
-				product_not_received: __(
-					'claiming they did not receive the product',
-					'woocommerce-payments'
-				),
-				product_unacceptable: __(
-					'claiming the product was unacceptable',
-					'woocommerce-payments'
-				),
-				duplicate: __(
-					'claiming this transaction was duplicated',
-					'woocommerce-payments'
-				),
-			};
-
-			const reasonClause =
-				klarnaReasonClauses[ dispute.reason ] ??
-				__( 'regarding this transaction', 'woocommerce-payments' );
-
 			/* translators: %1$s is the reason clause, eg "claiming this transaction was unauthorized". %2$s is the deadline date. */
 			noticeText = sprintf(
 				__(
 					'<strong>The customer has filed an inquiry through Klarna, %1$s.</strong> You can resolve this by working it out with the customer directly or issuing a refund. If unresolved by %2$s, the inquiry may escalate to a dispute, which you can challenge with evidence.',
 					'woocommerce-payments'
 				),
-				reasonClause,
+				klarnaReasonClause,
 				dueByDate
 			);
 		}
@@ -167,10 +192,17 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 				);
 	}
 
+	let noticeStatus: 'info' | 'error' | 'warning' = isUrgent
+		? 'error'
+		: 'warning';
+	if ( isPastDueKlarnaInquiry ) {
+		noticeStatus = 'info';
+	}
+
 	return (
 		<InlineNotice
 			icon
-			status={ isUrgent ? 'error' : 'warning' }
+			status={ noticeStatus }
 			className="dispute-notice"
 			isDismissible={ false }
 		>

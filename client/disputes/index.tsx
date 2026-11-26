@@ -38,7 +38,7 @@ import {
 } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data/settings';
-import { isAwaitingResponse } from 'wcpay/disputes/utils';
+import { isAwaitingKlarna, isAwaitingResponse } from 'wcpay/disputes/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
@@ -267,7 +267,16 @@ export const DisputesList = (): JSX.Element => {
 			status: {
 				value: dispute.status,
 				display: clickable(
-					<DisputeStatusChip status={ dispute.status } />
+					<DisputeStatusChip
+						status={ dispute.status }
+						paymentMethod={ dispute.source }
+						isPastDue={
+							dispute.due_by !== '' &&
+							moment
+								.utc( dispute.due_by )
+								.isBefore( moment.utc() )
+						}
+					/>
 				),
 			},
 			reason: {
@@ -331,7 +340,8 @@ export const DisputesList = (): JSX.Element => {
 						) }
 						onClick={ onClickDisputeRow }
 					>
-						{ needsResponse
+						{ needsResponse &&
+						! isAwaitingKlarna( dispute.status, dispute.source )
 							? __( 'Respond', 'woocommerce-payments' )
 							: __( 'See details', 'woocommerce-payments' ) }
 					</Button>

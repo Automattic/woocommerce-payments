@@ -714,4 +714,78 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 			}
 		);
 	} );
+
+	describe( 'resolution window', () => {
+		// The base dispute is due 2023-09-09 23:59:59 UTC.
+		const beforeDueDate = new Date( '2023-09-01T00:00:00Z' );
+		const afterDueDate = new Date( '2023-09-12T00:00:00Z' );
+
+		const renderKlarnaInquiry = ( paymentMethod = 'klarna' ) =>
+			renderWithContext(
+				<DisputeAwaitingResponseDetails
+					dispute={ {
+						...getBaseDispute(),
+						reason: 'credit_not_processed' as const,
+						status: 'warning_needs_response' as const,
+						enhanced_eligibility_types: [],
+					} }
+					customer={ getBaseBillingDetails() }
+					chargeCreated={ 1693453017 }
+					onIssueRefund={ mockOnIssueRefund }
+					paymentMethod={ paymentMethod }
+					bankName={ null }
+				/>
+			);
+
+		afterEach( () => {
+			jest.useRealTimers();
+		} );
+
+		test( 'calls the section "Inquiry details" and counts down without asking for a response', () => {
+			jest.useFakeTimers().setSystemTime( beforeDueDate );
+
+			const { container } = renderKlarnaInquiry();
+
+			expect(
+				screen.getByRole( 'heading', { name: 'Inquiry details' } )
+			).toBeInTheDocument();
+			const summary = container.querySelector( '.dispute-summary-row' );
+			expect( summary?.textContent ).toContain( 'Resolve By' );
+			expect( summary?.textContent ).toContain( '(8 days left)' );
+			expect( summary?.textContent ).not.toMatch( /respond/i );
+		} );
+
+		test( 'shows the closed window without a past-due countdown', () => {
+			jest.useFakeTimers().setSystemTime( afterDueDate );
+
+			const { container } = renderKlarnaInquiry();
+
+			const summary = container.querySelector( '.dispute-summary-row' );
+			expect( summary?.textContent ).toContain(
+				'Resolution window closed'
+			);
+			expect( summary?.textContent ).toContain(
+				"(Pending Klarna's decision)"
+			);
+			expect( summary?.textContent ).not.toContain( 'Past due' );
+			expect(
+				summary?.querySelector(
+					'.dispute-steps__steps__response-date--urgent'
+				)
+			).toBeNull();
+		} );
+
+		test( 'leaves card inquiries past their deadline unchanged', () => {
+			jest.useFakeTimers().setSystemTime( afterDueDate );
+
+			const { container } = renderKlarnaInquiry( 'card' );
+
+			expect(
+				screen.getByRole( 'heading', { name: 'Dispute details' } )
+			).toBeInTheDocument();
+			const summary = container.querySelector( '.dispute-summary-row' );
+			expect( summary?.textContent ).toContain( 'Respond By' );
+			expect( summary?.textContent ).toContain( '(Past due)' );
+		} );
+	} );
 } );

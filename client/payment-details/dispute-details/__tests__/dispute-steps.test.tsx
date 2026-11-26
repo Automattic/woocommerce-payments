@@ -294,7 +294,7 @@ describe( 'NotDefendableInquirySteps', () => {
 
 		expect(
 			screen.getByText(
-				/the inquiry may escalate to a dispute after 21 days/i
+				/Klarna may escalate the inquiry to a dispute\. You can then/i
 			)
 		).toBeInTheDocument();
 	} );

@@ -19,15 +19,60 @@ import { ClickTooltip } from 'wcpay/components/tooltip';
 import DisputeDueByDate from './dispute-due-by-date';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { ExternalLink } from '@wordpress/components';
+import { isAwaitingKlarna, isKlarnaInquiryPastDue } from 'wcpay/disputes/utils';
 
 interface Props {
 	dispute: Pick<
 		Dispute,
-		'amount' | 'created' | 'currency' | 'evidence_details' | 'reason'
+		| 'amount'
+		| 'created'
+		| 'currency'
+		| 'evidence_details'
+		| 'reason'
+		| 'status'
 	>;
+	paymentMethod?: string | null;
 }
 
-const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
+const getDueByColumn = (
+	dispute: Props[ 'dispute' ],
+	paymentMethod?: string | null
+) => {
+	const dueBy = dispute.evidence_details.due_by;
+
+	if ( isKlarnaInquiryPastDue( dispute.status, paymentMethod, dueBy ) ) {
+		return {
+			title: __( 'Resolution window closed', 'woocommerce-payments' ),
+			content: (
+				<span className="dispute-steps__steps__response-date">
+					{ formatDateTimeFromTimestamp( dueBy, {
+						customFormat: 'F j, Y g:i A',
+					} ) }
+					<span className="dispute-steps__steps__response-date--pending">
+						{ __(
+							" (Pending Klarna's decision)",
+							'woocommerce-payments'
+						) }
+					</span>
+				</span>
+			),
+		};
+	}
+
+	if ( isAwaitingKlarna( dispute.status, paymentMethod ) ) {
+		return {
+			title: __( 'Resolve By', 'woocommerce-payments' ),
+			content: <DisputeDueByDate dueBy={ dueBy } isResolutionWindow />,
+		};
+	}
+
+	return {
+		title: __( 'Respond By', 'woocommerce-payments' ),
+		content: <DisputeDueByDate dueBy={ dueBy } />,
+	};
+};
+
+const DisputeSummaryRow: React.FC< Props > = ( { dispute, paymentMethod } ) => {
 	const disputeReason = formatStringValue(
 		reasons[ dispute.reason ]?.display || dispute.reason
 	);
@@ -77,12 +122,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 				</>
 			),
 		},
-		{
-			title: __( 'Respond By', 'woocommerce-payments' ),
-			content: (
-				<DisputeDueByDate dueBy={ dispute.evidence_details.due_by } />
-			),
-		},
+		getDueByColumn( dispute, paymentMethod ),
 	];
 
 	return (

@@ -133,6 +133,10 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 		return null;
 	}
 
+	// Klarna doesn't take evidence during an inquiry, so the notice mustn't ask
+	// the merchant to respond to one.
+	const isKlarna = charge?.payment_method_details?.type === 'klarna';
+
 	// A single dispute keeps its detailed, reason-specific notice. Several are
 	// consolidated into one so the order screen isn't stacked with
 	// near-identical notices — the transaction page (one click away) breaks
@@ -149,6 +153,7 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 					dispute.currency
 				) }
 				isPreDisputeInquiry={ isInquiry( dispute.status ) }
+				isKlarna={ isKlarna }
 				dueBy={ dueBy }
 				countdownDays={ Math.floor( dueBy.diff( now, 'days', true ) ) }
 				disputeDetailsUrl={ disputeDetailsUrl }
@@ -180,6 +185,7 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 		<MultipleDisputesNeedsResponseNotice
 			disputeCount={ awaitingDisputes.length }
 			isPreDisputeInquiry={ isAllInquiries }
+			isKlarna={ isKlarna }
 			formattedAmount={ formatExplicitCurrency(
 				totalAmount,
 				awaitingDisputes[ 0 ].currency
@@ -242,6 +248,7 @@ const UrgentDisputeNoticeBody = ( {
 
 const RegularDisputeNoticeBody = ( {
 	isPreDisputeInquiry,
+	isKlarna,
 	disputeReason,
 	formattedAmount,
 	dueBy,
@@ -265,8 +272,14 @@ const RegularDisputeNoticeBody = ( {
 	);
 
 	const suffix = sprintf(
-		// Translators: %1$s is the dispute due date.
-		__( 'Please respond before %1$s.', 'woocommerce-payments' ),
+		isPreDisputeInquiry && isKlarna
+			? // Translators: %1$s is the date the inquiry's resolution window closes.
+				__(
+					'If it is still unresolved by %1$s, Klarna may escalate it to a dispute.',
+					'woocommerce-payments'
+				)
+			: // Translators: %1$s is the dispute due date.
+				__( 'Please respond before %1$s.', 'woocommerce-payments' ),
 		formatDateTimeFromString( dueBy.toISOString() )
 	);
 
@@ -277,10 +290,21 @@ const RegularDisputeNoticeBody = ( {
 	);
 };
 
+// Klarna inquiries can't be responded to, so their button just opens the details.
+const getNoticeButtonLabel = ( isKlarnaInquiry, countdownDays ) => {
+	if ( isKlarnaInquiry ) {
+		return __( 'View details', 'woocommerce-payments' );
+	}
+	return countdownDays < 1
+		? __( 'Respond today', 'woocommerce-payments' )
+		: __( 'Respond now', 'woocommerce-payments' );
+};
+
 const DisputeNeedsResponseNotice = ( {
 	disputeReason,
 	formattedAmount,
 	isPreDisputeInquiry,
+	isKlarna,
 	dueBy,
 	countdownDays,
 	disputeDetailsUrl,
@@ -295,10 +319,10 @@ const DisputeNeedsResponseNotice = ( {
 
 	const isUrgent = countdownDays < 7;
 
-	const buttonLabel =
-		countdownDays < 1
-			? __( 'Respond today', 'woocommerce-payments' )
-			: __( 'Respond now', 'woocommerce-payments' );
+	const buttonLabel = getNoticeButtonLabel(
+		isPreDisputeInquiry && isKlarna,
+		countdownDays
+	);
 
 	const noticeBody = isUrgent ? (
 		<UrgentDisputeNoticeBody
@@ -311,6 +335,7 @@ const DisputeNeedsResponseNotice = ( {
 	) : (
 		<RegularDisputeNoticeBody
 			isPreDisputeInquiry={ isPreDisputeInquiry }
+			isKlarna={ isKlarna }
 			disputeReason={ disputeReason }
 			formattedAmount={ formattedAmount }
 			dueBy={ dueBy }
@@ -349,6 +374,7 @@ const DisputeNeedsResponseNotice = ( {
 const MultipleDisputesNeedsResponseNotice = ( {
 	disputeCount,
 	isPreDisputeInquiry,
+	isKlarna,
 	formattedAmount,
 	dueBy,
 	countdownDays,
@@ -363,10 +389,8 @@ const MultipleDisputesNeedsResponseNotice = ( {
 		} );
 	}, [ countdownDays, disputeCount, isPreDisputeInquiry ] );
 
-	const buttonLabel =
-		countdownDays < 1
-			? __( 'Respond today', 'woocommerce-payments' )
-			: __( 'Respond now', 'woocommerce-payments' );
+	const isKlarnaInquiry = isPreDisputeInquiry && isKlarna;
+	const buttonLabel = getNoticeButtonLabel( isKlarnaInquiry, countdownDays );
 
 	const message = isPreDisputeInquiry
 		? sprintf(
@@ -389,8 +413,14 @@ const MultipleDisputesNeedsResponseNotice = ( {
 			);
 
 	let suffix = sprintf(
-		// Translators: %1$s is the earliest dispute due date.
-		__( 'Please respond before %1$s.', 'woocommerce-payments' ),
+		isKlarnaInquiry
+			? // Translators: %1$s is the date the earliest inquiry's resolution window closes.
+				__(
+					'If they are still unresolved by %1$s, Klarna may escalate them to disputes.',
+					'woocommerce-payments'
+				)
+			: // Translators: %1$s is the earliest dispute due date.
+				__( 'Please respond before %1$s.', 'woocommerce-payments' ),
 		formatDateTimeFromString( dueBy.toISOString() )
 	);
 	if ( countdownDays < 7 ) {
