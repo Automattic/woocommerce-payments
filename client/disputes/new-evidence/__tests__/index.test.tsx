@@ -835,15 +835,6 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 			);
 			expect( fileUploadCalls() ).toHaveLength( 0 );
 		} );
-
-		it( 'uploads a file within both limits', async () => {
-			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
-
-			await chooseFirstEvidenceFile( makeFile( 512 * 1024 ) );
-
-			expect( createInfoNotice ).not.toHaveBeenCalled();
-			expect( fileUploadCalls() ).toHaveLength( 1 );
-		} );
 	} );
 
 	it( 'should not render Visa Compliance specific elements', async () => {

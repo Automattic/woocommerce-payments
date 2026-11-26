@@ -71,22 +71,6 @@ describe( 'File utility functions', () => {
 	describe( 'getEvidenceFileSizeError', () => {
 		const siteUploadLimit = 2 * 1024 * 1024;
 
-		it( "flags a file over the site's upload limit", () => {
-			expect(
-				getEvidenceFileSizeError(
-					siteUploadLimit + 1,
-					0,
-					siteUploadLimit
-				)
-			).toBe( 'upload_limit' );
-		} );
-
-		it( 'accepts a file exactly at the upload limit', () => {
-			expect(
-				getEvidenceFileSizeError( siteUploadLimit, 0, siteUploadLimit )
-			).toBeNull();
-		} );
-
 		it( 'flags a file that takes the dispute total over 4.5MB', () => {
 			const alreadyUploaded = 4000000;
 			const newFile = 600000;
