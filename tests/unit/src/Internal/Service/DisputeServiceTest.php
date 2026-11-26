@@ -87,12 +87,13 @@ class DisputeServiceTest extends WCPAY_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_dispute' )
-			->willThrowException( new API_Exception( 'boom', 'test_err', 500 ) );
+			->willThrowException( new API_Exception( 'boom', 'dispute_evidence_page_limit_exceeded', 400 ) );
 
 		$result = $this->sut->submit_evidence( 'dp_1', [ 'customer_communication' => 'file_1' ], true );
 
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_dispute_evidence_failed', $result->get_error_code() );
+		$this->assertSame( 'dispute_evidence_page_limit_exceeded', $result->get_error_data()['error_code'] );
 	}
 
 	public function test_accept_returns_wp_error_when_api_client_throws(): void {

@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace WCPay\Internal\Service;
 
 use WC_Payments_API_Client;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * Dispute write service shared by the dispute abilities. Thin typed wrapper
@@ -67,7 +68,12 @@ class DisputeService {
 				sprintf( 'Dispute evidence submission failed for %s: %s', $dispute_id, $e->getMessage() ),
 				[ 'source' => 'woopayments-abilities' ]
 			);
-			return new \WP_Error( 'wcpay_dispute_evidence_failed', $e->getMessage(), [ 'exception' => $e ] );
+			$data = [ 'exception' => $e ];
+			// Lets agents tell failures apart, e.g. Stripe's dispute_evidence_page_limit_exceeded.
+			if ( $e instanceof API_Exception ) {
+				$data['error_code'] = $e->get_error_code();
+			}
+			return new \WP_Error( 'wcpay_dispute_evidence_failed', $e->getMessage(), $data );
 		}
 	}
 

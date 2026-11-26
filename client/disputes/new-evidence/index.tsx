@@ -584,8 +584,25 @@ export default ( { query }: { query: { id: string } } ) => {
 			submit
 				? 'wcpay_dispute_submit_evidence_failed'
 				: 'wcpay_dispute_save_evidence_failed',
-			getDisputeTracksProperties()
+			{
+				...getDisputeTracksProperties(),
+				error_code: err?.code,
+			}
 		);
+
+		if ( err?.code === 'dispute_evidence_page_limit_exceeded' ) {
+			createErrorNotice(
+				sprintf(
+					/* translators: %s: Stripe's error message, which includes the page limit and estimated page counts. */
+					__(
+						"Your evidence is over the card network's page limit. Shorten the cover letter or remove pages from your files, then try again. (%s)",
+						'woocommerce-payments'
+					),
+					getErrorMessage( err )
+				)
+			);
+			return;
+		}
 
 		const message = submit
 			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
@@ -593,7 +610,10 @@ export default ( { query }: { query: { id: string } } ) => {
 		createErrorNotice( sprintf( message, getErrorMessage( err ) ) );
 	};
 
-	const doSave = async ( submit: boolean, notify = true ) => {
+	const doSave = async (
+		submit: boolean,
+		notify = true
+	): Promise< boolean > => {
 		// Prevent submit if upload is in progress
 		if ( isUploadingEvidence() ) {
 			createInfoNotice(
@@ -602,7 +622,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					'woocommerce-payments'
 				)
 			);
-			return;
+			return false;
 		}
 
 		try {
@@ -736,8 +756,10 @@ export default ( { query }: { query: { id: string } } ) => {
 			if ( submit ) {
 				setEvidence( {} );
 			}
+			return true;
 		} catch ( err ) {
 			handleSaveError( err, submit );
+			return false;
 		}
 	};
 
@@ -862,7 +884,11 @@ export default ( { query }: { query: { id: string } } ) => {
 	const handleStepChange = async ( newStep: number ) => {
 		// Only save if not in readOnly mode
 		if ( ! readOnly ) {
-			await doSave( false, false );
+			const saved = await doSave( false, false );
+			// Going back still works after a failed save, so merchants can reach their files to trim them.
+			if ( ! saved && newStep > currentStep ) {
+				return;
+			}
 		}
 		// Update step
 		setCurrentStep( newStep );
