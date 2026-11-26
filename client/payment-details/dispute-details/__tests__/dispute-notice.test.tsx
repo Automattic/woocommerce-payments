@@ -244,6 +244,17 @@ describe( 'DisputeNotice - Visa Compliance', () => {
 } );
 
 describe( 'DisputeNotice - Klarna Inquiries', () => {
+	// Before the base dispute's due date, 2023-09-09 23:59:59 UTC.
+	const beforeDueDate = new Date( '2023-09-01T00:00:00Z' );
+
+	beforeEach( () => {
+		jest.useFakeTimers().setSystemTime( beforeDueDate );
+	} );
+
+	afterEach( () => {
+		jest.useRealTimers();
+	} );
+
 	test( 'renders return-specific banner for credit_not_processed Klarna inquiry', () => {
 		const dispute: Dispute = {
 			...getBaseDispute(),
@@ -355,5 +366,69 @@ describe( 'DisputeNotice - Klarna Inquiries', () => {
 		expect( notice?.textContent ).toMatch(
 			/11:59 PM on September 9, 2023/i
 		);
+	} );
+} );
+
+describe( 'DisputeNotice - Klarna inquiry past its resolution window', () => {
+	// After the base dispute's due date, 2023-09-09 23:59:59 UTC.
+	const afterDueDate = new Date( '2023-09-12T00:00:00Z' );
+
+	beforeEach( () => {
+		jest.useFakeTimers().setSystemTime( afterDueDate );
+	} );
+
+	afterEach( () => {
+		jest.useRealTimers();
+	} );
+
+	const renderNotice = (
+		overrides: Partial< Dispute >,
+		paymentMethod: string
+	) =>
+		render(
+			<DisputeNotice
+				dispute={ {
+					...getBaseDispute(),
+					status: 'warning_needs_response',
+					...overrides,
+				} }
+				isUrgent={ true }
+				paymentMethod={ paymentMethod }
+				bankName={ null }
+			/>
+		).container.querySelector( '.dispute-notice' );
+
+	test( 'says the window has closed, in an info notice, without a deadline', () => {
+		const notice = renderNotice(
+			{ reason: 'credit_not_processed' },
+			'klarna'
+		);
+
+		expect( notice ).toHaveClass( 'is-info' );
+		expect( notice?.textContent ).toContain(
+			'The resolution window for this inquiry has closed. The customer filed an inquiry through Klarna, reporting a return.'
+		);
+		expect( notice?.textContent ).not.toMatch( /respond/i );
+		expect( notice?.textContent ).not.toContain(
+			'11:59 PM on September 9, 2023'
+		);
+	} );
+
+	test( 'keeps the reason for other inquiry reasons', () => {
+		const notice = renderNotice(
+			{ reason: 'product_not_received' },
+			'klarna'
+		);
+
+		expect( notice?.textContent ).toContain(
+			'The customer filed an inquiry through Klarna, claiming they did not receive the product.'
+		);
+	} );
+
+	test( 'leaves card inquiries past their deadline unchanged', () => {
+		const notice = renderNotice( { reason: 'fraudulent' }, 'card' );
+
+		expect( notice ).toHaveClass( 'is-error' );
+		expect( notice?.textContent ).not.toMatch( /resolution window/i );
 	} );
 } );

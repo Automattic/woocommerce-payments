@@ -34,4 +34,45 @@ describe( 'DisputeStatusChip', () => {
 	test.each( statuses )( 'renders %s status', ( status ) => {
 		expect( renderDisputeStatus( status ) ).toMatchSnapshot();
 	} );
+
+	describe( 'Klarna inquiries', () => {
+		test( 'say they are awaiting Klarna instead of asking for a response', () => {
+			const { container } = render(
+				<DisputeStatusChip
+					status="warning_needs_response"
+					paymentMethod="klarna"
+				/>
+			);
+
+			expect( container.textContent ).toBe( 'Inquiry: Awaiting Klarna' );
+			expect( container.querySelector( '.chip-alert' ) ).not.toBeNull();
+		} );
+
+		test( 'drop the urgent styling once the resolution window has passed', () => {
+			const { container } = render(
+				<DisputeStatusChip
+					status="warning_needs_response"
+					paymentMethod="klarna"
+					isPastDue
+				/>
+			);
+
+			expect( container.textContent ).toBe( 'Inquiry: Awaiting Klarna' );
+			expect( container.querySelector( '.chip-alert' ) ).toBeNull();
+			expect( container.querySelector( '.chip-primary' ) ).not.toBeNull();
+		} );
+
+		test( 'leave card inquiries unchanged', () => {
+			const { container } = render(
+				<DisputeStatusChip
+					status="warning_needs_response"
+					paymentMethod="card"
+					isPastDue
+				/>
+			);
+
+			expect( container.textContent ).toBe( 'Inquiry: Response needed' );
+			expect( container.querySelector( '.chip-alert' ) ).not.toBeNull();
+		} );
+	} );
 } );

@@ -318,7 +318,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		<div className="transaction-details-dispute-details-wrapper">
 			<HorizontalRule />
 			<h2 className="transaction-details-dispute-details-title">
-				{ __( 'Dispute details', 'woocommerce-payments' ) }
+				{ paymentMethod === 'klarna' && isInquiryStatus
+					? __( 'Inquiry details', 'woocommerce-payments' )
+					: __( 'Dispute details', 'woocommerce-payments' ) }
 			</h2>
 			<div className="transaction-details-dispute-details-body">
 				{ /* No matter what the countdown days is, we should show the urgent the urgent notice */ }
@@ -337,7 +339,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					</InlineNotice>
 				) }
 
-				<DisputeSummaryRow dispute={ dispute } />
+				<DisputeSummaryRow
+					dispute={ dispute }
+					paymentMethod={ paymentMethod }
+				/>
 
 				{ steps }
 

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 import { useUserPreferences } from '@woocommerce/data';
 import userEvent from '@testing-library/user-event';
@@ -230,6 +230,37 @@ describe( 'Disputes list', () => {
 
 		const { container: list } = render( <DisputesList /> );
 		expect( list ).toMatchSnapshot();
+	} );
+
+	test( 'shows a Klarna inquiry past its window as awaiting Klarna, with no response asked for', () => {
+		mockUseDisputes.mockReturnValue( {
+			isLoading: false,
+			disputes: [
+				{
+					...mockDisputes[ 0 ],
+					reason: 'credit_not_processed' as DisputeReason,
+					source: 'klarna',
+					status: 'warning_needs_response' as DisputeStatus,
+					// Before the mocked "now" of 2019-11-07.
+					due_by: '2019-11-06 23:59:59',
+				},
+			],
+		} );
+		mockUseDisputesSummary.mockReturnValue( {
+			isLoading: false,
+			disputesSummary: { count: 1 },
+		} );
+
+		render( <DisputesList /> );
+
+		const chip = screen.getByText( 'Inquiry: Awaiting Klarna' );
+		expect( chip ).toHaveClass( 'chip-primary' );
+		expect(
+			screen.getByRole( 'link', { name: 'See details' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'link', { name: 'Respond' } )
+		).not.toBeInTheDocument();
 	} );
 
 	test( 'renders columns hidden as per user preferences', () => {

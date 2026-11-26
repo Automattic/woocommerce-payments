@@ -55,6 +55,7 @@ import DisputeStatusChip from 'components/dispute-status-chip';
 import {
 	getDisputeFeeAmount,
 	isAwaitingResponse,
+	isKlarnaInquiryPastDue,
 	isRefundable,
 } from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data/authorizations';
@@ -520,6 +521,15 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										className="payment-details-summary__status"
 										status={ primaryDispute.status }
 										prefixDisputeType={ true }
+										paymentMethod={
+											charge.payment_method_details?.type
+										}
+										isPastDue={ isKlarnaInquiryPastDue(
+											primaryDispute.status,
+											charge.payment_method_details?.type,
+											primaryDispute.evidence_details
+												?.due_by
+										) }
 									/>
 								) : (
 									<PaymentStatusChip

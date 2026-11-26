@@ -601,4 +601,61 @@ describe( 'DisputedOrderNoticeHandler', () => {
 			'charge_refunded'
 		);
 	} );
+
+	describe( 'Klarna inquiries', () => {
+		const klarnaInquiryCharge = {
+			payment_method_details: { type: 'klarna' },
+			dispute: {
+				...mockCharge.dispute,
+				status: 'warning_needs_response',
+				reason: 'credit_not_processed',
+			},
+		};
+
+		test.each( [
+			[ 'urgent', '2023-10-28T00:00:00Z' ],
+			[ 'regular', '2023-10-20T00:00:00Z' ],
+		] )(
+			'the %s notice links to the details without asking for a response',
+			( _, now ) => {
+				jest.useFakeTimers();
+				jest.setSystemTime( new Date( now ) );
+				useCharge.mockReturnValue( { data: klarnaInquiryCharge } );
+
+				const { container } = render(
+					<DisputedOrderNoticeHandler
+						chargeId="ch_123"
+						onDisableOrderRefund={ jest.fn() }
+					/>
+				);
+
+				expect( screen.getByRole( 'button' ) ).toHaveTextContent(
+					'View details'
+				);
+				expect( container.textContent ).not.toMatch( /respond/i );
+			}
+		);
+
+		test( 'card inquiries still ask for a response', () => {
+			jest.useFakeTimers();
+			jest.setSystemTime( new Date( '2023-10-20T00:00:00Z' ) );
+			useCharge.mockReturnValue( {
+				data: {
+					...klarnaInquiryCharge,
+					payment_method_details: { type: 'card' },
+				},
+			} );
+
+			render(
+				<DisputedOrderNoticeHandler
+					chargeId="ch_123"
+					onDisableOrderRefund={ jest.fn() }
+				/>
+			);
+
+			expect( screen.getByRole( 'button' ) ).toHaveTextContent(
+				'Respond now'
+			);
+		} );
+	} );
 } );

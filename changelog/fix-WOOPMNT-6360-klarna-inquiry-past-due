@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show Klarna inquiries as awaiting Klarna, without a past-due countdown or a request to respond, since Klarna doesn't accept evidence during an inquiry.

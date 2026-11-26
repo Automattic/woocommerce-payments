@@ -519,7 +519,7 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 											'woocommerce-payments'
 										) }
 										description={ __(
-											"If the returned item(s) aren't received, the inquiry may escalate to a dispute after 21 days. You can then submit evidence and challenge it (a dispute fee applies), or accept the dispute and forfeit the funds.",
+											"If the returned item(s) aren't received, Klarna may escalate the inquiry to a dispute. You can then submit evidence and challenge it (a dispute fee applies), or accept the dispute and forfeit the funds.",
 											'woocommerce-payments'
 										) }
 										action={

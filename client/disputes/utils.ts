@@ -79,6 +79,36 @@ export const isInquiry = ( status: DisputeStatus ): boolean => {
 	return status.startsWith( 'warning' );
 };
 
+/**
+ * True for a Klarna inquiry that is waiting on Klarna. Klarna doesn't accept
+ * evidence during an inquiry, so there's nothing for the merchant to respond to.
+ *
+ * @param {string} status        The dispute status.
+ * @param {string} paymentMethod The payment method type, eg `klarna`.
+ */
+export const isAwaitingKlarna = (
+	status: DisputeStatus | string,
+	paymentMethod?: string | null
+): boolean => paymentMethod === 'klarna' && status === 'warning_needs_response';
+
+/**
+ * True once a Klarna inquiry has passed its resolution window without Klarna
+ * deciding. Klarna can take days to escalate after this, and the merchant's
+ * options don't change, so the date stops being a deadline.
+ *
+ * @param {string} status        The dispute status.
+ * @param {string} paymentMethod The payment method type, eg `klarna`.
+ * @param {number} dueBy         The end of the resolution window, as a Unix timestamp.
+ */
+export const isKlarnaInquiryPastDue = (
+	status: DisputeStatus | string,
+	paymentMethod: string | null | undefined,
+	dueBy: number | null | undefined
+): boolean =>
+	isAwaitingKlarna( status, paymentMethod ) &&
+	!! dueBy &&
+	moment().utc().isAfter( moment.unix( dueBy ).utc() );
+
 export const isRefundable = ( status: DisputeStatus ): boolean => {
 	// Refundable dispute statuses are one of `warning_needs_response`, `warning_under_review`, `warning_closed` or `won`.
 	return isInquiry( status ) || status === 'won';
