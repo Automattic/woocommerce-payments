@@ -1,7 +1,12 @@
 /**
  * External dependencies
  */
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import {
+	test,
+	expect,
+	getAuthState,
+	recreateCustomer,
+} from '../../../fixtures/auth';
 import type { BrowserContext, Page } from '@playwright/test';
 
 // QIT environments and Stripe/3DS flows can be slow; increase the per-test timeout
@@ -96,7 +101,11 @@ test.describe( 'Shopper can save and delete cards', { tag: '@shopper' }, () => {
 
 	const cardTimingHelper = makeCardTimingHelper();
 
+	// A retry recreates the customer, so it must rerun the tests that saved the card.
+	test.describe.configure( { mode: 'serial' } );
+
 	test.beforeAll( async ( { browser } ) => {
+		await recreateCustomer();
 		shopperContext = await browser.newContext( {
 			storageState: await getAuthState( browser, 'customer' ),
 		} );

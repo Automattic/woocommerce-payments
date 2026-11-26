@@ -1169,7 +1169,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * WooPay pays the order through the same Store API endpoint, sending the order's addresses as
 	 * the Store API returned them. On Pay for Order the shopper can't change them in WooPay, and
-	 * nothing fills an empty email, phone or shipping last name, so the order must already have them.
+	 * nothing fills an empty phone or shipping last name, so the order must already have them.
+	 * An empty email is fine: WooPay gives the order the shopper's.
 	 *
 	 * @return bool
 	 */
@@ -1253,12 +1254,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				}
 
 				$address = (array) $schema->sanitize_callback( $address, $request, $param );
-
-				// The Store API requires a valid billing email before it takes the payment. Only a
-				// wallet provides one when the order has none.
-				if ( ! $wallet_fills_details && 'billing' === $type && ! is_email( (string) ( $address['email'] ?? '' ) ) ) {
-					return false;
-				}
 
 				if ( $wallet_provides_phone && '' === trim( (string) ( $address['phone'] ?? '' ) ) ) {
 					// Stands in for the wallet's phone. It must pass phone validation, because address
