@@ -19,11 +19,11 @@ describe( 'getSettingsRedirectFlags', () => {
 		expect(
 			getSettingsRedirectFlags( {
 				page: 'wc-settings',
-				anchor: '#payment-method-klarna',
-				'woopayments-flag-klarna-rates': '1',
+				anchor: '#payment-method-card',
+				'woopayments-flag-rates-update': '1',
 				'woopayments-flag-campaign': 'spring_2026',
 			} )
-		).toEqual( { 'klarna-rates': '1', campaign: 'spring_2026' } );
+		).toEqual( { 'rates-update': '1', campaign: 'spring_2026' } );
 	} );
 
 	it( 'ignores an empty flag name and non-string values', () => {
@@ -37,9 +37,9 @@ describe( 'getSettingsRedirectFlags', () => {
 
 	it( 'reads the current page query by default', () => {
 		mockGetQuery.mockReturnValue( {
-			'woopayments-flag-klarna-rates': '1',
+			'woopayments-flag-rates-update': '1',
 		} as ReturnType< typeof getQuery > );
 
-		expect( getSettingsRedirectFlags() ).toEqual( { 'klarna-rates': '1' } );
+		expect( getSettingsRedirectFlags() ).toEqual( { 'rates-update': '1' } );
 	} );
 } );

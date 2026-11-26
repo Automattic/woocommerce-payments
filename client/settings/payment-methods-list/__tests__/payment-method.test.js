@@ -79,12 +79,12 @@ describe( 'PaymentMethod', () => {
 
 	it( 'exposes a per-method anchor for settings deep links', () => {
 		const { container } = render(
-			<PaymentMethod id="klarna" description="Bar" label="Klarna" />
+			<PaymentMethod id="card" description="Bar" label="Card" />
 		);
 
 		expect(
-			container.querySelector( '#payment-method-klarna' )
-		).toContainElement( screen.getByLabelText( 'Klarna' ) );
+			container.querySelector( '#payment-method-card' )
+		).toContainElement( screen.getByLabelText( 'Card' ) );
 	} );
 
 	it( 'calls onCheckClick when clicking its checkbox', async () => {

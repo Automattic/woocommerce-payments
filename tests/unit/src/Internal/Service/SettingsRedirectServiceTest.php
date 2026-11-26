@@ -17,7 +17,7 @@ use WCPAY_UnitTestCase;
  * SettingsRedirectService unit tests.
  */
 class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
-	const REGISTERED_METHOD   = 'klarna';
+	const REGISTERED_METHOD   = 'card';
 	const UNREGISTERED_METHOD = 'not_a_method';
 
 	/**
@@ -51,7 +51,6 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 			->with( WC_Payments::class, 'get_payment_gateway_map' )
 			->willReturn(
 				[
-					'card'                  => new \stdClass(),
 					self::REGISTERED_METHOD => new \stdClass(),
 				]
 			);
@@ -96,14 +95,14 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 		$_GET = [
 			SettingsRedirectService::REDIRECT_QUERY_ARG => '',
 			'method'                                    => self::REGISTERED_METHOD,
-			'klarna-rates'                              => '',
+			'rates-update'                              => '',
 			'campaign'                                  => 'spring 2026',
 		];
 
 		$this->run_redirect();
 
 		$this->assertSame(
-			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&anchor=%23payment-method-klarna&woopayments-flag-klarna-rates=1&woopayments-flag-campaign=spring%202026' ),
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&anchor=%23payment-method-card&woopayments-flag-rates-update=1&woopayments-flag-campaign=spring%202026' ),
 			$this->redirect_location
 		);
 	}
