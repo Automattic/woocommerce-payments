@@ -857,7 +857,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		// PHP sends no file at all when the request is over post_max_size.
 		$file_error = empty( $file_params ) ? UPLOAD_ERR_INI_SIZE : $file_params['file']['error'];
 
-		if ( UPLOAD_ERR_INI_SIZE === $file_error || UPLOAD_ERR_FORM_SIZE === $file_error ) {
+		if ( UPLOAD_ERR_INI_SIZE === $file_error ) {
 			throw new API_Exception(
 				sprintf(
 					/* translators: %s: the site's maximum upload size, such as "2 MB". */
