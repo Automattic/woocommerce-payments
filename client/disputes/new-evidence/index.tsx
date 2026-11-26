@@ -39,7 +39,11 @@ import { useGetSettings, useSettings } from 'wcpay/data/settings';
 // which now lives in the payment-intents store.
 import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
 import CustomerDetails from './customer-details';
-import { getErrorMessage } from './utils';
+import {
+	formatFileSize,
+	getErrorMessage,
+	getEvidenceFileSizeError,
+} from './utils';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
@@ -944,13 +948,30 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- File upload logic ---
 	const fileSizeExceeded = ( latestFileSize: number ) => {
-		const fileSizeLimitInBytes = 4500000;
-		const totalFileSize =
+		const maxUploadSize = wcpaySettings?.maxUploadSize;
+		const sizeError = getEvidenceFileSizeError(
+			latestFileSize,
 			Object.values( fileSizes ).reduce(
 				( acc, fileSize ) => acc + fileSize,
 				0
-			) + latestFileSize;
-		if ( fileSizeLimitInBytes < totalFileSize ) {
+			),
+			maxUploadSize
+		);
+		if ( sizeError === 'upload_limit' && maxUploadSize ) {
+			createInfoNotice(
+				sprintf(
+					/* translators: %s: the site's maximum upload size, e.g. 2MB */
+					__(
+						"This file is larger than your site's upload limit of %s. Try a smaller file, " +
+							'or ask your hosting provider to raise the limit.',
+						'woocommerce-payments'
+					),
+					formatFileSize( maxUploadSize )
+				)
+			);
+			return true;
+		}
+		if ( sizeError === 'dispute_total' ) {
 			createInfoNotice(
 				__(
 					"The files you've attached to this dispute as evidence will exceed the limit for a " +

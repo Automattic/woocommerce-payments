@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { formatFileNameWithSize } from '../utils';
+import { formatFileNameWithSize, getEvidenceFileSizeError } from '../utils';
 
 describe( 'File utility functions', () => {
 	describe( 'formatFileNameWithSize', () => {
@@ -65,6 +65,46 @@ describe( 'File utility functions', () => {
 			const result = formatFileNameWithSize( 'empty_file.txt', 0 );
 			expect( result.namePart ).toBe( 'empty_file' );
 			expect( result.extensionSizePart ).toBe( '.txt (0KB)' );
+		} );
+	} );
+
+	describe( 'getEvidenceFileSizeError', () => {
+		const siteUploadLimit = 2 * 1024 * 1024;
+
+		it( "flags a file over the site's upload limit", () => {
+			expect(
+				getEvidenceFileSizeError(
+					siteUploadLimit + 1,
+					0,
+					siteUploadLimit
+				)
+			).toBe( 'upload_limit' );
+		} );
+
+		it( 'accepts a file exactly at the upload limit', () => {
+			expect(
+				getEvidenceFileSizeError( siteUploadLimit, 0, siteUploadLimit )
+			).toBeNull();
+		} );
+
+		it( 'flags a file that takes the dispute total over 4.5MB', () => {
+			const alreadyUploaded = 4000000;
+			const newFile = 600000;
+			expect(
+				getEvidenceFileSizeError(
+					newFile,
+					alreadyUploaded,
+					siteUploadLimit
+				)
+			).toBe( 'dispute_total' );
+		} );
+
+		it( 'only checks the dispute total when the site reports no upload limit', () => {
+			const largeFile = 3000000;
+			expect( getEvidenceFileSizeError( largeFile, 0, 0 ) ).toBeNull();
+			expect(
+				getEvidenceFileSizeError( largeFile, 0, undefined )
+			).toBeNull();
 		} );
 	} );
 } );

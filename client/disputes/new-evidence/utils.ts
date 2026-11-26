@@ -28,6 +28,45 @@ export const getErrorMessage = ( err: unknown ): string => {
 };
 
 /**
+ * Formats a size in bytes as KB or MB, with one decimal place when needed.
+ */
+export const formatFileSize = ( bytes: number ): string => {
+	const mb = bytes / ( 1024 * 1024 );
+	const kb = bytes / 1024;
+
+	if ( mb >= 1 ) {
+		return mb % 1 === 0 ? `${ mb }MB` : `${ mb.toFixed( 1 ) }MB`;
+	}
+	return kb % 1 === 0 ? `${ kb }KB` : `${ kb.toFixed( 1 ) }KB`;
+};
+
+/**
+ * The most evidence, in bytes, that a dispute's files may add up to.
+ */
+export const evidenceTotalSizeLimit = 4500000;
+
+/**
+ * Says which limit, if any, a new evidence file would break.
+ *
+ * Each file is uploaded to the store before it reaches Stripe, so it must also
+ * fit the store's own upload limit. A limit of 0 or less means PHP reported
+ * none, so only the dispute total applies.
+ */
+export const getEvidenceFileSizeError = (
+	fileSize: number,
+	uploadedTotal: number,
+	maxUploadSize?: number
+): 'upload_limit' | 'dispute_total' | null => {
+	if ( maxUploadSize && maxUploadSize > 0 && fileSize > maxUploadSize ) {
+		return 'upload_limit';
+	}
+	if ( uploadedTotal + fileSize > evidenceTotalSizeLimit ) {
+		return 'dispute_total';
+	}
+	return null;
+};
+
+/**
  * Formats a file name with size, returning separate parts for CSS-based truncation.
  *
  * @param fileName - The original file name
@@ -44,19 +83,6 @@ export const formatFileNameWithSize = (
 		lastDotIndex !== -1 ? fileName.substring( lastDotIndex ) : '';
 	const nameWithoutExtension =
 		lastDotIndex !== -1 ? fileName.substring( 0, lastDotIndex ) : fileName;
-
-	// Format file size
-	const formatFileSize = ( bytes: number ): string => {
-		const mb = bytes / ( 1024 * 1024 );
-		const kb = bytes / 1024;
-
-		if ( mb >= 1 ) {
-			// Show decimal only if not a whole number
-			return mb % 1 === 0 ? `${ mb }MB` : `${ mb.toFixed( 1 ) }MB`;
-		}
-		// Show decimal only if not a whole number
-		return kb % 1 === 0 ? `${ kb }KB` : `${ kb.toFixed( 1 ) }KB`;
-	};
 
 	const formattedSize = formatFileSize( fileSize );
 
