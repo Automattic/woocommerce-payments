@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+REST date filters that send user_timezone on the transactions and reports endpoints now resolve to the store's day bounds on every date, including around the store's daylight saving changes.
