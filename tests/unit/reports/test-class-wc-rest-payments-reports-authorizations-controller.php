@@ -123,6 +123,60 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 		$this->controller->get_authorizations( $request );
 	}
 
+	public function test_get_authorizations_date_between_reads_the_range_in_the_store_timezone() {
+		update_option( 'timezone_string', 'America/Santiago' );
+
+		// Santiago repeats the hour before midnight on 2026-04-04; the day ends after the second one.
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'date_between', [ '2026-04-03 22:00:00', '2026-04-04 21:59:59' ] );
+		$request->set_param( 'user_timezone', '+02:00' );
+
+		$mock_request = $this->mock_wcpay_request( List_Authorizations::class );
+		$mock_request->expects( $this->once() )
+			->method( 'set_filters' )
+			->with(
+				$this->callback(
+					function ( $filters ): bool {
+						$this->assertSame( strtotime( '2026-04-04 03:00:00 UTC' ), $filters['from_date'] );
+						$this->assertSame( strtotime( '2026-04-05 03:59:59 UTC' ), $filters['to_date'] );
+						return true;
+					}
+				)
+			);
+
+		try {
+			$this->controller->get_authorizations( $request );
+		} finally {
+			update_option( 'timezone_string', '' );
+		}
+	}
+
+	public function test_get_authorizations_date_before_reads_the_end_of_the_store_day() {
+		update_option( 'timezone_string', 'America/Santiago' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'date_before', '2026-04-04 21:59:59' );
+		$request->set_param( 'user_timezone', '+02:00' );
+
+		$mock_request = $this->mock_wcpay_request( List_Authorizations::class );
+		$mock_request->expects( $this->once() )
+			->method( 'set_filters' )
+			->with(
+				$this->callback(
+					function ( $filters ): bool {
+						$this->assertSame( strtotime( '2026-04-05 03:59:59 UTC' ), $filters['from_date'] );
+						return true;
+					}
+				)
+			);
+
+		try {
+			$this->controller->get_authorizations( $request );
+		} finally {
+			update_option( 'timezone_string', '' );
+		}
+	}
+
 	public function test_get_authorization_success() {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_param( 'id', 'ch_123' );

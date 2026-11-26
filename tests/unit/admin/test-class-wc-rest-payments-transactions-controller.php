@@ -159,4 +159,36 @@ class WC_REST_Payments_Transactions_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'invalid_fraud_outcome_status', $response->get_error_code() );
 		$this->assertSame( 400, $response->get_error_data()['status'] );
 	}
+
+	/**
+	 * Date filters from REST callers that send `user_timezone` resolve to the store's day bounds.
+	 */
+	public function test_transactions_summary_reads_date_filters_in_the_store_timezone() {
+		update_option( 'timezone_string', 'America/Santiago' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_transactions_summary' )
+			->with(
+				[
+					'date_before'  => '2026-04-05 03:59:59',
+					'date_after'   => '2026-04-04 03:00:00',
+					'date_between' => [ '2026-04-04 03:00:00', '2026-04-05 03:59:59' ],
+				],
+				null
+			)
+			->willReturn( [] );
+
+		// Santiago repeats the hour before midnight on 2026-04-04; the day ends after the second one.
+		$request = new WP_REST_Request( 'GET', $this->rest_base . '/summary' );
+		$request->set_param( 'date_before', '2026-04-04 21:59:59' );
+		$request->set_param( 'date_after', '2026-04-03 22:00:00' );
+		$request->set_param( 'date_between', [ '2026-04-03 22:00:00', '2026-04-04 21:59:59' ] );
+		$request->set_param( 'user_timezone', '+02:00' );
+
+		try {
+			( new WC_REST_Payments_Transactions_Controller( $this->mock_api_client ) )->get_transactions_summary( $request );
+		} finally {
+			update_option( 'timezone_string', '' );
+		}
+	}
 }

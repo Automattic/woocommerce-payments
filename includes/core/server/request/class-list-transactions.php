@@ -67,18 +67,13 @@ class List_Transactions extends Paginated {
 		$date_between_filter = $request->get_param( 'date_between' );
 		$user_timezone       = $request->get_param( 'user_timezone' );
 
-		if ( ! is_null( $date_between_filter ) ) {
-			$date_between_filter = array_map(
-				function ( $transaction_date ) use ( $user_timezone ) {
-					return Request_Utils::format_transaction_date_by_timezone( $transaction_date, $user_timezone );
-				},
-				$date_between_filter
-			);
-		}
+		$date_between_filter = is_array( $date_between_filter )
+			? Request_Utils::format_date_range_by_timezone( $date_between_filter, $user_timezone )
+			: null;
 
 		$filters = [
 			'match'                    => $request->get_param( 'match' ),
-			'date_before'              => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ),
+			'date_before'              => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone, true ),
 			'date_after'               => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
 			'date_between'             => $date_between_filter,
 			'type_is'                  => $request->get_param( 'type_is' ),

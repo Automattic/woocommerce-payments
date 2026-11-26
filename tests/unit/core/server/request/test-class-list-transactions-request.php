@@ -149,6 +149,37 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WC_Payments_API_Client::TRANSACTIONS_API, $request->get_api() );
 	}
 
+	public function test_from_rest_request_reads_date_filters_in_the_store_timezone() {
+		update_option( 'timezone_string', 'America/Santiago' );
+
+		// Santiago repeats the hour before midnight on 2026-04-04; the day ends after the second one.
+		$rest_request = new WP_REST_Request( 'GET' );
+		$rest_request->set_param( 'date_before', '2026-04-04 21:59:59' );
+		$rest_request->set_param( 'date_after', '2026-04-03 22:00:00' );
+		$rest_request->set_param( 'date_between', [ '2026-04-03 22:00:00', '2026-04-04 21:59:59' ] );
+		$rest_request->set_param( 'user_timezone', '+02:00' );
+
+		try {
+			$params = List_Transactions::from_rest_request( $rest_request )->get_params();
+		} finally {
+			update_option( 'timezone_string', '' );
+		}
+
+		$this->assertSame( '2026-04-05 03:59:59', $params['date_before'] );
+		$this->assertSame( '2026-04-04 03:00:00', $params['date_after'] );
+		$this->assertSame( [ '2026-04-04 03:00:00', '2026-04-05 03:59:59' ], $params['date_between'] );
+	}
+
+	public function test_from_rest_request_drops_a_date_between_that_is_not_a_list() {
+		$rest_request = new WP_REST_Request( 'GET' );
+		$rest_request->set_param( 'date_between', '2026-04-03 22:00:00' );
+		$rest_request->set_param( 'user_timezone', '+02:00' );
+
+		$params = List_Transactions::from_rest_request( $rest_request )->get_params();
+
+		$this->assertArrayNotHasKey( 'date_between', $params );
+	}
+
 	public function test_format_response_adds_early_fraud_warning_from_order_meta() {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_charge_id', 'ch_with_efw' );
