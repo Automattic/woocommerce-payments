@@ -27,6 +27,11 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	private $sut;
 
 	/**
+	 * @var HooksProxy|MockObject
+	 */
+	private $hooks_proxy;
+
+	/**
 	 * Folder that stands in for `dist/`.
 	 *
 	 * @var string
@@ -41,6 +46,13 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	private $languages_dir;
 
 	/**
+	 * Part of every chunk name, so the files of other runs and real packs never match.
+	 *
+	 * @var string
+	 */
+	private $run_id;
+
+	/**
 	 * Files this test created in the shared WordPress languages folder.
 	 *
 	 * @var string[]
@@ -53,13 +65,15 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$base                = trailingslashit( get_temp_dir() ) . 'wcpay-chunk-translations-' . uniqid();
+		$this->run_id        = uniqid( 'run' );
+		$base                = trailingslashit( get_temp_dir() ) . 'wcpay-chunk-translations-' . $this->run_id;
 		$this->dist_dir      = $base . '/dist';
 		$this->languages_dir = $base . '/languages';
 		mkdir( $this->dist_dir, 0777, true );
 		mkdir( $this->languages_dir, 0777, true );
 
-		$this->sut = new ChunkTranslations( $this->createMock( HooksProxy::class ), $this->dist_dir );
+		$this->hooks_proxy = $this->createMock( HooksProxy::class );
+		$this->sut         = new ChunkTranslations( $this->hooks_proxy, $this->dist_dir );
 	}
 
 	/**
@@ -77,33 +91,32 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_init_hooks_registers_both_filters() {
-		/**
-		 * @var HooksProxy|MockObject $hooks_proxy
-		 */
-		$hooks_proxy = $this->createMock( HooksProxy::class );
-		$hooks_proxy->expects( $this->exactly( 2 ) )
+		$this->hooks_proxy->expects( $this->exactly( 2 ) )
 			->method( 'add_filter' )
 			->withConsecutive(
 				[ 'load_script_translations', [ $this->sut, 'merge_chunk_translations' ], 10, 4 ],
 				[ 'pre_load_script_translations', [ $this->sut, 'load_chunk_translations_only' ], 10, 4 ]
 			);
 
-		( new ChunkTranslations( $hooks_proxy, $this->dist_dir ) )->init_hooks();
+		$this->sut->init_hooks();
 	}
 
 	public function test_merge_adds_only_the_chunks_the_entry_loads() {
+		$payouts  = $this->chunk( 'payouts' );
+		$capital  = $this->chunk( 'capital' );
+		$settings = $this->chunk( 'settings' );
 		$this->write_chunk_map(
 			[
-				'chunks/wcpay-payouts.js'  => [ 'index.js' ],
-				'chunks/wcpay-capital.js'  => [ 'index.js', 'settings.js' ],
-				'chunks/wcpay-settings.js' => [ 'settings.js' ],
+				$payouts  => [ 'index.js' ],
+				$capital  => [ 'index.js', 'settings.js' ],
+				$settings => [ 'settings.js' ],
 			]
 		);
-		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ] );
-		$this->write_chunk( 'chunks/wcpay-capital.js', [ 'Capital' => [ 'Capital es' ] ] );
-		$this->write_chunk( 'chunks/wcpay-settings.js', [ 'Settings only' => [ 'Solo ajustes' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ] );
+		$this->write_chunk( $capital, [ 'Capital' => [ 'Capital es' ] ] );
+		$this->write_chunk( $settings, [ 'Settings only' => [ 'Solo ajustes' ] ] );
 
-		$result = $this->merge( $this->entry_json( [ 'Entry string' => [ 'Cadena' ] ] ) );
+		$result = $this->merge( $this->translation_json( [ 'Entry string' => [ 'Cadena' ] ] ) );
 
 		$this->assertEquals(
 			[
@@ -117,16 +130,17 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_merge_keeps_the_entry_json_shape_and_lets_the_entry_win() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
 		$this->write_chunk(
-			'chunks/wcpay-payouts.js',
+			$payouts,
 			[
 				'Shared' => [ 'From the chunk' ],
 				'Chunk'  => [ 'Only chunk' ],
 			]
 		);
 
-		$result = json_decode( $this->merge( $this->entry_json( [ 'Shared' => [ 'From the entry' ] ] ) ), true );
+		$result = json_decode( $this->merge( $this->translation_json( [ 'Shared' => [ 'From the entry' ] ] ) ), true );
 
 		$this->assertSame( 'messages', $result['domain'] );
 		$this->assertSame( [ 'messages' ], array_keys( $result['locale_data'] ) );
@@ -135,19 +149,50 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'Only chunk' ], $result['locale_data']['messages']['Chunk'] );
 	}
 
-	public function test_merge_keeps_unicode_and_slashes_unescaped() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
-		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Bank' => [ 'بانک / Banco' ] ] );
+	public function test_merge_keeps_unicode_unescaped_and_script_tags_escaped() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk(
+			$payouts,
+			[
+				'Bank'  => [ 'بانک / Banco' ],
+				'Close' => [ 'Cerrar</script><script>alert(1)</script>' ],
+			]
+		);
 
-		$result = $this->merge( $this->entry_json( [] ) );
+		$result = $this->merge( $this->translation_json( [] ) );
 
 		$this->assertStringContainsString( 'بانک / Banco', $result );
+		$this->assertStringNotContainsString( '</script>', $result );
+		$this->assertSame( [ 'Cerrar</script><script>alert(1)</script>' ], $this->messages( $result )['Close'] );
+	}
+
+	public function test_merge_writes_to_the_catalog_wordpress_reads_first() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], null, self::DOMAIN );
+
+		$result = json_decode( $this->merge( $this->translation_json( [ 'Entry string' => [ 'Cadena' ] ], self::DOMAIN ) ), true );
+
+		$this->assertSame( [ self::DOMAIN ], array_keys( $result['locale_data'] ) );
+		$this->assertSame( [ 'Historial de pagos' ], $result['locale_data'][ self::DOMAIN ]['Payout history'] );
+		$this->assertSame( [ 'Cadena' ], $result['locale_data'][ self::DOMAIN ]['Entry string'] );
+	}
+
+	public function test_merge_reads_a_chunk_that_uses_the_domain_catalog_into_a_messages_entry() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], null, self::DOMAIN );
+
+		$result = $this->merge( $this->translation_json( [] ) );
+
+		$this->assertSame( [ 'Historial de pagos' ], $this->messages( $result )['Payout history'] );
 	}
 
 	public function test_merge_uses_the_built_in_chunk_list_without_a_chunk_map() {
 		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ] );
 
-		$result = $this->merge( $this->entry_json( [] ) );
+		$result = $this->merge( $this->translation_json( [] ) );
 
 		$this->assertSame( [ 'Historial de pagos' ], $this->messages( $result )['Payout history'] );
 	}
@@ -156,55 +201,92 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 		file_put_contents( $this->dist_dir . '/i18n-chunk-entries.json', '{not json' );
 		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ] );
 
-		$result = $this->merge( $this->entry_json( [] ) );
+		$result = $this->merge( $this->translation_json( [] ) );
 
 		$this->assertSame( [ 'Historial de pagos' ], $this->messages( $result )['Payout history'] );
 	}
 
 	public function test_merge_is_a_no_op_when_the_chunk_files_are_missing() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
-		$entry_json = $this->entry_json( [ 'Entry string' => [ 'Cadena' ] ] );
+		$this->write_chunk_map( [ $this->chunk( 'payouts' ) => [ 'index.js' ] ] );
+		$entry_json = $this->translation_json( [ 'Entry string' => [ 'Cadena' ] ] );
 
 		$this->assertSame( $entry_json, $this->merge( $entry_json ) );
 	}
 
 	public function test_merge_skips_invalid_chunk_files_and_merges_the_rest() {
+		$payouts = $this->chunk( 'payouts' );
+		$capital = $this->chunk( 'capital' );
+		$reports = $this->chunk( 'reports' );
 		$this->write_chunk_map(
 			[
-				'chunks/wcpay-payouts.js' => [ 'index.js' ],
-				'chunks/wcpay-capital.js' => [ 'index.js' ],
-				'chunks/wcpay-reports.js' => [ 'index.js' ],
+				$payouts => [ 'index.js' ],
+				$capital => [ 'index.js' ],
+				$reports => [ 'index.js' ],
 			]
 		);
-		file_put_contents( $this->chunk_path( 'chunks/wcpay-payouts.js' ), '{not json' );
-		file_put_contents( $this->chunk_path( 'chunks/wcpay-reports.js' ), '{"locale_data":{"messages":"nope"}}' );
-		$this->write_chunk( 'chunks/wcpay-capital.js', [ 'Capital' => [ 'Capital es' ] ] );
+		file_put_contents( $this->chunk_path( $payouts ), '{not json' );
+		file_put_contents( $this->chunk_path( $reports ), '{"locale_data":{"messages":"nope"}}' );
+		$this->write_chunk( $capital, [ 'Capital' => [ 'Capital es' ] ] );
 
-		$result = $this->merge( $this->entry_json( [] ) );
+		$result = $this->merge( $this->translation_json( [] ) );
 
 		$this->assertSame( [ '', 'Capital' ], array_keys( $this->messages( $result ) ) );
 	}
 
 	public function test_merge_returns_an_invalid_entry_json_untouched() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
-		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ] );
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ] );
 
 		$this->assertSame( '{not json', $this->merge( '{not json' ) );
 	}
 
-	public function test_merge_twice_adds_nothing_more() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
-		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ] );
+	public function test_merge_returns_an_entry_without_a_message_catalog_untouched() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ] );
 
-		$once = $this->merge( $this->entry_json( [] ) );
+		$this->assertSame( '{"locale_data":{"messages":""}}', $this->merge( '{"locale_data":{"messages":""}}' ) );
+		$this->assertSame( '{"domain":"messages"}', $this->merge( '{"domain":"messages"}' ) );
+	}
+
+	public function test_merge_twice_adds_nothing_more() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ] );
+
+		$once = $this->merge( $this->translation_json( [] ) );
 
 		$this->assertSame( $once, $this->merge( $once ) );
 	}
 
+	public function test_merge_finds_a_chunk_in_the_standard_languages_folder_when_the_entry_is_elsewhere() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
+
+		$result = $this->merge( $this->translation_json( [ 'Entry string' => [ 'Cadena' ] ] ) );
+
+		$this->assertSame( [ 'Historial de pagos' ], $this->messages( $result )['Payout history'] );
+		$this->assertSame( [ 'Cadena' ], $this->messages( $result )['Entry string'] );
+	}
+
+	public function test_merge_prefers_the_chunk_beside_the_entry() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Beside the entry' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Standard folder' ] ], WP_LANG_DIR . '/plugins' );
+
+		$result = $this->merge( $this->translation_json( [] ) );
+
+		$this->assertSame( [ 'Beside the entry' ], $this->messages( $result )['Payout history'] );
+	}
+
 	public function test_merge_ignores_other_handles_and_domains() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
-		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ] );
-		$entry_json = $this->entry_json( [] );
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ] );
+		$entry_json = $this->translation_json( [] );
 		$file       = $this->languages_dir . '/entry.json';
 
 		$this->assertSame( $entry_json, $this->sut->merge_chunk_translations( $entry_json, $file, 'WCPAY_TOS', self::DOMAIN ) );
@@ -215,23 +297,26 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_merge_uses_the_settings_entry_chunks_for_the_settings_handle() {
+		$payouts = $this->chunk( 'payouts' );
+		$phones  = $this->chunk( 'phones' );
 		$this->write_chunk_map(
 			[
-				'chunks/wcpay-payouts.js' => [ 'index.js' ],
-				'chunks/wcpay-phones.js'  => [ 'settings.js' ],
+				$payouts => [ 'index.js' ],
+				$phones  => [ 'settings.js' ],
 			]
 		);
-		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ] );
-		$this->write_chunk( 'chunks/wcpay-phones.js', [ 'Phone' => [ 'Teléfono' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ] );
+		$this->write_chunk( $phones, [ 'Phone' => [ 'Teléfono' ] ] );
 
-		$result = $this->sut->merge_chunk_translations( $this->entry_json( [] ), $this->languages_dir . '/entry.json', 'WCPAY_ADMIN_SETTINGS', self::DOMAIN );
+		$result = $this->sut->merge_chunk_translations( $this->translation_json( [] ), $this->languages_dir . '/entry.json', 'WCPAY_ADMIN_SETTINGS', self::DOMAIN );
 
 		$this->assertSame( [ '', 'Phone' ], array_keys( $this->messages( $result ) ) );
 	}
 
 	public function test_load_chunk_translations_only_builds_json_when_the_entry_has_none() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
-		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
 
 		$result = $this->sut->load_chunk_translations_only( null, false, self::HANDLE, self::DOMAIN );
 
@@ -239,15 +324,53 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $this->header(), $this->messages( $result )[''] );
 	}
 
-	public function test_load_chunk_translations_only_returns_null_when_no_chunk_has_translations() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
+	public function test_load_chunk_translations_only_skips_a_chunk_without_a_header() {
+		$payouts = $this->chunk( 'payouts' );
+		$capital = $this->chunk( 'capital' );
+		$this->write_chunk_map(
+			[
+				$payouts => [ 'index.js' ],
+				$capital => [ 'index.js' ],
+			]
+		);
+		file_put_contents( $this->chunk_path( $payouts, WP_LANG_DIR . '/plugins' ), '{"locale_data":{"messages":{"Payout history":["Historial de pagos"]}}}' );
+		$this->shared_files[] = $this->chunk_path( $payouts, WP_LANG_DIR . '/plugins' );
+		$this->write_chunk( $capital, [ 'Capital' => [ 'Capital es' ] ], WP_LANG_DIR . '/plugins' );
+
+		$result = $this->sut->load_chunk_translations_only( null, false, self::HANDLE, self::DOMAIN );
+
+		$this->assertSame( [ '', 'Capital' ], array_keys( $this->messages( $result ) ) );
+	}
+
+	public function test_load_chunk_translations_only_returns_null_when_no_chunk_has_a_usable_catalog() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+
+		$this->assertNull( $this->sut->load_chunk_translations_only( null, false, self::HANDLE, self::DOMAIN ) );
+
+		file_put_contents( $this->chunk_path( $payouts, WP_LANG_DIR . '/plugins' ), '{"locale_data":{"messages":{"Payout history":["Historial de pagos"]}}}' );
+		$this->shared_files[] = $this->chunk_path( $payouts, WP_LANG_DIR . '/plugins' );
+
+		$this->assertNull( $this->sut->load_chunk_translations_only( null, false, self::HANDLE, self::DOMAIN ) );
+	}
+
+	public function test_load_chunk_translations_only_lets_wordpress_read_an_entry_file_another_plugin_supplies() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
+		$entry_file = $this->languages_dir . '/custom-entry.json';
+		file_put_contents( $entry_file, $this->translation_json( [] ) );
+		$this->hooks_proxy->method( 'apply_filters' )
+			->with( 'load_script_translation_file', false, self::HANDLE, self::DOMAIN )
+			->willReturn( $entry_file );
 
 		$this->assertNull( $this->sut->load_chunk_translations_only( null, false, self::HANDLE, self::DOMAIN ) );
 	}
 
 	public function test_load_chunk_translations_only_leaves_other_calls_alone() {
-		$this->write_chunk_map( [ 'chunks/wcpay-payouts.js' => [ 'index.js' ] ] );
-		$this->write_chunk( 'chunks/wcpay-payouts.js', [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
 
 		$this->assertNull( $this->sut->load_chunk_translations_only( null, '/some/missing.json', self::HANDLE, self::DOMAIN ) );
 		$this->assertSame( '{"set":"by another callback"}', $this->sut->load_chunk_translations_only( '{"set":"by another callback"}', false, self::HANDLE, self::DOMAIN ) );
@@ -267,6 +390,17 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Gets a chunk file name no real pack uses.
+	 *
+	 * @param string $name Short name.
+	 *
+	 * @return string
+	 */
+	private function chunk( string $name ): string {
+		return 'chunks/' . $this->run_id . '-' . $name . '.js';
+	}
+
+	/**
 	 * Writes the chunk map the production build creates.
 	 *
 	 * @param array $map Chunk file => entry files.
@@ -281,14 +415,15 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	 * @param string      $chunk    Chunk file relative to `dist/`.
 	 * @param array       $messages Messages without the header.
 	 * @param string|null $dir      Folder to write to, the test languages folder by default.
+	 * @param string      $key      Catalog key.
 	 */
-	private function write_chunk( string $chunk, array $messages, ?string $dir = null ) {
+	private function write_chunk( string $chunk, array $messages, ?string $dir = null, string $key = 'messages' ) {
 		$path = $this->chunk_path( $chunk, $dir );
 		if ( null !== $dir ) {
 			wp_mkdir_p( $dir );
 			$this->shared_files[] = $path;
 		}
-		file_put_contents( $path, $this->entry_json( $messages ) );
+		file_put_contents( $path, $this->translation_json( $messages, $key ) );
 	}
 
 	/**
@@ -306,17 +441,18 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	/**
 	 * Builds translation JSON in the shape translate.wordpress.org writes.
 	 *
-	 * @param array $messages Messages without the header.
+	 * @param array  $messages Messages without the header.
+	 * @param string $key      Catalog key.
 	 *
 	 * @return string
 	 */
-	private function entry_json( array $messages ): string {
+	private function translation_json( array $messages, string $key = 'messages' ): string {
 		return wp_json_encode(
 			[
 				'translation-revision-date' => '2026-11-13 08:26:26+0000',
 				'generator'                 => 'GlotPress/4.1.0',
 				'domain'                    => 'messages',
-				'locale_data'               => [ 'messages' => [ '' => $this->header() ] + $messages ],
+				'locale_data'               => [ $key => [ '' => $this->header() ] + $messages ],
 			]
 		);
 	}
@@ -342,6 +478,8 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	 * @return array
 	 */
 	private function messages( string $json ): array {
-		return json_decode( $json, true )['locale_data']['messages'];
+		$data = json_decode( $json, true );
+
+		return $data['locale_data']['messages'] ?? $data['locale_data'][ self::DOMAIN ];
 	}
 }

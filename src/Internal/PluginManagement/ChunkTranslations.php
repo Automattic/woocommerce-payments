@@ -106,13 +106,16 @@ class ChunkTranslations {
 			return $translations;
 		}
 
-		return $this->merge( $translations, [ dirname( $file ) ], self::HANDLE_ENTRIES[ $handle ] );
+		$dirs = array_values( array_unique( array_merge( [ dirname( $file ) ], $this->get_languages_dirs() ) ) );
+
+		return $this->merge( $translations, $dirs, self::HANDLE_ENTRIES[ $handle ] );
 	}
 
 	/**
 	 * Provides the chunks' strings for an entry that has no translation JSON of its own.
 	 *
-	 * WordPress calls this with a `false` file after it found no JSON for the entry.
+	 * WordPress calls this with a `false` file after it found no JSON for the entry. Plugins like Loco Translate can
+	 * still supply an entry file through `load_script_translation_file`, so it steps aside when one does.
 	 *
 	 * @param mixed $translations Pre-filtered translations, `null` unless another callback set them.
 	 * @param mixed $file         Path of the JSON file, `false` when there is none.
@@ -131,6 +134,11 @@ class ChunkTranslations {
 		}
 
 		if ( ! $this->is_admin_entry( $handle, $domain ) ) {
+			return $translations;
+		}
+
+		$entry_file = $this->hooks_proxy->apply_filters( 'load_script_translation_file', false, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
+		if ( is_string( $entry_file ) && is_readable( $entry_file ) ) {
 			return $translations;
 		}
 
@@ -159,34 +167,49 @@ class ChunkTranslations {
 	 * @return string|null The merged JSON, or `$entry_json` as it was when no chunk adds anything.
 	 */
 	private function merge( ?string $entry_json, array $dirs, string $entry_file ): ?string {
-		$entry = null;
+		$entry     = null;
+		$entry_key = null;
 		if ( null !== $entry_json ) {
 			$entry = json_decode( $entry_json, true );
 			if ( ! is_array( $entry ) ) {
 				return $entry_json;
 			}
+
+			$entry_key = $this->get_messages_key( $entry );
+			if ( null === $entry_key ) {
+				return $entry_json;
+			}
 		}
 
-		$merged = $entry;
+		$merged     = $entry;
+		$merged_key = $entry_key;
 		foreach ( $this->get_chunks( $entry_file ) as $chunk ) {
 			$chunk_data = $this->read_chunk( $dirs, $chunk );
 			if ( null === $chunk_data ) {
 				continue;
 			}
 
+			$chunk_key      = $this->get_messages_key( $chunk_data );
+			$chunk_messages = $chunk_data['locale_data'][ $chunk_key ];
+
 			if ( null === $merged ) {
-				$merged = $chunk_data;
+				// The base catalog needs the header WordPress reads the domain from.
+				if ( isset( $chunk_messages[''] ) && is_array( $chunk_messages[''] ) ) {
+					$merged     = $chunk_data;
+					$merged_key = $chunk_key;
+				}
 				continue;
 			}
 
-			$merged['locale_data']['messages'] = ( $merged['locale_data']['messages'] ?? [] ) + $chunk_data['locale_data']['messages'];
+			$merged['locale_data'][ $merged_key ] += $chunk_messages;
 		}
 
 		if ( $merged === $entry ) {
 			return $entry_json;
 		}
 
-		$encoded = wp_json_encode( $merged, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+		// HEX_TAG keeps a `</script>` inside a translated label from ending the inline script.
+		$encoded = wp_json_encode( $merged, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG );
 
 		return false === $encoded ? $entry_json : $encoded;
 	}
@@ -197,7 +220,7 @@ class ChunkTranslations {
 	 * @param string[] $dirs  Directories to look in.
 	 * @param string   $chunk Chunk file relative to `dist/`, for example `chunks/wcpay-payouts.js`.
 	 *
-	 * @return array|null The decoded JSON, which has `locale_data.messages`, or `null` if there is none.
+	 * @return array|null The decoded JSON, which has a message catalog, or `null` if there is none.
 	 */
 	private function read_chunk( array $dirs, string $chunk ): ?array {
 		$name = sprintf( '%s-%s-%s.json', self::DOMAIN, determine_locale(), md5( 'dist/' . $chunk ) );
@@ -209,8 +232,25 @@ class ChunkTranslations {
 			}
 
 			$data = json_decode( (string) file_get_contents( $path ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local translation file, as WordPress reads it.
-			if ( is_array( $data ) && isset( $data['locale_data']['messages'] ) && is_array( $data['locale_data']['messages'] ) ) {
+			if ( is_array( $data ) && null !== $this->get_messages_key( $data ) ) {
 				return $data;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Gets the key WordPress reads the message catalog from: the text domain first, then `messages`.
+	 *
+	 * @param array $data Decoded translation JSON.
+	 *
+	 * @return string|null The key, or `null` if there is no catalog under either.
+	 */
+	private function get_messages_key( array $data ): ?string {
+		foreach ( [ self::DOMAIN, 'messages' ] as $key ) {
+			if ( isset( $data['locale_data'][ $key ] ) && is_array( $data['locale_data'][ $key ] ) ) {
+				return $key;
 			}
 		}
 
