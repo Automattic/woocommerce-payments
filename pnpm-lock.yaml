@@ -302,8 +302,8 @@ importers:
         specifier: 0.1.22
         version: 0.1.22
       '@playwright/test':
-        specifier: 1.65.0
-        version: 1.65.0
+        specifier: 1.65.1
+        version: 1.65.1
       '@pmmmwh/react-refresh-webpack-plugin':
         specifier: 0.5.7
         version: 0.5.7(@types/webpack@4.41.40)(react-refresh@0.18.0)(type-fest@2.19.0)(webpack-cli@7.0.2)(webpack-dev-server@5.2.7)(webpack@5.106.2)
@@ -453,7 +453,7 @@ importers:
         version: 3.30.0
       '@wordpress/scripts':
         specifier: 30.18.0
-        version: 30.18.0(@playwright/test@1.65.0)(@types/node@20.9.0)(@types/react@19.2.18)(@types/webpack@4.41.40)(babel-plugin-macros@3.1.0)(csso@5.0.5)(debug@4.4.3(supports-color@8.1.1))(esbuild@0.25.12)(eslint-import-resolver-typescript@2.4.0)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)(stylelint-scss@6.14.0(stylelint@13.13.1(supports-color@8.1.1)))(supports-color@8.1.1)(type-fest@2.19.0)(typescript@5.9.3)(uglify-js@3.19.3)(yauzl@2.10.0)
+        version: 30.18.0(@playwright/test@1.65.1)(@types/node@20.9.0)(@types/react@19.2.18)(@types/webpack@4.41.40)(babel-plugin-macros@3.1.0)(csso@5.0.5)(debug@4.4.3(supports-color@8.1.1))(esbuild@0.25.12)(eslint-import-resolver-typescript@2.4.0)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)(stylelint-scss@6.14.0(stylelint@13.13.1(supports-color@8.1.1)))(supports-color@8.1.1)(type-fest@2.19.0)(typescript@5.9.3)(uglify-js@3.19.3)(yauzl@2.10.0)
       '@wordpress/stylelint-config':
         specifier: 19.1.0
         version: 19.1.0(stylelint@13.13.1(supports-color@8.1.1))
@@ -2642,8 +2642,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@playwright/test@1.65.0':
-    resolution: {integrity: sha512-iGURLGuKDLakSEl7Pgfv8h7f+XLT+V861Wfhz0zlEl5nyFuKUopdkFBPKqTllTUp06aOwPuH8iuUEb3yp3MpbQ==}
+  '@playwright/test@1.65.1':
+    resolution: {integrity: sha512-y+NCIRm2LvY4slUVWvGh1nujJ8RF/hEisIsq2mtUPgdQC4L701bq5hZGMhrpeXjACvwvO9tj5dJqhvM6TP9lbw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -9094,6 +9094,11 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
+  playwright-core@1.65.1:
+    resolution: {integrity: sha512-hqPpz7blSMPxWVdoeE1yiBSzXsKiVOd2k+kjCvmUywD2GPO2Dd9HfcWnq9NN0GHbNZDFgZ9JfBFr+X5/BLo0qw==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   playwright@1.64.0-alpha-1790635538000:
     resolution: {integrity: sha512-/5XDUMxpOd/9AojJtWDFIRV3EJZNQ0AwvK69wgt3CPzy8wTgiBG9pX45VfxtqtvIRGwfWzMhrvawNKreG69Snw==}
     engines: {node: '>=20'}
@@ -9101,6 +9106,11 @@ packages:
 
   playwright@1.65.0:
     resolution: {integrity: sha512-F3AMWcR44qMBt4kq+6Kb6mX7bjGXshktKFOPULd7reED6ZJWevjbNRqysP7q+AATE9kdPEZBibex1BYsvpVoeA==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.65.1:
+    resolution: {integrity: sha512-vJ1FuoOrNwOKHUIVEvSt3jT1L+wjjDpwhwIstKtfvTh8XIG4FG4bIFuvNdMxi81LGfAhUgUZleVFaOLY4RIUUw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -14714,9 +14724,9 @@ snapshots:
       playwright: 1.64.0-alpha-1790635538000
       playwright-core: 1.64.0-alpha-1790635538000
 
-  '@playwright/test@1.65.0':
+  '@playwright/test@1.65.1':
     dependencies:
-      playwright: 1.65.0
+      playwright: 1.65.1
 
   '@pmmmwh/react-refresh-webpack-plugin@0.5.17(@types/webpack@4.41.40)(react-refresh@0.14.2)(type-fest@2.19.0)(webpack-cli@5.1.4)(webpack-dev-server@5.2.7)(webpack@5.106.2)':
     dependencies:
@@ -17833,9 +17843,9 @@ snapshots:
     dependencies:
       '@wordpress/deprecated': 4.50.0
 
-  '@wordpress/e2e-test-utils-playwright@1.50.0(@playwright/test@1.65.0)(@types/node@20.9.0)(supports-color@8.1.1)(yauzl@2.10.0)':
+  '@wordpress/e2e-test-utils-playwright@1.50.0(@playwright/test@1.65.1)(@types/node@20.9.0)(supports-color@8.1.1)(yauzl@2.10.0)':
     dependencies:
-      '@playwright/test': 1.65.0
+      '@playwright/test': 1.65.1
       '@types/node': 20.9.0
       change-case: 4.1.2
       get-port: 5.1.1
@@ -18598,16 +18608,16 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.18
 
-  '@wordpress/scripts@30.18.0(@playwright/test@1.65.0)(@types/node@20.9.0)(@types/react@19.2.18)(@types/webpack@4.41.40)(babel-plugin-macros@3.1.0)(csso@5.0.5)(debug@4.4.3(supports-color@8.1.1))(esbuild@0.25.12)(eslint-import-resolver-typescript@2.4.0)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)(stylelint-scss@6.14.0(stylelint@13.13.1(supports-color@8.1.1)))(supports-color@8.1.1)(type-fest@2.19.0)(typescript@5.9.3)(uglify-js@3.19.3)(yauzl@2.10.0)':
+  '@wordpress/scripts@30.18.0(@playwright/test@1.65.1)(@types/node@20.9.0)(@types/react@19.2.18)(@types/webpack@4.41.40)(babel-plugin-macros@3.1.0)(csso@5.0.5)(debug@4.4.3(supports-color@8.1.1))(esbuild@0.25.12)(eslint-import-resolver-typescript@2.4.0)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)(stylelint-scss@6.14.0(stylelint@13.13.1(supports-color@8.1.1)))(supports-color@8.1.1)(type-fest@2.19.0)(typescript@5.9.3)(uglify-js@3.19.3)(yauzl@2.10.0)':
     dependencies:
       '@babel/core': 7.25.7(supports-color@8.1.1)
-      '@playwright/test': 1.65.0
+      '@playwright/test': 1.65.1
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(@types/webpack@4.41.40)(react-refresh@0.14.2)(type-fest@2.19.0)(webpack-cli@5.1.4)(webpack-dev-server@5.2.7)(webpack@5.106.2)
       '@svgr/webpack': 8.1.0(supports-color@8.1.1)(typescript@5.9.3)
       '@wordpress/babel-preset-default': 8.44.0(supports-color@8.1.1)
       '@wordpress/browserslist-config': 6.44.0
       '@wordpress/dependency-extraction-webpack-plugin': 6.50.0(webpack-cli@5.1.4)(webpack@5.106.2)
-      '@wordpress/e2e-test-utils-playwright': 1.50.0(@playwright/test@1.65.0)(@types/node@20.9.0)(supports-color@8.1.1)(yauzl@2.10.0)
+      '@wordpress/e2e-test-utils-playwright': 1.50.0(@playwright/test@1.65.1)(@types/node@20.9.0)(supports-color@8.1.1)(yauzl@2.10.0)
       '@wordpress/eslint-plugin': 15.1.0(@babel/core@7.25.7(supports-color@8.1.1))(eslint-import-resolver-typescript@2.4.0)(eslint@8.57.1(supports-color@8.1.1))(jest@29.7.0(@types/node@20.9.0)(babel-plugin-macros@3.1.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)(wp-prettier@3.0.3)
       '@wordpress/jest-preset-default': 12.44.0(@babel/core@7.25.7(supports-color@8.1.1))(jest@29.7.0(@types/node@20.9.0)(babel-plugin-macros@3.1.0)(supports-color@8.1.1))(supports-color@8.1.1)
       '@wordpress/npm-package-json-lint-config': 5.50.0(npm-package-json-lint@6.4.0(supports-color@8.1.1)(typescript@5.9.3))
@@ -24225,6 +24235,8 @@ snapshots:
 
   playwright-core@1.65.0: {}
 
+  playwright-core@1.65.1: {}
+
   playwright@1.64.0-alpha-1790635538000:
     dependencies:
       playwright-core: 1.64.0-alpha-1790635538000
@@ -24232,6 +24244,10 @@ snapshots:
   playwright@1.65.0:
     dependencies:
       playwright-core: 1.65.0
+
+  playwright@1.65.1:
+    dependencies:
+      playwright-core: 1.65.1
 
   please-upgrade-node@3.2.0:
     dependencies:
