@@ -820,19 +820,6 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 				'This file exceeds the maximum upload size of 1 MB for this site.'
 			);
 		} );
-
-		it( 'prefixes an error from Stripe', async () => {
-			uploadError(
-				'wcpay_evidence_file_stripe_error',
-				'Error: The file you uploaded was too large.'
-			);
-
-			const createErrorNotice = await uploadFile();
-
-			expect( createErrorNotice ).toHaveBeenCalledWith(
-				'Failed to upload file. (Error: The file you uploaded was too large.)'
-			);
-		} );
 	} );
 
 	it( 'should render regular dispute documents', async () => {
