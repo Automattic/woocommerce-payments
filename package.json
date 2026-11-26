@@ -127,7 +127,7 @@
 		"@types/canvas-confetti": "1.6.4",
 		"@types/intl-tel-input": "17.0.4",
 		"@types/jest": "30.0.0",
-		"@types/lodash": "4.17.24",
+		"@types/lodash": "4.17.27",
 		"@types/node": "20.9.0",
 		"@types/react": "19.2.18",
 		"@types/react-dom": "19.2.7",
