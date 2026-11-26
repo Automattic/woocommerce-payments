@@ -305,7 +305,9 @@ class WC_Payments_Checkout {
 
 			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-			if ( $order instanceof \WC_Order ) {
+			// The pay form needs the order's total. WooCommerce checks the visitor before rendering it,
+			// so a check that can't run here still sends the total.
+			if ( $order instanceof \WC_Order && WC_Payments_Utils::may_see_order_billing_details( $order, WC_Payments_Utils::get_email_from_verify_form(), true ) ) {
 				$payment_fields['isOrderPay'] = true;
 				$payment_fields['orderId']    = $order->get_id();
 				$order_currency               = $order->get_currency();

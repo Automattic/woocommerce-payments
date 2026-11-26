@@ -558,7 +558,9 @@ class WC_Payments_Customer_Service {
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-			if ( $order instanceof WC_Order ) {
+			// payment_fields() asks for this only once WooCommerce has checked the visitor and rendered the pay form,
+			// so a check that can't run here keeps the details.
+			if ( $order instanceof WC_Order && WC_Payments_Utils::may_see_order_billing_details( $order, WC_Payments_Utils::get_email_from_verify_form(), true ) ) {
 				$firstname       = $order->get_billing_first_name();
 				$lastname        = $order->get_billing_last_name();
 				$user_email      = $order->get_billing_email();

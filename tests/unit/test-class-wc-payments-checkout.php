@@ -25,7 +25,10 @@ use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
  *
  * @package WooCommerce\Payments\Tests
  */
-class WC_Payments_Checkout_Test extends WP_UnitTestCase {
+class WC_Payments_Checkout_Test extends WCPAY_UnitTestCase {
+
+	private const ORDER_BILLING_EMAIL  = 'admin@example.org';
+	private const OUTSIDE_GRACE_PERIOD = 15 * MINUTE_IN_SECONDS;
 
 	/**
 	 * Holds the object, which will be tested.
@@ -167,9 +170,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function tear_down() {
-		parent::tear_down();
 		WC_Payments::set_gateway( $this->default_gateway );
-		unset( $_GET['key'] );
+		unset( $_GET['key'], $_POST['check_submission'], $_POST['email'] );
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 		wp_dequeue_script( 'wcpay-upe-checkout' );
 		// Deregister too, so localized wcpay_upe_config data does not leak into later tests.
@@ -184,6 +186,9 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		if ( isset( $wp_query ) ) {
 			$wp_query->query_vars = $this->original_wp_query_query_vars;
 		}
+
+		// Last: a query after the rollback opens a transaction that blocks a separate-process test's install.
+		parent::tear_down();
 	}
 
 	/**
@@ -401,6 +406,87 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 				},
 			],
 		];
+	}
+
+	public function test_get_payment_fields_js_config_withholds_the_order_on_the_add_payment_method_page() {
+		$this->stub_enabled_payment_methods();
+		$this->open_guest_order_link_on_add_payment_method_page();
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayNotHasKey( 'isOrderPay', $payment_fields );
+		$this->assertArrayNotHasKey( 'orderId', $payment_fields );
+		$this->assertSame( 'USD', $payment_fields['currency'] );
+		$this->assertSame( 0, $payment_fields['cartTotal'] );
+	}
+
+	/**
+	 * In its own process, since the constant can't be undefined afterwards.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_get_payment_fields_js_config_withholds_the_order_on_the_add_payment_method_page_posted_as_a_checkout() {
+		define( 'WOOCOMMERCE_CHECKOUT', true );
+		$this->stub_enabled_payment_methods();
+		$this->open_guest_order_link_on_add_payment_method_page();
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayNotHasKey( 'isOrderPay', $payment_fields );
+		$this->assertArrayNotHasKey( 'orderId', $payment_fields );
+		$this->assertSame( 'USD', $payment_fields['currency'] );
+		$this->assertSame( 0, $payment_fields['cartTotal'] );
+	}
+
+	/**
+	 * Logs in a customer and opens a guest order's payment link on the "Add payment method" page.
+	 */
+	private function open_guest_order_link_on_add_payment_method_page(): void {
+		$order = wc_create_order();
+		$order->set_currency( Currency_Code::EURO );
+		$order->set_total( '123.45' );
+		$order->set_status( 'pending' );
+		$order->save();
+
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'customer' ] ) );
+		$this->open_payment_link_on_add_payment_method_page( $order );
+	}
+
+	public function test_get_payment_fields_js_config_withholds_guest_order_while_woocommerce_asks_for_the_email() {
+		$this->skip_without_woocommerce_email_verification();
+		$this->stub_enabled_payment_methods();
+		wp_set_current_user( 0 );
+		$order = $this->create_guest_order_pay_order();
+		$order->set_date_created( time() - self::OUTSIDE_GRACE_PERIOD );
+		$order->save();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayNotHasKey( 'isOrderPay', $payment_fields );
+		$this->assertArrayNotHasKey( 'orderId', $payment_fields );
+		$this->assertSame( 'USD', $payment_fields['currency'] );
+		$this->assertSame( 0, $payment_fields['cartTotal'] );
+	}
+
+	public function test_get_payment_fields_js_config_exposes_guest_order_once_the_visitor_verifies_the_email() {
+		$this->skip_without_woocommerce_email_verification();
+		$this->stub_enabled_payment_methods();
+		wp_set_current_user( 0 );
+		$order = $this->create_guest_order_pay_order();
+		$order->set_date_created( time() - self::OUTSIDE_GRACE_PERIOD );
+		$order->save();
+		$this->setup_pay_for_order_endpoint( $order );
+		$_POST['check_submission'] = wp_create_nonce( 'wc_verify_email' );
+		$_POST['email']            = self::ORDER_BILLING_EMAIL;
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertTrue( $payment_fields['isOrderPay'] );
+		$this->assertSame( $order->get_id(), $payment_fields['orderId'] );
+		$this->assertSame( 'EUR', $payment_fields['currency'] );
+		$this->assertSame( 12345, $payment_fields['cartTotal'] );
 	}
 
 	public function test_get_payment_fields_js_config_withholds_order_when_user_cannot_pay_for_order() {
