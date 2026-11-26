@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed admin strings that were missing translations on Overview, Payouts, Capital, Fraud protection and transaction pages.
