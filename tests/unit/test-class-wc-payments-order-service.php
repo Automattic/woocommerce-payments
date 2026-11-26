@@ -1966,6 +1966,29 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * WooCommerce clears the payment mode when it saves the posted gateway on the order. When a WooPayments
+	 * payment went through meanwhile and the order goes back to WooPayments, the mode of that payment is recorded
+	 * again, so the WC Tracker counts the order as a test order.
+	 */
+	public function test_pay_action_records_the_payment_mode_again_when_it_keeps_a_payment_that_went_through() {
+		$this->skip_without_payment_mode();
+		$order = $this->create_order_with_payment_details( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_payment_mode( 'test' );
+		$order->save();
+		$order = wc_get_order( $order->get_id() );
+		$this->hook_only_this_order_service_to_the_pay_action();
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		$this->fire_before_pay_action( $order );
+		$this->write_meta_in_another_request( $order->get_id(), '_intention_status', Intent_Status::SUCCEEDED );
+		$this->count_error_notices_after_setting_the_gateway( $order, self::OTHER_GATEWAY_ID );
+
+		$stored_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'woocommerce_payments', $stored_order->get_payment_method() );
+		$this->assertSame( 'test', $stored_order->get_payment_mode() );
+	}
+
+	/**
 	 * A plugin checking the pay form can save the order, or read its meta again, on WooCommerce's pay action, at
 	 * any priority, registered after WooPayments. Neither stands in for WooCommerce's save with the posted
 	 * gateway, and a WooPayments payment that goes through meanwhile still stops the other gateway's payment.
@@ -2442,6 +2465,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				]
 			)
 		);
+	}
+
+	/**
+	 * Skips a test that needs WC_Order::set_payment_mode(), added in WooCommerce 11.4.
+	 */
+	private function skip_without_payment_mode(): void {
+		if ( ! method_exists( WC_Order::class, 'set_payment_mode' ) ) {
+			$this->markTestSkipped( 'WC_Order::set_payment_mode() needs WooCommerce 11.4 or later.' );
+		}
 	}
 
 	/**
@@ -5323,6 +5355,33 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$customer_id = 'cus_123';
 		$this->order_service->set_customer_id_for_order( $this->order, $customer_id );
 		$this->assertEquals( $this->order->get_meta( '_stripe_customer_id', true ), $customer_id );
+	}
+
+	/**
+	 * The WC Tracker reads WooCommerce's payment mode, which takes `test` or `live`, so `prod` is mapped. An order
+	 * without a WooPayments mode gets none, and the Tracker counts it as live.
+	 *
+	 * @dataProvider provider_set_payment_mode_for_order
+	 *
+	 * @param string $wcpay_mode    The order's `_wcpay_mode`.
+	 * @param string $expected_mode The payment mode WooCommerce stores.
+	 */
+	public function test_set_payment_mode_for_order( string $wcpay_mode, string $expected_mode ) {
+		$this->skip_without_payment_mode();
+		$this->order->update_meta_data( '_wcpay_mode', $wcpay_mode );
+
+		$this->order_service->set_payment_mode_for_order( $this->order );
+		$this->order->save();
+
+		$this->assertSame( $expected_mode, wc_get_order( $this->order->get_id() )->get_payment_mode() );
+	}
+
+	public function provider_set_payment_mode_for_order(): array {
+		return [
+			'test' => [ Order_Mode::TEST, 'test' ],
+			'live' => [ Order_Mode::PRODUCTION, 'live' ],
+			'none' => [ '', '' ],
+		];
 	}
 
 	public function test_get_customer_id() {

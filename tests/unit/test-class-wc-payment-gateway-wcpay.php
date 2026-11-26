@@ -17,6 +17,7 @@ use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Mode;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
@@ -933,6 +934,30 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->set_payment_method_title_for_order( $order, 'amazon_pay', $payment_details );
 
 		$this->assertEquals( 'amazon_pay', $order->get_meta( '_wcpay_express_checkout_payment_method' ), 'amazon_pay meta should be persisted' );
+	}
+
+	/**
+	 * After 3DS or a redirect, the order is loaded again before it moves to a split gateway ID. WooCommerce clears
+	 * the payment mode on that save unless it is recorded on the same object, so the WC Tracker would count a test
+	 * order as live.
+	 */
+	public function test_set_payment_method_title_for_order_keeps_the_payment_mode_on_a_gateway_change() {
+		if ( ! method_exists( WC_Order::class, 'set_payment_mode' ) ) {
+			$this->markTestSkipped( 'WC_Order::set_payment_mode() needs WooCommerce 11.4 or later.' );
+		}
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->update_meta_data( '_wcpay_mode', Order_Mode::TEST );
+		$order->set_payment_mode( 'test' );
+		$order->save();
+		$order = wc_get_order( $order->get_id() );
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, Payment_Method::AMAZON_PAY, [ 'type' => Payment_Method::AMAZON_PAY ] );
+		$order->save();
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'woocommerce_payments_amazon_pay', $order->get_payment_method() );
+		$this->assertSame( 'test', $order->get_payment_mode() );
 	}
 
 	/**

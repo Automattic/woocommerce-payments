@@ -2003,6 +2003,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Before the setters below, so their save persists it: the takeover cleanup reads the mode as the sign
 		// of a new WooPayments attempt.
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
+		$this->order_service->set_payment_mode_for_order( $order );
 
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		// Note: For confirmation tokens (ctoken_*), we don't store them here as they are not valid
@@ -3131,6 +3132,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// this will ensure that the refunds are handled by the correct split gateway class.
 		$order->set_payment_method( $payment_gateway );
+		// After 3DS or a redirect this runs on an order loaded again, where WooCommerce clears the mode on a gateway change.
+		$this->order_service->set_payment_mode_for_order( $order );
 
 		// Link is never an Express Checkout Element button; a `card.wallet.type = link` charge comes from the card
 		// form, so it keeps the regular, account-country-aware title (e.g. "Onelink" for GB). The express meta
