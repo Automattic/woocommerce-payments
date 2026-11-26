@@ -57,12 +57,9 @@ cp( '-Rf', filesToCopy, targetFolder );
 // phpstan.neon is the dev config, so ship the QIT one under that name instead.
 cp( 'tests/qit/phpstan.neon', targetFolder + '/phpstan.neon' );
 
-// these files are only needed by `combine-pot-files.php`, keeping them out of the zip.
-rm(
-	'-f',
-	targetFolder + '/dist/**/*.map',
-	targetFolder + '/dist/i18n-chunk-entries.json'
-);
+// the source maps are only needed by `combine-pot-files.php`, keeping them out of the zip.
+// `dist/i18n-chunk-entries.json` stays: it tells the plugin which chunks' translations to load.
+rm( '-f', targetFolder + '/dist/**/*.map' );
 
 // The '/includes/multi-currency/client' directory is removed because '/includes/multi-currency/*' should contain only server-side files.
 // Furthermore, the './client' directory is already included in 'dist' during the build step.
