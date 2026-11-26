@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Send WooPay the store's current checkout phone setting, so WooPay knows when a phone is required.
