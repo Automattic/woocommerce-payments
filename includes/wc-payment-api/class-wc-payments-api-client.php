@@ -854,11 +854,22 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	public function upload_file( $request ) {
 		$file_params = $request->get_file_params();
 
-		// Sometimes $file_params is empty array for large files (8+ MB).
-		$file_error = empty( $file_params ) || $file_params['file']['error'];
+		// PHP sends no file at all when the request is over post_max_size.
+		$file_error = empty( $file_params ) ? UPLOAD_ERR_INI_SIZE : $file_params['file']['error'];
 
-		if ( $file_error ) {
-			// TODO - Add better error message by specifiying which limit is reached (host or Stripe).
+		if ( UPLOAD_ERR_INI_SIZE === $file_error || UPLOAD_ERR_FORM_SIZE === $file_error ) {
+			throw new API_Exception(
+				sprintf(
+					/* translators: %s: the site's maximum upload size, such as "2 MB". */
+					__( "This file is larger than your site's upload limit of %s. Try a smaller file, or ask your hosting provider to raise the limit.", 'woocommerce-payments' ),
+					size_format( wp_max_upload_size() )
+				),
+				'wcpay_evidence_file_max_size',
+				400
+			);
+		}
+
+		if ( UPLOAD_ERR_OK !== $file_error ) {
 			throw new API_Exception(
 				__( 'Max file size exceeded.', 'woocommerce-payments' ),
 				'wcpay_evidence_file_max_size',

@@ -782,61 +782,6 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
-	describe( 'evidence file size limits', () => {
-		const siteUploadLimit = 1024 * 1024;
-		let createInfoNotice: jest.Mock;
-
-		const makeFile = ( size: number ) => {
-			const file = new File( [ 'x' ], 'receipt.pdf', {
-				type: 'application/pdf',
-			} );
-			Object.defineProperty( file, 'size', { value: size } );
-			return file;
-		};
-
-		const chooseFirstEvidenceFile = async ( file: File ) => {
-			await screen.findByText( 'Order receipt' );
-			const input = document.querySelector(
-				'input[type="file"]'
-			) as HTMLInputElement;
-			await act( async () => {
-				fireEvent.change( input, { target: { files: [ file ] } } );
-			} );
-		};
-
-		const fileUploadCalls = () =>
-			mockApiFetch.mock.calls.filter(
-				( [ options ] ) =>
-					( options as { path?: string } ).path ===
-					'/wc/v3/payments/file'
-			);
-
-		beforeEach( () => {
-			createInfoNotice = jest.fn();
-			( mockUseDispatch as jest.Mock ).mockReturnValue( {
-				createSuccessNotice: jest.fn(),
-				createErrorNotice: jest.fn(),
-				createInfoNotice,
-			} );
-			( global.wcpaySettings as any ).maxUploadSize = siteUploadLimit;
-		} );
-
-		afterEach( () => {
-			delete ( global.wcpaySettings as any ).maxUploadSize;
-		} );
-
-		it( "blocks a file larger than the site's upload limit before uploading it", async () => {
-			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
-
-			await chooseFirstEvidenceFile( makeFile( 2 * 1024 * 1024 ) );
-
-			expect( createInfoNotice ).toHaveBeenCalledWith(
-				"This file is larger than your site's upload limit of 1MB. Try a smaller file, or ask your hosting provider to raise the limit."
-			);
-			expect( fileUploadCalls() ).toHaveLength( 0 );
-		} );
-	} );
-
 	it( 'should not render Visa Compliance specific elements', async () => {
 		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
 

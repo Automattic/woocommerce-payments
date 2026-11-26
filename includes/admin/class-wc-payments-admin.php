@@ -1045,7 +1045,6 @@ class WC_Payments_Admin {
 			'woopayFontRules'                    => WC_Payments_Styles_Cache::get_woopay_font_rules(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
-			'maxUploadSize'                      => wp_max_upload_size(),
 			'formattedStoreAddress'              => WC()->countries->get_formatted_address(
 				[
 					'address_1' => get_option( 'woocommerce_store_address', '' ),

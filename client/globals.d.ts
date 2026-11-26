@@ -139,7 +139,6 @@ declare global {
 		defaultExpressCheckoutBorderRadius: string;
 		dateFormat: string;
 		timeFormat: string;
-		maxUploadSize?: number;
 		formattedStoreAddress: string;
 	};
 
