@@ -871,8 +871,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		if ( UPLOAD_ERR_OK !== $file_error ) {
 			throw new API_Exception(
-				__( 'Max file size exceeded.', 'woocommerce-payments' ),
-				'wcpay_evidence_file_max_size',
+				__( "The file couldn't be uploaded. Please try again.", 'woocommerce-payments' ),
+				'wcpay_evidence_file_upload_error',
 				400
 			);
 		}

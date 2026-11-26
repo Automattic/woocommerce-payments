@@ -1121,6 +1121,18 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_upload_file_other_upload_error_is_not_reported_as_size() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_file_params( [ 'file' => [ 'error' => UPLOAD_ERR_PARTIAL ] ] );
+
+		$this->mock_http_client->expects( $this->never() )->method( 'remote_request' );
+
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( "The file couldn't be uploaded. Please try again." );
+
+		$this->payments_api_client->upload_file( $request );
+	}
+
 	public function provider_upload_file_over_site_limit(): array {
 		return [
 			'over upload_max_filesize' => [ [ 'file' => [ 'error' => UPLOAD_ERR_INI_SIZE ] ] ],
