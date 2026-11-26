@@ -728,7 +728,6 @@ class WooPay_Session {
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 				'optional_fields_status'         => self::get_option_fields_status(),
 				'checkout_phone_field'           => self::get_checkout_phone_field(),
-				'order_needs_shipping'           => $is_pay_for_order ? self::order_needs_shipping( $order ) : null,
 			],
 			'user_session'         => null,
 			'preloaded_requests'   => ! $is_pay_for_order ? [
@@ -1811,24 +1810,6 @@ class WooPay_Session {
 		];
 
 		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );
-	}
-
-	/**
-	 * Whether the store's checkout validates the order's shipping address when it's paid.
-	 *
-	 * The Store API's `needs_shipping` for an order is false for local pickup, whose shipping address
-	 * the checkout still validates.
-	 *
-	 * @param \WC_Order $order The order being paid.
-	 *
-	 * @return bool|null Whether it ships, or null on WooCommerce versions that validate the cart instead.
-	 */
-	private static function order_needs_shipping( \WC_Order $order ): ?bool {
-		if ( ! method_exists( $order, 'needs_shipping' ) ) { // @phpstan-ignore function.alreadyNarrowedType (the stubs describe the latest WooCommerce only)
-			return null;
-		}
-
-		return $order->needs_shipping();
 	}
 
 	/**
