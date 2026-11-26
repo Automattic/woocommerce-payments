@@ -514,6 +514,15 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Skips a test that needs WooCommerce's pay-page email verification check, public from WooCommerce 8.6.
+	 */
+	protected function skip_without_woocommerce_email_verification(): void {
+		if ( ! is_callable( [ 'Automattic\WooCommerce\Internal\Utilities\Users', 'should_user_verify_order_email' ] ) ) {
+			$this->markTestSkipped( 'WooCommerce has no callable pay-page email verification check before 8.6.' );
+		}
+	}
+
+	/**
 	 * The table order meta is stored in, its order ID column and its row ID column.
 	 *
 	 * @return string[]

@@ -1581,7 +1581,7 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Whether the visitor may see the billing details of an order they hold the payment link for.
+	 * Whether the visitor may see the billing details and total of an order they hold the payment link for.
 	 *
 	 * Follows WooCommerce's pay page, which shows a guest order's pay form without asking for
 	 * the email in the first minutes after the order is created, or when the merchant turns email
@@ -1614,6 +1614,32 @@ class WC_Payments_Utils {
 			// Users is internal to WooCommerce and may change, and its filters run third-party code.
 			return $if_unchecked;
 		}
+	}
+
+	/**
+	 * The email posted from WooCommerce's verify-email form, which shows the pay form on the same request.
+	 *
+	 * @return string|null Null when the request isn't a submission of that form.
+	 */
+	public static function get_email_from_verify_form(): ?string {
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- the nonce is only compared, the email is sanitized below.
+		$nonce        = wp_unslash( $_POST['check_submission'] ?? '' );
+		$posted_email = wp_unslash( $_POST['email'] ?? '' );
+		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( ! is_string( $nonce ) ) {
+			return null;
+		}
+
+		if ( ! is_string( $posted_email ) ) {
+			return null;
+		}
+
+		if ( ! wp_verify_nonce( $nonce, 'wc_verify_email' ) ) {
+			return null;
+		}
+
+		return sanitize_email( $posted_email );
 	}
 
 	/**

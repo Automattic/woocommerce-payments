@@ -1180,15 +1180,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Skips a test that needs WooCommerce's pay-page email verification check, public from WooCommerce 8.6.
-	 */
-	private function skip_without_woocommerce_email_verification(): void {
-		if ( ! is_callable( [ 'Automattic\WooCommerce\Internal\Utilities\Users', 'should_user_verify_order_email' ] ) ) {
-			$this->markTestSkipped( 'WooCommerce has no callable pay-page email verification check before 8.6.' );
-		}
-	}
-
-	/**
 	 * Test $customer_service->get_customer_id_for_order( $order ).
 	 */
 	public function test_get_customer_id_for_order() {

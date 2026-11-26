@@ -491,15 +491,6 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	}
 
 	/**
-	 * Skips a test that needs WooCommerce's pay-page email verification check, public from WooCommerce 8.6.
-	 */
-	private function skip_without_woocommerce_email_verification(): void {
-		if ( ! is_callable( [ 'Automattic\WooCommerce\Internal\Utilities\Users', 'should_user_verify_order_email' ] ) ) {
-			$this->markTestSkipped( 'WooCommerce has no callable pay-page email verification check before 8.6.' );
-		}
-	}
-
-	/**
 	 * Creates a pending guest order with a billing email.
 	 *
 	 * @param int $age_in_seconds How long ago the order was created.

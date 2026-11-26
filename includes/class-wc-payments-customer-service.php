@@ -558,19 +558,9 @@ class WC_Payments_Customer_Service {
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-			// WooCommerce's verify-email form posts here, and shows the pay form on the same request.
-			// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- the nonce is only compared, the email is sanitized below.
-			$nonce          = wp_unslash( $_POST['check_submission'] ?? '' );
-			$posted_email   = wp_unslash( $_POST['email'] ?? '' );
-			$supplied_email = null;
-			// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			if ( is_string( $nonce ) && is_string( $posted_email ) && wp_verify_nonce( $nonce, 'wc_verify_email' ) ) {
-				$supplied_email = sanitize_email( $posted_email );
-			}
-
 			// payment_fields() asks for this only once WooCommerce has checked the visitor and rendered the pay form,
 			// so a check that can't run here keeps the details.
-			if ( $order instanceof WC_Order && WC_Payments_Utils::may_see_order_billing_details( $order, $supplied_email, true ) ) {
+			if ( $order instanceof WC_Order && WC_Payments_Utils::may_see_order_billing_details( $order, WC_Payments_Utils::get_email_from_verify_form(), true ) ) {
 				$firstname       = $order->get_billing_first_name();
 				$lastname        = $order->get_billing_last_name();
 				$user_email      = $order->get_billing_email();
