@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Record whether WooPayments charged an order in test or live mode with WooCommerce's order payment mode, so the WooCommerce Tracker reports test orders separately.
