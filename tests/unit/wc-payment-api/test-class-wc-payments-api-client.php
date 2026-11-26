@@ -1114,7 +1114,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->payments_api_client->upload_file( $request );
 			$this->fail( 'Expected an API_Exception.' );
 		} catch ( API_Exception $e ) {
-			$this->assertSame( "This file is larger than your site's upload limit of 1 MB. Try a smaller file, or ask your hosting provider to raise the limit.", $e->getMessage() );
+			$this->assertSame( 'This file exceeds the maximum upload size of 1 MB for this site.', $e->getMessage() );
 			$this->assertSame( 'wcpay_evidence_file_max_size', $e->get_error_code() );
 		} finally {
 			remove_filter( 'upload_size_limit', $limit_filter );
