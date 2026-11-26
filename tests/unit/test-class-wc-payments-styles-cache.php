@@ -439,11 +439,8 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Routine auto-invalidation (theme/style hooks) must NOT bump the salt — only
-	 * the deliberate manual clear does. invalidate_styles_cache_version() is
-	 * called by handle_theme_change() on every theme/style save, so if it changed
-	 * the salt the version would be non-deterministic again and WooPay's slot
-	 * would be orphaned on routine recomputes.
+	 * A version lost without a theme/style event must recompute to the same
+	 * value, so invalidate_styles_cache_version() must not bump the salt.
 	 */
 	public function test_invalidate_styles_cache_version_does_not_change_salt() {
 		delete_option( 'wcpay_styles_cache_salt' );
@@ -458,6 +455,25 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			$before,
 			$recomputed,
 			'Routine invalidation must recompute the same version (salt unchanged).'
+		);
+	}
+
+	/**
+	 * Template, template-part and Additional CSS saves fire handle_theme_change()
+	 * without changing any hash input, so the hook itself must force a new version.
+	 */
+	public function test_handle_theme_change_changes_version_with_identical_inputs() {
+		delete_option( 'wcpay_styles_cache_salt' );
+		delete_option( 'wcpay_styles_cache_version' );
+
+		$before = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		WC_Payments_Styles_Cache::handle_theme_change();
+
+		$this->assertNotSame(
+			$before,
+			WC_Payments_Styles_Cache::get_styles_cache_version(),
+			'A theme/style event must produce a new version even when the hash inputs are unchanged.'
 		);
 	}
 

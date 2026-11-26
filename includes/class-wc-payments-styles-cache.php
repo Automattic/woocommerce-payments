@@ -36,11 +36,11 @@ class WC_Payments_Styles_Cache {
 	];
 
 	/**
-	 * Option holding the manual-clear salt mixed into the styles cache version.
-	 * Regenerated only by bust_styles_cache() (the "Clear WooPayments calculated
-	 * styles" tool). Lets a merchant force a new version for style changes the
-	 * hash inputs can't detect (custom CSS, child themes, page builders) without
-	 * making routine recomputes non-deterministic.
+	 * Option holding the salt mixed into the styles cache version. Regenerated
+	 * only by bust_styles_cache(): the "Clear WooPayments calculated styles" tool
+	 * and the theme/style change hooks. Forces a new version for style changes
+	 * the hash inputs can't detect (custom CSS, templates, page builders) without
+	 * making a recompute between those events non-deterministic.
 	 *
 	 * @var string
 	 */
@@ -74,7 +74,8 @@ class WC_Payments_Styles_Cache {
 
 	/**
 	 * Forces a brand-new styles cache version, even when the hash inputs are
-	 * unchanged. Backs the "Clear WooPayments calculated styles" admin tool.
+	 * unchanged. Backs the "Clear WooPayments calculated styles" admin tool and
+	 * handle_theme_change().
 	 *
 	 * This is the escape hatch for "hash-invisible" style changes — custom CSS,
 	 * child-theme edits, page builders — that none of the version inputs capture,
@@ -83,9 +84,9 @@ class WC_Payments_Styles_Cache {
 	 * re-extracts, and (b) makes the version-stamped WooPay appearance slot no
 	 * longer match, so get_woopay_appearance() stops serving the stale value.
 	 *
-	 * Deliberately separate from invalidate_styles_cache_version() (which runs on
-	 * every theme/style hook): routine invalidation must stay deterministic so the
-	 * WooPay slot survives recompute; only this deliberate clear changes the salt.
+	 * Deliberately separate from invalidate_styles_cache_version(): a version
+	 * lost without a theme/style event must recompute to the same value, so the
+	 * stored WooPay slot keeps matching.
 	 */
 	public static function bust_styles_cache(): void {
 		// wp_generate_uuid4() (not time()) so two clears within the same second
@@ -170,12 +171,16 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
-	 * Called on theme/style change hooks. Invalidates the styles cache version
-	 * and any stored WooPay appearance so it can be recomputed lazily when
+	 * Called on theme/style change hooks. Forces a new styles cache version and
+	 * deletes any stored WooPay appearance so it can be recomputed lazily when
 	 * needed (e.g. via get_woopay_appearance()).
+	 *
+	 * Busts rather than invalidates: template, template-part and Additional CSS
+	 * saves don't change the hash inputs, so a plain recompute would keep the
+	 * old version and shoppers' cached appearance.
 	 */
 	public static function handle_theme_change(): void {
-		self::invalidate_styles_cache_version();
+		self::bust_styles_cache();
 		self::invalidate_woopay_appearance();
 	}
 
