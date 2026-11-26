@@ -22,16 +22,16 @@ import {
 	updateFraudOutcomeTransactionsSummary,
 	updateErrorForFraudOutcomeTransactionsSummary,
 } from './actions';
-import { formatDateValue, getUserTimeZone } from 'utils';
+import { formatDateValueForUserTimeZone, getUserTimeZone } from 'utils';
 
 export const formatQueryFilters = ( query ) => ( {
 	user_email: query.userEmail,
 	match: query.match,
-	date_before: formatDateValue( query.dateBefore, true ),
-	date_after: formatDateValue( query.dateAfter ),
+	date_before: formatDateValueForUserTimeZone( query.dateBefore, true ),
+	date_after: formatDateValueForUserTimeZone( query.dateAfter ),
 	date_between: query.dateBetween && [
-		formatDateValue( query.dateBetween[ 0 ] ),
-		formatDateValue( query.dateBetween[ 1 ], true ),
+		formatDateValueForUserTimeZone( query.dateBetween[ 0 ] ),
+		formatDateValueForUserTimeZone( query.dateBetween[ 1 ], true ),
 	],
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,

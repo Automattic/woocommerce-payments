@@ -20,7 +20,7 @@ import {
 	updateReportsFeesSummary,
 	updateReportsBalanceSummary,
 } from './actions';
-import { formatDateValue, getUserTimeZone } from 'utils';
+import { formatDateValueForUserTimeZone, getUserTimeZone } from 'utils';
 
 // The Fees REST schema declares `type` as an array (see Reports controller).
 // URL helpers and DataViews can hand us a scalar string, so normalize at the
@@ -35,11 +35,11 @@ const toArrayOrUndefined = ( value ) => {
 
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
-	date_before: formatDateValue( query.dateBefore, true ),
-	date_after: formatDateValue( query.dateAfter ),
+	date_before: formatDateValueForUserTimeZone( query.dateBefore, true ),
+	date_after: formatDateValueForUserTimeZone( query.dateAfter ),
 	date_between: query.dateBetween && [
-		formatDateValue( query.dateBetween[ 0 ] ),
-		formatDateValue( query.dateBetween[ 1 ], true ),
+		formatDateValueForUserTimeZone( query.dateBetween[ 0 ] ),
+		formatDateValueForUserTimeZone( query.dateBetween[ 1 ], true ),
 	],
 	payment_method_type: query.paymentMethodType,
 	type: toArrayOrUndefined( query.type ),

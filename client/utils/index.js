@@ -275,6 +275,28 @@ export const formatDateValue = ( date, upperBound = false ) => {
 };
 
 /**
+ * Formats a selected day as a date filter bound for endpoints that accept `user_timezone`.
+ *
+ * Those endpoints undo the conversion with the single offset from `getUserTimeZone()` and read the
+ * result as store time, so the bound has to be converted with that same offset. Using the browser's
+ * offset on the selected date instead shifts days across a DST change by the DST difference.
+ *
+ * @param {string} date       date string to be formatted.
+ * @param {bool}   upperBound flag to include the selected day for upper bound dates.
+ *
+ * @return {string} Formatted date string to use in server query.
+ */
+export const formatDateValueForUserTimeZone = ( date, upperBound = false ) => {
+	if ( ! date ) {
+		return date;
+	}
+	const day = moment( date ).utcOffset( getUserTimeZone(), true );
+	return ( upperBound ? day.endOf( 'day' ) : day.startOf( 'day' ) )
+		.utc()
+		.format( 'YYYY-MM-DD HH:mm:ss' );
+};
+
+/**
  * Applies country-specific thousand separator to the transactions number
  *
  * @param {number} trxCount The number of transactions.

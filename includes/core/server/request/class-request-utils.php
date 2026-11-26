@@ -19,8 +19,11 @@ class Request_Utils {
 	/**
 	 * Formats the incoming transaction date as per the blog's timezone.
 	 *
+	 * The date is a wall-clock time in `$user_timezone`, expressed in UTC. The same wall-clock time is read in the
+	 * store timezone, using the store offset on that date, and returned in UTC.
+	 *
 	 * @param string|null $transaction_date Transaction date to format.
-	 * @param string|null $user_timezone         User's timezone passed from client.
+	 * @param string|null $user_timezone    User's timezone passed from client.
 	 *
 	 * @return string|null The formatted transaction date as per timezone.
 	 */
@@ -29,21 +32,12 @@ class Request_Utils {
 			return $transaction_date;
 		}
 
-		// Get blog timezone.
-		$blog_time = new DateTime( $transaction_date );
-		$blog_time->setTimezone( new DateTimeZone( wp_timezone_string() ) );
+		$user_time = new DateTime( $transaction_date, new DateTimeZone( 'UTC' ) );
+		$user_time->setTimezone( new DateTimeZone( $user_timezone ) );
 
-		// Get local timezone.
-		$local_time = new DateTime( $transaction_date );
-		$local_time->setTimezone( new DateTimeZone( $user_timezone ) );
+		$store_time = new DateTime( $user_time->format( 'Y-m-d H:i:s' ), wp_timezone() );
+		$store_time->setTimezone( new DateTimeZone( 'UTC' ) );
 
-		// Compute time difference in minutes.
-		$time_difference = ( strtotime( $local_time->format( 'Y-m-d H:i:s' ) ) - strtotime( $blog_time->format( 'Y-m-d H:i:s' ) ) ) / 60;
-
-		// Shift date by time difference.
-		$formatted_date = new DateTime( $transaction_date );
-		date_modify( $formatted_date, $time_difference . 'minutes' );
-
-		return $formatted_date->format( 'Y-m-d H:i:s' );
+		return $store_time->format( 'Y-m-d H:i:s' );
 	}
 }

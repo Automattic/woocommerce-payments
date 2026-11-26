@@ -149,6 +149,32 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WC_Payments_API_Client::TRANSACTIONS_API, $request->get_api() );
 	}
 
+	public function test_from_rest_request_reads_date_filters_as_store_days_with_the_offset_of_each_date() {
+		$store_timezone = 'America/New_York';
+		$user_timezone  = '-10:00';
+		// Store days Nov 1, Mar 8 and Nov 1 (end), selected in a -10:00 browser and sent as UTC.
+		$date_after   = '2026-11-01 10:00:00';
+		$date_between = [ '2026-03-08 10:00:00', '2026-11-02 09:59:59' ];
+
+		$previous_timezone = get_option( 'timezone_string' );
+		update_option( 'timezone_string', $store_timezone );
+
+		try {
+			$rest_request = new WP_REST_Request( 'GET' );
+			$rest_request->set_param( 'date_after', $date_after );
+			$rest_request->set_param( 'date_between', $date_between );
+			$rest_request->set_param( 'user_timezone', $user_timezone );
+
+			$params = List_Transactions::from_rest_request( $rest_request )->get_params();
+		} finally {
+			update_option( 'timezone_string', $previous_timezone );
+		}
+
+		// Midnight EDT on Nov 1, midnight EST on Mar 8 and 23:59:59 EST on Nov 1.
+		$this->assertSame( '2026-11-01 04:00:00', $params['date_after'] );
+		$this->assertSame( [ '2026-03-08 05:00:00', '2026-11-02 04:59:59' ], $params['date_between'] );
+	}
+
 	public function test_format_response_adds_early_fraud_warning_from_order_meta() {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_charge_id', 'ch_with_efw' );

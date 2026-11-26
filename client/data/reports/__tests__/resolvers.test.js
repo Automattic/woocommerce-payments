@@ -16,7 +16,17 @@ import {
 	updateReportsFeesSummary,
 } from '../actions';
 import { getReportsFees, getReportsFeesSummary } from '../resolvers';
-import { getUserTimeZone } from 'jest-utils/timezone';
+
+// Tests run in America/New_York. Pin "now" to winter (-05:00) so it differs from the April filter dates (-04:00).
+const WINTER_NOW = new Date( '2026-01-15T12:00:00Z' );
+
+beforeAll( () => {
+	jest.useFakeTimers().setSystemTime( WINTER_NOW );
+} );
+
+afterAll( () => {
+	jest.useRealTimers();
+} );
 
 const errorResponse = { code: 'error' };
 
@@ -42,16 +52,16 @@ const filterQuery = {
 
 const expectedFilterParams = {
 	match: 'all',
-	date_before: '2026-04-02 03:59:59',
-	date_after: '2026-04-30 04:00:00',
-	'date_between[0]': '2026-04-01 04:00:00',
-	'date_between[1]': '2026-05-01 03:59:59',
+	date_before: '2026-04-02 04:59:59',
+	date_after: '2026-04-30 05:00:00',
+	'date_between[0]': '2026-04-01 05:00:00',
+	'date_between[1]': '2026-05-01 04:59:59',
 	payment_method_type: 'card',
 	'type[0]': 'charge',
 	order_id: '123',
 	deposit_id: 'po_123',
 	'search[0]': 'txn_123',
-	user_timezone: getUserTimeZone(),
+	user_timezone: '-05:00',
 };
 
 const expectApiFetchPath = ( control, expectedPath, expectedParams ) => {

@@ -9,6 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import {
+	formatDateValueForUserTimeZone,
 	getDocumentUrl,
 	getFileUrl,
 	getPaymentMethodSettingsUrl,
@@ -251,5 +252,32 @@ describe( 'hasSandboxAccount', () => {
 			accountStatus: { isLive: false, testDrive: true },
 		};
 		expect( hasSandboxAccount() ).toBe( false );
+	} );
+} );
+
+describe( 'formatDateValueForUserTimeZone', () => {
+	// Tests run in America/New_York; "now" is in EDT (-04:00) and January is in EST (-05:00).
+	const SUMMER_NOW = new Date( '2026-08-21T12:00:00Z' );
+	const WINTER_DAY = '2026-01-15';
+
+	beforeEach( () => {
+		jest.useFakeTimers().setSystemTime( SUMMER_NOW );
+	} );
+
+	afterEach( () => {
+		jest.useRealTimers();
+	} );
+
+	it( 'converts both bounds with the current offset sent as user_timezone', () => {
+		expect( formatDateValueForUserTimeZone( WINTER_DAY ) ).toBe(
+			'2026-01-15 04:00:00'
+		);
+		expect( formatDateValueForUserTimeZone( WINTER_DAY, true ) ).toBe(
+			'2026-01-16 03:59:59'
+		);
+	} );
+
+	it( 'leaves an empty bound unset', () => {
+		expect( formatDateValueForUserTimeZone( undefined ) ).toBeUndefined();
 	} );
 } );

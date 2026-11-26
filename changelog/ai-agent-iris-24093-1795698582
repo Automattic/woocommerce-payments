@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Match transaction and fees report date filters to store calendar days, including dates on the other side of a daylight saving change.
