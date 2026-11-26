@@ -411,18 +411,193 @@ describe( 'PaymentProcessor', () => {
 			useCustomerData.mockReturnValue( {} );
 		} );
 
-		it( 'should pass the email on the first render', () => {
+		describe( 'with an IntersectionObserver', () => {
+			let observers;
+			const originalIO = window.IntersectionObserver;
+
+			const lastObserver = () => observers[ observers.length - 1 ];
+			const setVisible = ( isVisible ) =>
+				act( () => lastObserver().trigger( isVisible ) );
+
+			const typeEmail = ( rerender, email ) => {
+				useCustomerData.mockReturnValue( { email } );
+				rerender( buildProcessor() );
+			};
+
+			beforeEach( () => {
+				observers = [];
+				window.IntersectionObserver = jest.fn( ( callback ) => {
+					const observer = {
+						observe: jest.fn(),
+						disconnect: jest.fn(),
+						trigger: ( isVisible ) =>
+							callback( [
+								{
+									isIntersecting: isVisible,
+									intersectionRatio: isVisible ? 1 : 0,
+								},
+							] ),
+					};
+					observers.push( observer );
+					return observer;
+				} );
+			} );
+
+			afterEach( () => {
+				window.IntersectionObserver = originalIO;
+			} );
+
+			it( 'should withhold the initial email until the element is visible', () => {
+				useCustomerData.mockReturnValue( {
+					email: 'shopper@example.com',
+				} );
+
+				render( buildProcessor() );
+
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				setVisible( false );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				setVisible( true );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
+			it( 'should pass the email when the element is already visible at mount', () => {
+				window.IntersectionObserver = jest.fn( ( callback ) => ( {
+					observe: jest.fn( () =>
+						callback( [
+							{ isIntersecting: true, intersectionRatio: 1 },
+						] )
+					),
+					disconnect: jest.fn(),
+				} ) );
+				useCustomerData.mockReturnValue( {
+					email: 'shopper@example.com',
+				} );
+
+				render( buildProcessor() );
+
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
+			it( 'should supply the email entered while offscreen on intersection', () => {
+				const { rerender } = render( buildProcessor() );
+
+				typeEmail( rerender, 'shopper@example.com' );
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				setVisible( true );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
+			it( 'should debounce edits made while the element is visible', () => {
+				useCustomerData.mockReturnValue( {
+					email: 'shopper@example.com',
+				} );
+				const { rerender } = render( buildProcessor() );
+				setVisible( true );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+
+				typeEmail( rerender, 'other@example.com' );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBe( 'other@example.com' );
+			} );
+
+			it( 'should debounce a valid email typed after an invalid one at intersection', () => {
+				useCustomerData.mockReturnValue( { email: 'invalid' } );
+				const { rerender } = render( buildProcessor() );
+				setVisible( true );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				typeEmail( rerender, 'shopper@example.com' );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
+			it( 'should drop a pending update and withhold edits once the element leaves the view', () => {
+				useCustomerData.mockReturnValue( {
+					email: 'first@example.com',
+				} );
+				const { rerender } = render( buildProcessor() );
+				setVisible( true );
+				expect( getLastLinkEmail() ).toBe( 'first@example.com' );
+
+				typeEmail( rerender, 'second@example.com' );
+				setVisible( false );
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBe( 'first@example.com' );
+
+				typeEmail( rerender, 'third@example.com' );
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBe( 'first@example.com' );
+
+				setVisible( true );
+				expect( getLastLinkEmail() ).toBe( 'third@example.com' );
+			} );
+
+			it( 'should withhold an email typed after scrolling back up from the element', () => {
+				const { rerender } = render( buildProcessor() );
+				setVisible( true );
+				setVisible( false );
+
+				typeEmail( rerender, 'shopper@example.com' );
+				act( () => {
+					jest.advanceTimersByTime( 1000 );
+				} );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				setVisible( true );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
+			it( 'should disconnect on unmount and start hidden when mounted again', () => {
+				useCustomerData.mockReturnValue( {
+					email: 'shopper@example.com',
+				} );
+				const { unmount } = render( buildProcessor() );
+				setVisible( true );
+				unmount();
+				expect( observers[ 0 ].disconnect ).toHaveBeenCalled();
+
+				getStripeElementOptions.mockClear();
+				render( buildProcessor() );
+				expect( observers ).toHaveLength( 2 );
+				expect( getLastLinkEmail() ).toBeUndefined();
+
+				setVisible( true );
+				expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+			} );
+
+			it( 'should not observe for non-card payment methods', () => {
+				render( buildProcessor( 'bancontact' ) );
+				expect( observers ).toHaveLength( 0 );
+			} );
+		} );
+
+		it( 'should pass the email when IntersectionObserver is unavailable', () => {
 			useCustomerData.mockReturnValue( {
 				email: 'shopper@example.com',
 			} );
 
 			render( buildProcessor() );
 
-			expect( getStripeElementOptions ).toHaveBeenCalledWith(
-				false,
-				{},
-				'shopper@example.com'
-			);
+			expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
 		} );
 
 		it( 'should pass a new email only once the shopper stops typing', () => {
