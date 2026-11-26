@@ -22,7 +22,7 @@ import {
 	updateFraudOutcomeTransactionsSummary,
 	updateErrorForFraudOutcomeTransactionsSummary,
 } from './actions';
-import { formatDateValue, getUserTimeZone } from 'utils';
+import { formatDateValue } from 'utils';
 
 export const formatQueryFilters = ( query ) => ( {
 	user_email: query.userEmail,
@@ -52,7 +52,6 @@ export const formatQueryFilters = ( query ) => ( {
 	source_is: query.sourceIs,
 	source_is_not: query.sourceIsNot,
 	search: query.search,
-	user_timezone: getUserTimeZone(),
 	locale: query.locale,
 } );
 

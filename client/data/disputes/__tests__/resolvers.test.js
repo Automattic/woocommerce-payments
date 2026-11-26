@@ -143,7 +143,7 @@ describe( 'getDisputesSummary resolver', () => {
 	const mockSummary = { count: 42 };
 	const expectedQueryString =
 		// eslint-disable-next-line max-len
-		'match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=lost&status_is_not=won';
+		'match=all&store_currency_is=gbp&date_before=2020-04-28%2023%3A59%3A59&date_after=2020-04-29%2000%3A00%3A00&date_between%5B0%5D=2020-04-28%2000%3A00%3A00&date_between%5B1%5D=2020-04-29%2023%3A59%3A59&status_is=lost&status_is_not=won';
 
 	beforeEach( () => {
 		generator = getDisputesSummary( query );

@@ -81,6 +81,7 @@ module.exports = {
 			'(@woocommerce/.+)',
 			'|@wordpress/dataviews/',
 			'|gridicons',
+			'|temporal-(polyfill|utils)/',
 			'|@automattic/components/',
 			'|@automattic/material-design-icons/',
 			'|parsel-js/',

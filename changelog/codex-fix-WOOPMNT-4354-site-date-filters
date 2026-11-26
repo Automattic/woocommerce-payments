@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix date filters in payment lists and the fees report to include the full day in the store timezone across daylight saving changes.

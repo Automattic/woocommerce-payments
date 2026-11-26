@@ -4,11 +4,16 @@ The Reports API allows you to obtain detailed records of transactions and author
 
 Transaction report amounts (`amount`, `fees`, and `net_amount`) are returned in minor units of `deposit_currency`. `transaction_currency` is the currency paid by the customer and can differ from `deposit_currency`. Authorization report amounts (`amount`, `amount_captured`, `fees`, and `net_amount`) use the response's `currency` and are also in minor units. See [Monetary amounts](#monetary-amounts) for examples.
 
+For transaction and authorization date filters, send UTC timestamps in `YYYY-MM-DD HH:mm:ss` format and omit `user_timezone`.
+
 ## List transactions
 
 _@since 6.5.0_
 
 Fetch a detailed overview of transactions.
+
+To select a store calendar day, convert its start and the start of the following day to UTC using the store timezone, then subtract one second from the latter for the upper bound. For example, March 8, 2026 in New York runs from `2026-03-08 05:00:00` through `2026-03-09 03:59:59` UTC.
+
 ### Error codes
 
 -   `rest_forbidden` - Unauthenticated
@@ -35,7 +40,7 @@ Fetch a detailed overview of transactions.
 - `payment_method_type`: Filter transactions based on the payment method used.
 - `type`: Filter transactions where type is a specific value.
 - `match`: Match filter for the transactions.
-- `user_timezone`: Include timezone into date filtering.
+- `user_timezone`: Legacy browser timezone used to adjust date filters. Omit for UTC bounds.
 - `page`: Page number.
 - `per_page`: Page size.
 - `sort`: Field on which to sort.
@@ -166,7 +171,7 @@ Fetch a detailed overview of authorizations.
 - `payment_method_type`: Filter authorizations based on the payment method used.
 - `type`: Filter authorizations where type is a specific value.
 - `match`: Match filter for the authorizations.
-- `user_timezone`: Include timezone into date filtering for authorizations.
+- `user_timezone`: Legacy browser timezone used to adjust date filters. Omit for UTC bounds.
 - `page`: Page number for listing authorizations.
 - `per_page`: Page size for listing authorizations.
 - `sort`: Field on which to sort the authorizations.

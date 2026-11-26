@@ -16,7 +16,6 @@ import {
 	updateReportsFeesSummary,
 } from '../actions';
 import { getReportsFees, getReportsFeesSummary } from '../resolvers';
-import { getUserTimeZone } from 'jest-utils/timezone';
 
 const errorResponse = { code: 'error' };
 
@@ -42,16 +41,15 @@ const filterQuery = {
 
 const expectedFilterParams = {
 	match: 'all',
-	date_before: '2026-04-02 03:59:59',
-	date_after: '2026-04-30 04:00:00',
-	'date_between[0]': '2026-04-01 04:00:00',
-	'date_between[1]': '2026-05-01 03:59:59',
+	date_before: '2026-04-01 23:59:59',
+	date_after: '2026-04-30 00:00:00',
+	'date_between[0]': '2026-04-01 00:00:00',
+	'date_between[1]': '2026-04-30 23:59:59',
 	payment_method_type: 'card',
 	'type[0]': 'charge',
 	order_id: '123',
 	deposit_id: 'po_123',
 	'search[0]': 'txn_123',
-	user_timezone: getUserTimeZone(),
 };
 
 const expectApiFetchPath = ( control, expectedPath, expectedParams ) => {

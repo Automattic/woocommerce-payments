@@ -288,6 +288,9 @@ importers:
       lodash:
         specifier: 4.18.1
         version: 4.18.1
+      temporal-polyfill:
+        specifier: 1.0.8
+        version: 1.0.8
     devDependencies:
       '@automattic/color-studio':
         specifier: 4.1.0
@@ -10564,6 +10567,15 @@ packages:
   temml@0.10.34:
     resolution: {integrity: sha512-f3b5CaPwPvMviA+CtHy0qoIGWvzpRrNpXmGRc/Y1jc9gAYy+xOlndJFyn7Vfcz7cBcS8QRvv8z0EEH59sHCQxg==}
     engines: {node: '>=18.13.0'}
+
+  temporal-polyfill@1.0.8:
+    resolution: {integrity: sha512-RCCGa0GddT099XG49ijdD0tDf86L8vfuZun1+JyJiO4Y2NP9PACQsG0OnvNPXwVLisdvhr/zqL2nhKQmXXx08A==}
+
+  temporal-spec@1.0.1:
+    resolution: {integrity: sha512-wxVoanmDeavXie1vu2JaQ3WIc3JZnWAOYFBsJyATaVsXsycKYUflGsyBmrRSnoCpZJpwPyr38VpgSUlQ8CbFxg==}
+
+  temporal-utils@1.0.4:
+    resolution: {integrity: sha512-4mAcgbWlaxe+gn23gk8g0iHxCVGVOhKzSCfF5HM3lfvH8BdT+/pBmH/R/E4CrIse+koUgs8ThkPzCLnui6Fi8w==}
 
   terser-webpack-plugin@5.6.1:
     resolution: {integrity: sha512-201R5j+sJpK8nFWwKVyNfZot8FaJbLZDq5evriVzbV1wDtSXDjRUDRfJzHpAaxFDMEhsZL1QkeqM61wgsS3KaQ==}
@@ -25932,6 +25944,15 @@ snapshots:
       - react-native-b4a
 
   temml@0.10.34: {}
+
+  temporal-polyfill@1.0.8:
+    dependencies:
+      temporal-spec: 1.0.1
+      temporal-utils: 1.0.4
+
+  temporal-spec@1.0.1: {}
+
+  temporal-utils@1.0.4: {}
 
   terser-webpack-plugin@5.6.1(cssnano@6.1.2(postcss@8.5.33))(csso@5.0.5)(esbuild@0.25.12)(postcss@8.5.33)(uglify-js@3.19.3)(webpack-cli@5.1.4)(webpack@5.106.2):
     dependencies:

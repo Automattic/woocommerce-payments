@@ -72,9 +72,6 @@ describe( 'ReportsHeader', () => {
 	const filteredQuery = {
 		tab: 'fees',
 		payment_method_type: 'card',
-		// Plain local-time strings match how date filters land in `getQuery()`
-		// from the date-range picker. The forced America/New_York TZ in
-		// jest-global-setup makes the start/end-of-day → UTC math deterministic.
 		date_after: '2026-01-15 12:00:00',
 		date_before: '2026-01-15 12:00:00',
 	};
@@ -132,15 +129,11 @@ describe( 'ReportsHeader', () => {
 		);
 		expect( args.exportRequestURL ).toContain( 'payment_method_type=card' );
 		expect( args.exportRequestURL ).toContain( 'locale=en_US' );
-		// Date filters from the URL query must reach the export URL —
-		// otherwise the file would not match what the merchant sees on screen.
-		// EST → UTC: start-of-day 00:00 EST = 05:00 UTC; end-of-day 23:59:59
-		// EST = 04:59:59 UTC the next day.
 		expect( args.exportRequestURL ).toContain(
-			'date_after=2026-01-15%2005%3A00%3A00'
+			'date_after=2026-01-15%2000%3A00%3A00'
 		);
 		expect( args.exportRequestURL ).toContain(
-			'date_before=2026-01-16%2004%3A59%3A59'
+			'date_before=2026-01-15%2023%3A59%3A59'
 		);
 		expect( args.exportFileAvailabilityEndpoint ).toBe(
 			'/wc/v3/payments/reports/fees/download'

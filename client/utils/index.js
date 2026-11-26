@@ -5,7 +5,8 @@ import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { capitalize, partial } from 'lodash';
 import moment from 'moment';
-import { dateI18n } from '@wordpress/date';
+import * as PlainDate from 'temporal-polyfill/fns/PlainDate';
+import { getBasic } from 'temporal-polyfill/fns/Calendar';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { encodePathSegment } from 'utils/path-segment';
 import { numberFormat } from '@woocommerce/number';
@@ -248,30 +249,39 @@ export const getPaymentMethodsUrl = () => {
 export const formatStringValue = ( value ) =>
 	capitalize( value ).replace( /_/g, ' ' );
 
-export const getUserTimeZone = () => moment( new Date() ).format( 'Z' );
-
 /**
- * Basic formatting function to convert local date string to UTC.
+ * Resolve an inclusive site-calendar-day filter to its UTC API timestamp.
  *
- * We want the selected date to be included in upper bound selections, so we need to make its time 11:59:59 PM.
- *
- * @param {string} date       date string to be formatted.
- * @param {bool}   upperBound flag to include the selected day for upper bound dates.
- *
- * @return {string} Formatted date string to use in server query.
+ * @param {string}  date       Selected calendar date, optionally with a time.
+ * @param {boolean} upperBound Whether to include the entire selected day.
+ * @return {string} UTC date and time for the server query.
  */
 export const formatDateValue = ( date, upperBound = false ) => {
-	const adjustedDate = upperBound
-		? moment( date ).endOf( 'day' ).utc().toISOString()
-		: moment( date ).startOf( 'day' ).utc().toISOString();
-	return (
-		date &&
-		dateI18n(
-			'Y-m-d H:i:s',
-			adjustedDate,
-			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-		)
-	);
+	if ( ! date ) {
+		return date;
+	}
+
+	const timeZone =
+		window.wcSettings?.timeZone ||
+		window.wcSettings?.admin?.timeZone ||
+		'UTC';
+	try {
+		const day = PlainDate.fromString( date, getBasic );
+		// The last local hour can occur twice. End just before the next day starts.
+		const boundaryDay = upperBound ? PlainDate.addDays( day, 1 ) : day;
+		const { epochMilliseconds } = PlainDate.toZonedDateTime(
+			boundaryDay,
+			timeZone
+		);
+		const bound = moment.utc( epochMilliseconds );
+		if ( upperBound ) {
+			bound.subtract( 1, 'second' );
+		}
+		return bound.locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	} catch {
+		// Keep malformed URL filters in the request so they cannot broaden an export.
+		return 'Invalid date';
+	}
 };
 
 /**
