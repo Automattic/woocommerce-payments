@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "caf5c44ec06a601ecf7abecd0779099e",
+    "content-hash": "7cdc4aa529f4c645548e4881105e06d7",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -175,16 +175,16 @@
         },
         {
             "name": "automattic/jetpack-autoloader",
-            "version": "v6.0.3",
+            "version": "v6.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-autoloader.git",
-                "reference": "315cc2c3392bf5d1f54d4868384279c75a320b66"
+                "reference": "d7ac81dbe5c7ef4ad32fffe32a584d6b111b2440"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/315cc2c3392bf5d1f54d4868384279c75a320b66",
-                "reference": "315cc2c3392bf5d1f54d4868384279c75a320b66",
+                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/d7ac81dbe5c7ef4ad32fffe32a584d6b111b2440",
+                "reference": "d7ac81dbe5c7ef4ad32fffe32a584d6b111b2440",
                 "shasum": ""
             },
             "require": {
@@ -232,9 +232,9 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v6.0.3"
+                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v6.0.4"
             },
-            "time": "2026-11-02T18:05:06+00:00"
+            "time": "2026-11-16T15:45:09+00:00"
         },
         {
             "name": "automattic/jetpack-config",
@@ -2491,11 +2491,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.5",
+            "version": "2.3.6",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/645a1bd6bead15fc1b8474137467961d0fa30a79",
-                "reference": "645a1bd6bead15fc1b8474137467961d0fa30a79",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/00cedebb76cc82c1592414fa4f616cefdccda16f",
+                "reference": "00cedebb76cc82c1592414fa4f616cefdccda16f",
                 "shasum": ""
             },
             "require": {
@@ -2551,7 +2551,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-03T12:14:22+00:00"
+            "time": "2026-11-15T19:58:26+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -5711,16 +5711,16 @@
         },
         {
             "name": "woocommerce/php-stubs",
-            "version": "v2026.11.12",
+            "version": "v2026.11.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/php-stubs.git",
-                "reference": "be4aecc0cfb19d1a871b6939e7925adb6a137413"
+                "reference": "4d46852a3678f7f7a738ef2b0f9b54728901d4c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/be4aecc0cfb19d1a871b6939e7925adb6a137413",
-                "reference": "be4aecc0cfb19d1a871b6939e7925adb6a137413",
+                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/4d46852a3678f7f7a738ef2b0f9b54728901d4c3",
+                "reference": "4d46852a3678f7f7a738ef2b0f9b54728901d4c3",
                 "shasum": ""
             },
             "type": "library",
@@ -5739,22 +5739,22 @@
             ],
             "support": {
                 "issues": "https://github.com/woocommerce/php-stubs/issues",
-                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.11.12"
+                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.11.19"
             },
-            "time": "2026-11-12T03:13:52+00:00"
+            "time": "2026-11-19T03:05:39+00:00"
         },
         {
             "name": "woocommerce/qit-cli",
-            "version": "1.3.3",
+            "version": "1.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/qit-cli.git",
-                "reference": "d9b2cd3586a9969681228a40608f14088fcaf4ea"
+                "reference": "9b4ff30f52fe911411b3f652c9abb602fc11ce27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/d9b2cd3586a9969681228a40608f14088fcaf4ea",
-                "reference": "d9b2cd3586a9969681228a40608f14088fcaf4ea",
+                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/9b4ff30f52fe911411b3f652c9abb602fc11ce27",
+                "reference": "9b4ff30f52fe911411b3f652c9abb602fc11ce27",
                 "shasum": ""
             },
             "require": {
@@ -5772,9 +5772,9 @@
             "description": "A command line interface for WooCommerce Quality Insights Toolkit (QIT).",
             "support": {
                 "issues": "https://github.com/woocommerce/qit-cli/issues",
-                "source": "https://github.com/woocommerce/qit-cli/tree/1.3.3"
+                "source": "https://github.com/woocommerce/qit-cli/tree/1.3.4"
             },
-            "time": "2026-10-28T13:16:29+00:00"
+            "time": "2026-11-13T16:34:35+00:00"
         },
         {
             "name": "woocommerce/woocommerce-sniffs",

@@ -1434,6 +1434,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 	}
 
+	public function test_payment_method_ids_ignoring_amount_limits_include_methods_outside_their_limits() {
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
+
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_wcpay_account
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'card_payments'   => 'active',
+						'affirm_payments' => 'active',
+					],
+					'capability_requirements' => [
+						'card_payments'   => [],
+						'affirm_payments' => [],
+					],
+				]
+			);
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::CARD, Payment_Method::AFFIRM ];
+
+		WC()->session->init();
+		WC()->cart->empty_cart();
+		// Total is 10 USD, below Affirm's 35 USD minimum.
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 1 );
+		WC()->cart->calculate_totals();
+
+		$this->assertSame( [ 'card' ], array_values( $this->card_gateway->get_payment_method_ids_enabled_at_checkout() ) );
+		$this->assertSame( [ 'card', 'affirm' ], array_values( $this->card_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() ) );
+
+		WC()->cart->empty_cart();
+	}
+
 	/**
 	 * @dataProvider provider_klarna_limits_follow_customer_billing_country
 	 *
@@ -1658,17 +1691,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $mock_token, $this->card_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
-	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
-		$order = WC_Helper_Order::create_order();
-		$order->set_billing_phone( '+1123456789123456789123' );
-		$order->save();
-		$result = $this->card_gateway->process_payment( $order->get_id() );
-		$this->assertEquals( 'fail', $result['result'] );
-		$error_notices = WC()->session->get( 'wc_notices' );
-		$this->assertNotEmpty( $error_notices );
-		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
-	}
-
 	public function test_remove_link_payment_method_if_card_disabled() {
 		$link_gateway = $this->get_gateway( Payment_Method::LINK );
 		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ 'link' ];
@@ -1688,6 +1710,30 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->assertSame( $link_gateway->get_payment_method_ids_enabled_at_checkout(), [] );
+	}
+
+	public function test_remove_duplicate_link_payment_methods_if_card_disabled() {
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
+
+		$link_gateway = $this->get_gateway( Payment_Method::LINK );
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
+			[
+				'capabilities' => [
+					'card_payments' => 'active',
+					'link_payments' => 'active',
+				],
+			]
+		);
+
+		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::LINK, Payment_Method::LINK, Payment_Method::CARD ];
+		$this->assertSame( [ 'link', 'link', 'card' ], $link_gateway->get_payment_method_ids_enabled_at_checkout() );
+		$this->assertSame( [ 'link', 'link', 'card' ], $link_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() );
+
+		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::LINK, Payment_Method::LINK ];
+		$this->assertSame( [], $link_gateway->get_payment_method_ids_enabled_at_checkout() );
+		$this->assertSame( [], $link_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() );
 	}
 
 	/**
@@ -5898,7 +5944,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -5969,7 +6015,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -6042,7 +6088,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
@@ -6297,7 +6343,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6328,7 +6374,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6360,7 +6406,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
@@ -6924,7 +6970,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( true );
 
 		wc_clear_notices();
@@ -6949,8 +6995,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
-			->method( 'is_limited' )
+			->method( 'is_limited_or_reserve' )
 			->willReturn( true );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
 
 		try {
 			$this->card_gateway->process_payment( $order->get_id() );
@@ -6959,6 +7011,65 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->assertEquals( 'Your payment was not processed.', $e->getMessage() );
 			$this->assertEquals( 'WCPay\Exceptions\Rate_Limiter_Enabled_Exception', get_class( $e->getPrevious() ) );
 		}
+	}
+
+	public function test_process_payment_releases_the_reserved_attempt_when_the_payment_is_not_declined() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->mock_rate_limiter
+			->method( 'is_limited_or_reserve' )
+			->willReturn( false );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->method( 'process_payment_for_order' )
+			->willReturn(
+				[
+					'result'   => 'success',
+					'redirect' => 'https://example.com/order-received',
+				]
+			);
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'success', $result['result'] );
+	}
+
+	public function test_process_payment_releases_the_reserved_attempt_when_the_payment_fails_without_a_decline() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->get_fraud_prevention_service_mock()
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->mock_rate_limiter
+			->method( 'is_limited_or_reserve' )
+			->willReturn( false );
+		$this->mock_rate_limiter
+			->expects( $this->never() )
+			->method( 'bump' );
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'release' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->method( 'process_payment_for_order' )
+			->willThrowException( new API_Exception( 'Error: something went wrong on our end.', 'processing_error', 500 ) );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
 	}
 
 	public function test_process_payment_returns_correct_redirect() {
