@@ -77,6 +77,16 @@ describe( 'PaymentMethod', () => {
 		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
+	it( 'exposes a per-method anchor for settings deep links', () => {
+		const { container } = render(
+			<PaymentMethod id="klarna" description="Bar" label="Klarna" />
+		);
+
+		expect(
+			container.querySelector( '#payment-method-klarna' )
+		).toContainElement( screen.getByLabelText( 'Klarna' ) );
+	} );
+
 	it( 'calls onCheckClick when clicking its checkbox', async () => {
 		const handleCheckClickMock = jest.fn();
 		const handleUnCheckClickMock = jest.fn();

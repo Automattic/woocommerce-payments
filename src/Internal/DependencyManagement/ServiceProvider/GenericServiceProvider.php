@@ -18,6 +18,7 @@ use WCPay\Internal\Service\DisputeReadinessService;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\SessionService;
+use WCPay\Internal\Service\SettingsRedirectService;
 use WCPay\Internal\PluginManagement\TranslationsLoader;
 
 /**
@@ -35,6 +36,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		OrderService::class,
 		Level3Service::class,
 		DisputeReadinessService::class,
+		SettingsRedirectService::class,
 		TranslationsLoader::class,
 	];
 
@@ -63,6 +65,9 @@ class GenericServiceProvider extends AbstractServiceProvider {
 
 		$container->addShared( DisputeReadinessService::class )
 			->addArgument( WC_Payments_Account::class );
+
+		$container->addShared( SettingsRedirectService::class )
+			->addArgument( LegacyProxy::class );
 
 		$container->addShared( SessionService::class )
 			->addArgument( LegacyProxy::class );

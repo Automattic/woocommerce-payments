@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add a stable link to the WooPayments settings page that can scroll to a payment method and pass flags to the page.
