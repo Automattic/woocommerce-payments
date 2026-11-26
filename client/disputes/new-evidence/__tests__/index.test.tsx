@@ -22,9 +22,15 @@ import type { DisputeReason } from 'wcpay/types/disputes';
 import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import { useDisputeEvidence } from 'wcpay/data/disputes';
 import { PAYMENT_INTENTS_STORE_NAME } from 'wcpay/data/store-names';
+import { recordEvent } from 'tracks';
 
 // Mock the API fetch calls
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
+jest.mock( 'tracks', () => ( {
+	...jest.requireActual( 'tracks' ),
+	recordEvent: jest.fn(),
+} ) );
 
 // Mock the data hooks
 jest.mock( 'wcpay/data/settings', () => ( {
@@ -823,6 +829,77 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 					name: "Let's gather the basics",
 				} )
 			).toHaveFocus();
+		} );
+	} );
+
+	describe( 'when Stripe rejects evidence over the page limit', () => {
+		const pageLimitError = {
+			code: 'dispute_evidence_page_limit_exceeded',
+			message: 'Error: Evidence is 22 pages; the limit is 17.',
+			data: null,
+		};
+		const rejectSaves = ( options: { method?: string } ) =>
+			options.method === 'post'
+				? Promise.reject( pageLimitError )
+				: Promise.resolve( regularDispute );
+		let mockCreateErrorNotice: jest.Mock;
+
+		beforeEach( () => {
+			mockCreateErrorNotice = jest.fn();
+			( mockUseDispatch as jest.Mock ).mockReturnValue( {
+				createSuccessNotice: jest.fn(),
+				createErrorNotice: mockCreateErrorNotice,
+				createInfoNotice: jest.fn(),
+			} );
+		} );
+
+		it( 'explains the limit and keeps the merchant on the step', async () => {
+			mockApiFetch.mockImplementation( rejectSaves as any );
+			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+			fireEvent.click(
+				await screen.findByRole( 'button', { name: 'Next' } )
+			);
+
+			await waitFor( () => {
+				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
+					"Your evidence is over the card network's page limit. Shorten the cover letter or remove pages from your files, then try again. (Error: Evidence is 22 pages; the limit is 17.)"
+				);
+			} );
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'wcpay_dispute_save_evidence_failed',
+				{
+					dispute_id: 'dp_test_456',
+					dispute_status: 'needs_response',
+					dispute_reason: 'fraudulent',
+					error_code: 'dispute_evidence_page_limit_exceeded',
+				}
+			);
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toBeInTheDocument();
+		} );
+
+		it( 'still lets the merchant go back to their files', async () => {
+			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+			fireEvent.click(
+				await screen.findByRole( 'button', { name: 'Next' } )
+			);
+			await screen.findByLabelText( 'COVER LETTER' );
+			mockApiFetch.mockImplementation( rejectSaves as any );
+
+			fireEvent.click(
+				screen.getByRole( 'button', { name: 'Purchase info' } )
+			);
+
+			expect(
+				await screen.findByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toBeInTheDocument();
+			expect( mockCreateErrorNotice ).toHaveBeenCalled();
 		} );
 	} );
 

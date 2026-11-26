@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show a clear message when dispute evidence is over the card network's page limit, and stay on the current step when saving fails.
