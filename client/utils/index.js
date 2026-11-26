@@ -248,30 +248,76 @@ export const getPaymentMethodsUrl = () => {
 export const formatStringValue = ( value ) =>
 	capitalize( value ).replace( /_/g, ' ' );
 
-export const getUserTimeZone = () => moment( new Date() ).format( 'Z' );
+const DAY_IN_MS = 86400000;
 
 /**
- * Basic formatting function to convert local date string to UTC.
+ * Returns the site timezone's UTC offset at an instant, in milliseconds.
  *
- * We want the selected date to be included in upper bound selections, so we need to make its time 11:59:59 PM.
+ * Reads it through dateI18n(), the path the list date columns render with, so
+ * filter bounds and displayed dates agree on the site's time.
  *
- * @param {string} date       date string to be formatted.
- * @param {bool}   upperBound flag to include the selected day for upper bound dates.
+ * @param {number} timestamp Milliseconds since the epoch.
  *
- * @return {string} Formatted date string to use in server query.
+ * @return {number} Offset in milliseconds.
+ */
+const getSiteUtcOffset = ( timestamp ) =>
+	Number( dateI18n( 'Z', new Date( timestamp ) ) ) * 1000;
+
+/**
+ * Returns the instant a calendar day starts in the site timezone.
+ *
+ * @param {number} midnight The day's midnight as a wall clock, in milliseconds since the epoch read as UTC.
+ *
+ * @return {number} Milliseconds since the epoch.
+ */
+const getSiteDayStart = ( midnight ) => {
+	// The offsets a day either side differ only around a DST change.
+	const candidates = [ midnight - DAY_IN_MS, midnight + DAY_IN_MS ].map(
+		( timestamp ) => midnight - getSiteUtcOffset( timestamp )
+	);
+	// Keep the candidates that read back as midnight. When DST repeats
+	// midnight both do and the day starts at the first; when DST skips it
+	// neither does and the day starts once the clock resumes.
+	const exact = candidates.filter(
+		( candidate ) => candidate + getSiteUtcOffset( candidate ) === midnight
+	);
+
+	return exact.length ? Math.min( ...exact ) : Math.max( ...candidates );
+};
+
+/**
+ * Converts a date filter value to the UTC bound the API expects.
+ *
+ * Day bounds follow the site timezone (Settings > General), the basis every
+ * list renders its dates in, so the result doesn't depend on the browser's
+ * timezone. Each bound uses the offset in effect on its own day, so a range
+ * on the far side of a DST change still starts and ends at the site's
+ * midnight.
+ *
+ * @param {string} date       Date to bound, as YYYY-MM-DD; only the date part of a date-time counts.
+ * @param {bool}   upperBound Whether to return the day's last second instead of its first.
+ *
+ * @return {string} UTC date-time as YYYY-MM-DD HH:MM:SS, or the value as given when it is empty or not a date.
  */
 export const formatDateValue = ( date, upperBound = false ) => {
-	const adjustedDate = upperBound
-		? moment( date ).endOf( 'day' ).utc().toISOString()
-		: moment( date ).startOf( 'day' ).utc().toISOString();
-	return (
-		date &&
-		dateI18n(
-			'Y-m-d H:i:s',
-			adjustedDate,
-			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-		)
+	if ( ! date ) {
+		return date;
+	}
+
+	// Read as UTC so the browser's timezone can't shift the calendar date.
+	const day = moment.utc( date );
+	if ( ! day.isValid() ) {
+		return date;
+	}
+
+	const midnight = Date.parse(
+		`${ day.locale( 'en' ).format( 'YYYY-MM-DD' ) }T00:00:00Z`
 	);
+	const bound = upperBound
+		? getSiteDayStart( midnight + DAY_IN_MS ) - 1000
+		: getSiteDayStart( midnight );
+
+	return new Date( bound ).toISOString().slice( 0, 19 ).replace( 'T', ' ' );
 };
 
 /**

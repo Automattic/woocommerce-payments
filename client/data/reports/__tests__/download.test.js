@@ -5,12 +5,6 @@
  */
 import { feesDownloadEndpoint, getFeesCSVRequestURL } from '../resolvers';
 
-// Match the resolver's user_timezone helper so the test is deterministic.
-jest.mock( 'utils', () => ( {
-	...jest.requireActual( 'utils' ),
-	getUserTimeZone: () => 'UTC',
-} ) );
-
 describe( 'Fees report CSV download helpers', () => {
 	it( 'exposes the REST endpoint constant', () => {
 		expect( feesDownloadEndpoint ).toBe(
@@ -36,8 +30,10 @@ describe( 'Fees report CSV download helpers', () => {
 		expect( url ).toContain( 'user_email=merchant%40example.com' );
 		expect( url ).toContain( 'locale=en_US' );
 		// Lock the serialized values, not just key presence: date_after is the
-		// start-of-local-day (00:00 EST → 05:00 UTC in January) and date_before
-		// is the end-of-local-day (23:59:59 EST → 04:59:59 UTC the next day).
+		// start of the site's day and date_before its last second. Jest's
+		// default site timezone resolves to the browser's America/New_York, so
+		// that's 00:00 EST → 05:00 UTC and 23:59:59 EST → 04:59:59 UTC the next
+		// day.
 		// A regression in the boundary direction, timezone normalization, or
 		// dateI18n format string would slip past a presence-only assertion.
 		expect( url ).toContain( 'date_after=2026-01-15%2005%3A00%3A00' );
@@ -45,7 +41,7 @@ describe( 'Fees report CSV download helpers', () => {
 		expect( url ).toContain( 'payment_method_type=card' );
 		expect( url ).toContain( 'type%5B0%5D=charge' );
 		expect( url ).toContain( 'search%5B0%5D=pi_123' );
-		expect( url ).toContain( 'user_timezone=UTC' );
+		expect( url ).not.toContain( 'user_timezone' );
 	} );
 
 	it( 'omits empty filters from the URL', () => {
