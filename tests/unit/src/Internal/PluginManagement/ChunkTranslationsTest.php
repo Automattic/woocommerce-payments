@@ -91,14 +91,23 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_init_hooks_registers_both_filters() {
-		$this->hooks_proxy->expects( $this->exactly( 2 ) )
-			->method( 'add_filter' )
-			->withConsecutive(
-				[ 'load_script_translations', [ $this->sut, 'merge_chunk_translations' ], 10, 4 ],
-				[ 'pre_load_script_translations', [ $this->sut, 'load_chunk_translations_only' ], 10, 4 ]
+		$registered = [];
+		$this->hooks_proxy->method( 'add_filter' )
+			->willReturnCallback(
+				function ( $name, $callback, $priority, $args ) use ( &$registered ) {
+					$registered[ $name ] = [ $callback, $priority, $args ];
+				}
 			);
 
 		$this->sut->init_hooks();
+
+		$this->assertSame(
+			[
+				'load_script_translations'     => [ [ $this->sut, 'merge_chunk_translations' ], 10, 4 ],
+				'pre_load_script_translations' => [ [ $this->sut, 'load_chunk_translations_only' ], 10, 4 ],
+			],
+			$registered
+		);
 	}
 
 	public function test_merge_adds_only_the_chunks_the_entry_loads() {
@@ -118,7 +127,7 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 
 		$result = $this->merge( $this->translation_json( [ 'Entry string' => [ 'Cadena' ] ] ) );
 
-		$this->assertEquals(
+		$this->assertSame(
 			[
 				''               => $this->header(),
 				'Entry string'   => [ 'Cadena' ],
@@ -427,6 +436,45 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->sut->load_chunk_translations_only( null, false, self::HANDLE, 'woocommerce' ) );
 	}
 
+	public function test_merge_reads_the_file_name_a_real_es_ES_pack_uses() {
+		$to_es_es = function () {
+			return 'es_ES';
+		};
+		add_filter( 'locale', $to_es_es );
+		// The file name of the real es_ES pack for dist/chunks/wcpay-payouts.js.
+		file_put_contents( $this->languages_dir . '/woocommerce-payments-es_ES-5c516589a5c8d922867c0498fc3a536d.json', $this->translation_json( [ 'Payout history' => [ 'Historial de pagos' ] ] ) );
+
+		try {
+			$result = $this->merge( $this->translation_json( [] ) );
+		} finally {
+			remove_filter( 'locale', $to_es_es );
+			unlink( $this->languages_dir . '/woocommerce-payments-es_ES-5c516589a5c8d922867c0498fc3a536d.json' );
+		}
+
+		$this->assertSame( [ 'Historial de pagos' ], $this->messages( $result )['Payout history'] );
+	}
+
+	public function test_load_script_textdomain_adds_the_chunks_to_the_entry_translations() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
+		$this->write_shared_file( 'dist/index.js', $this->translation_json( [ 'Entry string' => [ 'Cadena' ] ] ) );
+
+		$json = $this->load_with_core();
+
+		$this->assertSame( [ '', 'Entry string', 'Payout history' ], array_keys( $this->messages( $json ) ) );
+	}
+
+	public function test_load_script_textdomain_provides_the_chunks_when_the_entry_has_no_translations() {
+		$payouts = $this->chunk( 'payouts' );
+		$this->write_chunk_map( [ $payouts => [ 'index.js' ] ] );
+		$this->write_chunk( $payouts, [ 'Payout history' => [ 'Historial de pagos' ] ], WP_LANG_DIR . '/plugins' );
+
+		$json = $this->load_with_core();
+
+		$this->assertSame( [ '', 'Payout history' ], array_keys( $this->messages( $json ) ) );
+	}
+
 	/**
 	 * Calls the merge filter the way WordPress does once it has read the entry's file.
 	 *
@@ -436,6 +484,45 @@ class ChunkTranslationsTest extends WCPAY_UnitTestCase {
 	 */
 	private function merge( string $entry_json ) {
 		return $this->sut->merge_chunk_translations( $entry_json, $this->languages_dir . '/entry.json', self::HANDLE, self::DOMAIN );
+	}
+
+	/**
+	 * Registers the filters for real and lets WordPress load the entry's translations.
+	 *
+	 * @return string|false
+	 */
+	private function load_with_core() {
+		$sut = new ChunkTranslations( new HooksProxy(), $this->dist_dir );
+		$sut->init_hooks();
+		wp_register_script( self::HANDLE, plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE ), [], '1', true );
+		// The test plugin path gives WordPress a different relative path than a real install does.
+		$relative_path = function () {
+			return 'dist/index.js';
+		};
+		add_filter( 'load_script_textdomain_relative_path', $relative_path );
+
+		try {
+			return load_script_textdomain( self::HANDLE, self::DOMAIN );
+		} finally {
+			wp_deregister_script( self::HANDLE );
+			remove_filter( 'load_script_textdomain_relative_path', $relative_path );
+			remove_filter( 'load_script_translations', [ $sut, 'merge_chunk_translations' ], 10 );
+			remove_filter( 'pre_load_script_translations', [ $sut, 'load_chunk_translations_only' ], 10 );
+		}
+	}
+
+	/**
+	 * Writes the translation file WordPress looks for a script in the shared languages folder.
+	 *
+	 * @param string $script Script path relative to the plugin, for example `dist/index.js`.
+	 * @param string $json   File contents.
+	 */
+	private function write_shared_file( string $script, string $json ) {
+		$dir = WP_LANG_DIR . '/plugins';
+		wp_mkdir_p( $dir );
+		$path = $dir . '/woocommerce-payments-' . determine_locale() . '-' . md5( $script ) . '.json';
+		file_put_contents( $path, $json );
+		$this->shared_files[] = $path;
 	}
 
 	/**

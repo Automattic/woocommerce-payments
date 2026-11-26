@@ -14,6 +14,10 @@ use WCPay\Internal\Proxy\HooksProxy;
  *
  * WordPress only loads translation JSON for registered script handles, and translate.wordpress.org
  * puts a string that is used only in a chunk into that chunk's JSON file, which nothing else loads.
+ *
+ * #12169 credits chunk strings to the entry files in the plugin's own POT, but translate.wordpress.org builds its
+ * own POT from the shipped files, so the packs it delivers still need this class. It can go once every pack
+ * lists the chunk strings under the entry files.
  */
 class ChunkTranslations {
 	private const DOMAIN = 'woocommerce-payments';
@@ -93,7 +97,7 @@ class ChunkTranslations {
 	 *
 	 * @return mixed The merged JSON, or the original value if there is nothing to merge.
 	 */
-	public function merge_chunk_translations( $translations, $file, $handle, $domain ) {
+	public function merge_chunk_translations( $translations, $file = false, $handle = '', $domain = '' ) {
 		if ( ! $this->is_admin_entry( $handle, $domain ) ) {
 			return $translations;
 		}
@@ -125,7 +129,7 @@ class ChunkTranslations {
 	 *
 	 * @return mixed The JSON built from the chunks or from the supplied entry file, or the original value if there is none.
 	 */
-	public function load_chunk_translations_only( $translations, $file, $handle, $domain ) {
+	public function load_chunk_translations_only( $translations, $file = false, $handle = '', $domain = '' ) {
 		if ( null !== $translations ) {
 			return $translations;
 		}
@@ -138,12 +142,12 @@ class ChunkTranslations {
 			return $translations;
 		}
 
-		$entry_file = $this->hooks_proxy->apply_filters( 'load_script_translation_file', false, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
-		if ( is_string( $entry_file ) && is_readable( $entry_file ) ) {
+		$translation_file = $this->hooks_proxy->apply_filters( 'load_script_translation_file', false, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
+		if ( is_string( $translation_file ) && is_readable( $translation_file ) ) {
 			// Some callbacks answer once per request, so read the file here like core does instead of asking again.
-			$entry_json = (string) file_get_contents( $entry_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local translation file, as WordPress reads it.
+			$entry_json = (string) file_get_contents( $translation_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local translation file, as WordPress reads it.
 
-			return $this->hooks_proxy->apply_filters( 'load_script_translations', $entry_json, $entry_file, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
+			return $this->hooks_proxy->apply_filters( 'load_script_translations', $entry_json, $translation_file, $handle, $domain ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook.
 		}
 
 		return $this->merge( null, $this->get_languages_dirs(), self::HANDLE_ENTRIES[ $handle ] );
