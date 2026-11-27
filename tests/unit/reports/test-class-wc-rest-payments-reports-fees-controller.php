@@ -162,6 +162,25 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_get_fees_transaction_filters_reads_dates_in_the_store_timezone() {
+		update_option( 'timezone_string', 'America/Santiago' );
+
+		// Santiago repeats the hour before midnight on 2026-04-04; the day ends after the second one.
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_param( 'date_before', '2026-04-04 21:59:59' );
+		$request->set_param( 'date_between', [ '2026-04-03 22:00:00', '2026-04-04 21:59:59' ] );
+		$request->set_param( 'user_timezone', '+02:00' );
+
+		try {
+			$filters = $this->get_fees_transaction_filters_for_test( $request );
+		} finally {
+			update_option( 'timezone_string', '' );
+		}
+
+		$this->assertSame( '2026-04-05 03:59:59', $filters['date_before'] );
+		$this->assertSame( [ '2026-04-04 03:00:00', '2026-04-05 03:59:59' ], $filters['date_between'] );
+	}
+
 	public function test_get_fees_transaction_filters_maps_payout_id_search_to_deposit_filter() {
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_param( 'search', [ 'po_1TWRT9JbIuFWiDNFsTVj8XPN' ] );

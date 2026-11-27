@@ -73,11 +73,11 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		if ( $request->get_param( 'date_between' ) ) {
 			$date_between_filter  = $request->get_param( 'date_between' );
 			$filters['from_date'] = strtotime( Request_Utils::format_transaction_date_by_timezone( $date_between_filter[0], $user_timezone ) );
-			$filters['to_date']   = strtotime( Request_Utils::format_transaction_date_by_timezone( $date_between_filter[1], $user_timezone ) );
+			$filters['to_date']   = strtotime( Request_Utils::format_transaction_date_by_timezone( $date_between_filter[1], $user_timezone, true ) );
 		}
 
 		if ( $request->get_param( 'date_before' ) ) {
-			$filters['from_date'] = strtotime( Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ) );
+			$filters['from_date'] = strtotime( Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone, true ) );
 		}
 		if ( $request->get_param( 'date_after' ) ) {
 			$filters['to_date'] = strtotime( Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ) );
