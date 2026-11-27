@@ -299,6 +299,15 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_settings_url_anchors_woopay_without_a_registered_gateway() {
+		$url = $this->sut->get_settings_url( 'woopay' );
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&anchor=%23express-checkouts-woopay' ),
+			$url
+		);
+	}
+
 	public function provider_methods_without_a_payment_method_row(): array {
 		return [
 			'link'       => [ 'link', 'express-checkouts-link' ],

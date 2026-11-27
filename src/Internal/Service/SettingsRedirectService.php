@@ -53,9 +53,12 @@ class SettingsRedirectService {
 	];
 
 	/**
-	 * Settings page rows that don't use the `payment-method-{id}` element ID, by payment method ID.
+	 * Settings page rows that don't use the `payment-method-{id}` element ID, by payment method ID. These
+	 * are the express checkout rows in `client/settings/express-checkout/`; keep the IDs in sync with them.
+	 * They are linkable without a registered gateway, as WooPay has none.
 	 */
 	private const ROW_IDS = [
+		'woopay'     => 'express-checkouts-woopay',
 		'link'       => 'express-checkouts-link',
 		'apple_pay'  => 'express-checkouts-apple-google-pay',
 		'google_pay' => 'express-checkouts-apple-google-pay',
@@ -131,7 +134,9 @@ class SettingsRedirectService {
 	/**
 	 * Returns the WooPayments settings URL.
 	 *
-	 * @param string $payment_method Payment method ID to scroll to. Ignored unless WooPayments registers a gateway for it.
+	 * @param string $payment_method Payment method ID to scroll to. Ignored unless WooPayments registers a gateway for it
+	 *                               or it is an express checkout method (WooPay, Link, Apple Pay, Google Pay,
+	 *                               Amazon Pay). The page does not scroll if the row is not shown.
 	 * @param array  $flags          Flags for the settings page, keyed by name. Names are sanitized with
 	 *                               `sanitize_key()` and dropped unless listed in `ALLOWED_FLAGS`; when sanitized
 	 *                               names collide the last value wins; empty values become `1`; values other than
@@ -142,7 +147,7 @@ class SettingsRedirectService {
 	public function get_settings_url( string $payment_method = '', array $flags = [] ): string {
 		$args = [];
 
-		if ( $this->is_known_payment_method( $payment_method ) ) {
+		if ( isset( self::ROW_IDS[ $payment_method ] ) || $this->is_known_payment_method( $payment_method ) ) {
 			$args['anchor'] = rawurlencode( '#' . ( self::ROW_IDS[ $payment_method ] ?? 'payment-method-' . $payment_method ) );
 		}
 
