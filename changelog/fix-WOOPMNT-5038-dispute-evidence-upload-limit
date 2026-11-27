@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Say what the site's upload limit is when a dispute evidence file is too large for it.

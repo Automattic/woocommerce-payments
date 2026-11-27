@@ -279,6 +279,16 @@ class WC_REST_Payments_Files_Controller_Test extends WCPAY_UnitTestCase {
 		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID_0' );
 	}
 
+	public function test_upload_file_error_keeps_its_http_status() {
+		$this->mock_api_client
+			->method( 'upload_file' )
+			->willThrowException( new API_Exception( 'This file exceeds the maximum upload size of 1 MB for this site.', 'wcpay_evidence_file_max_size', 400 ) );
+
+		$response = $this->controller->upload_file( new WP_REST_Request( 'POST' ) );
+
+		$this->assertSame( 400, $response->get_error_data()['status'] );
+	}
+
 	public function test_get_file_content_exception() {
 		$this->mock_api_client
 			->expects( $this->once() )
