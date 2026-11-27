@@ -6124,6 +6124,26 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10.0, $order->get_total_refunded_for_item( $item_ids['shipping'], 'shipping' ) );
 	}
 
+	public function test_mark_payment_dispute_closed_lost_refunds_fractional_quantities(): void {
+		// WooCommerce hooks intval here by default; sell-by-weight plugins swap it for floatval.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+		try {
+			[ $order, , $item_ids ] = $this->create_taxed_order();
+			$product                = $order->get_item( $item_ids['product'] );
+			$product->set_quantity( 1.5 );
+			$product->save();
+			$order = wc_get_order( $order->get_id() );
+
+			$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+			$this->assertEquals( -1.5, $order->get_qty_refunded_for_item( $item_ids['product'] ) );
+		} finally {
+			remove_filter( 'woocommerce_stock_amount', 'floatval' );
+			add_filter( 'woocommerce_stock_amount', 'intval' );
+		}
+	}
+
 	public function test_mark_payment_dispute_closed_lost_after_line_refund_refunds_the_remaining_lines(): void {
 		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order();
 		wc_create_refund(

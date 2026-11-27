@@ -3177,9 +3177,10 @@ class WC_Payments_Order_Service {
 				}
 			}
 
-			// The refunded quantity is stored as a negative number.
+			// The refunded quantity is stored as a negative number. Stores can allow fractional
+			// quantities through the `woocommerce_stock_amount` filter.
 			$qty = 'line_item' === $item_type
-				? (int) $item->get_quantity() - absint( $order->get_qty_refunded_for_item( $item_id, $item_type ) )
+				? wc_stock_amount( $item->get_quantity() ) - abs( wc_stock_amount( $order->get_qty_refunded_for_item( $item_id, $item_type ) ) )
 				: 0;
 
 			if ( 0.0 === $refund_total && [] === $refund_tax && $qty <= 0 ) {
