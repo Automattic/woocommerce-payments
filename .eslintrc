@@ -8,8 +8,7 @@
 	"extends": [
 		"plugin:jsx-a11y/recommended",
 		"prettier",
-		"plugin:@woocommerce/eslint-plugin/recommended",
-		"prettier/react"
+		"plugin:@woocommerce/eslint-plugin/recommended"
 	],
 	"plugins": [ "jsx-a11y", "jest", "jsdoc-alignment", "wpcalypso" ],
 	"env": {
@@ -175,9 +174,7 @@
 			"extends": [
 				"plugin:jsx-a11y/recommended",
 				"plugin:@typescript-eslint/recommended",
-				"prettier",
-				"prettier/react",
-				"prettier/@typescript-eslint"
+				"prettier"
 			],
 			"rules": {
 				"camelcase": "off",
