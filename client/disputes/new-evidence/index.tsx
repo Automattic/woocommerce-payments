@@ -1018,12 +1018,13 @@ export default ( { query }: { query: { id: string } } ) => {
 				message: getErrorMessage( err ),
 			} );
 
-			// Stripe's messages don't say the upload failed, so they get a prefix.
-			const isStripeError =
+			// Errors passed on from the WooPayments server, mostly Stripe's, don't
+			// say the upload failed, so they get a prefix.
+			const isServerError =
 				( err as { code?: unknown } | null )?.code ===
-				'wcpay_evidence_file_stripe_error';
+				'wcpay_evidence_file_upload_error';
 			createErrorNotice(
-				isStripeError
+				isServerError
 					? sprintf(
 							__(
 								'Failed to upload file. (%s)',

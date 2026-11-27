@@ -872,7 +872,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		if ( UPLOAD_ERR_OK !== $file_error ) {
 			throw new API_Exception(
 				__( "The file couldn't be uploaded. Please try again.", 'woocommerce-payments' ),
-				'wcpay_evidence_file_upload_error',
+				'wcpay_evidence_file_php_upload_error',
 				400
 			);
 		}
@@ -924,7 +924,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		} catch ( API_Exception $e ) {
 			throw new API_Exception(
 				$e->getMessage(),
-				'wcpay_evidence_file_stripe_error',
+				'wcpay_evidence_file_upload_error',
 				$e->get_http_code()
 			);
 		}
