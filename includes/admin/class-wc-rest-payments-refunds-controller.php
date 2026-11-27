@@ -65,14 +65,6 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 				if ( is_wp_error( $result ) ) {
 					return rest_ensure_response( new WP_Error( 'wcpay_refund_payment', $result->get_error_message() ) );
 				}
-				if ( false === $result ) {
-					return rest_ensure_response(
-						new WP_Error(
-							'wcpay_refund_payment',
-							__( 'Failed to create refund', 'woocommerce-payments' )
-						)
-					);
-				}
 				return rest_ensure_response( $result );
 			}
 		}
@@ -115,7 +107,7 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 	 * @param WC_Order $order  The order to refund.
 	 * @param float    $amount Refund amount, in the order's currency.
 	 * @param string   $reason Refund reason.
-	 * @return WC_Order_Refund|WP_Error|false
+	 * @return WC_Order_Refund|WP_Error
 	 */
 	private function process_order_refund( WC_Order $order, float $amount, $reason ) {
 		return wc_create_refund(
