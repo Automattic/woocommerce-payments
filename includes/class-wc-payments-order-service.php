@@ -3145,18 +3145,32 @@ class WC_Payments_Order_Service {
 	 * @return array Line items keyed by order item ID, or an empty array.
 	 */
 	public function get_remaining_refund_line_items( WC_Order $order, float $amount ): array {
+		$items = $order->get_items( [ 'line_item', 'shipping', 'fee' ] );
+		if ( [] === $items ) {
+			return [];
+		}
+
 		$line_items      = [];
 		$remaining_total = 0.0;
+		$decimals        = WC_Payments_Utils::get_stripe_minor_unit_for_currency( $order->get_currency() );
+		// WooCommerce stores line taxes unrounded, but builds the order total from tax rounded per line unless this is on.
+		$round_per_line = 'yes' !== get_option( 'woocommerce_tax_round_at_subtotal' );
 
-		foreach ( $order->get_items( [ 'line_item', 'shipping', 'fee' ] ) as $item_id => $item ) {
+		foreach ( $items as $item_id => $item ) {
 			/** @var WC_Order_Item_Product|WC_Order_Item_Shipping|WC_Order_Item_Fee $item */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$item_type    = $item->get_type();
 			$refund_total = (float) $item->get_total() - (float) $order->get_total_refunded_for_item( $item_id, $item_type );
+			if ( $round_per_line ) {
+				$refund_total = round( $refund_total, $decimals );
+			}
 
 			$refund_tax = [];
 			$taxes      = $item->get_taxes();
 			foreach ( $taxes['total'] ?? [] as $rate_id => $tax_total ) {
 				$remaining_tax = (float) $tax_total - (float) $order->get_tax_refunded_for_item( $item_id, $rate_id, $item_type );
+				if ( $round_per_line ) {
+					$remaining_tax = (float) wc_round_tax_total( $remaining_tax, $decimals );
+				}
 				if ( 0.0 !== $remaining_tax ) {
 					$refund_tax[ $rate_id ] = $remaining_tax;
 				}
@@ -3198,8 +3212,7 @@ class WC_Payments_Order_Service {
 	private function amounts_match( float $first, float $second, string $currency ): bool {
 		// The smallest currency unit, such as 0.01 for a currency with two decimals. Three-decimal
 		// currencies are treated as two, which is close enough for this check.
-		$decimals      = WC_Payments_Utils::is_zero_decimal_currency( $currency ) ? 0 : 2;
-		$smallest_unit = 1 / ( 10 ** $decimals );
+		$smallest_unit = 1 / ( 10 ** WC_Payments_Utils::get_stripe_minor_unit_for_currency( $currency ) );
 
 		// Allow half a unit, so float rounding noise doesn't count as a difference.
 		return abs( $first - $second ) < $smallest_unit / 2;

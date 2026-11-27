@@ -257,6 +257,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	private $order;
 
 	/**
+	 * Tax rate ID and previous `woocommerce_calc_taxes` value from `create_taxed_order()`, restored in tear_down.
+	 *
+	 * @var array|null
+	 */
+	private $taxed_order_state;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -271,6 +278,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
+		if ( null !== $this->taxed_order_state ) {
+			WC_Tax::_delete_tax_rate( $this->taxed_order_state['rate_id'] );
+			update_option( 'woocommerce_calc_taxes', $this->taxed_order_state['calc_taxes'] );
+			$this->taxed_order_state = null;
+		}
 		wcpay_get_test_container()->reset_all_replacements();
 		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes' );
 		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes_fallback' );
@@ -6067,7 +6079,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_mark_payment_dispute_closed_lost_refunds_each_line_with_tax(): void {
-		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order_with_shipping_and_fee();
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order();
 
 		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
 
@@ -6085,12 +6097,23 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 1.0, $order->get_tax_refunded_for_item( $item_ids['shipping'], $rate_id, 'shipping' ) );
 		$this->assertEquals( 5.0, $order->get_total_refunded_for_item( $item_ids['fee'], 'fee' ) );
 		$this->assertEquals( 0.5, $order->get_tax_refunded_for_item( $item_ids['fee'], $rate_id, 'fee' ) );
+	}
 
-		$this->clean_up_taxed_order( $order, $rate_id );
+	public function test_mark_payment_dispute_closed_lost_refunds_each_line_when_taxes_round_per_line(): void {
+		// 10% of 4.95 is 0.495 on each line, which the order total rounds up to 0.50 per line.
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order( 4.95, 4.95 );
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refund = $this->get_dispute_lost_refund( $order );
+		$this->assertEquals( -16.4, $refund->get_total() );
+		$this->assertEquals( -1.5, $refund->get_total_tax() );
+		$this->assertSame( -2, $order->get_qty_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 0.5, $order->get_tax_refunded_for_item( $item_ids['product'], $rate_id ) );
 	}
 
 	public function test_mark_payment_dispute_closed_lost_after_line_refund_refunds_the_remaining_lines(): void {
-		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order_with_shipping_and_fee();
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order();
 		wc_create_refund(
 			[
 				'order_id'   => $order->get_id(),
@@ -6112,12 +6135,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 0.0, (float) $refund->get_shipping_total() );
 		$this->assertEquals( 10.0, $order->get_total_refunded_for_item( $item_ids['shipping'], 'shipping' ) );
 		$this->assertEquals( 40.0, $order->get_total_refunded_for_item( $item_ids['product'] ) );
-
-		$this->clean_up_taxed_order( $order, $rate_id );
 	}
 
 	public function test_mark_payment_dispute_closed_lost_after_lump_sum_refund_records_a_lump_sum(): void {
-		[ $order, $rate_id ] = $this->create_taxed_order_with_shipping_and_fee();
+		$order = $this->create_taxed_order()[0];
 		wc_create_refund(
 			[
 				'order_id' => $order->get_id(),
@@ -6130,8 +6151,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$refund = $this->get_dispute_lost_refund( $order );
 		$this->assertEquals( -40.5, $refund->get_total() );
 		$this->assertEmpty( $refund->get_items( [ 'line_item', 'shipping', 'fee' ] ) );
-
-		$this->clean_up_taxed_order( $order, $rate_id );
 	}
 
 	/**
@@ -7362,11 +7381,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Creates an on-hold order: 2 x $20 product, $10 shipping and $5 fee, all with 10% tax ($60.50).
+	 * Creates an on-hold order with a product line of quantity 2, shipping and a $5 fee, all with 10% tax.
+	 * The defaults total $60.50.
+	 *
+	 * @param float $product_total  The product line total, before tax.
+	 * @param float $shipping_total The shipping total, before tax.
 	 *
 	 * @return array The order, the tax rate ID and the item IDs keyed by line type.
 	 */
-	private function create_taxed_order_with_shipping_and_fee(): array {
+	private function create_taxed_order( float $product_total = 40, float $shipping_total = 10 ): array {
+		$previous_calc_taxes = get_option( 'woocommerce_calc_taxes' );
 		update_option( 'woocommerce_calc_taxes', 'yes' );
 		$rate_id = WC_Tax::_insert_tax_rate(
 			[
@@ -7382,6 +7406,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
+		$this->taxed_order_state = [
+			'rate_id'    => $rate_id,
+			'calc_taxes' => $previous_calc_taxes,
+		];
+
 		$order = new WC_Order();
 		$order->set_currency( 'USD' );
 
@@ -7390,11 +7419,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			[
 				'name'     => 'Taxed product',
 				'quantity' => 2,
-				'subtotal' => 40,
-				'total'    => 40,
+				'subtotal' => $product_total,
+				'total'    => $product_total,
 				'taxes'    => [
-					'subtotal' => [ $rate_id => 4 ],
-					'total'    => [ $rate_id => 4 ],
+					'subtotal' => [ $rate_id => $product_total / 10 ],
+					'total'    => [ $rate_id => $product_total / 10 ],
 				],
 			]
 		);
@@ -7405,8 +7434,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			[
 				'method_title' => 'Flat rate',
 				'method_id'    => 'flat_rate',
-				'total'        => 10,
-				'taxes'        => [ 'total' => [ $rate_id => 1 ] ],
+				'total'        => $shipping_total,
+				'taxes'        => [ 'total' => [ $rate_id => $shipping_total / 10 ] ],
 			]
 		);
 		$order->add_item( $shipping );
@@ -7436,12 +7465,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'fee'      => $fee->get_id(),
 			],
 		];
-	}
-
-	private function clean_up_taxed_order( WC_Order $order, int $rate_id ): void {
-		WC_Helper_Order::delete_order( $order->get_id() );
-		WC_Tax::_delete_tax_rate( $rate_id );
-		update_option( 'woocommerce_calc_taxes', 'no' );
 	}
 
 	private function get_dispute_lost_refund( WC_Order $order ): WC_Order_Refund {
