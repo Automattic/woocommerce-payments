@@ -874,7 +874,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		if ( UPLOAD_ERR_OK !== $file_error ) {
 			// Some of these, such as a missing temp folder, are host problems that retrying won't fix.
-			Logger::warning( 'Dispute evidence upload failed with PHP upload error ' . $file_error );
+			Logger::warning( 'File upload failed with PHP upload error ' . $file_error );
 			throw new API_Exception(
 				__( "The file couldn't be uploaded. Please try again.", 'woocommerce-payments' ),
 				'wcpay_evidence_file_php_upload_error',
