@@ -3195,10 +3195,11 @@ class WC_Payments_Order_Service {
 	 * @return bool
 	 */
 	private function amounts_match( float $first, float $second ): bool {
-		// Half the smallest currency unit, so float rounding noise doesn't count as a difference.
-		$tolerance = ( 10 ** -wc_get_price_decimals() ) / 2;
+		// The smallest currency unit, such as 0.01 for a currency with two decimals.
+		$smallest_unit = 1 / ( 10 ** wc_get_price_decimals() );
 
-		return abs( $first - $second ) < $tolerance;
+		// Allow half a unit, so float rounding noise doesn't count as a difference.
+		return abs( $first - $second ) < $smallest_unit / 2;
 	}
 
 	/**
