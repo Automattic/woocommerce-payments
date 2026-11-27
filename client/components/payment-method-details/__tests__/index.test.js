@@ -128,6 +128,38 @@ describe( 'PaymentMethodDetails', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test.each( [
+		[ 'lfsg_003', 'Bank account' ],
+		[ 'lfsg_000', 'Card' ],
+	] )(
+		'renders the Link funding source for group %s',
+		( fundingSourceGroup, expectedLabel ) => {
+			const { container } = render(
+				<PaymentMethodDetails
+					payment={ {
+						type: 'link',
+						link: { funding_source_group: fundingSourceGroup },
+					} }
+				/>
+			);
+
+			expect( container.textContent ).toContain( expectedLabel );
+		}
+	);
+
+	test( 'renders no Link funding source for other groups', () => {
+		const { container } = render(
+			<PaymentMethodDetails
+				payment={ {
+					type: 'link',
+					link: { funding_source_group: 'lfsg_004' },
+				} }
+			/>
+		);
+
+		expect( container.textContent ).toBe( '' );
+	} );
+
 	test( 'renders Amazon Pay with funding card brand and last4', () => {
 		const { container } = render(
 			<PaymentMethodDetails

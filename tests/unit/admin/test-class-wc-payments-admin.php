@@ -679,6 +679,22 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	public function provider_link_payment_method_details(): array {
 		return [
 			'Link payment method'   => [ [ 'type' => 'link' ], 'US', 'Link' ],
+			'bank-funded Link'      => [
+				[
+					'type' => 'link',
+					'link' => [ 'funding_source_group' => 'lfsg_003' ],
+				],
+				'US',
+				'Link (bank account)',
+			],
+			'card-funded Link'      => [
+				[
+					'type' => 'link',
+					'link' => [ 'funding_source_group' => 'lfsg_000' ],
+				],
+				'GB',
+				'Onelink (card)',
+			],
 			'card with Link wallet' => [
 				[
 					'type' => 'card',
