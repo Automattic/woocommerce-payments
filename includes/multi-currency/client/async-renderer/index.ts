@@ -84,9 +84,30 @@ interface JQueryObject {
 	off( events: string, handler: () => void ): JQueryObject;
 }
 
+/**
+ * Public API for scripts that calculate prices in the browser, such as
+ * product configurators that total their options with JavaScript. Those
+ * totals are built from store-currency amounts that the server never wraps
+ * in a skeleton, so they need to be converted the same way.
+ *
+ * Wait for `ready` before calling the other methods. If the currency config
+ * failed to load, amounts stay in the store currency, matching the fallback
+ * used for skeleton prices.
+ */
+export interface AsyncCurrencyApi {
+	/** Resolves to the selected currency code, lowercased. */
+	ready: Promise< string >;
+	/** Convert a store-currency amount to the selected currency. */
+	convert( amount: number | string, type?: PriceType ): number;
+	/** Format an already-converted amount, with its currency symbol. */
+	format( amount: number | string ): string;
+	/** The currency prices are displayed in, or null if unavailable. */
+	getCurrency(): CurrencyConfig | null;
+}
+
 declare global {
 	interface Window {
-		wcpayAsyncCurrency?: { ready: Promise< string > };
+		wcpayAsyncCurrency?: AsyncCurrencyApi;
 	}
 }
 
@@ -243,28 +264,31 @@ class WCPayAsyncPriceRenderer {
 	}
 
 	/**
-	 * Convert a price value based on currency settings.
+	 * Get the currency prices are displayed in: the selected currency, or the
+	 * store's default currency when the selected one isn't available.
+	 */
+	getEffectiveCurrency(): CurrencyConfig {
+		const selectedCode = this.config!.selected_currency;
+		const selectedCurrency = this.config!.currencies[ selectedCode ];
+
+		return ! selectedCurrency ||
+			selectedCode === this.config!.default_currency
+			? this.config!.currencies[ this.config!.default_currency ]
+			: selectedCurrency;
+	}
+
+	/**
+	 * Convert an amount to the selected currency, without formatting it.
 	 *
 	 * This mirrors the PHP conversion in MultiCurrency::get_price() and
 	 * MultiCurrency::get_adjusted_price(). Changes here must be kept in sync.
 	 */
-	convertPrice( price: number | string, type: PriceType | string ): string {
-		const cacheKey = `${ price }_${ type }`;
-		if ( this.cache.has( cacheKey ) ) {
-			return this.cache.get( cacheKey )!;
-		}
-
+	convertAmount( price: number | string, type: PriceType | string ): Decimal {
 		const selectedCode = this.config!.selected_currency;
 		const currency = this.config!.currencies[ selectedCode ];
 
 		if ( ! currency || selectedCode === this.config!.default_currency ) {
-			const formatted = this.formatPrice(
-				new Decimal( price ),
-				currency ||
-					this.config!.currencies[ this.config!.default_currency ]
-			);
-			this.setCacheEntry( cacheKey, formatted );
-			return formatted;
+			return new Decimal( price );
 		}
 
 		let converted = new Decimal( price ).times(
@@ -313,7 +337,22 @@ class WCPayAsyncPriceRenderer {
 			converted = new Decimal( 0 );
 		}
 
-		const formatted = this.formatPrice( converted, currency );
+		return converted;
+	}
+
+	/**
+	 * Convert a price value to the selected currency and format the number.
+	 */
+	convertPrice( price: number | string, type: PriceType | string ): string {
+		const cacheKey = `${ price }_${ type }`;
+		if ( this.cache.has( cacheKey ) ) {
+			return this.cache.get( cacheKey )!;
+		}
+
+		const formatted = this.formatPrice(
+			this.convertAmount( price, type ),
+			this.getEffectiveCurrency()
+		);
 		this.setCacheEntry( cacheKey, formatted );
 		return formatted;
 	}
@@ -442,13 +481,7 @@ class WCPayAsyncPriceRenderer {
 			'[data-wcpay-price]:not(.wcpay-price-converted)'
 		);
 
-		// Determine the effective display currency (mirrors convertPrice() logic).
-		const selectedCode = this.config!.selected_currency;
-		const selectedCurrency = this.config!.currencies[ selectedCode ];
-		const effectiveCurrency =
-			! selectedCurrency || selectedCode === this.config!.default_currency
-				? this.config!.currencies[ this.config!.default_currency ]
-				: selectedCurrency;
+		const effectiveCurrency = this.getEffectiveCurrency();
 
 		elements.forEach( ( el ) => {
 			const price = el.getAttribute( 'data-wcpay-price' );
@@ -488,12 +521,7 @@ class WCPayAsyncPriceRenderer {
 			return;
 		}
 
-		const selectedCode = this.config!.selected_currency;
-		const selectedCurrency = this.config!.currencies[ selectedCode ];
-		const effectiveCurrency =
-			! selectedCurrency || selectedCode === this.config!.default_currency
-				? this.config!.currencies[ this.config!.default_currency ]
-				: selectedCurrency;
+		const effectiveCurrency = this.getEffectiveCurrency();
 
 		const elements = document.querySelectorAll(
 			'[data-wcpay-sr-type]:not(.wcpay-sr-converted)'
@@ -843,20 +871,63 @@ class WCPayAsyncPriceRenderer {
 	}
 }
 
+/**
+ * Build the public `window.wcpayAsyncCurrency` API around a renderer.
+ *
+ * @param {WCPayAsyncPriceRenderer} renderer The renderer that owns the config.
+ * @param {Promise<string>}         ready    Resolves once the config is loaded.
+ * @return {AsyncCurrencyApi} The public API.
+ */
+const createAsyncCurrencyApi = (
+	renderer: WCPayAsyncPriceRenderer,
+	ready: Promise< string >
+): AsyncCurrencyApi => {
+	const getCurrency = (): CurrencyConfig | null => {
+		if ( renderer.config ) {
+			return { ...renderer.getEffectiveCurrency() };
+		}
+
+		const defaultCurrency = wcpayAsyncPriceConfig.defaultCurrency;
+		return defaultCurrency ? { ...defaultCurrency } : null;
+	};
+
+	return {
+		ready,
+		convert: ( amount, type = 'product' ) =>
+			renderer.config
+				? renderer.convertAmount( amount, type ).toNumber()
+				: Number( amount ),
+		format: ( amount ) => {
+			const currency = getCurrency();
+			if ( ! currency ) {
+				return String( amount );
+			}
+
+			return renderer.buildPriceText(
+				renderer.formatPrice( new Decimal( amount ), currency ),
+				currency
+			);
+		},
+		getCurrency,
+	};
+};
+
 // Export for testing.
-export { WCPayAsyncPriceRenderer };
+export { WCPayAsyncPriceRenderer, createAsyncCurrencyApi };
 
 // Initialize when DOM is ready.
 if ( typeof wcpayAsyncPriceConfig !== 'undefined' ) {
 	const renderer = new WCPayAsyncPriceRenderer();
 
-	// ECE awaits this before calling stripe.elements so it doesn't
-	// race the REST fetch.
-	window.wcpayAsyncCurrency = {
-		ready: whenDomReady()
+	// ECE awaits `ready` before calling stripe.elements so it doesn't race
+	// the REST fetch. Scripts that total prices in the browser await it
+	// before converting their amounts.
+	window.wcpayAsyncCurrency = createAsyncCurrencyApi(
+		renderer,
+		whenDomReady()
 			.then( () => renderer.init() )
 			.then( () =>
 				( renderer.config?.selected_currency ?? '' ).toLowerCase()
-			),
-	};
+			)
+	);
 }
