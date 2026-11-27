@@ -721,6 +721,46 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'Card', $title );
 	}
 
+	public function test_order_edit_payment_via_shows_link_for_orders_paid_with_a_saved_link_token(): void {
+		$order = $this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, null );
+		$order->add_payment_token( WC_Helper_Token::create_link_token( 'pm_link' ) );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Link', $title );
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_without_details_or_link_token(): void {
+		$order = $this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, null );
+		$order->add_payment_token( WC_Helper_Token::create_token( 'pm_card' ) );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_for_subscriptions(): void {
+		$subscription = $this->createPartialMock( WC_Order::class, [ 'get_type', 'get_payment_method' ] );
+		$subscription->method( 'get_type' )->willReturn( 'shop_subscription' );
+		$subscription->method( 'get_payment_method' )->willReturn( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$GLOBALS['theorder'] = $subscription; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$this->mock_order_service->method( 'get_payment_method_details' )->willReturn( [ 'type' => 'link' ] );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_while_saving_the_order(): void {
+		$order = $this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, [ 'type' => 'link' ] );
+		remove_all_actions( 'woocommerce_process_shop_order_meta' );
+		do_action( 'woocommerce_process_shop_order_meta', $order->get_id(), $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
 	public function test_init_hooks_shows_link_in_order_edit_payment_via(): void {
 		$this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, [ 'type' => 'link' ] );
 		$this->payments_admin->init_hooks();
@@ -733,12 +773,12 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Sets the order shown on the order edit screen, with the given stored payment method details.
 	 *
-	 * @param string $payment_method         The order's gateway ID.
-	 * @param array  $payment_method_details The charge's payment method details.
+	 * @param string     $payment_method         The order's gateway ID.
+	 * @param array|null $payment_method_details The charge's payment method details, or null when there is no charge.
 	 *
 	 * @return WC_Order
 	 */
-	private function set_up_order_being_edited( string $payment_method, array $payment_method_details ): WC_Order {
+	private function set_up_order_being_edited( string $payment_method, ?array $payment_method_details ): WC_Order {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( $payment_method );
 		$order->save();

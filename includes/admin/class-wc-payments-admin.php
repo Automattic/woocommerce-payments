@@ -296,18 +296,31 @@ class WC_Payments_Admin {
 			return $title;
 		}
 
+		// Subscriptions writes this title into notes when a subscription is saved.
+		if ( 'shop_order' !== $theorder->get_type() ) {
+			return $title;
+		}
+
+		// saves can call get_title() for other objects while $theorder is still the old order.
+		if ( did_action( 'woocommerce_process_shop_order_meta' ) ) {
+			return $title;
+		}
+
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $theorder->get_payment_method() ) {
 			return $title;
 		}
 
 		$payment_method_details = $this->order_service->get_payment_method_details( $theorder );
-		if ( ! is_array( $payment_method_details ) ) {
-			return $title;
+		if ( null === $payment_method_details ) {
+			// $0 orders paid with a saved Link token have no charge details.
+			$token_ids = $theorder->get_payment_tokens();
+			$is_link   = ! empty( $token_ids ) && WC_Payment_Tokens::get( end( $token_ids ) ) instanceof WC_Payment_Token_WCPay_Link;
+		} else {
+			$payment_method_type = $payment_method_details['type'] ?? null;
+			$is_link             = Payment_Method::LINK === $payment_method_type
+				|| WC_Payment_Gateway_WCPay::is_link_card_wallet( $payment_method_type, $payment_method_details );
 		}
 
-		$payment_method_type = $payment_method_details['type'] ?? null;
-		$is_link             = Payment_Method::LINK === $payment_method_type
-			|| WC_Payment_Gateway_WCPay::is_link_card_wallet( $payment_method_type, $payment_method_details );
 		if ( ! $is_link ) {
 			return $title;
 		}

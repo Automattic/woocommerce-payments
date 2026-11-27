@@ -4511,14 +4511,20 @@ class WC_Payments_Order_Service {
 	 * Get cached payment method details from the order meta.
 	 *
 	 * @param  WC_Order $order The order.
-	 * @return array           The payment method details.
+	 * @return array|null      The payment method details, or null when missing or not a JSON object.
 	 */
 	public function get_payment_method_details( WC_Order $order ): ?array {
 		$json = $order->get_meta( self::PAYMENT_METHOD_DETAILS_META_KEY );
+		if ( ! is_string( $json ) ) {
+			return null;
+		}
+
 		if ( '' === $json ) {
 			return null;
 		}
-		return json_decode( $json, true );
+
+		$details = json_decode( $json, true );
+		return is_array( $details ) ? $details : null;
 	}
 
 	/**
