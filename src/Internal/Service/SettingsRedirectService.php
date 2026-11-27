@@ -127,7 +127,8 @@ class SettingsRedirectService {
 
 		nocache_headers();
 		if ( wp_safe_redirect( $this->get_settings_url( is_string( $method ) ? $method : '', $query ) ) ) {
-			exit;
+			// Ending the request would end the test run; the redirect itself is tested through the `wp_redirect` filter.
+			exit; // @codeCoverageIgnore
 		}
 	}
 
