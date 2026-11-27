@@ -8,14 +8,16 @@
 namespace WCPay\Migrations;
 
 use WC_Payment_Gateway_WCPay;
+use WC_Payments_Utils;
 use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Turns Link off on stores that have both Link and WooPay on.
+ * Turns off Link when both methods are enabled so the store can keep its existing WooPay checkout.
  *
- * With WooPay on, the checkout creates payment methods on the platform account, and Stripe can't share a Link one with the merchant's account.
+ * WooPay uses the platform account for card checkout. Stripe can't share Link payment
+ * methods from that account with the merchant's account.
  *
  * @since 11.4.0
  */
@@ -67,7 +69,7 @@ class Link_WooPay_Mutual_Exclusion_Cleanup {
 	 * Removes Link from every gateway's list of enabled payment methods and disables the Link gateway.
 	 */
 	private function migrate() {
-		// The saved setting, not eligibility: the account cache can be empty when this runs.
+		// A store that can't use WooPay yet may qualify after this one-time cleanup.
 		if ( 'yes' !== $this->main_gateway->get_option( 'platform_checkout', 'no' ) ) {
 			return;
 		}
@@ -77,6 +79,8 @@ class Link_WooPay_Mutual_Exclusion_Cleanup {
 		if ( ! in_array( $link_id, $enabled_payment_methods, true ) ) {
 			return;
 		}
+
+		WC_Payments_Utils::log_to_wc( 'Disabling Link during the WooPayments update because WooPay is enabled.', 'info' );
 
 		$filtered_payment_methods = array_values( array_diff( $enabled_payment_methods, [ $link_id ] ) );
 
