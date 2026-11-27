@@ -4,57 +4,31 @@
 import qit from '@qit/helpers';
 
 /**
- * The legacy E2E environment relied on the WooPayments Dev Tools plugin UI to toggle
- * options like card testing protection. The QIT stack does not load that plugin, so
- * these helpers mirror the behaviour by patching the relevant options directly via WP-CLI.
+ * Legacy E2E toggles these states on the WooPayments Dev Tools settings page. QIT cannot
+ * install Dev Tools, so `bootstrap/qit-dev-tools-equivalents.php` copies the Dev Tools hooks
+ * and these helpers do what a settings save does: write the option and, where the next account
+ * fetch matters, refresh the account.
  */
 
-const setCardTestingProtection = async ( enabled: boolean ) => {
-	const { stdout } = await qit.wp(
-		'option get wcpay_account_data --format=json',
-		true
-	);
-	let cache: Record< string, unknown > = {};
-	try {
-		cache = stdout.trim().length ? JSON.parse( stdout ) : {};
-	} catch ( error ) {
-		cache = {};
-	}
-	const data = {
-		...( typeof cache.data === 'object' && cache.data !== null
-			? cache.data
-			: {} ),
-		card_testing_protection_eligible: enabled,
-	};
-	const updatedCache = {
-		...cache,
-		data,
-		fetched: Math.floor( Date.now() / 1000 ),
-		errored: false,
-	};
-	const payload = JSON.stringify( updatedCache );
-	const escapedPayload = payload.replace( /'/g, `'"'"'` );
+const cardTestingProtectionOption =
+	'wcpaydev_force_card_testing_protection_on';
+const forceDisconnectedOption = 'wcpaydev_force_disconnected';
+
+const refreshAccountData = async () => {
 	await qit.wp(
-		`option update wcpay_account_data '${ escapedPayload }' --format=json`,
+		"eval 'WC_Payments::get_account_service()->refresh_account_data();'",
 		true
 	);
-	await qit.wp(
-		`option update wcpaydev_force_card_testing_protection_on ${
-			enabled ? 1 : 0
-		}`,
-		true
-	);
-	await qit
-		.wp( 'cache delete wcpay_account_data options', true )
-		.catch( () => undefined );
 };
 
 export const enableCardTestingProtection = async () => {
-	await setCardTestingProtection( true );
+	await qit.wp( `option update ${ cardTestingProtectionOption } 1`, true );
+	await refreshAccountData();
 };
 
 export const disableCardTestingProtection = async () => {
-	await setCardTestingProtection( false );
+	await qit.wp( `option update ${ cardTestingProtectionOption } 0`, true );
+	await refreshAccountData();
 };
 
 const rateLimiterOption =
@@ -65,31 +39,17 @@ export const disableFailedTransactionRateLimiter = async () => {
 };
 
 /**
- * Forces WooPayments to act as disconnected from the Transact Platform Server.
- * This mirrors enabling the "Act as disconnected from WCPay" dev tools option.
+ * Makes WooPayments act as disconnected from the Transact Platform Server.
+ * The mu-plugin empties the account cache on every request while the option is set.
  */
 export const enableActAsDisconnectedFromWCPay = async () => {
-	// Force disconnect by setting options directly via WP-CLI
-	await qit.wp( 'option update wcpaydev_force_disconnected "1"' );
-	await qit.wp( 'option update wcpay_account_data "[]"' );
-
-	// Clear caches to ensure the change takes effect
-	await qit.wp( 'cache flush' );
-	await qit.wp( 'transient delete --all' );
+	await qit.wp( `option update ${ forceDisconnectedOption } 1` );
 };
 
 /**
- * Re-enables connection to the WooPayments Transact Platform Server.
- * This mirrors disabling the "Act as disconnected from WCPay" dev tools option.
+ * Reconnects WooPayments to the Transact Platform Server.
  */
 export const disableActAsDisconnectedFromWCPay = async () => {
-	// Re-enable connection by removing force disconnected flag
-	await qit.wp( 'option delete wcpaydev_force_disconnected' );
-
-	// Clear the account data cache so it refreshes from server
-	await qit.wp( 'option delete wcpay_account_data' );
-
-	// Clear all caches and transients to force refresh
-	await qit.wp( 'cache flush' );
-	await qit.wp( 'transient delete --all' );
+	await qit.wp( `option update ${ forceDisconnectedOption } 0` );
+	await refreshAccountData();
 };
