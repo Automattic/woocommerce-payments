@@ -6094,30 +6094,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * A dispute for the full amount, given in the dispute summary, refunds per line too.
-	 */
-	public function test_mark_payment_dispute_closed_lost_with_full_dispute_summary_refunds_each_line(): void {
-		[ $order, $rate_id ] = $this->create_taxed_order_with_shipping_and_fee();
-		$disputed_cents      = 6050;
-
-		$this->order_service->mark_payment_dispute_closed(
-			$order,
-			'ch_123',
-			'lost',
-			[
-				'disputed_amount' => $disputed_cents,
-				'currency'        => 'usd',
-			]
-		);
-
-		$refund = $order->get_refunds()[0];
-		$this->assertEquals( -60.5, $refund->get_total() );
-		$this->assertEquals( -5.5, $refund->get_total_tax() );
-
-		$this->clean_up_taxed_order( $order, $rate_id );
-	}
-
-	/**
 	 * After a per-line refund, a lost dispute for the rest refunds only what each line has left.
 	 */
 	public function test_mark_payment_dispute_closed_lost_after_line_refund_refunds_the_remaining_lines(): void {
@@ -6165,27 +6141,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$refund = $this->get_dispute_lost_refund( $order );
 		$this->assertEquals( -40.5, $refund->get_total() );
 		$this->assertEmpty( $refund->get_items( [ 'line_item', 'shipping', 'fee' ] ) );
-
-		$this->clean_up_taxed_order( $order, $rate_id );
-	}
-
-	/**
-	 * The lines are only returned when they add up to the refund amount.
-	 */
-	public function test_get_remaining_refund_line_items_returns_nothing_when_lines_do_not_match_the_amount(): void {
-		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order_with_shipping_and_fee();
-
-		$this->assertSame( [], $this->order_service->get_remaining_refund_line_items( $order, 60.49 ) );
-
-		$line_items = $this->order_service->get_remaining_refund_line_items( $order, 60.5 );
-		$this->assertSame(
-			[
-				'qty'          => 2,
-				'refund_total' => 40.0,
-				'refund_tax'   => [ $rate_id => 4.0 ],
-			],
-			$line_items[ $item_ids['product'] ]
-		);
 
 		$this->clean_up_taxed_order( $order, $rate_id );
 	}

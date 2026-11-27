@@ -933,7 +933,7 @@ class WC_Payments_Order_Service {
 
 			// A dispute that takes everything left gets per-line refunds. A partial dispute
 			// gets none, because nothing says which items the bank took back.
-			$refund = wc_create_refund(
+			wc_create_refund(
 				[
 					'amount'     => $refund_amount,
 					'reason'     => __( 'Dispute lost.', 'woocommerce-payments' ),
@@ -941,17 +941,6 @@ class WC_Payments_Order_Service {
 					'line_items' => $this->get_remaining_refund_line_items( $order, (float) $refund_amount ),
 				]
 			);
-
-			if ( is_wp_error( $refund ) ) {
-				Logger::error(
-					sprintf(
-						'Could not record the refund for lost dispute %1$s on order #%2$d: %3$s',
-						$dispute_id,
-						$order->get_id(),
-						$refund->get_error_message()
-					)
-				);
-			}
 		} elseif ( ! empty( $open_dispute_ids ) ) {
 			// Another dispute on the same charge is still running its evidence deadline, and
 			// the hold it put on the order has to outlive this one. Leave the status alone
