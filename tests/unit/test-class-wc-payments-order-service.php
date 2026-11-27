@@ -257,7 +257,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	private $order;
 
 	/**
-	 * Tax rate ID and previous `woocommerce_calc_taxes` value from `create_taxed_order()`, restored in tear_down.
+	 * Tax rate ID and previous tax options from `create_taxed_order()`, restored in tear_down.
 	 *
 	 * @var array|null
 	 */
@@ -281,6 +281,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		if ( null !== $this->taxed_order_state ) {
 			WC_Tax::_delete_tax_rate( $this->taxed_order_state['rate_id'] );
 			update_option( 'woocommerce_calc_taxes', $this->taxed_order_state['calc_taxes'] );
+			update_option( 'woocommerce_tax_round_at_subtotal', $this->taxed_order_state['round_at_subtotal'] );
 			$this->taxed_order_state = null;
 		}
 		wcpay_get_test_container()->reset_all_replacements();
@@ -6112,6 +6113,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 0.5, $order->get_tax_refunded_for_item( $item_ids['product'], $rate_id ) );
 	}
 
+	public function test_mark_payment_dispute_closed_lost_refunds_each_line_when_taxes_round_at_subtotal(): void {
+		// The lines add up to 30.745, which the order total rounds to 30.75.
+		[ $order, , $item_ids ] = $this->create_taxed_order( 12.95, 10, true );
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refund = $this->get_dispute_lost_refund( $order );
+		$this->assertEquals( -30.75, $refund->get_total() );
+		$this->assertEquals( 10.0, $order->get_total_refunded_for_item( $item_ids['shipping'], 'shipping' ) );
+	}
+
 	public function test_mark_payment_dispute_closed_lost_after_line_refund_refunds_the_remaining_lines(): void {
 		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order();
 		wc_create_refund(
@@ -7387,14 +7399,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Creates an on-hold order with a product line of quantity 2, shipping and a $5 fee, all with 10% tax.
 	 * The defaults total $60.50.
 	 *
-	 * @param float $product_total  The product line total, before tax.
-	 * @param float $shipping_total The shipping total, before tax.
+	 * @param float $product_total     The product line total, before tax.
+	 * @param float $shipping_total    The shipping total, before tax.
+	 * @param bool  $round_at_subtotal Whether to round tax at subtotal instead of per line.
 	 *
 	 * @return array The order, the tax rate ID and the item IDs keyed by line type.
 	 */
-	private function create_taxed_order( float $product_total = 40, float $shipping_total = 10 ): array {
-		$previous_calc_taxes = get_option( 'woocommerce_calc_taxes' );
+	private function create_taxed_order( float $product_total = 40, float $shipping_total = 10, bool $round_at_subtotal = false ): array {
+		$previous_calc_taxes        = get_option( 'woocommerce_calc_taxes' );
+		$previous_round_at_subtotal = get_option( 'woocommerce_tax_round_at_subtotal' );
 		update_option( 'woocommerce_calc_taxes', 'yes' );
+		update_option( 'woocommerce_tax_round_at_subtotal', $round_at_subtotal ? 'yes' : 'no' );
 		$rate_id = WC_Tax::_insert_tax_rate(
 			[
 				'tax_rate_country'  => '',
@@ -7410,8 +7425,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->taxed_order_state = [
-			'rate_id'    => $rate_id,
-			'calc_taxes' => $previous_calc_taxes,
+			'rate_id'           => $rate_id,
+			'calc_taxes'        => $previous_calc_taxes,
+			'round_at_subtotal' => $previous_round_at_subtotal,
 		];
 
 		$order = new WC_Order();

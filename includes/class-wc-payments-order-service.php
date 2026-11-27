@@ -3221,7 +3221,7 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Whether two amounts are the same to the currency's precision, such as the cent.
+	 * Whether two amounts are within half of the currency's smallest unit, such as half a cent.
 	 *
 	 * @param float  $first    An amount.
 	 * @param float  $second   Another amount.
@@ -3230,12 +3230,12 @@ class WC_Payments_Order_Service {
 	 * @return bool
 	 */
 	private function amounts_match( float $first, float $second, string $currency ): bool {
-		// The smallest currency unit, such as 0.01 for a currency with two decimals. Three-decimal
-		// currencies are treated as two, which is close enough for this check.
-		$smallest_unit = 1 / ( 10 ** WC_Payments_Utils::get_stripe_minor_unit_for_currency( $currency ) );
+		// Three-decimal currencies are treated as two, which is close enough for this check.
+		$difference_in_units = abs( $first - $second ) * ( 10 ** WC_Payments_Utils::get_stripe_minor_unit_for_currency( $currency ) );
 
-		// Allow half a unit, so float rounding noise doesn't count as a difference.
-		return abs( $first - $second ) < $smallest_unit / 2;
+		// A sum that ends in exactly half a unit can round either way, depending on the tax rounding
+		// mode, so half a unit still matches. Rounding first drops float noise.
+		return round( $difference_in_units, 6 ) <= 0.5;
 	}
 
 	/**
