@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Exceptions\API_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -85,7 +87,14 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function upload_file( $request ) {
-		return $this->forward_request( 'upload_file', [ $request ] );
+		try {
+			return rest_ensure_response( $this->api_client->upload_file( $request ) );
+		} catch ( API_Exception $e ) {
+			// forward_request() would drop the status and send every error as a 500. A failed
+			// network request has no HTTP status (0), so it stays a 500.
+			$status = 0 !== $e->get_http_code() ? $e->get_http_code() : 500;
+			return rest_ensure_response( new WP_Error( $e->get_error_code(), $e->getMessage(), [ 'status' => $status ] ) );
+		}
 	}
 
 	/**

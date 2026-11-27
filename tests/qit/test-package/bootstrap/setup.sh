@@ -240,6 +240,10 @@ wp option set wcpaydev_force_card_testing_protection_on 0 --quiet 2>/dev/null ||
 # Include test orders in analytics data (WC 10.7+ excludes _wcpay_mode=test orders by default).
 wp eval 'wp_mkdir_p( WPMU_PLUGIN_DIR ); file_put_contents( WPMU_PLUGIN_DIR . "/qit-include-test-orders-in-analytics.php", "<?php\nadd_filter( \"woocommerce_analytics_is_test_order\", \"__return_false\" );\n" );' 2>/dev/null || true
 
+# The card-testing and disconnected helpers in utils/devtools.ts need the Dev Tools hooks.
+echo "Installing the Dev Tools equivalents mu-plugin..."
+wp eval 'wp_mkdir_p( WPMU_PLUGIN_DIR ); if ( ! copy( "./bootstrap/qit-dev-tools-equivalents.php", WPMU_PLUGIN_DIR . "/qit-dev-tools-equivalents.php" ) ) { WP_CLI::error( "Unable to install the Dev Tools equivalents mu-plugin." ); }'
+
 # Disable WooCommerce tour dialogs that interfere with tests.
 wp option set woocommerce_orders_report_date_tour_shown yes --quiet 2>/dev/null || true
 

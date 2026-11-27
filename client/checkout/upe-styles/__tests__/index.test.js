@@ -525,3 +525,223 @@ describe( 'getAppearance floating label detection on blocks checkout', () => {
 		expect( appearance.variables.fontSizeBase ).toBe( '13px' );
 	} );
 } );
+
+describe( 'getAppearance card field error text', () => {
+	const addStyles = ( css ) => {
+		const style = document.createElement( 'style' );
+		style.textContent = css;
+		document.head.appendChild( style );
+	};
+
+	const renderBlocksCheckout = () => {
+		document.body.innerHTML = `
+			<div class="wc-block-checkout__contact-fields">
+				<div class="wc-block-components-text-input is-active">
+					<input type="email" id="email" />
+					<label for="email">Email address</label>
+				</div>
+			</div>`;
+	};
+
+	const renderClassicCheckout = () => {
+		document.body.className = 'woocommerce-checkout';
+		document.body.innerHTML = `
+			<form class="checkout">
+				<div class="woocommerce-billing-fields__field-wrapper">
+					<p class="form-row">
+						<label for="billing_first_name">First name</label>
+						<input type="text" id="billing_first_name" />
+					</p>
+				</div>
+			</form>`;
+	};
+
+	afterEach( () => {
+		document.head.innerHTML = '';
+		document.body.innerHTML = '';
+		document.body.className = '';
+	} );
+
+	test( 'blocks checkout: .Error uses the WooCommerce field error text style', () => {
+		renderBlocksCheckout();
+		addStyles( `
+			.wc-block-components-text-input { color: rgb(51, 51, 51); }
+			.wc-block-components-validation-error p {
+				color: rgb(204, 24, 24);
+				font-size: 14px;
+				line-height: 14px;
+				padding-top: 4px;
+			}` );
+
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			document
+		);
+
+		expect( appearance.rules[ '.Error' ] ).toMatchObject( {
+			color: 'rgb(204, 24, 24)',
+			fontSize: '14px',
+			lineHeight: '14px',
+		} );
+		expect( appearance.rules[ '.Error' ] ).not.toHaveProperty(
+			'paddingTop'
+		);
+	} );
+
+	test( 'blocks checkout: no .Error rule for WooPay', () => {
+		renderBlocksCheckout();
+		addStyles( `
+			.wc-block-components-text-input { color: rgb(51, 51, 51); }
+			.wc-block-components-validation-error p {
+				color: rgb(204, 24, 24);
+				font-size: 14px;
+			}` );
+
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			true,
+			document
+		);
+
+		expect( appearance.rules ).not.toHaveProperty( [ '.Error' ] );
+	} );
+
+	test( 'keeps the Stripe error style when the theme gives error text the normal text color', () => {
+		renderBlocksCheckout();
+		addStyles( `
+			.wc-block-components-text-input { color: rgb(51, 51, 51); }
+			.wc-block-components-validation-error p {
+				color: rgb(51, 51, 51);
+				font-size: 14px;
+			}` );
+
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			document
+		);
+
+		expect( appearance.rules ).not.toHaveProperty( [ '.Error' ] );
+	} );
+
+	test( 'classic checkout: .Error uses the WooCommerce inline error style', () => {
+		renderClassicCheckout();
+		addStyles( `
+			.woocommerce-checkout .form-row { color: rgb(51, 51, 51); }
+			.woocommerce-checkout .checkout .checkout-inline-error-message {
+				color: rgb(170, 0, 0);
+				font-size: 12px;
+			}` );
+
+		const appearance = upeStyles.getAppearance(
+			'shortcode_checkout',
+			false,
+			document
+		);
+
+		expect( appearance.rules[ '.Error' ] ).toMatchObject( {
+			color: 'rgb(170, 0, 0)',
+			fontSize: '12px',
+		} );
+	} );
+} );
+
+describe( 'getAppearance invalid input height on blocks checkout', () => {
+	const renderBlocksCheckout = ( labelPosition ) => {
+		document.body.innerHTML = `
+			<div class="wc-block-checkout__contact-fields">
+				<div class="wc-block-components-text-input is-active">
+					<input type="email" id="email" />
+					<label for="email">Email address</label>
+				</div>
+			</div>`;
+		const style = document.createElement( 'style' );
+		style.textContent = `
+			.wc-block-components-text-input input { padding: 16px 12px; line-height: 25px; }
+			.wc-block-components-text-input.is-active input { padding: 24px 9px 8px; }
+			.wc-block-components-text-input label {
+				position: ${ labelPosition };
+				font-size: 18px;
+				line-height: 18px;
+			}`;
+		document.head.appendChild( style );
+	};
+
+	afterEach( () => {
+		document.head.innerHTML = '';
+		document.body.innerHTML = '';
+	} );
+
+	test( 'invalid inputs get the same padding as valid inputs with floating labels', () => {
+		renderBlocksCheckout( 'absolute' );
+
+		const { labels, rules } = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			document
+		);
+
+		expect( labels ).toBe( 'floating' );
+		expect( rules[ '.Input--invalid' ].paddingTop ).toBe(
+			'calc(24px - 18px - 4px - 1px)'
+		);
+		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe( '7px' );
+		expect( rules[ '.Input--invalid' ].paddingTop ).toBe(
+			rules[ '.Input' ].paddingTop
+		);
+		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe(
+			rules[ '.Input' ].paddingBottom
+		);
+	} );
+
+	test( 'invalid inputs match valid padding when labels sit above the field', () => {
+		renderBlocksCheckout( 'static' );
+
+		const { labels, rules } = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			document
+		);
+
+		expect( labels ).toBe( 'above' );
+		expect( rules[ '.Input--invalid' ].paddingTop ).toBe( '24px' );
+		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe( '8px' );
+	} );
+} );
+
+describe( 'getAppearance invalid input padding for WooPay', () => {
+	afterEach( () => {
+		document.head.innerHTML = '';
+		document.body.innerHTML = '';
+	} );
+
+	test( 'leaves the WooPay invalid input padding as measured', () => {
+		document.body.innerHTML = `
+			<div class="wc-block-checkout__contact-fields">
+				<div class="wc-block-components-text-input is-active">
+					<input type="email" id="email" />
+					<label for="email">Email address</label>
+				</div>
+			</div>`;
+		const style = document.createElement( 'style' );
+		style.textContent = `
+			.wc-block-components-text-input input { padding: 16px 12px; line-height: 25px; }
+			.wc-block-components-text-input.is-active input { padding: 24px 9px 8px; }
+			.wc-block-components-text-input label {
+				position: absolute;
+				font-size: 18px;
+				line-height: 18px;
+			}`;
+		document.head.appendChild( style );
+
+		const { rules } = upeStyles.getAppearance(
+			'blocks_checkout',
+			true,
+			document
+		);
+
+		expect( rules[ '.Input--invalid' ].paddingTop ).toBe( '16px' );
+		expect( rules[ '.Input--invalid' ].paddingBottom ).toBe( '16px' );
+	} );
+} );

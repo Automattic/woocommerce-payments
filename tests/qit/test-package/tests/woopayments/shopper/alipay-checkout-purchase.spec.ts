@@ -11,11 +11,36 @@ import { config } from '../../../config/default';
 import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
+import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
 
-// Skip: Alipay payments require specific Stripe account configuration that
-// is not available in the QIT test environment. The payment method can be
-// enabled in settings but checkout fails with "Invalid or missing payment details".
-test.describe.skip( 'Alipay Checkout', { tag: '@shopper' }, () => {
+const checkoutWithAlipay = async ( page: Page ): Promise< string > => {
+	await shopper.setupProductCheckout(
+		page,
+		[ [ config.products.belt, 1 ] ],
+		config.addresses.customer.billing
+	);
+
+	await shopper.selectPaymentMethod( page, 'Alipay' );
+	await shopper.placeOrder( page );
+
+	await expect( page.getByText( /Alipay test payment page/ ) ).toBeVisible();
+
+	await page.getByText( 'Authorize Test Payment' ).click();
+
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+
+	const orderId = page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ];
+	if ( ! orderId ) {
+		throw new Error(
+			`Expected an order-received URL with an order ID, got: ${ page.url() }`
+		);
+	}
+	return orderId;
+};
+
+test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 	let merchantContext: BrowserContext;
 	let merchantPage: Page;
 	let shopperContext: BrowserContext;
@@ -68,25 +93,8 @@ test.describe.skip( 'Alipay Checkout', { tag: '@shopper' }, () => {
 		'checkout on shortcode checkout page',
 		{ tag: '@critical' },
 		async () => {
-			await shopper.setupProductCheckout(
-				shopperPage,
-				[ [ config.products.belt, 1 ] ],
-				config.addresses.customer.billing
-			);
+			await checkoutWithAlipay( shopperPage );
 
-			await shopper.selectPaymentMethod( shopperPage, 'Alipay' );
-			await shopper.placeOrder( shopperPage );
-
-			// Verify redirect to Stripe's Alipay test page
-			await expect( shopperPage ).toHaveURL( /.*stripe\.com.*alipay/ );
-
-			await shopperPage.getByText( 'Authorize Test Payment' ).click();
-
-			await expect(
-				shopperPage.getByRole( 'heading', {
-					name: 'Order received',
-				} )
-			).toBeVisible();
 			await expect(
 				shopperPage.getByRole( 'img', {
 					name: 'Alipay',
@@ -94,6 +102,12 @@ test.describe.skip( 'Alipay Checkout', { tag: '@shopper' }, () => {
 			).toBeVisible();
 		}
 	);
+
+	test( 'merchant can see and refund an Alipay order', async () => {
+		const orderId = await checkoutWithAlipay( shopperPage );
+
+		await verifyOrderAndRefund( merchantPage, orderId );
+	} );
 
 	test.describe(
 		'checkout on block-based checkout page',
@@ -111,18 +125,17 @@ test.describe.skip( 'Alipay Checkout', { tag: '@shopper' }, () => {
 					config.addresses.customer.billing
 				);
 
-				await shopperPage
-					.getByRole( 'radio', {
-						name: 'Alipay',
-					} )
-					.click();
+				const alipayRadio = shopperPage.getByRole( 'radio', {
+					name: 'Alipay',
+				} );
+				await alipayRadio.click();
+				await expect( alipayRadio ).toBeChecked();
 
 				await shopper.placeOrderWCB( shopperPage, false );
 
-				// Verify redirect to Stripe's Alipay test page
-				await expect( shopperPage ).toHaveURL(
-					/.*stripe\.com.*alipay/
-				);
+				await expect(
+					shopperPage.getByText( /Alipay test payment page/ )
+				).toBeVisible();
 
 				await shopperPage.getByText( 'Authorize Test Payment' ).click();
 

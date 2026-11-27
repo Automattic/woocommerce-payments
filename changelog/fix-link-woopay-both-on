@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Turn Link off on stores that also have WooPay on, since Link payments fail there.

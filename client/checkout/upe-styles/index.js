@@ -23,6 +23,7 @@ export const appearanceSelectors = {
 		hiddenInput: '#wcpay-hidden-input',
 		hiddenInvalidInput: '#wcpay-hidden-invalid-input',
 		hiddenValidActiveLabel: '#wcpay-hidden-valid-active-label',
+		hiddenError: '#wcpay-hidden-error',
 	},
 	classicCheckout: {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
@@ -39,6 +40,10 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		errorElement: {
+			tagName: 'p',
+			classes: [ 'checkout-inline-error-message' ],
+		},
 		alternateSelectors: {
 			appendTarget: 'form.checkout',
 			upeThemeInputSelector: 'form.checkout input[type="text"]',
@@ -68,7 +73,20 @@ export const appearanceSelectors = {
 		],
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
-		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		// Same state as the valid row, so invalid inputs measure the same padding.
+		invalidClasses: [
+			'wc-block-components-text-input',
+			'is-active',
+			'has-error',
+		],
+		errorElement: {
+			tagName: 'p',
+			classes: [],
+			wrapper: {
+				tagName: 'div',
+				classes: [ 'wc-block-components-validation-error' ],
+			},
+		},
 		alternateSelectors: {
 			appendTarget: '#billing.wc-block-components-address-form',
 			upeThemeInputSelector: '#billing-first_name',
@@ -412,6 +430,41 @@ const hiddenElementsForUPE = {
 	},
 
 	/**
+	 * Append the checkout's own field error element, so its text style can be measured.
+	 *
+	 * @param {Object} targetRow    Element the error element is appended to.
+	 * @param {Object} errorElement Error element description: `tagName`, `classes` and an optional `wrapper`.
+	 * @param {string} newElementID Selector for the error element.
+	 * @param {Object} scope        The document scope to search in.
+	 */
+	appendErrorElement: function (
+		targetRow,
+		errorElement,
+		newElementID,
+		scope
+	) {
+		const error = this.createRow(
+			errorElement.tagName,
+			errorElement.classes,
+			scope
+		);
+		error.id = this.getIDFromSelector( newElementID );
+
+		if ( errorElement.wrapper ) {
+			const wrapper = this.createRow(
+				errorElement.wrapper.tagName,
+				errorElement.wrapper.classes,
+				scope
+			);
+			wrapper.appendChild( error );
+			targetRow.appendChild( wrapper );
+			return;
+		}
+
+		targetRow.appendChild( error );
+	},
+
+	/**
 	 * Retrieve ID/Class from selector.
 	 *
 	 * @param {string} selector Element selector.
@@ -506,6 +559,15 @@ const hiddenElementsForUPE = {
 			selectors.hiddenInvalidInput,
 			scope
 		);
+
+		if ( selectors.errorElement ) {
+			this.appendErrorElement(
+				hiddenInvalidRow,
+				selectors.errorElement,
+				selectors.hiddenError,
+				scope
+			);
+		}
 
 		// Remove transitions & focus on hidden element.
 		const wcpayHiddenInput = scope.querySelector( selectors.hiddenInput );
@@ -707,6 +769,17 @@ export const getAppearance = (
 		scope
 	);
 
+	let errorRules = getFieldStyles(
+		selectors.hiddenError,
+		'.Error',
+		null,
+		scope
+	);
+	// Error text colored like normal text means the theme doesn't style it: keep Stripe's error style.
+	if ( errorRules.color && errorRules.color === paragraphRules.color ) {
+		errorRules = {};
+	}
+
 	const tabRules = getFieldStyles(
 		selectors.upeThemeInputSelector,
 		'.Tab',
@@ -773,6 +846,10 @@ export const getAppearance = (
 		),
 	};
 
+	if ( Object.keys( errorRules ).length ) {
+		appearance.rules[ '.Error' ] = errorRules;
+	}
+
 	if ( isFloatingLabel ) {
 		appearance = handleAppearanceForFloatingLabel(
 			appearance,
@@ -781,7 +858,9 @@ export const getAppearance = (
 				'.Label--floating',
 				null,
 				scope
-			)
+			),
+			// WooPay's invalid inputs are measured without `is-active`, so they keep their own padding.
+			! forWooPay
 		);
 	}
 
