@@ -14,7 +14,8 @@ export const settingsRedirectFlagPrefix = 'woopayments-flag-';
  * Returns the flags passed to the settings page through the stable settings link, keyed by
  * their unprefixed name. A flag passed without a value reads as `'1'`.
  *
- * Anyone can craft the link, so flags may only select what the page shows, never change state.
+ * Flags are an untrusted input. Nothing should change state based on the flags. Any person can create the link and
+ * zero-trust policy should apply here.
  *
  * @param query Query args to read; defaults to the current page's.
  * @return Flags keyed by name.
