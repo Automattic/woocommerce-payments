@@ -121,19 +121,64 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_flags_cannot_override_settings_page_args() {
+	public function test_redirect_drops_flags_that_are_not_allowed() {
 		$_GET = [
 			SettingsRedirectService::REDIRECT_QUERY_ARG => '',
+			'utm_source'                                => 'email',
+			'fbclid'                                    => 'abc',
 			'page'                                      => 'evil',
 			'anchor'                                    => '#elsewhere',
+			'rates-update'                              => '',
 		];
 
 		$this->run_redirect();
 
 		$this->assertSame(
-			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-flag-page=evil&woopayments-flag-anchor=%23elsewhere' ),
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-flag-rates-update=1' ),
 			$this->redirect_location
 		);
+	}
+
+	public function test_redirect_ignores_array_method() {
+		$_GET = [
+			SettingsRedirectService::REDIRECT_QUERY_ARG => '',
+			'method'                                    => [ self::REGISTERED_METHOD ],
+		];
+
+		$this->run_redirect();
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
+			$this->redirect_location
+		);
+	}
+
+	public function test_redirect_drops_array_flags() {
+		$_GET = [
+			SettingsRedirectService::REDIRECT_QUERY_ARG => '',
+			'campaign'                                  => [ 'a', 'b' ],
+		];
+
+		$this->run_redirect();
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
+			$this->redirect_location
+		);
+	}
+
+	public function test_redirect_continues_the_request_when_the_redirect_is_not_sent() {
+		remove_filter( 'wp_redirect', [ $this, 'capture_redirect' ] );
+		add_filter( 'wp_redirect', '__return_false' );
+		$_GET = [ SettingsRedirectService::REDIRECT_QUERY_ARG => '' ];
+
+		try {
+			$this->sut->maybe_redirect();
+		} finally {
+			remove_filter( 'wp_redirect', '__return_false' );
+		}
+
+		$this->assertNull( $this->redirect_location );
 	}
 
 	public function test_redirect_ignores_requests_without_query_arg() {
@@ -157,26 +202,72 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->redirect_location );
 	}
 
-	public function test_settings_url_sanitizes_and_caps_flags() {
+	public function test_init_hooks_registers_the_redirect_early_on_template_redirect() {
+		$this->sut->init_hooks();
+
+		$this->assertSame( 1, has_action( 'template_redirect', [ $this->sut, 'maybe_redirect' ] ) );
+
+		remove_action( 'template_redirect', [ $this->sut, 'maybe_redirect' ], 1 );
+	}
+
+	public function test_settings_url_sanitizes_flag_names_and_values() {
 		$flags = [
-			'Mixed Case!' => 'value',
-			'array'       => [ 'not', 'forwarded' ],
-			'tagged'      => '<b>bold</b>',
-			'long'        => str_repeat( 'a', 150 ),
+			'Rates-Update' => 'value',
+			'campaign'     => str_repeat( 'a', 150 ),
 		];
-		for ( $i = 0; $i < 12; $i++ ) {
-			$flags[ 'extra' . $i ] = '1';
-		}
 
-		$url   = $this->sut->get_settings_url( '', $flags );
-		$query = [];
-		wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query );
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-flag-rates-update=value&woopayments-flag-campaign=' . str_repeat( 'a', 100 ) ),
+			$this->sut->get_settings_url( '', $flags )
+		);
+	}
 
-		$this->assertSame( 'value', $query['woopayments-flag-mixedcase'] );
-		$this->assertArrayNotHasKey( 'woopayments-flag-array', $query );
-		$this->assertSame( 'bold', $query['woopayments-flag-tagged'] );
-		$this->assertSame( str_repeat( 'a', 100 ), $query['woopayments-flag-long'] );
-		$this->assertCount( 10, preg_grep( '/^woopayments-flag-/', array_keys( $query ) ) );
+	public function test_settings_url_keeps_the_last_value_of_colliding_flag_names() {
+		$flags = [
+			'Rates-Update' => 'first',
+			'rates-update' => 'last',
+		];
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-flag-rates-update=last' ),
+			$this->sut->get_settings_url( '', $flags )
+		);
+	}
+
+	public function test_settings_url_replaces_empty_sanitized_values_with_one() {
+		$flags = [
+			'rates-update' => '<b></b>',
+			'campaign'     => '   ',
+		];
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-flag-rates-update=1&woopayments-flag-campaign=1' ),
+			$this->sut->get_settings_url( '', $flags )
+		);
+	}
+
+	public function test_settings_url_converts_bool_and_int_flag_values() {
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-flag-rates-update=0&woopayments-flag-campaign=5' ),
+			$this->sut->get_settings_url(
+				'',
+				[
+					'rates-update' => false,
+					'campaign'     => 5,
+				]
+			)
+		);
+	}
+
+	public function test_settings_url_omits_anchor_without_a_gateway_map() {
+		$mock_legacy_proxy = $this->createMock( LegacyProxy::class );
+		$mock_legacy_proxy->method( 'call_static' )->willReturn( null );
+		$sut = new SettingsRedirectService( $mock_legacy_proxy );
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
+			$sut->get_settings_url( self::REGISTERED_METHOD )
+		);
 	}
 
 	/**

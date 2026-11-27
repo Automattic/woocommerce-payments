@@ -12,10 +12,12 @@ export const settingsRedirectFlagPrefix = 'woopayments-flag-';
 
 /**
  * Returns the flags passed to the settings page through the stable settings link, keyed by
- * their unprefixed name. A flag passed without a value reads as `'1'`.
+ * their unprefixed name. The server sends `'1'` for a flag passed without a value.
  *
- * Flags are an untrusted input. Nothing should change state based on the flags. Any person can create the link and
- * zero-trust policy should apply here.
+ * Flags are an untrusted input. Nothing should change state based on the flags, and values can be any text or URL,
+ * so never use one as a link target or markup; only compare it with known values. Any person can create the link and
+ * zero-trust policy should apply here. The returned object has no prototype, so names like `constructor` or
+ * `hasOwnProperty` are plain flags.
  *
  * @param query Query args to read; defaults to the current page's.
  * @return Flags keyed by name.
@@ -34,5 +36,5 @@ export const getSettingsRedirectFlags = (
 			}
 			return flags;
 		},
-		{}
+		Object.create( null )
 	);

@@ -42,9 +42,13 @@ class SettingsRedirectService {
 	public const FLAG_PREFIX = 'woopayments-flag-';
 
 	/**
-	 * Flags forwarded at most, to keep crafted links from producing oversized URLs.
+	 * Flags the stable link forwards to the settings page. Any other query arg, such as tracking
+	 * params added to campaign links, is dropped. Add a name here when a notice starts reading it.
 	 */
-	private const MAX_FLAGS = 10;
+	private const ALLOWED_FLAGS = [
+		'rates-update',
+		'campaign',
+	];
 
 	/**
 	 * Maximum length of a flag value.
@@ -97,16 +101,20 @@ class SettingsRedirectService {
 		$method = $query[ self::METHOD_QUERY_ARG ] ?? '';
 		unset( $query[ self::REDIRECT_QUERY_ARG ], $query[ self::METHOD_QUERY_ARG ] );
 
-		wp_safe_redirect( $this->get_settings_url( is_string( $method ) ? $method : '', $query ) );
-		exit;
+		nocache_headers();
+		if ( wp_safe_redirect( $this->get_settings_url( is_string( $method ) ? $method : '', $query ) ) ) {
+			exit;
+		}
 	}
 
 	/**
 	 * Returns the WooPayments settings URL.
 	 *
-	 * @param string $payment_method Payment method ID to scroll to. Ignored unless WooPayments registers it.
+	 * @param string $payment_method Payment method ID to scroll to. Ignored unless WooPayments registers a gateway for it.
 	 * @param array  $flags          Flags for the settings page, keyed by name. Names are sanitized with
-	 *                               `sanitize_key()`; empty values become `1`; non-string values are dropped.
+	 *                               `sanitize_key()` and dropped unless listed in `ALLOWED_FLAGS`; when sanitized
+	 *                               names collide the last value wins; empty values become `1`; values other than
+	 *                               strings, integers and booleans are dropped.
 	 *
 	 * @return string
 	 */
@@ -156,12 +164,8 @@ class SettingsRedirectService {
 		$sanitized = [];
 
 		foreach ( $flags as $name => $value ) {
-			if ( count( $sanitized ) >= self::MAX_FLAGS ) {
-				break;
-			}
-
 			$name = sanitize_key( (string) $name );
-			if ( '' === $name || ! ( is_string( $value ) || is_int( $value ) || is_bool( $value ) ) ) {
+			if ( ! in_array( $name, self::ALLOWED_FLAGS, true ) || ! ( is_string( $value ) || is_int( $value ) || is_bool( $value ) ) ) {
 				continue;
 			}
 
