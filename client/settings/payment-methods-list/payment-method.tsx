@@ -179,6 +179,7 @@ const PaymentMethod = ( {
 
 	return (
 		<PaymentMethodItem
+			id={ `payment-method-${ id }` }
 			className={ clsx( 'payment-method__list-item', className ) }
 		>
 			<PaymentMethodItem.Checkbox

@@ -177,7 +177,13 @@ const SettingsManager = () => {
 		const scrollTo = anchor || hash;
 
 		if ( ! isLoading && scrollTo ) {
-			const element = document.querySelector( scrollTo );
+			let element = null;
+			try {
+				element = document.querySelector( scrollTo );
+			} catch ( e ) {
+				// The anchor comes from the URL and may not be a valid selector.
+				return;
+			}
 
 			if ( ! element ) {
 				return;

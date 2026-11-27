@@ -368,6 +368,34 @@ describe( 'ExpressCheckout', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'renders each express checkout row with the ID the settings redirect links to', () => {
+		const context = {
+			accountStatus: {},
+			featureFlags: { woopay: true, amazonPay: true },
+		};
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'link',
+			'card',
+			'amazon_pay',
+		] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		[
+			'express-checkouts-woopay',
+			'express-checkouts-apple-google-pay',
+			'express-checkouts-link',
+			'express-checkouts-amazon-pay',
+		].forEach( ( rowId ) => {
+			expect( document.getElementById( rowId ) ).toBeInTheDocument();
+		} );
+	} );
+
 	it( 'should render Amazon Pay when the feature flag is enabled', () => {
 		const context = {
 			accountStatus: {},
