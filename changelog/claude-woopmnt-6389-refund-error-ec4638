@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Explain why a refund from the Transactions page failed, including when the order already has a refund recorded in WooCommerce, instead of asking to try again later.
