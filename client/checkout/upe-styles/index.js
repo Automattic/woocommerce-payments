@@ -836,7 +836,7 @@ export const getAppearance = (
 			'.Footer': footerRules,
 			'.Footer-link': getFieldStyles(
 				selectors.footerLink,
-				'.Footer--link',
+				'.Footer-link',
 				null,
 				scope
 			),
