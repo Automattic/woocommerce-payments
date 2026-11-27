@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { setSettings } from '@wordpress/date';
+import { dateI18n, setSettings } from '@wordpress/date';
 // WordPress core's wp.date ships timezone data; this import loads it for the
 // copy Jest uses.
 import moment from 'moment-timezone';
@@ -13,11 +13,11 @@ import moment from 'moment-timezone';
  */
 import { formatDateValue } from '..';
 
-// The site settings WordPress prints for wp.date, in English.
-const setSiteTimezone = ( timezone ) =>
+// The site settings WordPress prints for wp.date.
+const setSiteTimezone = ( timezone, locale = 'en' ) =>
 	setSettings( {
 		l10n: {
-			locale: 'en',
+			locale,
 			months: moment.months(),
 			monthsShort: moment.monthsShort(),
 			weekdays: moment.weekdays(),
@@ -124,6 +124,20 @@ describe( 'formatDateValue', () => {
 
 	it( 'passes a date it cannot read through unchanged', () => {
 		expect( formatDateValue( '2026-02-30' ) ).toBe( '2026-02-30' );
+	} );
+
+	it( 'reads the offset in plain digits when the admin locale localizes them', () => {
+		// A plugin that loads moment's own Arabic locale makes localized dates
+		// use Arabic-Indic digits. Loading it also selects it globally.
+		require( 'moment/locale/ar' );
+		moment.locale( 'en' );
+		setSiteTimezone( { offset: -5, string: 'America/New_York' }, 'ar' );
+
+		expect( dateI18n( 'Y', '2026-01-15T12:00:00Z' ) ).toBe( '٢٠٢٦' );
+		expect( formatDateValue( '2026-01-15' ) ).toBe( '2026-01-15 05:00:00' );
+		expect( formatDateValue( '2026-01-15', true ) ).toBe(
+			'2026-01-16 04:59:59'
+		);
 	} );
 
 	it( 'passes an empty value through', () => {

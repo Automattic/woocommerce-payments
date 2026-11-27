@@ -5,7 +5,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { capitalize, partial } from 'lodash';
 import moment from 'moment';
-import { dateI18n } from '@wordpress/date';
+import { date as formatSiteDate } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { encodePathSegment } from 'utils/path-segment';
 import { numberFormat } from '@woocommerce/number';
@@ -253,15 +253,18 @@ const DAY_IN_MS = 86400000;
 /**
  * Returns the site timezone's UTC offset at an instant, in milliseconds.
  *
- * Reads it through dateI18n(), the path the list date columns render with, so
- * filter bounds and displayed dates agree on the site's time.
+ * Reads it through @wordpress/date's date(), which resolves the site
+ * timezone exactly as the list date columns do with dateI18n(), so filter
+ * bounds and displayed dates agree on the site's time. Unlike dateI18n(), it
+ * doesn't apply the admin locale, which can turn the offset's digits into
+ * ones Number() can't read.
  *
  * @param {number} timestamp Milliseconds since the epoch.
  *
  * @return {number} Offset in milliseconds.
  */
 const getSiteUtcOffset = ( timestamp ) =>
-	Number( dateI18n( 'Z', new Date( timestamp ) ) ) * 1000;
+	Number( formatSiteDate( 'Z', new Date( timestamp ) ) ) * 1000;
 
 /**
  * Returns the instant a calendar day starts in the site timezone.
