@@ -257,6 +257,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	private $order;
 
 	/**
+	 * Tax rate ID and previous tax options from `create_taxed_order()`, restored in tear_down.
+	 *
+	 * @var array|null
+	 */
+	private $taxed_order_state;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -271,6 +278,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
+		if ( null !== $this->taxed_order_state ) {
+			WC_Tax::_delete_tax_rate( $this->taxed_order_state['rate_id'] );
+			update_option( 'woocommerce_calc_taxes', $this->taxed_order_state['calc_taxes'] );
+			update_option( 'woocommerce_tax_round_at_subtotal', $this->taxed_order_state['round_at_subtotal'] );
+			$this->taxed_order_state = null;
+		}
 		wcpay_get_test_container()->reset_all_replacements();
 		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes' );
 		as_unschedule_all_actions( 'wcpay_add_fee_breakdown_to_order_notes_fallback' );
@@ -6066,6 +6079,115 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 
+	public function test_mark_payment_dispute_closed_lost_refunds_each_line_with_tax(): void {
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order();
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$refund = $refunds[0];
+		$this->assertEquals( -60.5, $refund->get_total() );
+		$this->assertEquals( -5.5, $refund->get_total_tax() );
+		$this->assertEquals( -10.0, (float) $refund->get_shipping_total() );
+
+		$this->assertSame( -2, $order->get_qty_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 40.0, $order->get_total_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 4.0, $order->get_tax_refunded_for_item( $item_ids['product'], $rate_id ) );
+		$this->assertEquals( 10.0, $order->get_total_refunded_for_item( $item_ids['shipping'], 'shipping' ) );
+		$this->assertEquals( 1.0, $order->get_tax_refunded_for_item( $item_ids['shipping'], $rate_id, 'shipping' ) );
+		$this->assertEquals( 5.0, $order->get_total_refunded_for_item( $item_ids['fee'], 'fee' ) );
+		$this->assertEquals( 0.5, $order->get_tax_refunded_for_item( $item_ids['fee'], $rate_id, 'fee' ) );
+	}
+
+	public function test_mark_payment_dispute_closed_lost_refunds_each_line_when_taxes_round_per_line(): void {
+		// 10% of 4.95 is 0.495 on each line, which the order total rounds up to 0.50 per line.
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order( 4.95, 4.95 );
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refund = $this->get_dispute_lost_refund( $order );
+		$this->assertEquals( -16.4, $refund->get_total() );
+		$this->assertEquals( -1.5, $refund->get_total_tax() );
+		$this->assertSame( -2, $order->get_qty_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 0.5, $order->get_tax_refunded_for_item( $item_ids['product'], $rate_id ) );
+	}
+
+	public function test_mark_payment_dispute_closed_lost_refunds_each_line_when_taxes_round_at_subtotal(): void {
+		// The lines add up to 30.745, which the order total rounds to 30.75.
+		[ $order, , $item_ids ] = $this->create_taxed_order( 12.95, 10, true );
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refund = $this->get_dispute_lost_refund( $order );
+		$this->assertEquals( -30.75, $refund->get_total() );
+		$this->assertEquals( 10.0, $order->get_total_refunded_for_item( $item_ids['shipping'], 'shipping' ) );
+	}
+
+	public function test_mark_payment_dispute_closed_lost_refunds_fractional_quantities(): void {
+		// WooCommerce hooks intval here by default; sell-by-weight plugins swap it for floatval.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+		try {
+			[ $order, , $item_ids ] = $this->create_taxed_order();
+			$product                = $order->get_item( $item_ids['product'] );
+			$product->set_quantity( 1.5 );
+			$product->save();
+			$order = wc_get_order( $order->get_id() );
+
+			$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+			$this->assertEquals( -1.5, $order->get_qty_refunded_for_item( $item_ids['product'] ) );
+		} finally {
+			remove_filter( 'woocommerce_stock_amount', 'floatval' );
+			add_filter( 'woocommerce_stock_amount', 'intval' );
+		}
+	}
+
+	public function test_mark_payment_dispute_closed_lost_after_line_refund_refunds_the_remaining_lines(): void {
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order();
+		wc_create_refund(
+			[
+				'order_id'   => $order->get_id(),
+				'amount'     => 11,
+				'line_items' => [
+					$item_ids['shipping'] => [
+						'refund_total' => 10,
+						'refund_tax'   => [ $rate_id => 1 ],
+					],
+				],
+			]
+		);
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refund = $this->get_dispute_lost_refund( $order );
+		$this->assertEquals( -49.5, $refund->get_total() );
+		$this->assertEquals( -4.5, $refund->get_total_tax() );
+		$this->assertEquals( 0.0, (float) $refund->get_shipping_total() );
+		$this->assertEquals( 10.0, $order->get_total_refunded_for_item( $item_ids['shipping'], 'shipping' ) );
+		$this->assertEquals( 40.0, $order->get_total_refunded_for_item( $item_ids['product'] ) );
+	}
+
+	public function test_mark_payment_dispute_closed_lost_after_lump_sum_refund_refunds_quantities_only(): void {
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order();
+		wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 20,
+			]
+		);
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost' );
+
+		$refund = $this->get_dispute_lost_refund( $order );
+		$this->assertEquals( -40.5, $refund->get_total() );
+		$this->assertSame( -2, $order->get_qty_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 0.0, $order->get_total_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 0.0, $order->get_tax_refunded_for_item( $item_ids['product'], $rate_id ) );
+		$this->assertEmpty( $refund->get_items( [ 'shipping', 'fee' ] ) );
+	}
+
 	/**
 	 * Tests that mark_payment_dispute_closed handles partial refunds correctly.
 	 */
@@ -7291,5 +7413,105 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
 
 		return implode( "\n", wp_list_pluck( $notes, 'content' ) );
+	}
+
+	/**
+	 * Creates an on-hold order with a product line of quantity 2, shipping and a $5 fee, all with 10% tax.
+	 * The defaults total $60.50.
+	 *
+	 * @param float $product_total     The product line total, before tax.
+	 * @param float $shipping_total    The shipping total, before tax.
+	 * @param bool  $round_at_subtotal Whether to round tax at subtotal instead of per line.
+	 *
+	 * @return array The order, the tax rate ID and the item IDs keyed by line type.
+	 */
+	private function create_taxed_order( float $product_total = 40, float $shipping_total = 10, bool $round_at_subtotal = false ): array {
+		$previous_calc_taxes        = get_option( 'woocommerce_calc_taxes' );
+		$previous_round_at_subtotal = get_option( 'woocommerce_tax_round_at_subtotal' );
+		update_option( 'woocommerce_calc_taxes', 'yes' );
+		update_option( 'woocommerce_tax_round_at_subtotal', $round_at_subtotal ? 'yes' : 'no' );
+		$rate_id = WC_Tax::_insert_tax_rate(
+			[
+				'tax_rate_country'  => '',
+				'tax_rate_state'    => '',
+				'tax_rate'          => '10.0000',
+				'tax_rate_name'     => 'TAX',
+				'tax_rate_priority' => '1',
+				'tax_rate_compound' => '0',
+				'tax_rate_shipping' => '1',
+				'tax_rate_order'    => '1',
+				'tax_rate_class'    => '',
+			]
+		);
+
+		$this->taxed_order_state = [
+			'rate_id'           => $rate_id,
+			'calc_taxes'        => $previous_calc_taxes,
+			'round_at_subtotal' => $previous_round_at_subtotal,
+		];
+
+		$order = new WC_Order();
+		$order->set_currency( 'USD' );
+
+		$product = new WC_Order_Item_Product();
+		$product->set_props(
+			[
+				'name'     => 'Taxed product',
+				'quantity' => 2,
+				'subtotal' => $product_total,
+				'total'    => $product_total,
+				'taxes'    => [
+					'subtotal' => [ $rate_id => $product_total / 10 ],
+					'total'    => [ $rate_id => $product_total / 10 ],
+				],
+			]
+		);
+		$order->add_item( $product );
+
+		$shipping = new WC_Order_Item_Shipping();
+		$shipping->set_props(
+			[
+				'method_title' => 'Flat rate',
+				'method_id'    => 'flat_rate',
+				'total'        => $shipping_total,
+				'taxes'        => [ 'total' => [ $rate_id => $shipping_total / 10 ] ],
+			]
+		);
+		$order->add_item( $shipping );
+
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_props(
+			[
+				'name'      => 'Handling',
+				'total'     => 5,
+				'tax_class' => '',
+				'taxes'     => [ 'total' => [ $rate_id => 0.5 ] ],
+			]
+		);
+		$order->add_item( $fee );
+
+		$order->update_taxes();
+		$order->calculate_totals( false );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		return [
+			$order,
+			$rate_id,
+			[
+				'product'  => $product->get_id(),
+				'shipping' => $shipping->get_id(),
+				'fee'      => $fee->get_id(),
+			],
+		];
+	}
+
+	private function get_dispute_lost_refund( WC_Order $order ): WC_Order_Refund {
+		foreach ( $order->get_refunds() as $refund ) {
+			if ( 'Dispute lost.' === $refund->get_reason() ) {
+				return $refund;
+			}
+		}
+		$this->fail( 'No refund was recorded for the lost dispute.' );
 	}
 }

@@ -917,7 +917,6 @@ class WC_Payments_Order_Service {
 		if ( 'lost' === $status ) {
 			// Use dispute summary data if available to determine refund amount.
 			$refund_amount = $order->get_remaining_refund_amount();
-			$line_items    = $order->get_items();
 			if ( ! empty( $dispute_summary ) ) {
 				$disputed_amount = isset( $dispute_summary['disputed_amount'] ) ? $dispute_summary['disputed_amount'] : 0;
 				if ( $disputed_amount > 0 ) {
@@ -929,10 +928,6 @@ class WC_Payments_Order_Service {
 
 					// Use the appropriate amount, but don't exceed order total.
 					$refund_amount = min( $refund_amount, $disputed_amount );
-					if ( $disputed_amount < (float) $order->get_total() ) {
-						// For partial disputes pass empty line_items to avoid inconsistency in the order view.
-						$line_items = [];
-					}
 				}
 			}
 
@@ -941,7 +936,7 @@ class WC_Payments_Order_Service {
 					'amount'     => $refund_amount,
 					'reason'     => __( 'Dispute lost.', 'woocommerce-payments' ),
 					'order_id'   => $order->get_id(),
-					'line_items' => $line_items,
+					'line_items' => $this->get_remaining_refund_line_items( $order, (float) $refund_amount ),
 				]
 			);
 		} elseif ( ! empty( $open_dispute_ids ) ) {
@@ -3136,6 +3131,112 @@ class WC_Payments_Order_Service {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Builds `wc_create_refund()` line items for everything left on each line, with tax.
+	 *
+	 * When the lines don't add up to `$amount` but it refunds the rest of the order, such as
+	 * after an earlier lump-sum refund, only the quantities are refunded. Otherwise returns an
+	 * empty array, so the caller records a lump-sum refund.
+	 *
+	 * @param WC_Order $order  The order being refunded.
+	 * @param float    $amount The refund amount, in the order currency.
+	 *
+	 * @return array Line items keyed by order item ID, or an empty array.
+	 */
+	public function get_remaining_refund_line_items( WC_Order $order, float $amount ): array {
+		$items = $order->get_items( [ 'line_item', 'shipping', 'fee' ] );
+		if ( [] === $items ) {
+			return [];
+		}
+
+		$line_items      = [];
+		$remaining_total = 0.0;
+		$decimals        = WC_Payments_Utils::get_stripe_minor_unit_for_currency( $order->get_currency() );
+		// WooCommerce stores line taxes unrounded, but builds the order total from tax rounded per line unless this is on.
+		$round_per_line = 'yes' !== get_option( 'woocommerce_tax_round_at_subtotal' );
+
+		foreach ( $items as $item_id => $item ) {
+			/** @var WC_Order_Item_Product|WC_Order_Item_Shipping|WC_Order_Item_Fee $item */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$item_type    = $item->get_type();
+			$refund_total = (float) $item->get_total() - (float) $order->get_total_refunded_for_item( $item_id, $item_type );
+			if ( $round_per_line ) {
+				$refund_total = round( $refund_total, $decimals );
+			}
+
+			$refund_tax = [];
+			$taxes      = $item->get_taxes();
+			foreach ( $taxes['total'] ?? [] as $rate_id => $tax_total ) {
+				$remaining_tax = (float) $tax_total - (float) $order->get_tax_refunded_for_item( $item_id, $rate_id, $item_type );
+				if ( $round_per_line ) {
+					$remaining_tax = (float) wc_round_tax_total( $remaining_tax, $decimals );
+				}
+				if ( 0.0 !== $remaining_tax ) {
+					$refund_tax[ $rate_id ] = $remaining_tax;
+				}
+			}
+
+			// The refunded quantity is stored as a negative number. Stores can allow fractional
+			// quantities through the `woocommerce_stock_amount` filter.
+			$qty = 'line_item' === $item_type
+				? wc_stock_amount( $item->get_quantity() ) - abs( wc_stock_amount( $order->get_qty_refunded_for_item( $item_id, $item_type ) ) )
+				: 0;
+
+			if ( 0.0 === $refund_total && [] === $refund_tax && $qty <= 0 ) {
+				continue;
+			}
+
+			$line_items[ $item_id ] = [
+				'qty'          => max( 0, $qty ),
+				'refund_total' => $refund_total,
+				'refund_tax'   => $refund_tax,
+			];
+			$remaining_total       += $refund_total + array_sum( $refund_tax );
+		}
+
+		if ( [] === $line_items ) {
+			return [];
+		}
+
+		if ( $this->amounts_match( $remaining_total, $amount, $order->get_currency() ) ) {
+			return $line_items;
+		}
+
+		if ( ! $this->amounts_match( (float) $order->get_remaining_refund_amount(), $amount, $order->get_currency() ) ) {
+			return [];
+		}
+
+		$quantities = [];
+		foreach ( $line_items as $item_id => $line_item ) {
+			if ( $line_item['qty'] > 0 ) {
+				$quantities[ $item_id ] = [
+					'qty'          => $line_item['qty'],
+					'refund_total' => 0,
+					'refund_tax'   => [],
+				];
+			}
+		}
+
+		return $quantities;
+	}
+
+	/**
+	 * Whether two amounts are within half of the currency's smallest unit, such as half a cent.
+	 *
+	 * @param float  $first    An amount.
+	 * @param float  $second   Another amount.
+	 * @param string $currency The currency of both amounts.
+	 *
+	 * @return bool
+	 */
+	private function amounts_match( float $first, float $second, string $currency ): bool {
+		// Three-decimal currencies are treated as two, which is close enough for this check.
+		$difference_in_units = abs( $first - $second ) * ( 10 ** WC_Payments_Utils::get_stripe_minor_unit_for_currency( $currency ) );
+
+		// A sum that ends in exactly half a unit can round either way, depending on the tax rounding
+		// mode, so half a unit still matches. Rounding first drops float noise.
+		return round( $difference_in_units, 6 ) <= 0.5;
 	}
 
 	/**
