@@ -1259,6 +1259,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::SUPERSEDED_PAYMENT_SUCCEEDED_META_KEY,
 			// Declines count against the order they happened on. Copied, they would limit renewals after one decline.
 			Session_Rate_Limiter::DECLINED_CARD_REGISTRY_META_KEY,
+			// WooCommerce's payment mode (11.5+) belongs to the charge that recorded it. A renewal that keeps no
+			// gateway, such as a $0 or manual one, would otherwise count as a test order in the WC Tracker.
+			'_wc_payment_mode',
 		];
 	}
 

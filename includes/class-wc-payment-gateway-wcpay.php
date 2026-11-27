@@ -2003,6 +2003,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Before the setters below, so their save persists it: the takeover cleanup reads the mode as the sign
 		// of a new WooPayments attempt.
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
+		$this->order_service->set_payment_mode_for_order( $order );
 
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		// Note: For confirmation tokens (ctoken_*), we don't store them here as they are not valid

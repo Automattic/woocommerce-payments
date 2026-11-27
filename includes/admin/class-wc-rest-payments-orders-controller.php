@@ -216,6 +216,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// An earlier online attempt can leave the other mode on the order. The intent was just fetched
 			// in the store's mode, and attaching it saves the order.
 			$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
+			$this->order_service->set_payment_mode_for_order( $order );
 			$this->order_service->attach_intent_info_to_order( $order, $intent );
 
 			$this->order_service->update_order_status_from_intent( $order, $intent );

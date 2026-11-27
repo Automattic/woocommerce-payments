@@ -4617,6 +4617,43 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'test', $mode_when_payment_method_saved );
 	}
 
+	/**
+	 * The WC Tracker reports test orders from WooCommerce's payment mode. An earlier attempt in the other mode can
+	 * leave its mode on the order, and the charge must replace it.
+	 *
+	 * @dataProvider provider_process_payment_for_order_records_the_payment_mode
+	 */
+	public function test_process_payment_for_order_records_the_payment_mode( bool $store_is_live, string $stale_payment_mode, string $expected_payment_mode ) {
+		$this->skip_without_payment_mode();
+		$store_is_live ? WC_Payments::mode()->live() : WC_Payments::mode()->test();
+		$_POST['payment_method'] = '';
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->add_payment_token( $token );
+		$order->set_payment_mode( $stale_payment_mode );
+		$order->save();
+		$pi = new Payment_Information( 'pm_test', $order, null, $token, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->assertSame( $expected_payment_mode, wc_get_order( $order->get_id() )->get_payment_mode() );
+	}
+
+	public function provider_process_payment_for_order_records_the_payment_mode(): array {
+		return [
+			'test charge after a live attempt' => [ false, 'live', 'test' ],
+			'live charge after a test attempt' => [ true, 'test', 'live' ],
+		];
+	}
+
 	public function test_no_billing_details_update_for_legacy_card_object() {
 		$legacy_card = 'card_mock';
 

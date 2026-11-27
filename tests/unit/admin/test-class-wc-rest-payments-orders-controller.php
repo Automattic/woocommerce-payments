@@ -170,7 +170,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider provide_terminal_capture_store_modes
 	 */
-	public function test_capture_terminal_payment_stores_mode_before_payment_complete( bool $store_is_live, string $stale_mode, string $expected_mode ): void {
+	public function test_capture_terminal_payment_stores_mode_before_payment_complete( bool $store_is_live, string $stale_mode, string $stale_payment_mode, string $expected_mode, string $expected_payment_mode ): void {
 		$mode     = WC_Payments::mode();
 		$was_dev  = $mode->is_dev();
 		$was_test = $mode->is_test();
@@ -179,6 +179,11 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$order = $this->create_mock_order();
 		$order->set_total( 50 );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $stale_mode );
+		// WooCommerce's payment mode, read by the WC Tracker, exists from WooCommerce 11.5.
+		$records_payment_mode = method_exists( $order, 'set_payment_mode' );
+		if ( $records_payment_mode ) {
+			$order->set_payment_mode( $stale_payment_mode );
+		}
 		$order->save();
 		$intent = WC_Helper_Intention::create_intention( [ 'metadata' => [ 'order_id' => $order->get_id() ] ] );
 		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' )->method( 'format_response' )->willReturn( $intent );
@@ -207,6 +212,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 			$this->assertSame( 200, $response->get_status() );
 			$this->assertSame( [ $expected_mode ], $observed );
+			if ( $records_payment_mode ) {
+				$this->assertSame( $expected_payment_mode, wc_get_order( $order->get_id() )->get_payment_mode() );
+			}
 		} finally {
 			remove_action( 'woocommerce_payment_complete', $observe );
 			if ( $was_dev ) {
@@ -221,8 +229,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function provide_terminal_capture_store_modes(): array {
 		return [
-			'live reader payment after a test attempt' => [ true, Order_Mode::TEST, 'prod' ],
-			'test reader payment after a live attempt' => [ false, Order_Mode::PRODUCTION, 'test' ],
+			'live reader payment after a test attempt' => [ true, Order_Mode::TEST, 'test', 'prod', 'live' ],
+			'test reader payment after a live attempt' => [ false, Order_Mode::PRODUCTION, 'live', 'test', 'test' ],
 		];
 	}
 

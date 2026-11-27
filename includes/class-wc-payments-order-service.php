@@ -1437,6 +1437,34 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Records the order's `_wcpay_mode` with WooCommerce's `WC_Order::set_payment_mode()`, which the WC Tracker
+	 * reads to report test orders. The caller saves the order.
+	 *
+	 * WooCommerce clears that mode when a loaded order is saved with another payment method ID, unless it was
+	 * recorded on the same object first. Call this again after moving an order to another WooPayments gateway ID.
+	 *
+	 * @param WC_Order $order The order.
+	 *
+	 * @return void
+	 */
+	public function set_payment_mode_for_order( WC_Order $order ): void {
+		// Added in WooCommerce 11.5.
+		if ( ! method_exists( $order, 'set_payment_mode' ) ) {
+			return;
+		}
+
+		// Automattic\WooCommerce\Enums\PaymentMode values. The enum doesn't exist before WooCommerce 11.5.
+		$payment_modes = [
+			Order_Mode::TEST       => 'test',
+			Order_Mode::PRODUCTION => 'live',
+		];
+		$mode          = $order->get_meta( self::WCPAY_MODE_META_KEY );
+		if ( is_string( $mode ) && isset( $payment_modes[ $mode ] ) ) {
+			$order->set_payment_mode( $payment_modes[ $mode ] );
+		}
+	}
+
+	/**
 	 * Removes the payment details of an earlier WooPayments attempt from an order paid with another gateway.
 	 *
 	 * WooCommerce can reuse a pending or failed order at checkout, which keeps what an earlier WooPayments
@@ -1650,6 +1678,8 @@ class WC_Payments_Order_Service {
 			$stored_order->set_payment_method( $card_gateway->id );
 			$stored_order->set_payment_method_title( $card_gateway->get_title() );
 		}
+		// WooCommerce cleared the mode when it saved the posted gateway.
+		$this->set_payment_mode_for_order( $stored_order );
 		$stored_order->save();
 
 		$this->add_note_naming_intent(
