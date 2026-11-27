@@ -3136,8 +3136,9 @@ class WC_Payments_Order_Service {
 	/**
 	 * Builds `wc_create_refund()` line items for everything left on each line, with tax.
 	 *
-	 * Returns an empty array when the lines don't add up to `$amount`, so the caller
-	 * records a lump-sum refund.
+	 * When the lines don't add up to `$amount` but it refunds the rest of the order, such as
+	 * after an earlier lump-sum refund, only the quantities are refunded. Otherwise returns an
+	 * empty array, so the caller records a lump-sum refund.
 	 *
 	 * @param WC_Order $order  The order being refunded.
 	 * @param float    $amount The refund amount, in the order currency.
@@ -3193,11 +3194,30 @@ class WC_Payments_Order_Service {
 			$remaining_total       += $refund_total + array_sum( $refund_tax );
 		}
 
-		if ( [] === $line_items || ! $this->amounts_match( $remaining_total, $amount, $order->get_currency() ) ) {
+		if ( [] === $line_items ) {
 			return [];
 		}
 
-		return $line_items;
+		if ( $this->amounts_match( $remaining_total, $amount, $order->get_currency() ) ) {
+			return $line_items;
+		}
+
+		if ( ! $this->amounts_match( (float) $order->get_remaining_refund_amount(), $amount, $order->get_currency() ) ) {
+			return [];
+		}
+
+		$quantities = [];
+		foreach ( $line_items as $item_id => $line_item ) {
+			if ( $line_item['qty'] > 0 ) {
+				$quantities[ $item_id ] = [
+					'qty'          => $line_item['qty'],
+					'refund_total' => 0,
+					'refund_tax'   => [],
+				];
+			}
+		}
+
+		return $quantities;
 	}
 
 	/**

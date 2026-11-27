@@ -6137,8 +6137,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 40.0, $order->get_total_refunded_for_item( $item_ids['product'] ) );
 	}
 
-	public function test_mark_payment_dispute_closed_lost_after_lump_sum_refund_records_a_lump_sum(): void {
-		$order = $this->create_taxed_order()[0];
+	public function test_mark_payment_dispute_closed_lost_after_lump_sum_refund_refunds_quantities_only(): void {
+		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order();
 		wc_create_refund(
 			[
 				'order_id' => $order->get_id(),
@@ -6150,7 +6150,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$refund = $this->get_dispute_lost_refund( $order );
 		$this->assertEquals( -40.5, $refund->get_total() );
-		$this->assertEmpty( $refund->get_items( [ 'line_item', 'shipping', 'fee' ] ) );
+		$this->assertSame( -2, $order->get_qty_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 0.0, $order->get_total_refunded_for_item( $item_ids['product'] ) );
+		$this->assertEquals( 0.0, $order->get_tax_refunded_for_item( $item_ids['product'], $rate_id ) );
+		$this->assertEmpty( $refund->get_items( [ 'shipping', 'fee' ] ) );
 	}
 
 	/**
