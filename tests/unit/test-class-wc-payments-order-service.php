@@ -7267,6 +7267,31 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			);
 	}
 
+	public function test_get_payment_method_details_returns_stored_details(): void {
+		$this->order->update_meta_data( WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY, '{"type":"link"}' );
+
+		$this->assertSame( [ 'type' => 'link' ], $this->order_service->get_payment_method_details( $this->order ) );
+	}
+
+	/**
+	 * @dataProvider provider_unusable_payment_method_details_meta
+	 */
+	public function test_get_payment_method_details_returns_null_for_unusable_meta( $meta_value ): void {
+		$this->order->update_meta_data( WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY, $meta_value );
+
+		$this->assertNull( $this->order_service->get_payment_method_details( $this->order ) );
+	}
+
+	public function provider_unusable_payment_method_details_meta(): array {
+		return [
+			'empty'        => [ '' ],
+			'invalid JSON' => [ '{"type":' ],
+			'JSON string'  => [ '"link"' ],
+			'JSON number'  => [ '1' ],
+			'PHP array'    => [ [ 'type' => 'link' ] ],
+		];
+	}
+
 	/**
 	 * Makes the Level 3 service return the given data for any order.
 	 *

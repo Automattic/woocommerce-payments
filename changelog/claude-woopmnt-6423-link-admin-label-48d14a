@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show Link instead of Card in the order edit page's "Payment via" line for Link payments.

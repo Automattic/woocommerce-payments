@@ -151,6 +151,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			$GLOBALS['current_screen'] = $this->current_screen_backup; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
 
+		unset( $GLOBALS['theorder'] );
+
 		parent::tear_down();
 	}
 
@@ -660,6 +662,131 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		wp_deregister_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
 		$_REQUEST = [];
 		Constants::clear_constants();
+	}
+
+	/**
+	 * @dataProvider provider_link_payment_method_details
+	 */
+	public function test_order_edit_payment_via_shows_link_for_link_orders( array $payment_method_details, string $account_country, string $expected_title ): void {
+		$this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, $payment_method_details );
+		$this->mock_gateway->method( 'get_account_country' )->willReturn( $account_country );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( $expected_title, $title );
+	}
+
+	public function provider_link_payment_method_details(): array {
+		return [
+			'Link payment method'   => [ [ 'type' => 'link' ], 'US', 'Link' ],
+			'card with Link wallet' => [
+				[
+					'type' => 'card',
+					'card' => [ 'wallet' => [ 'type' => 'link' ] ],
+				],
+				'GB',
+				'Onelink',
+			],
+		];
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_for_card_orders(): void {
+		$this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, [ 'type' => 'card' ] );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_in_payment_method_dropdown(): void {
+		$order = $this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, [ 'type' => 'link' ] );
+		do_action( 'woocommerce_admin_order_data_after_order_details', $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
+	public function test_order_edit_payment_via_ignores_other_gateways(): void {
+		$this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, [ 'type' => 'link' ] );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Klarna', 'woocommerce_payments_klarna' );
+
+		$this->assertSame( 'Klarna', $title );
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_without_an_order(): void {
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
+	public function test_order_edit_payment_via_shows_link_for_orders_paid_with_a_saved_link_token(): void {
+		$order = $this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, null );
+		$order->add_payment_token( WC_Helper_Token::create_link_token( 'pm_link' ) );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Link', $title );
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_without_details_or_link_token(): void {
+		$order = $this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, null );
+		$order->add_payment_token( WC_Helper_Token::create_token( 'pm_card' ) );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_for_subscriptions(): void {
+		$subscription = $this->createPartialMock( WC_Order::class, [ 'get_type', 'get_payment_method' ] );
+		$subscription->method( 'get_type' )->willReturn( 'shop_subscription' );
+		$subscription->method( 'get_payment_method' )->willReturn( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$GLOBALS['theorder'] = $subscription; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$this->mock_order_service->method( 'get_payment_method_details' )->willReturn( [ 'type' => 'link' ] );
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
+	public function test_order_edit_payment_via_keeps_card_title_while_saving_the_order(): void {
+		$order = $this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, [ 'type' => 'link' ] );
+		remove_all_actions( 'woocommerce_process_shop_order_meta' );
+		do_action( 'woocommerce_process_shop_order_meta', $order->get_id(), $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+
+		$title = $this->payments_admin->show_link_in_order_edit_payment_via( 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$this->assertSame( 'Card', $title );
+	}
+
+	public function test_init_hooks_shows_link_in_order_edit_payment_via(): void {
+		$this->set_up_order_being_edited( WC_Payment_Gateway_WCPay::GATEWAY_ID, [ 'type' => 'link' ] );
+		$this->payments_admin->init_hooks();
+
+		$title = apply_filters( 'woocommerce_gateway_title', 'Card', WC_Payment_Gateway_WCPay::GATEWAY_ID ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+
+		$this->assertSame( 'Link', $title );
+	}
+
+	/**
+	 * Sets the order shown on the order edit screen, with the given stored payment method details.
+	 *
+	 * @param string     $payment_method         The order's gateway ID.
+	 * @param array|null $payment_method_details The charge's payment method details, or null when there is no charge.
+	 *
+	 * @return WC_Order
+	 */
+	private function set_up_order_being_edited( string $payment_method, ?array $payment_method_details ): WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( $payment_method );
+		$order->save();
+		$GLOBALS['theorder'] = $order; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$this->mock_order_service->method( 'get_payment_method_details' )->with( $order )->willReturn( $payment_method_details );
+
+		return $order;
 	}
 
 	/**

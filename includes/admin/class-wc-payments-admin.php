@@ -9,11 +9,13 @@ use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
 use Automattic\Jetpack\Constants;
 use Automattic\WooCommerce\Admin\Features\Features;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
 use WCPay\Logger;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\WooPay\WooPay_Utilities;
 
 defined( 'ABSPATH' ) || exit;
@@ -161,6 +163,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 
 		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
+		add_filter( 'woocommerce_gateway_title', [ $this, 'show_link_in_order_edit_payment_via' ], 10, 2 );
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -267,6 +270,62 @@ class WC_Payments_Admin {
 		?>
 		<div id="wcpay-order-payment-details-container"></div>
 		<?php
+	}
+
+	/**
+	 * Shows Link instead of the card gateway's title in the order edit screen's "Payment via" line.
+	 * WooCommerce builds that line from the gateway title, and Link payments go through the card gateway.
+	 *
+	 * @param string $title      The gateway title.
+	 * @param string $gateway_id The gateway ID.
+	 *
+	 * @return string
+	 */
+	public function show_link_in_order_edit_payment_via( $title, $gateway_id ) {
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id ) {
+			return $title;
+		}
+
+		// the payment method dropdown, rendered after the order details, keeps the gateway's own title.
+		if ( did_action( 'woocommerce_admin_order_data_after_order_details' ) ) {
+			return $title;
+		}
+
+		global $theorder;
+		if ( ! $theorder instanceof WC_Order ) {
+			return $title;
+		}
+
+		// Subscriptions writes this title into notes when a subscription is saved.
+		if ( 'shop_order' !== $theorder->get_type() ) {
+			return $title;
+		}
+
+		// saves can call get_title() for other objects while $theorder is still the old order.
+		if ( did_action( 'woocommerce_process_shop_order_meta' ) ) {
+			return $title;
+		}
+
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $theorder->get_payment_method() ) {
+			return $title;
+		}
+
+		$payment_method_details = $this->order_service->get_payment_method_details( $theorder );
+		if ( null === $payment_method_details ) {
+			// $0 orders paid with a saved Link token have no charge details.
+			$token_ids = $theorder->get_payment_tokens();
+			$is_link   = ! empty( $token_ids ) && WC_Payment_Tokens::get( end( $token_ids ) ) instanceof WC_Payment_Token_WCPay_Link;
+		} else {
+			$payment_method_type = $payment_method_details['type'] ?? null;
+			$is_link             = Payment_Method::LINK === $payment_method_type
+				|| WC_Payment_Gateway_WCPay::is_link_card_wallet( $payment_method_type, $payment_method_details );
+		}
+
+		if ( ! $is_link ) {
+			return $title;
+		}
+
+		return LinkDefinition::get_title( $this->wcpay_gateway->get_account_country() );
 	}
 
 	/**
