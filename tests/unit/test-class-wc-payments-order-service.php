@@ -6066,10 +6066,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 
-	/**
-	 * A lost full dispute refunds each line's total, quantity and tax, so the refund
-	 * carries the order's tax and shipping.
-	 */
 	public function test_mark_payment_dispute_closed_lost_refunds_each_line_with_tax(): void {
 		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order_with_shipping_and_fee();
 
@@ -6093,9 +6089,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->clean_up_taxed_order( $order, $rate_id );
 	}
 
-	/**
-	 * After a per-line refund, a lost dispute for the rest refunds only what each line has left.
-	 */
 	public function test_mark_payment_dispute_closed_lost_after_line_refund_refunds_the_remaining_lines(): void {
 		[ $order, $rate_id, $item_ids ] = $this->create_taxed_order_with_shipping_and_fee();
 		wc_create_refund(
@@ -6123,10 +6116,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->clean_up_taxed_order( $order, $rate_id );
 	}
 
-	/**
-	 * A lump-sum refund takes nothing from any line, so the lines no longer add up to
-	 * what's left. The dispute refund falls back to a lump sum for the remaining amount.
-	 */
 	public function test_mark_payment_dispute_closed_lost_after_lump_sum_refund_records_a_lump_sum(): void {
 		[ $order, $rate_id ] = $this->create_taxed_order_with_shipping_and_fee();
 		wc_create_refund(
@@ -7373,8 +7362,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Creates an on-hold order with a taxed product line (2 x $20), taxed shipping
-	 * ($10) and a taxed fee ($5), all at 10%, for a total of $60.50.
+	 * Creates an on-hold order: 2 x $20 product, $10 shipping and $5 fee, all with 10% tax ($60.50).
 	 *
 	 * @return array The order, the tax rate ID and the item IDs keyed by line type.
 	 */
@@ -7450,25 +7438,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
-	/**
-	 * Deletes an order made by create_taxed_order_with_shipping_and_fee() and its tax rate.
-	 *
-	 * @param WC_Order $order   The order.
-	 * @param int      $rate_id The tax rate ID.
-	 */
 	private function clean_up_taxed_order( WC_Order $order, int $rate_id ): void {
 		WC_Helper_Order::delete_order( $order->get_id() );
 		WC_Tax::_delete_tax_rate( $rate_id );
 		update_option( 'woocommerce_calc_taxes', 'no' );
 	}
 
-	/**
-	 * Finds the refund recorded for a lost dispute among an order's refunds.
-	 *
-	 * @param WC_Order $order The order.
-	 *
-	 * @return WC_Order_Refund
-	 */
 	private function get_dispute_lost_refund( WC_Order $order ): WC_Order_Refund {
 		foreach ( $order->get_refunds() as $refund ) {
 			if ( 'Dispute lost.' === $refund->get_reason() ) {

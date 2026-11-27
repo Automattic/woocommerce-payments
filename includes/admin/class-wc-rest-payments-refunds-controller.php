@@ -94,7 +94,6 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 				'order_id'       => $order->get_id(),
 				'line_items'     => WC_Payments::get_order_service()->get_remaining_refund_line_items( $order, (float) $refund_amount ),
 				'refund_payment' => true,
-				// Without line items this never restocked anything, so keep it that way now they're passed.
 				'restock_items'  => false,
 			]
 		);

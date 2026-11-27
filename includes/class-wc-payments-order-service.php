@@ -931,8 +931,6 @@ class WC_Payments_Order_Service {
 				}
 			}
 
-			// A dispute that takes everything left gets per-line refunds. A partial dispute
-			// gets none, because nothing says which items the bank took back.
 			wc_create_refund(
 				[
 					'amount'     => $refund_amount,
@@ -3136,13 +3134,10 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Builds `wc_create_refund()` line items for a refund of everything left on an order.
+	 * Builds `wc_create_refund()` line items for everything left on each line, with tax.
 	 *
-	 * Each product, shipping and fee line gets the quantity, total and per-rate tax that
-	 * earlier refunds haven't already taken. The lines are only returned when they add up
-	 * to `$amount`, give or take a rounding difference under half a minor unit. Otherwise,
-	 * for example after a lump-sum refund that took nothing from any line, this returns
-	 * an empty array and the caller records a lump-sum refund.
+	 * Returns an empty array when the lines don't add up to `$amount`, so the caller
+	 * records a lump-sum refund.
 	 *
 	 * @param WC_Order $order  The order being refunded.
 	 * @param float    $amount The refund amount, in the order currency.
