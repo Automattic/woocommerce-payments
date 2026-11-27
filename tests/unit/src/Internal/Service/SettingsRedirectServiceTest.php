@@ -9,6 +9,7 @@ namespace WCPay\Tests\Internal\Service;
 
 use Exception;
 use WC_Payments;
+use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\SettingsRedirectService;
 use WCPAY_UnitTestCase;
@@ -41,21 +42,20 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 	 */
 	private $redirect_location;
 
+	/**
+	 * Hooks proxy mock.
+	 *
+	 * @var HooksProxy|\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private $mock_hooks_proxy;
+
 	public function set_up() {
 		parent::set_up();
 
 		$this->original_get = $_GET;
 
-		$mock_legacy_proxy = $this->createMock( LegacyProxy::class );
-		$mock_legacy_proxy->method( 'call_static' )
-			->with( WC_Payments::class, 'get_payment_gateway_map' )
-			->willReturn(
-				[
-					self::REGISTERED_METHOD => new \stdClass(),
-				]
-			);
-
-		$this->sut               = new SettingsRedirectService( $mock_legacy_proxy );
+		$this->mock_hooks_proxy  = $this->createMock( HooksProxy::class );
+		$this->sut               = new SettingsRedirectService( $this->create_legacy_proxy( $this->registered_gateway_map() ), $this->mock_hooks_proxy );
 		$this->redirect_location = null;
 
 		add_filter( 'wp_redirect', [ $this, 'capture_redirect' ] );
@@ -169,16 +169,24 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 
 	public function test_redirect_continues_the_request_when_the_redirect_is_not_sent() {
 		remove_filter( 'wp_redirect', [ $this, 'capture_redirect' ] );
-		add_filter( 'wp_redirect', '__return_false' );
+		$record_and_cancel = function ( $location ) {
+			$this->redirect_location = $location;
+
+			return false;
+		};
+		add_filter( 'wp_redirect', $record_and_cancel );
 		$_GET = [ SettingsRedirectService::REDIRECT_QUERY_ARG => '' ];
 
 		try {
 			$this->sut->maybe_redirect();
 		} finally {
-			remove_filter( 'wp_redirect', '__return_false' );
+			remove_filter( 'wp_redirect', $record_and_cancel );
 		}
 
-		$this->assertNull( $this->redirect_location );
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
+			$this->redirect_location
+		);
 	}
 
 	public function test_redirect_ignores_requests_without_query_arg() {
@@ -203,11 +211,11 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_init_hooks_registers_the_redirect_early_on_template_redirect() {
+		$this->mock_hooks_proxy->expects( $this->once() )
+			->method( 'add_action' )
+			->with( 'template_redirect', [ $this->sut, 'maybe_redirect' ], 1 );
+
 		$this->sut->init_hooks();
-
-		$this->assertSame( 1, has_action( 'template_redirect', [ $this->sut, 'maybe_redirect' ] ) );
-
-		remove_action( 'template_redirect', [ $this->sut, 'maybe_redirect' ], 1 );
 	}
 
 	public function test_settings_url_sanitizes_flag_names_and_values() {
@@ -217,7 +225,7 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 		];
 
 		$this->assertSame(
-			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-flag-rates-update=value&woopayments-flag-campaign=' . str_repeat( 'a', 100 ) ),
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-flag-rates-update=value&woopayments-flag-campaign=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' ),
 			$this->sut->get_settings_url( '', $flags )
 		);
 	}
@@ -260,14 +268,77 @@ class SettingsRedirectServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_settings_url_omits_anchor_without_a_gateway_map() {
-		$mock_legacy_proxy = $this->createMock( LegacyProxy::class );
-		$mock_legacy_proxy->method( 'call_static' )->willReturn( null );
-		$sut = new SettingsRedirectService( $mock_legacy_proxy );
+		$sut = new SettingsRedirectService( $this->create_legacy_proxy( null ), $this->mock_hooks_proxy );
+
+		$url = $sut->get_settings_url( self::REGISTERED_METHOD );
 
 		$this->assertSame(
 			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
-			$sut->get_settings_url( self::REGISTERED_METHOD )
+			$url
 		);
+	}
+
+	/**
+	 * @dataProvider provider_methods_without_a_payment_method_row
+	 */
+	public function test_settings_url_anchors_methods_to_their_own_row( string $method, string $expected_row_id ) {
+		$sut = new SettingsRedirectService(
+			$this->create_legacy_proxy(
+				[
+					$method => new \stdClass(),
+				]
+			),
+			$this->mock_hooks_proxy
+		);
+
+		$url = $sut->get_settings_url( $method );
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&anchor=%23' . $expected_row_id ),
+			$url
+		);
+	}
+
+	public function provider_methods_without_a_payment_method_row(): array {
+		return [
+			'link'       => [ 'link', 'express-checkouts-link' ],
+			'apple_pay'  => [ 'apple_pay', 'express-checkouts-apple-google-pay' ],
+			'google_pay' => [ 'google_pay', 'express-checkouts-apple-google-pay' ],
+			'amazon_pay' => [ 'amazon_pay', 'express-checkouts-amazon-pay' ],
+		];
+	}
+
+	/**
+	 * Registered gateways, keyed by payment method ID.
+	 *
+	 * @return array
+	 */
+	private function registered_gateway_map(): array {
+		return [
+			self::REGISTERED_METHOD => new \stdClass(),
+		];
+	}
+
+	/**
+	 * Legacy proxy that returns the given gateway map and runs the settings URL helper for real.
+	 *
+	 * @param array|null $gateway_map Gateway map to return.
+	 *
+	 * @return LegacyProxy
+	 */
+	private function create_legacy_proxy( $gateway_map ): LegacyProxy {
+		$mock_legacy_proxy = $this->createMock( LegacyProxy::class );
+		$mock_legacy_proxy->method( 'call_static' )->willReturnCallback(
+			function ( string $class_name, string $method_name, ...$parameters ) use ( $gateway_map ) {
+				if ( WC_Payments::class === $class_name && 'get_payment_gateway_map' === $method_name ) {
+					return $gateway_map;
+				}
+
+				return call_user_func_array( [ $class_name, $method_name ], $parameters );
+			}
+		);
+
+		return $mock_legacy_proxy;
 	}
 
 	/**

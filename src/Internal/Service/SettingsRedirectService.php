@@ -10,6 +10,8 @@ declare( strict_types=1 );
 namespace WCPay\Internal\Service;
 
 use WC_Payments;
+use WC_Payments_Admin_Settings;
+use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 
 /**
@@ -51,6 +53,16 @@ class SettingsRedirectService {
 	];
 
 	/**
+	 * Settings page rows that don't use the `payment-method-{id}` element ID, by payment method ID.
+	 */
+	private const ROW_IDS = [
+		'link'       => 'express-checkouts-link',
+		'apple_pay'  => 'express-checkouts-apple-google-pay',
+		'google_pay' => 'express-checkouts-apple-google-pay',
+		'amazon_pay' => 'express-checkouts-amazon-pay',
+	];
+
+	/**
 	 * Maximum length of a flag value.
 	 */
 	private const MAX_FLAG_VALUE_LENGTH = 100;
@@ -63,12 +75,21 @@ class SettingsRedirectService {
 	private $legacy_proxy;
 
 	/**
+	 * Hooks proxy.
+	 *
+	 * @var HooksProxy
+	 */
+	private $hooks_proxy;
+
+	/**
 	 * SettingsRedirectService constructor.
 	 *
 	 * @param LegacyProxy $legacy_proxy Legacy proxy.
+	 * @param HooksProxy  $hooks_proxy  Hooks proxy.
 	 */
-	public function __construct( LegacyProxy $legacy_proxy ) {
+	public function __construct( LegacyProxy $legacy_proxy, HooksProxy $hooks_proxy ) {
 		$this->legacy_proxy = $legacy_proxy;
+		$this->hooks_proxy  = $hooks_proxy;
 	}
 
 	/**
@@ -77,7 +98,7 @@ class SettingsRedirectService {
 	 * @return void
 	 */
 	public function init_hooks(): void {
-		add_action( 'template_redirect', [ $this, 'maybe_redirect' ], 1 );
+		$this->hooks_proxy->add_action( 'template_redirect', [ $this, 'maybe_redirect' ], 1 );
 	}
 
 	/**
@@ -119,21 +140,17 @@ class SettingsRedirectService {
 	 * @return string
 	 */
 	public function get_settings_url( string $payment_method = '', array $flags = [] ): string {
-		$args = [
-			'page'    => 'wc-settings',
-			'tab'     => 'checkout',
-			'section' => 'woocommerce_payments',
-		];
+		$args = [];
 
 		if ( $this->is_known_payment_method( $payment_method ) ) {
-			$args['anchor'] = rawurlencode( '#payment-method-' . $payment_method );
+			$args['anchor'] = rawurlencode( '#' . ( self::ROW_IDS[ $payment_method ] ?? 'payment-method-' . $payment_method ) );
 		}
 
 		foreach ( $this->sanitize_flags( $flags ) as $name => $value ) {
 			$args[ self::FLAG_PREFIX . $name ] = rawurlencode( $value );
 		}
 
-		return add_query_arg( $args, admin_url( 'admin.php' ) );
+		return $this->legacy_proxy->call_static( WC_Payments_Admin_Settings::class, 'get_settings_url', $args );
 	}
 
 	/**

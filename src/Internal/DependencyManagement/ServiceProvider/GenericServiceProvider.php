@@ -67,7 +67,8 @@ class GenericServiceProvider extends AbstractServiceProvider {
 			->addArgument( WC_Payments_Account::class );
 
 		$container->addShared( SettingsRedirectService::class )
-			->addArgument( LegacyProxy::class );
+			->addArgument( LegacyProxy::class )
+			->addArgument( HooksProxy::class );
 
 		$container->addShared( SessionService::class )
 			->addArgument( LegacyProxy::class );
