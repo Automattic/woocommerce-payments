@@ -48,6 +48,10 @@ For subsequent startups (container already configured):
 pnpm run up
 ```
 
+WordPress can reach its own site URL from inside the container. Page loads can now start WP-Cron, and eligible admin requests can start the Action Scheduler queue. A background job may finish before you inspect the queue or an order note. Worktrees share a database, so a request to one worktree can run jobs queued by another.
+
+If your container predates this change, run `pnpm run up` once. Compose rebuilds the image and recreates the WordPress container with its configured port. Your database and mounted files are kept.
+
 #### Step 3: Build JS assets
 
 Build once for production:
@@ -150,12 +154,12 @@ git worktree remove /path/to/worktree
 
 This will:
 - Stop the worktree's WordPress container
-- Drop the worktree's test database (`wcpay_tests_<WORKTREE_ID>`) from the shared DB
+- Drop the worktree's test database (`wcpay_tests_<WORKTREE_ID>`, shortened by `bin/test-db-name.sh` when over 64 characters) from the shared DB
 - Remove the `.env` file
 
 #### Customizing your worktree config
 
-Edit `.env` to customize:
+Choose an available public port other than 80 when editing `.env`. Apache already listens on port 80 inside the container.
 ```bash
 # Port for this worktree's WordPress instance
 WORDPRESS_PORT=8086

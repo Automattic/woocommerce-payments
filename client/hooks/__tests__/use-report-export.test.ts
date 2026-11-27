@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
 
@@ -43,13 +43,16 @@ describe( 'useReportExport', () => {
 			href: '',
 			click: jest.fn(),
 		};
-		jest.spyOn( document, 'createElement' ).mockReturnValue(
-			mockLink as any
+		const createElement = document.createElement.bind( document );
+		jest.spyOn( document, 'createElement' ).mockImplementation(
+			( tagName: string ) =>
+				tagName === 'a' ? ( mockLink as any ) : createElement( tagName )
 		);
 	} );
 
 	afterEach( () => {
 		jest.useRealTimers();
+		jest.restoreAllMocks();
 	} );
 
 	it( 'should handle successful export request and immediate download', async () => {

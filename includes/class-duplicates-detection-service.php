@@ -51,7 +51,7 @@ class Duplicates_Detection_Service {
 
 			// Return payment method IDs list so that front-end can successfully compare with its own list.
 			return $this->gateways_qualified_by_duplicates_detector;
-		} catch ( \Exception $e ) {
+		} catch ( \Throwable $e ) {
 			Logger::warning( 'Duplicates detection service failed silently with the following error: ' . $e->getMessage() );
 
 			// Fail silently and return an empty array in case of any exception.
@@ -126,23 +126,9 @@ class Duplicates_Detection_Service {
 			'googlepay',
 		];
 
-		foreach ( $this->get_registered_gateways() as $gateway ) {
-			if ( 'yes' === $gateway->enabled ) {
-				foreach ( $keywords as $keyword ) {
-					if ( strpos( $gateway->id, $keyword ) !== false ) {
-						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-						break;
-					} elseif ( 'woocommerce_payments' === $gateway->id && method_exists( $gateway, 'is_payment_request_enabled' ) && $gateway->is_payment_request_enabled() ) {
-						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-						break;
-					} elseif ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
-						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-						break;
-					} elseif ( 'yes' === $gateway->get_option( 'express_checkout_enabled' ) ) {
-						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-						break;
-					}
-				}
+		foreach ( $this->get_enabled_gateways() as $gateway ) {
+			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || $this->gateway_has_wallets_in_settings( $gateway ) ) {
+				$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 			}
 		}
 
@@ -155,11 +141,7 @@ class Duplicates_Detection_Service {
 		 * @return Duplicates_Detection_Service
 		 */
 	private function keep_gateways_enabled_in_woopayments() {
-		$woopayments_gateway_ids = array_map(
-			function ( $gateway ) {
-				return $gateway->id; },
-			array_values( WC_Payments::get_payment_gateway_map() )
-		);
+		$woopayments_gateway_ids = $this->get_woopayments_gateway_ids();
 
 		foreach ( $this->gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
 			if ( empty( array_intersect( $gateway_ids, $woopayments_gateway_ids ) ) ) {
@@ -173,16 +155,95 @@ class Duplicates_Detection_Service {
 	/**
 	 * Filter payment methods found to keep duplicates only.
 	 *
+	 * WooPayments registers several gateways for one payment method (e.g. the card gateway and the
+	 * Apple Pay / Google Pay gateways all qualify for express checkouts), so a payment method is only
+	 * a duplicate when a gateway outside WooPayments also offers it.
+	 *
 	 * @return Duplicates_Detection_Service
 	 */
 	private function keep_duplicates_only() {
+		$woopayments_gateway_ids = $this->get_woopayments_gateway_ids();
+
 		foreach ( $this->gateways_qualified_by_duplicates_detector as $gateway_id => $gateway_ids ) {
-			if ( count( $gateway_ids ) < 2 ) {
+			if ( empty( array_diff( $gateway_ids, $woopayments_gateway_ids ) ) ) {
 				unset( $this->gateways_qualified_by_duplicates_detector[ $gateway_id ] );
 			}
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Check whether a gateway offers Apple Pay / Google Pay through its settings, rather than through
+	 * a dedicated gateway whose ID names the wallet.
+	 *
+	 * @param \WC_Payment_Gateway $gateway Enabled gateway.
+	 *
+	 * @return bool True if the gateway's wallets are enabled, false otherwise.
+	 */
+	private function gateway_has_wallets_in_settings( $gateway ) {
+		try {
+			return $this->plugin_gateway_has_wallets_enabled( $gateway )
+				|| 'yes' === $gateway->get_option( 'express_checkout_enabled' );
+		} catch ( \Throwable $e ) {
+			// Other plugins' code can change, so one failure must not cost the remaining detection results.
+			Logger::warning( 'Duplicates detection could not read wallet settings of gateway ' . $gateway->id . ': ' . $e->getMessage() );
+
+			return false;
+		}
+	}
+
+	/**
+	 * Check the wallet settings of WooCommerce-maintained plugins that keep them on another gateway.
+	 *
+	 * Third-party plugins are left out on purpose: these settings are internal to each plugin and may
+	 * change without notice. A plugin that renames one stops being detected, so only its duplicate
+	 * notice is lost.
+	 *
+	 * @param \WC_Payment_Gateway $gateway Enabled gateway.
+	 *
+	 * @return bool True if the gateway's wallets are enabled, false otherwise.
+	 */
+	private function plugin_gateway_has_wallets_enabled( $gateway ) {
+		switch ( $gateway->id ) {
+			case 'woocommerce_payments':
+				return method_exists( $gateway, 'is_payment_request_enabled' ) && $gateway->is_payment_request_enabled();
+
+			case 'stripe':
+				// With Stripe's payment method configurations, the stored option can be out of date.
+				if ( method_exists( $gateway, 'is_express_checkout_enabled' ) ) {
+					return (bool) $gateway->is_express_checkout_enabled();
+				}
+
+				// Stripe 9.1.0 moved `payment_request` to `express_checkout`.
+				$express_checkout = $gateway->get_option( 'express_checkout' );
+				return 'yes' === ( '' !== $express_checkout ? $express_checkout : $gateway->get_option( 'payment_request' ) );
+
+			case 'square_credit_card':
+				$hidden_wallets = (array) $gateway->get_option( 'digital_wallets_hide_button_options', [] );
+
+				return 'yes' === $gateway->get_option( 'enable_digital_wallets', 'yes' )
+					&& ! empty( array_diff( [ 'apple', 'google' ], $hidden_wallets ) );
+
+			case 'braintree_credit_card':
+				return 'yes' === get_option( 'sv_wc_apple_pay_enabled' ) || 'yes' === get_option( 'sv_wc_google_pay_enabled' );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the IDs of all gateways registered by WooPayments.
+	 *
+	 * @return string[] Gateway IDs.
+	 */
+	private function get_woopayments_gateway_ids() {
+		return array_map(
+			function ( $gateway ) {
+				return $gateway->id;
+			},
+			array_values( WC_Payments::get_payment_gateway_map() )
+		);
 	}
 
 	/**
@@ -219,11 +280,11 @@ class Duplicates_Detection_Service {
 	/**
 	 * Lazy load registered gateways.
 	 *
-	 * @return array Registered gateways.
+	 * @return \WC_Payment_Gateway[] Registered gateways.
 	 */
 	private function get_registered_gateways() {
 		if ( null === $this->registered_gateways ) {
-			$this->registered_gateways = WC()->payment_gateways->payment_gateways();
+			$this->registered_gateways = WC()->payment_gateways()->payment_gateways();
 		}
 		return $this->registered_gateways;
 	}

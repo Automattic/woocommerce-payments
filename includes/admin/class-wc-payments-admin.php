@@ -668,7 +668,8 @@ class WC_Payments_Admin {
 			'all'
 		);
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings' );
+		// wp-api-request defines wpApiSettings, whose REST nonce the store logo previews need.
+		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings', [ 'wp-api-request' ] );
 		wp_add_inline_script(
 			'WCPAY_ADMIN_SETTINGS',
 			new Woo_Payments_Payment_Method_Definitions(),
@@ -998,6 +999,7 @@ class WC_Payments_Admin {
 			'fraudServices'                      => $this->fraud_service->get_fraud_services_config(),
 			'stripeJsUrl'                        => WC_Payments_Utils::get_stripe_js_url(),
 			'isJetpackConnected'                 => $this->account->has_working_jetpack_connection(),
+			'autoStartTestDriveOnboarding'       => $this->account->consume_test_drive_auto_start_token(),
 			'isJetpackIdcActive'                 => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'isAccountConnected'                 => $this->account->has_account_data(),
 			'isAccountValid'                     => $account_is_valid,

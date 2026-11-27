@@ -8,6 +8,7 @@
 namespace WCPay\WooPay;
 
 use Automattic\Jetpack\Connection\Rest_Authentication;
+use Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils;
 use Automattic\WooCommerce\StoreApi\RoutesController;
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
@@ -450,7 +451,8 @@ class WooPay_Session {
 	/**
 	 * Returns the encrypted session request for the frontend.
 	 *
-	 * @return array The encrypted session request or an empty array if the server is not eligible for encryption.
+	 * @return array|\WP_Error The encrypted session request, an empty array if the server is not eligible
+	 *                         for encryption, or the error from get_init_session_request().
 	 */
 	public static function get_frontend_init_session_request() {
 		if ( ! extension_loaded( 'openssl' ) || ! function_exists( 'openssl_encrypt' ) ) {
@@ -467,6 +469,10 @@ class WooPay_Session {
 
 		$session = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance );
 
+		if ( is_wp_error( $session ) ) {
+			return $session;
+		}
+
 		return WooPay_Utilities::encrypt_and_sign_data( $session, WooPay_Utilities::SESSION_KEY_PURPOSE );
 	}
 
@@ -482,13 +488,18 @@ class WooPay_Session {
 	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 *
-	 * @return array The cart data.
+	 * @return array|null The cart data, or null when the Store API refused the pay-for-order order.
 	 */
 	private static function get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request ) {
 		if ( ! $woopay_request ) {
-			return ! $is_pay_for_order
-			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
-			: rest_preload_api_request( [], '/wc/store/v1/order/' . rawurlencode( $order_id ) . '?key=' . rawurlencode( $key ) . '&billing_email=' . rawurlencode( $billing_email ) )[ '/wc/store/v1/order/' . rawurlencode( $order_id ) . '?key=' . rawurlencode( $key ) . '&billing_email=' . rawurlencode( $billing_email ) ]['body'];
+			if ( ! $is_pay_for_order ) {
+				return rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body'];
+			}
+
+			$order_path = '/wc/store/v1/order/' . rawurlencode( (string) $order_id ) . '?key=' . rawurlencode( (string) $key ) . '&billing_email=' . rawurlencode( (string) $billing_email );
+
+			// The preload keeps only 200 responses, so a refused order leaves no entry.
+			return rest_preload_api_request( [], $order_path )[ $order_path ]['body'] ?? null;
 		}
 
 		$cart_request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
@@ -594,13 +605,17 @@ class WooPay_Session {
 	/**
 	 * Returns the initial session request data.
 	 *
+	 * For a pay-for-order request, returns an error when the caller is not authorized
+	 * to pay the given order.
+	 *
 	 * @param int|null             $order_id Pay-for-order order ID.
 	 * @param string|null          $key Pay-for-order key.
 	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 * @param array|null           $appearance Merchant appearance, or null to use server-stored fallback.
 	 * @param array                $font_rules Font CDN stylesheet URLs.
-	 * @return array The initial session request data without email and user_session.
+	 * @return array|\WP_Error The initial session request data without email and user_session,
+	 *                         or a 403 error when the caller may not pay the given order.
 	 */
 	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null, $font_rules = [] ) {
 		// Fall back to server-stored appearance when no appearance was provided,
@@ -617,8 +632,22 @@ class WooPay_Session {
 
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
-		$order            = wc_get_order( $order_id );
-		$customer_id      = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
+		$order            = null;
+
+		if ( $is_pay_for_order ) {
+			// Only a caller holding the order's payment link may open a session for it.
+			$order = \WC_Payments_Utils::get_authorized_pay_for_order( $order_id, $key );
+
+			if ( null === $order ) {
+				return new \WP_Error(
+					'woopay_pay_for_order_not_authorized',
+					__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+					[ 'status' => 403 ]
+				);
+			}
+		}
+
+		$customer_id = WC_Payments::get_customer_service()->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
@@ -650,7 +679,19 @@ class WooPay_Session {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
-		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
+		$cart_data = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
+
+		// WooPay rejects a session without the order, and would leave the shopper with no explanation.
+		if ( $is_pay_for_order && null === $cart_data ) {
+			Logger::log( sprintf( 'WooPay session refused: the Store API did not return order %d (billing email sent: %s).', $order_id, '' === (string) $billing_email ? 'no' : 'yes' ) );
+
+			return new \WP_Error(
+				'woopay_pay_for_order_unavailable',
+				__( 'WooPay couldn’t load this order. Please reload the page and try again.', 'woocommerce-payments' ),
+				[ 'status' => 403 ]
+			);
+		}
+
 		$checkout_data = self::get_checkout_data( $woopay_request );
 
 		$email = self::get_user_email( $user, $woopay_request );
@@ -686,6 +727,7 @@ class WooPay_Session {
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 				'optional_fields_status'         => self::get_option_fields_status(),
+				'checkout_phone_field'           => self::get_checkout_phone_field(),
 			],
 			'user_session'         => null,
 			'preloaded_requests'   => ! $is_pay_for_order ? [
@@ -928,6 +970,25 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Sends a refused session request as a JSON error.
+	 *
+	 * Like wp_send_json_error(), plus the error code, so the button can tell which messages are
+	 * written for the shopper.
+	 *
+	 * @param \WP_Error $error The reason the session can't be created.
+	 */
+	private static function send_session_error( \WP_Error $error ): void {
+		wp_send_json(
+			[
+				'success' => false,
+				'data'    => $error->get_error_message(),
+				'code'    => $error->get_error_code(),
+			],
+			403
+		);
+	}
+
+	/**
 	 * Used to initialize woopay session.
 	 *
 	 * @return void
@@ -950,7 +1011,12 @@ class WooPay_Session {
 		$appearance    = ! empty( $_POST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_POST['appearance'] ) : null; // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, Generic.Arrays.DisallowLongArraySyntax.Found
 		$font_rules    = ! empty( $_POST['font_rules'] ) ? self::sanitize_font_rules( wp_unslash( $_POST['font_rules'] ) ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by sanitize_font_rules.
 
-		$body                 = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance, $font_rules );
+		$body = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance, $font_rules );
+
+		if ( is_wp_error( $body ) ) {
+			self::send_session_error( $body );
+		}
+
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
 
 		$args = [
@@ -973,8 +1039,11 @@ class WooPay_Session {
 			$response_body_json = wp_remote_retrieve_body( $response );
 		}
 
-		Logger::log( $response_body_json );
-		wp_send_json( json_decode( $response_body_json ) );
+		$response_body = json_decode( $response_body_json );
+		$result        = $response_body->result ?? null;
+
+		Logger::log( 'WooPay init result: ' . ( is_string( $result ) ? $result : 'unexpected response' ) );
+		wp_send_json( $response_body );
 	}
 
 	/**
@@ -1002,7 +1071,13 @@ class WooPay_Session {
 			);
 		}
 
-		wp_send_json( self::get_frontend_init_session_request() );
+		$session = self::get_frontend_init_session_request();
+
+		if ( is_wp_error( $session ) ) {
+			self::send_session_error( $session );
+		}
+
+		wp_send_json( $session );
 	}
 
 	/**
@@ -1735,6 +1810,22 @@ class WooPay_Session {
 		];
 
 		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );
+	}
+
+	/**
+	 * Returns the phone field setting the store's checkout validates against: required, optional or hidden.
+	 *
+	 * `optional_fields_status` reads the Checkout block's attributes, which WooCommerce no longer
+	 * uses for this setting, so they can be stale.
+	 *
+	 * @return string|null The setting, or null on WooCommerce versions without it.
+	 */
+	private static function get_checkout_phone_field(): ?string {
+		if ( ! method_exists( CartCheckoutUtils::class, 'get_phone_field_visibility' ) ) { // @phpstan-ignore function.alreadyNarrowedType (the stubs describe the latest WooCommerce only)
+			return null;
+		}
+
+		return CartCheckoutUtils::get_phone_field_visibility();
 	}
 
 	/**

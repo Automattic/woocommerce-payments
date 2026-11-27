@@ -12,11 +12,6 @@ type WidgetEntry = {
 	instance?: unknown;
 };
 
-/**
- * Default theme used as fallback when active theme detection fails.
- */
-const DEFAULT_THEME = 'twentytwentyfour';
-
 const parseJson = < T >( value: string, fallback: T ): T => {
 	try {
 		return JSON.parse( value ) as T;
@@ -432,7 +427,8 @@ foreach ( $blocks as $num => $inst ) {
 		continue;
 	}
 	$rendered = is_array( $inst ) ? wp_json_encode( $inst ) : strval( $inst );
-	if ( strpos( $rendered, 'currency-switcher-holder' ) !== false ) {
+	// The option stores the block comment, not its rendered markup.
+	if ( strpos( $rendered, 'multi-currency-switcher' ) !== false ) {
 		$ids[] = 'block-' . $num;
 	}
 }
@@ -477,6 +473,38 @@ export const disableEditorWelcomeGuide = async ( page: Page ) => {
 	} );
 };
 
+/**
+ * Whether the currency switcher (classic widget or block) is assigned to the main sidebar.
+ */
+const hasMultiCurrencyWidget = async (
+	blocksVersion: boolean
+): Promise< boolean > => {
+	const php = `
+$assigned = wp_get_sidebars_widgets();
+$ids      = isset( $assigned['sidebar-1'] ) ? (array) $assigned['sidebar-1'] : array();
+$blocks   = get_option( 'widget_block', array() );
+$found    = false;
+foreach ( $ids as $id ) {
+	if ( ${ blocksVersion ? 'false' : 'true' } ) {
+		$found = $found || 0 === strpos( $id, 'currency_switcher_widget-' );
+		continue;
+	}
+	if ( 0 !== strpos( $id, 'block-' ) ) {
+		continue;
+	}
+	$num     = (int) substr( $id, 6 );
+	$content = isset( $blocks[ $num ]['content'] ) ? $blocks[ $num ]['content'] : '';
+	$found   = $found || false !== strpos( do_blocks( $content ), 'currency-switcher-holder' );
+}
+echo $found ? '1' : '0';
+`;
+	const { stdout } = await qit.wp(
+		`eval '${ php.replace( /'/g, "'\"'\"'" ) }'`,
+		true
+	);
+	return stdout.trim() === '1';
+};
+
 export const addMulticurrencyWidget = async (
 	page: Page,
 	blocksVersion = false
@@ -507,31 +535,42 @@ export const addMulticurrencyWidget = async (
 	const widgetName = blocksVersion
 		? 'Currency Switcher Block'
 		: 'Currency Switcher Widget';
-	const isWidgetAdded = blocksVersion
-		? ( await page.locator( `[data-title="${ widgetName }"]` ).count() ) > 0
-		: ( await page.getByRole( 'heading', { name: widgetName } ).count() ) >
-		  0;
+	// Scope the classic match to the inserted block: a bare heading match also
+	// matches the block-inspector card name, which renders the same text.
+	const insertedWidget = blocksVersion
+		? page.locator( `[data-title="${ widgetName }"]` )
+		: page
+				.locator( '[data-type="core/legacy-widget"]' )
+				.getByRole( 'heading', { name: widgetName } );
 
-	if ( isWidgetAdded ) {
-		return;
+	if ( ( await insertedWidget.count() ) === 0 ) {
+		await page.getByRole( 'button', { name: 'Add block' } ).click();
+		const searchInput = page.locator( 'input[placeholder="Search"]' );
+		await searchInput.pressSequentially( widgetName, { delay: 20 } );
+		await expect(
+			page.locator( 'button.components-button[role="option"]' ).first()
+		).toBeVisible( { timeout: 5_000 } );
+		await page
+			.locator( 'button.components-button[role="option"]' )
+			.first()
+			.click();
+		// Wait for the newly inserted widget/block to render before clicking Update.
+		await insertedWidget.first().waitFor( { timeout: 5_000 } );
+		await page.waitForTimeout( 2_000 );
+		await expect(
+			page.getByRole( 'button', { name: 'Update' } )
+		).toBeEnabled();
+		await page.getByRole( 'button', { name: 'Update' } ).click();
+		await expectSnackbarWithText( page, 'Widgets saved.' );
 	}
 
-	await page.getByRole( 'button', { name: 'Add block' } ).click();
-	const searchInput = page.locator( 'input[placeholder="Search"]' );
-	await searchInput.pressSequentially( widgetName, { delay: 20 } );
-	await expect(
-		page.locator( 'button.components-button[role="option"]' ).first()
-	).toBeVisible( { timeout: 5_000 } );
-	await page
-		.locator( 'button.components-button[role="option"]' )
-		.first()
-		.click();
-	await page.waitForTimeout( 2_000 );
-	await expect(
-		page.getByRole( 'button', { name: 'Update' } )
-	).toBeEnabled();
-	await page.getByRole( 'button', { name: 'Update' } ).click();
-	await expectSnackbarWithText( page, 'Widgets saved.' );
+	// The widgets editor can report "Widgets saved." before the widget is
+	// assigned to the sidebar. Confirm it persisted before returning.
+	await expect
+		.poll( () => hasMultiCurrencyWidget( blocksVersion ), {
+			timeout: 60_000,
+		} )
+		.toBeTruthy();
 };
 
 export const createPendingOrder = async (): Promise< string > => {
@@ -779,48 +818,19 @@ export const disablePaymentMethods = async (
 };
 
 export const getActiveThemeSlug = async (): Promise< string > => {
-	try {
-		const result = await qit.wp(
-			'theme list --status=active --field=name',
-			true
-		);
-		// Handle case where result might be undefined or not a string
-		if ( typeof result === 'string' && result.trim() ) {
-			return result.trim();
-		}
-		// Fallback to getting active theme via option
-		const activeTheme = await qit.wp( 'option get stylesheet', true );
-		return typeof activeTheme === 'string'
-			? activeTheme.trim()
-			: DEFAULT_THEME;
-	} catch ( error ) {
-		// Default fallback theme
-		return DEFAULT_THEME;
+	const { stdout } = await qit.wp(
+		'theme list --status=active --field=name',
+		true
+	);
+	const slug = stdout.trim();
+	if ( ! slug ) {
+		throw new Error( 'Could not read the active theme.' );
 	}
+	return slug;
 };
 
 export const activateTheme = async ( slug: string ) => {
-	// Skip if no slug provided or if it's already the fallback
-	if ( ! slug || slug === 'undefined' ) {
-		return;
-	}
-
-	try {
-		// Check if theme is already installed
-		await qit.wp( `theme is-installed ${ slug }`, true );
-	} catch ( error ) {
-		// Try to install the theme if not found
-		try {
-			await qit.wp( `theme install ${ slug } --force`, true );
-		} catch ( installError ) {
-			// If installation fails, just return - we can't activate what we can't install
-			return;
-		}
-	}
-
-	try {
-		await qit.wp( `theme activate ${ slug }`, true );
-	} catch ( activationError ) {
-		// Theme activation failed, but we don't want to crash the test
-	}
+	// `wp theme activate` exits non-zero when the theme is missing or broken, which rejects here.
+	await qit.wp( `theme activate ${ slug }`, true );
+	expect( await getActiveThemeSlug() ).toBe( slug );
 };

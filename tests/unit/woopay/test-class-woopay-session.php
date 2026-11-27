@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
@@ -17,6 +18,9 @@ use WCPay\MultiCurrency\MultiCurrency;
  * WooPay_Session unit tests.
  */
 class WooPay_Session_Test extends WCPAY_UnitTestCase {
+	private const GUEST_BILLING_EMAIL = 'guest-6691@example.com';
+	private const WRONG_BILLING_EMAIL = 'someone-else@example.com';
+
 	/**
 	 * @var Database_Cache|MockObject
 	 */
@@ -581,6 +585,78 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
 
 		$this->assertTrue( WooPay_Session::is_valid_request_with_cart_token() );
+	}
+
+	/**
+	 * @dataProvider provider_checkout_phone_fields
+	 */
+	public function test_session_payload_carries_the_stores_phone_setting( string $phone_field ) {
+		$this->skip_without_the_phone_setting();
+		update_option( 'woocommerce_checkout_phone_field', $phone_field );
+
+		try {
+			$request = WooPay_Session::get_init_session_request();
+		} finally {
+			delete_option( 'woocommerce_checkout_phone_field' );
+		}
+
+		$this->assertSame( $phone_field, $request['store_data']['checkout_phone_field'] );
+	}
+
+	public function provider_checkout_phone_fields(): array {
+		return [
+			'required' => [ 'required' ],
+			'optional' => [ 'optional' ],
+			'hidden'   => [ 'hidden' ],
+		];
+	}
+
+	public function test_session_payload_carries_the_phone_setting_over_stale_checkout_block_attributes() {
+		$this->skip_without_the_phone_setting();
+		$checkout_page_id = self::factory()->post->create(
+			[
+				'post_type'    => 'page',
+				'post_content' => '<!-- wp:woocommerce/checkout {"requirePhoneField":true,"showPhoneField":true} /-->',
+			]
+		);
+		$previous_page_id = get_option( 'woocommerce_checkout_page_id' );
+		update_option( 'woocommerce_checkout_page_id', $checkout_page_id );
+		update_option( 'woocommerce_checkout_phone_field', 'hidden' );
+
+		try {
+			$request = WooPay_Session::get_init_session_request();
+		} finally {
+			update_option( 'woocommerce_checkout_page_id', $previous_page_id );
+			delete_option( 'woocommerce_checkout_phone_field' );
+		}
+
+		$this->assertSame( 'required', $request['store_data']['optional_fields_status']['phone'] );
+		$this->assertSame( 'hidden', $request['store_data']['checkout_phone_field'] );
+	}
+
+	public function test_session_payload_has_no_phone_setting_on_woocommerce_without_it() {
+		if ( method_exists( CartCheckoutUtils::class, 'get_phone_field_visibility' ) ) {
+			$this->markTestSkipped( 'This WooCommerce version has the phone setting.' );
+		}
+
+		update_option( 'woocommerce_checkout_phone_field', 'required' );
+
+		try {
+			$request = WooPay_Session::get_init_session_request();
+		} finally {
+			delete_option( 'woocommerce_checkout_phone_field' );
+		}
+
+		$this->assertNull( $request['store_data']['checkout_phone_field'] );
+	}
+
+	/**
+	 * Skips a test on WooCommerce versions before the Checkout block's phone setting (9.5).
+	 */
+	private function skip_without_the_phone_setting(): void {
+		if ( ! method_exists( CartCheckoutUtils::class, 'get_phone_field_visibility' ) ) {
+			$this->markTestSkipped( 'This WooCommerce version has no phone setting.' );
+		}
 	}
 
 	public function test_session_payload_carries_the_store_version() {
@@ -1169,6 +1245,193 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'shopper@example.com', WC()->customer->get_billing_email() );
 	}
 
+	public function test_pay_for_order_session_is_refused_with_the_wrong_key() {
+		$order = WC_Helper_Order::create_order( 0 );
+
+		$this->assert_pay_for_order_session_refused( $order->get_id(), 'wc_order_not_the_real_key' );
+	}
+
+	public function test_pay_for_order_session_is_refused_without_a_key() {
+		$order = WC_Helper_Order::create_order( 0 );
+
+		$this->assert_pay_for_order_session_refused( $order->get_id(), null );
+	}
+
+	public function test_pay_for_order_session_is_refused_for_another_customers_order() {
+		$owner   = self::factory()->user->create( [ 'role' => 'customer' ] );
+		$shopper = self::factory()->user->create( [ 'role' => 'customer' ] );
+		$order   = WC_Helper_Order::create_order( $owner );
+		wp_set_current_user( $shopper );
+
+		// The key alone does not let one customer pay another's order.
+		$this->assert_pay_for_order_session_refused( $order->get_id(), $order->get_order_key() );
+	}
+
+	public function test_pay_for_order_session_is_refused_for_an_unknown_order() {
+		$this->assert_pay_for_order_session_refused( 999999, 'wc_order_any_key' );
+	}
+
+	public function test_pay_for_order_session_opens_for_the_key_holder() {
+		$order = WC_Helper_Order::create_order( 0 );
+
+		$this->assert_pay_for_order_session_links_back_to( $order );
+	}
+
+	public function test_pay_for_order_session_opens_for_the_customer_who_owns_the_order() {
+		$owner = self::factory()->user->create( [ 'role' => 'customer' ] );
+		$order = WC_Helper_Order::create_order( $owner );
+		wp_set_current_user( $owner );
+
+		$this->assert_pay_for_order_session_links_back_to( $order );
+	}
+
+	public function test_pay_for_order_session_returns_an_error_when_the_store_api_refuses_the_order() {
+		$order           = $this->create_guest_order();
+		$received_emails = [];
+
+		[ $response, $sent ] = $this->post_pay_for_order_session( $order->get_id(), $order->get_order_key(), self::WRONG_BILLING_EMAIL, $this->guest_order_route( $order, $received_emails ) );
+
+		$this->assertSame( [ 'someone-else@example.com' ], $received_emails );
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'WooPay couldn’t load this order. Please reload the page and try again.',
+				'code'    => 'woopay_pay_for_order_unavailable',
+			],
+			$response
+		);
+		$this->assertSame( [], $sent );
+	}
+
+	public function test_pay_for_order_session_loads_the_order_with_the_billing_email_the_page_sends() {
+		$order           = $this->create_guest_order();
+		$received_emails = [];
+
+		[ , $sent ] = $this->post_pay_for_order_session( $order->get_id(), $order->get_order_key(), self::GUEST_BILLING_EMAIL, $this->guest_order_route( $order, $received_emails ) );
+
+		$this->assertSame( [ 'guest-6691@example.com' ], $received_emails );
+		$this->assertCount( 1, $sent );
+		$this->assertSame( [ 'id' => $order->get_id() ], $sent[0]['preloaded_requests']['cart'] );
+	}
+
+	public function test_get_init_session_request_returns_an_error_when_the_store_api_refuses_the_order() {
+		$order           = $this->create_guest_order();
+		$received_emails = [];
+		$order_route     = $this->guest_order_route( $order, $received_emails );
+		add_filter( 'rest_pre_dispatch', $order_route, 10, 3 );
+
+		try {
+			$result = WooPay_Session::get_init_session_request( $order->get_id(), $order->get_order_key(), self::WRONG_BILLING_EMAIL );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $order_route, 10 );
+		}
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'woopay_pay_for_order_unavailable', $result->get_error_code() );
+		$this->assertSame( [ 'status' => 403 ], $result->get_error_data() );
+	}
+
+	public function test_get_init_session_request_returns_an_error_for_an_unauthorized_pay_for_order() {
+		$order = WC_Helper_Order::create_order( 0 );
+		$this->mock_customer_service->expects( $this->never() )->method( 'get_customer_id_by_user_id' );
+
+		// A caller outside AJAX keeps control and gets nothing printed.
+		$this->expectOutputString( '' );
+
+		$result = WooPay_Session::get_init_session_request( $order->get_id(), 'wc_order_not_the_real_key' );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'woopay_pay_for_order_not_authorized', $result->get_error_code() );
+		$this->assertSame( [ 'status' => 403 ], $result->get_error_data() );
+	}
+
+	public function test_ajax_get_woopay_session_refuses_a_pay_for_order_with_the_wrong_key() {
+		$order = WC_Helper_Order::create_order( 0 );
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = home_url();
+		$_REQUEST['_ajax_nonce']   = wp_create_nonce( 'woopay_session_nonce' );
+		$_POST['order_id']         = (string) $order->get_id();
+		$_POST['key']              = 'wc_order_not_the_real_key';
+		$original_blog_id          = Jetpack_Options::get_option( 'id' );
+		Jetpack_Options::update_option( 'id', 1234 );
+
+		try {
+			$response = $this->call_ajax_handler( 'ajax_get_woopay_session' );
+		} finally {
+			false === $original_blog_id ? Jetpack_Options::delete_option( 'id' ) : Jetpack_Options::update_option( 'id', $original_blog_id );
+			unset( $_POST['order_id'], $_POST['key'] );
+		}
+
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'You aren’t authorized to do that.',
+				'code'    => 'woopay_pay_for_order_not_authorized',
+			],
+			$response
+		);
+	}
+
+	public function test_ajax_init_woopay_logs_the_result_but_not_the_redirect_url() {
+		$redirect_url = 'https://pay.woo.com/woopay/?platform_checkout_key=checkout-key&user_session=shopper-user-session';
+
+		WC_Payments::mode()->dev();
+
+		// The Jetpack client signs with a `key.secret` token, so the request reaches the HTTP layer.
+		Jetpack_Options::update_option( 'blog_token', 'test.secret' );
+
+		$messages = [];
+		add_filter(
+			'woocommerce_logger_log_message',
+			function ( $message ) use ( &$messages ) {
+				$messages[] = $message;
+
+				return $message;
+			}
+		);
+
+		// Runs after the handler helper's request block, so WooPay answers.
+		add_filter(
+			'pre_http_request',
+			function () use ( $redirect_url ) {
+				return [
+					'headers'  => [],
+					'body'     => wp_json_encode(
+						[
+							'result' => 'success',
+							'url'    => $redirect_url,
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+					'cookies'  => [],
+					'filename' => null,
+				];
+			},
+			20
+		);
+
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = home_url();
+		$_REQUEST['_ajax_nonce']   = wp_create_nonce( 'wcpay_init_woopay_nonce' );
+
+		$response = $this->call_ajax_handler( 'ajax_init_woopay' );
+
+		$this->assertSame(
+			[
+				'result' => 'success',
+				'url'    => 'https://pay.woo.com/woopay/?platform_checkout_key=checkout-key&user_session=shopper-user-session',
+			],
+			$response
+		);
+		$this->assertContains( 'WooPay init result: success', $messages );
+		$this->assertStringNotContainsString( 'checkout-key', implode( "\n", $messages ) );
+		$this->assertStringNotContainsString( 'shopper-user-session', implode( "\n", $messages ) );
+	}
+
 	public function test_ajax_set_woopay_phone_number_refuses_a_cross_origin_post() {
 		$_SERVER['REQUEST_METHOD'] = 'POST';
 		$_SERVER['HTTP_ORIGIN']    = 'https://elsewhere.example';
@@ -1638,6 +1901,148 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		}
 
 		return json_decode( $output, true );
+	}
+
+	/**
+	 * Posts a pay-for-order session request to wcpay_init_woopay, as the checkout does.
+	 *
+	 * @param int           $order_id      The order ID the caller sends.
+	 * @param string|null   $key           The order key the caller sends, or null to send none.
+	 * @param string|null   $billing_email The billing email the caller sends.
+	 * @param callable|null $order_route   A `rest_pre_dispatch` callback to answer the Store API
+	 *                                     order route with, instead of an empty 200.
+	 *
+	 * @return array The decoded response, and the bodies of the session requests sent to WooPay.
+	 */
+	private function post_pay_for_order_session( int $order_id, ?string $key, ?string $billing_email = null, ?callable $order_route = null ): array {
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_SERVER['HTTP_ORIGIN']    = home_url();
+		$_REQUEST['_ajax_nonce']   = wp_create_nonce( 'wcpay_init_woopay_nonce' );
+		$_POST                     = array_filter(
+			[
+				'order_id'      => (string) $order_id,
+				'key'           => $key,
+				'billing_email' => $billing_email,
+			]
+		);
+
+		// Jetpack only sends the request for a connected site, with a blog token in its
+		// key.secret form.
+		$original_blog_id    = Jetpack_Options::get_option( 'id' );
+		$original_blog_token = Jetpack_Options::get_option( 'blog_token' );
+		Jetpack_Options::update_option( 'id', 1234 );
+		Jetpack_Options::update_option( 'blog_token', 'blogkey.blogsecret' );
+
+		$sent   = [];
+		$record = function ( $preempt, $args, $url ) use ( &$sent ) {
+			if ( 0 === strpos( $url, WooPay_Utilities::get_woopay_rest_url( 'init' ) ) ) {
+				$sent[] = json_decode( $args['body'], true );
+			}
+
+			return $preempt;
+		};
+		add_filter( 'pre_http_request', $record, 1, 3 );
+
+		// A pay-for-order session preloads the order from the Store API, whose order route
+		// WooCommerce only has from 8.1. Unless a test passes its own, it isn't about that preload.
+		$stub_order_route = $order_route ?? function ( $result, $server, $request ) {
+			return 0 === strpos( $request->get_route(), '/wc/store/v1/order/' ) ? new WP_REST_Response( [], 200 ) : $result;
+		};
+		add_filter( 'rest_pre_dispatch', $stub_order_route, 10, 3 );
+
+		try {
+			$response = $this->call_ajax_handler( 'ajax_init_woopay' );
+		} finally {
+			remove_filter( 'pre_http_request', $record, 1 );
+			remove_filter( 'rest_pre_dispatch', $stub_order_route, 10 );
+			false === $original_blog_id ? Jetpack_Options::delete_option( 'id' ) : Jetpack_Options::update_option( 'id', $original_blog_id );
+			Jetpack_Options::update_option( 'blog_token', $original_blog_token );
+			$_POST = [];
+		}
+
+		return [ $response, $sent ];
+	}
+
+	/**
+	 * Returns a stand-in for the Store API order route that applies WooCommerce's rule for guest
+	 * orders: answer only when the request carries the order's billing email. Guest orders only:
+	 * the real route answers a logged-in owner whatever the email.
+	 *
+	 * @param WC_Order $order           The order the route serves.
+	 * @param array    $received_emails Collects the billing email of each request to the route.
+	 *
+	 * @return callable A `rest_pre_dispatch` callback.
+	 */
+	private function guest_order_route( WC_Order $order, array &$received_emails ): callable {
+		return function ( $result, $server, $request ) use ( $order, &$received_emails ) {
+			if ( 0 !== strpos( $request->get_route(), '/wc/store/v1/order/' ) ) {
+				return $result;
+			}
+
+			$received_emails[] = $request->get_param( 'billing_email' );
+
+			if ( 0 !== strcasecmp( (string) $request->get_param( 'billing_email' ), $order->get_billing_email() ) ) {
+				// A response, as the REST server makes of the real route's error: WordPress 6.0's
+				// preload reads the status straight off whatever rest_pre_dispatch returns.
+				return rest_convert_error_to_response( new WP_Error( 'woocommerce_rest_invalid_billing_email', 'Invalid billing email provided.', [ 'status' => 401 ] ) );
+			}
+
+			return new WP_REST_Response( [ 'id' => $order->get_id() ], 200 );
+		};
+	}
+
+	/**
+	 * Creates a guest order with a billing email.
+	 *
+	 * @return WC_Order
+	 */
+	private function create_guest_order(): WC_Order {
+		$order = WC_Helper_Order::create_order( 0 );
+		$order->set_billing_email( self::GUEST_BILLING_EMAIL );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Asserts a pay-for-order session is refused before any shopper data is gathered for it
+	 * and before WooPay is contacted.
+	 *
+	 * @param int         $order_id The order ID the caller sends.
+	 * @param string|null $key      The order key the caller sends.
+	 */
+	private function assert_pay_for_order_session_refused( int $order_id, ?string $key ): void {
+		$this->mock_customer_service->expects( $this->never() )->method( 'get_customer_id_by_user_id' );
+		$this->mock_customer_service->expects( $this->never() )->method( 'create_customer_for_user' );
+
+		[ $response, $sent ] = $this->post_pay_for_order_session( $order_id, $key );
+
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'You aren’t authorized to do that.',
+				'code'    => 'woopay_pay_for_order_not_authorized',
+			],
+			$response
+		);
+		$this->assertSame( [], $sent );
+	}
+
+	/**
+	 * Asserts the session sent to WooPay returns the shopper to the order's own payment link.
+	 *
+	 * @param WC_Order $order The order being paid.
+	 */
+	private function assert_pay_for_order_session_links_back_to( WC_Order $order ): void {
+		[ , $sent ] = $this->post_pay_for_order_session( $order->get_id(), $order->get_order_key(), $order->get_billing_email() );
+
+		$this->assertCount( 1, $sent );
+
+		$store_data = $sent[0]['store_data'];
+		parse_str( (string) wp_parse_url( $store_data['return_url'], PHP_URL_QUERY ), $query );
+
+		$this->assertSame( $order->get_order_key(), $query['key'] ?? null );
+		$this->assertSame( $store_data['return_url'], $store_data['blog_checkout_url'] );
 	}
 
 	/**

@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix PHP unit tests that depend on state from other tests or pin the order of internal calls.

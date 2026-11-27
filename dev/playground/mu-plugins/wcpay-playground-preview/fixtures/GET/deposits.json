@@ -1,0 +1,70 @@
+{
+	"data": [
+		{
+			"id": "po_demo_5",
+			"date": "@datetime:+1 day",
+			"type": "deposit",
+			"amount": 21750,
+			"currency": "usd",
+			"status": "pending",
+			"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
+			"automatic": true,
+			"fee": 0,
+			"fee_percentage": 0,
+			"bank_reference_key": "DEMO-REF-0005"
+		},
+		{
+			"id": "po_demo_4",
+			"date": "@datetime:-1 day",
+			"type": "deposit",
+			"amount": 15430,
+			"currency": "usd",
+			"status": "in_transit",
+			"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
+			"automatic": true,
+			"fee": 0,
+			"fee_percentage": 0,
+			"bank_reference_key": "DEMO-REF-0004"
+		},
+		{
+			"id": "po_demo_3",
+			"date": "@datetime:-3 days",
+			"type": "deposit",
+			"amount": 8920,
+			"currency": "usd",
+			"status": "paid",
+			"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
+			"automatic": true,
+			"fee": 0,
+			"fee_percentage": 0,
+			"bank_reference_key": "DEMO-REF-0003"
+		},
+		{
+			"id": "po_demo_2",
+			"date": "@datetime:-6 days",
+			"type": "deposit",
+			"amount": 12310,
+			"currency": "usd",
+			"status": "paid",
+			"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
+			"automatic": true,
+			"fee": 0,
+			"fee_percentage": 0,
+			"bank_reference_key": "DEMO-REF-0002"
+		},
+		{
+			"id": "po_demo_1",
+			"date": "@datetime:-9 days",
+			"type": "deposit",
+			"amount": 10800,
+			"currency": "usd",
+			"status": "paid",
+			"bankAccount": "STRIPE TEST BANK •••• 6789 (USD)",
+			"automatic": true,
+			"fee": 0,
+			"fee_percentage": 0,
+			"bank_reference_key": "DEMO-REF-0001"
+		}
+	],
+	"total_count": 5
+}

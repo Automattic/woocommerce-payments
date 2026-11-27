@@ -1,12 +1,7 @@
 /**
- * External dependencies
- */
-import qit from '@qit/helpers';
-
-/**
  * Internal dependencies
  */
-import { test, expect } from '../../../fixtures/auth';
+import { test, expect, recreateCustomer } from '../../../fixtures/auth';
 import { config } from '../../../config/default';
 import {
 	emptyCart,
@@ -18,7 +13,6 @@ import {
 import {
 	goToOrder,
 	goToSubscriptions,
-	goToPaymentDetails,
 	activateMulticurrency,
 	deactivateMulticurrency,
 	isMulticurrencyEnabled,
@@ -33,20 +27,13 @@ test.describe(
 	{ tag: [ '@shopper', '@subscriptions', '@critical' ] },
 	() => {
 		let orderId: string;
-		let subscriptionId: string;
 		let wasMultiCurrencyEnabled: boolean;
 
-		test.beforeAll( async ( { adminPage, customerPage } ) => {
-			// Delete existing subscriptions customer if exists to ensure clean state
-			try {
-				await qit.wp(
-					`user delete $( wp user get ${ customerBillingConfig.email } --field=ID 2>/dev/null ) --yes 2>/dev/null || true`,
-					true
-				);
-			} catch ( e ) {
-				// User might not exist, continue
-			}
+		test.beforeAll( async () => {
+			await recreateCustomer();
+		} );
 
+		test.beforeAll( async ( { adminPage, customerPage } ) => {
 			// Check and disable multi-currency if enabled
 			wasMultiCurrencyEnabled = await isMulticurrencyEnabled( adminPage );
 			if ( wasMultiCurrencyEnabled ) {
@@ -75,13 +62,6 @@ test.describe(
 				'.woocommerce-order-overview__order.order > strong'
 			);
 			orderId = ( await orderIdField.textContent() ) ?? '';
-
-			// Get the subscription ID
-			const subscriptionLink = customerPage.getByRole( 'link', {
-				name: 'View subscription number',
-			} );
-			const linkText = await subscriptionLink.textContent();
-			subscriptionId = linkText?.trim().replace( '#', '' ) ?? '';
 		} );
 
 		test.afterAll( async ( { adminPage } ) => {
@@ -96,15 +76,26 @@ test.describe(
 		} ) => {
 			await goToOrder( adminPage, orderId );
 
-			// Get the payment intent ID from the order
-			const paymentIntentId = await adminPage
-				.locator( '#order_data' )
-				.getByRole( 'link', {
-					name: /pi_/,
-				} )
-				.innerText();
+			// The order screen must link its subscription.
+			const subscriptionId = (
+				( await adminPage
+					.getByRole( 'link', { name: 'Edit order number' } )
+					.textContent() ) ?? ''
+			)
+				.trim()
+				.replace( '#', '' );
+			expect( subscriptionId ).not.toBe( '' );
 
-			await goToPaymentDetails( adminPage, paymentIntentId );
+			// Follow the payment intent link the order screen renders.
+			const transactionPageLink = await adminPage
+				.getByText( 'Payment via Card', { exact: false } )
+				.getByRole( 'link', { name: /pi_.+/ } )
+				.getAttribute( 'href' );
+			expect( transactionPageLink ).toBeTruthy();
+
+			await adminPage.goto( transactionPageLink as string, {
+				waitUntil: 'load',
+			} );
 
 			await expect(
 				adminPage.getByText(

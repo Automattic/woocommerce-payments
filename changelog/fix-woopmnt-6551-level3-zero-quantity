@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix payments and subscriptions failing with a division by zero error when an order item has a quantity of 0.

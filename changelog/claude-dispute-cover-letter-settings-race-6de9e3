@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop showing the manual-edit warning on an untouched dispute cover letter, so the letter keeps updating with the evidence.

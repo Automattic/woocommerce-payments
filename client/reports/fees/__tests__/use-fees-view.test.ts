@@ -1,6 +1,6 @@
 /** @format */
 
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { recordEvent } from 'tracks';
 import type { Filter, View, ViewTable } from '@wordpress/dataviews/wp';
 

@@ -1,0 +1,3 @@
+Significance: patch
+Type: dev
+Comment: Switch the QIT E2E shopper back to USD after the multi-currency widget spec, so the manual capture spec places a USD order.

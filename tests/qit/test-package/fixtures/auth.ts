@@ -3,6 +3,7 @@
  */
 import {
 	test as base,
+	expect as baseExpect,
 	Browser,
 	BrowserContext,
 	Page,
@@ -30,12 +31,21 @@ const roles: Record< Role, RoleConfig > = {
 		login: async ( page ) => {
 			const { username, password } = config.users.customer;
 			await qit.loginAs( page, username, password );
+			await page.goto( '/my-account' );
+			await baseExpect(
+				page.locator(
+					'.woocommerce-MyAccount-navigation-link--customer-logout'
+				)
+			).toBeVisible();
 		},
 	},
 	editor: {
 		login: async ( page ) => {
 			const { username, password } = config.users.editor;
 			await qit.loginAs( page, username, password );
+			await baseExpect(
+				page.getByRole( 'heading', { name: 'Dashboard' } )
+			).toBeVisible();
 		},
 	},
 };
@@ -107,6 +117,28 @@ export const test = base.extend< Fixtures >( {
 } );
 
 export const expect = test.expect;
+
+/**
+ * Deletes and recreates the customer, so a spec starts with no saved cards, orders or subscriptions.
+ * Call it before the customer fixtures are used: in its own `beforeAll`, ahead of any hook that takes them.
+ */
+export const recreateCustomer = async () => {
+	const { username, password, email } = config.users.customer;
+	// `user list` exits 0 with no output when the user is missing, so a failed request is never read as "missing".
+	const { stdout } = await qit.wp(
+		`user list --login=${ username } --field=ID`,
+		true
+	);
+	if ( stdout.trim() ) {
+		await qit.wp( `user delete ${ username } --yes`, true );
+	}
+	await qit.wp(
+		`user create ${ username } ${ email } --role=customer --user_pass=${ password } --first_name=Jane --last_name=Smith`,
+		true
+	);
+	// The cached session belongs to the deleted user.
+	stateCache.delete( 'customer' );
+};
 
 export const getAuthState = ( browser: Browser, role: Role ) =>
 	getState( browser, role );

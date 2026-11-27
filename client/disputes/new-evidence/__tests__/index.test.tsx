@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import {
+	act,
 	render,
 	screen,
 	fireEvent,
@@ -18,7 +19,7 @@ import { useDispatch } from '@wordpress/data';
 import NewEvidence from '../index';
 import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
 import type { DisputeReason } from 'wcpay/types/disputes';
-import { useGetSettings } from 'wcpay/data/settings';
+import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import { useDisputeEvidence } from 'wcpay/data/disputes';
 import { PAYMENT_INTENTS_STORE_NAME } from 'wcpay/data/store-names';
 
@@ -28,6 +29,7 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // Mock the data hooks
 jest.mock( 'wcpay/data/settings', () => ( {
 	useGetSettings: jest.fn(),
+	useSettings: jest.fn(),
 } ) );
 jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeEvidence: jest.fn(),
@@ -56,6 +58,9 @@ jest.mock( '@wordpress/data', () => ( {
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 const mockUseGetSettings = useGetSettings as jest.MockedFunction<
 	typeof useGetSettings
+>;
+const mockUseSettings = useSettings as jest.MockedFunction<
+	typeof useSettings
 >;
 const mockUseDisputeEvidence = useDisputeEvidence as jest.MockedFunction<
 	typeof useDisputeEvidence
@@ -119,6 +124,12 @@ Object.defineProperty( window, 'scrollTo', {
 
 // Mock window.confirm
 global.confirm = jest.fn() as jest.MockedFunction< typeof confirm >;
+
+beforeEach( () => {
+	mockUseSettings.mockReturnValue( {
+		isLoading: false,
+	} as ReturnType< typeof useSettings > );
+} );
 
 describe( 'NewEvidence - Visa Compliance Flow', () => {
 	const baseDispute = {
@@ -389,17 +400,16 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 		it( 'should not render the stepper for Visa Compliance disputes', async () => {
 			render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
 
-			await waitFor( () => {
-				expect(
-					screen.queryByText( "Let's gather the basics" )
-				).not.toBeInTheDocument();
-				expect(
-					screen.queryByText( 'Add your shipping details' )
-				).not.toBeInTheDocument();
-				expect(
-					screen.queryByText( 'Review your cover letter' )
-				).not.toBeInTheDocument();
-			} );
+			await screen.findByText( 'Tell us about the dispute' );
+			expect(
+				screen.queryByText( "Let's gather the basics" )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Add your shipping details' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Review your cover letter' )
+			).not.toBeInTheDocument();
 		} );
 
 		it( 'should render Visa Compliance specific buttons', async () => {
@@ -504,17 +514,16 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 		it( 'should not show regular dispute documents for Visa Compliance', async () => {
 			render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
 
-			await waitFor( () => {
-				expect(
-					screen.queryByText( 'Order receipt' )
-				).not.toBeInTheDocument();
-				expect(
-					screen.queryByText( 'Customer communication' )
-				).not.toBeInTheDocument();
-				expect(
-					screen.queryByText( 'Store refund policy' )
-				).not.toBeInTheDocument();
-			} );
+			await screen.findByText( 'Other documents' );
+			expect(
+				screen.queryByText( 'Order receipt' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Customer communication' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Store refund policy' )
+			).not.toBeInTheDocument();
 		} );
 	} );
 
@@ -776,14 +785,13 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 	it( 'should not render Visa Compliance specific elements', async () => {
 		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
 
-		await waitFor( () => {
-			expect(
-				screen.queryByText( 'Tell us about the dispute' )
-			).not.toBeInTheDocument();
-			expect(
-				screen.queryByText( 'This is a compliance case' )
-			).not.toBeInTheDocument();
-		} );
+		await screen.findByText( "Let's gather the basics" );
+		expect(
+			screen.queryByText( 'Tell us about the dispute' )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( /This is a compliance case/ )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'focuses the step heading when navigating forward and back', async () => {
@@ -868,6 +876,139 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 					} ),
 				} )
 			);
+		} );
+	} );
+
+	describe( 'refund and duplicate status', () => {
+		const creditNotProcessedDispute = {
+			...regularDispute,
+			reason: 'credit_not_processed',
+			metadata: { __product_type: 'physical_product' },
+		};
+		const duplicateDispute = {
+			...regularDispute,
+			reason: 'duplicate',
+			metadata: { __product_type: 'physical_product' },
+		};
+
+		const renderLoaded = async ( dispute: Record< string, unknown > ) => {
+			mockApiFetch.mockResolvedValue( dispute );
+			render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+			await waitFor( () => {
+				expect(
+					screen.getByText( "Let's gather the basics" )
+				).toBeInTheDocument();
+			} );
+		};
+
+		const saveForLater = () =>
+			fireEvent.click(
+				screen.getByRole( 'button', { name: /Save for later/i } )
+			);
+
+		it( 'saves the refund status in the dispute metadata', async () => {
+			await renderLoaded( creditNotProcessedDispute );
+
+			fireEvent.click(
+				screen.getByRole( 'radio', { name: 'Refund was not owed' } )
+			);
+			saveForLater();
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							metadata: {
+								__product_type: 'physical_product',
+								__refund_status: 'refund_was_not_owed',
+							},
+						} ),
+					} )
+				);
+			} );
+		} );
+
+		it( 'restores the saved refund status and its document slots', async () => {
+			await renderLoaded( {
+				...creditNotProcessedDispute,
+				metadata: {
+					__product_type: 'physical_product',
+					__refund_status: 'refund_was_not_owed',
+				},
+			} );
+
+			expect(
+				screen.getByRole( 'radio', { name: 'Refund was not owed' } )
+			).toBeChecked();
+			expect(
+				screen.getByText( 'Proof of acceptance' )
+			).toBeInTheDocument();
+			expect( screen.queryByText( 'Order receipt' ) ).toBeNull();
+		} );
+
+		it( 'shows the layout that holds every saved document when no refund status was saved', async () => {
+			await renderLoaded( {
+				...creditNotProcessedDispute,
+				evidence: {
+					uncategorized_file: 'file_proof',
+					service_documentation: 'file_other',
+				},
+			} );
+
+			expect(
+				screen.getByRole( 'radio', { name: 'Refund was not owed' } )
+			).toBeChecked();
+		} );
+
+		it( 'saves and restores the duplicate status', async () => {
+			await renderLoaded( {
+				...duplicateDispute,
+				metadata: {
+					__product_type: 'physical_product',
+					__duplicate_status: 'is_not_duplicate',
+				},
+			} );
+
+			expect(
+				screen.getByRole( 'radio', { name: /not a duplicate/i } )
+			).toBeChecked();
+
+			saveForLater();
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							metadata: {
+								__product_type: 'physical_product',
+								__duplicate_status: 'is_not_duplicate',
+							},
+						} ),
+					} )
+				);
+			} );
+		} );
+
+		it( 'does not save a status for other dispute reasons', async () => {
+			await renderLoaded( {
+				...regularDispute,
+				metadata: { __product_type: 'physical_product' },
+			} );
+
+			saveForLater();
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						method: 'post',
+						data: expect.objectContaining( {
+							metadata: { __product_type: 'physical_product' },
+						} ),
+					} )
+				);
+			} );
 		} );
 	} );
 
@@ -958,6 +1099,172 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 			);
 			return screen.findByLabelText( 'COVER LETTER' );
 		};
+
+		it( 'compares a saved letter with the store settings once they load', async () => {
+			const loadedSettings = {
+				account_country: 'US',
+				account_business_name: 'Test Store',
+				account_business_support_email: 'support@test.com',
+				account_business_support_phone: '1234567890',
+			};
+			mockUseGetSettings.mockReturnValue( loadedSettings );
+			const generatedLetter = (
+				( await openCoverLetter() ) as HTMLTextAreaElement
+			 ).value;
+			cleanup();
+			let settings = {};
+			let isLoadingSettings = true;
+			mockUseGetSettings.mockImplementation( () => settings );
+			mockUseSettings.mockImplementation(
+				() =>
+					( {
+						isLoading: isLoadingSettings,
+					} ) as ReturnType< typeof useSettings >
+			);
+			mockApiFetch.mockResolvedValue( {
+				...regularDispute,
+				evidence: { uncategorized_text: generatedLetter },
+			} );
+
+			const { rerender } = render(
+				<NewEvidence query={ { id: 'dp_test_456' } } />
+			);
+			// Let the dispute request settle, so the form would show if it didn't wait for settings.
+			await act( () => Promise.resolve() );
+
+			expect(
+				screen.getByTestId( 'new-evidence-loading' )
+			).toBeInTheDocument();
+
+			settings = loadedSettings;
+			isLoadingSettings = false;
+			rerender( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+			fireEvent.change(
+				await screen.findByLabelText(
+					'PRODUCT OR SERVICE DESCRIPTION'
+				),
+				{ target: { value: 'Handmade mug' } }
+			);
+			fireEvent.click( screen.getByRole( 'button', { name: 'Next' } ) );
+
+			const coverLetter = ( await screen.findByLabelText(
+				'COVER LETTER'
+			) ) as HTMLTextAreaElement;
+
+			expect( coverLetter.value ).toContain( 'ordered Handmade mug on' );
+			expect(
+				screen.queryByRole( 'button', {
+					name: 'Restore generated letter',
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		describe( 'saved on an earlier day', () => {
+			const TODAY = Date.UTC( 2026, 10, 10, 12 );
+			const YESTERDAY = Date.UTC( 2026, 10, 9, 12 );
+
+			const getLetterSavedYesterday = async () => {
+				jest.spyOn( Date, 'now' ).mockReturnValue( YESTERDAY );
+				const letter = (
+					( await openCoverLetter() ) as HTMLTextAreaElement
+				 ).value;
+				cleanup();
+				jest.spyOn( Date, 'now' ).mockReturnValue( TODAY );
+				return letter;
+			};
+
+			afterEach( () => {
+				jest.restoreAllMocks();
+			} );
+
+			it( 'regenerates an untouched letter', async () => {
+				mockApiFetch.mockResolvedValue( {
+					...regularDispute,
+					evidence: {
+						uncategorized_text: await getLetterSavedYesterday(),
+					},
+				} );
+
+				render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+				fireEvent.change(
+					await screen.findByLabelText(
+						'PRODUCT OR SERVICE DESCRIPTION'
+					),
+					{ target: { value: 'Handmade mug' } }
+				);
+				fireEvent.click(
+					screen.getByRole( 'button', { name: 'Next' } )
+				);
+				const coverLetter = ( await screen.findByLabelText(
+					'COVER LETTER'
+				) ) as HTMLTextAreaElement;
+
+				expect( coverLetter.value ).toContain(
+					'ordered Handmade mug on'
+				);
+				expect(
+					screen.queryByRole( 'button', {
+						name: 'Restore generated letter',
+					} )
+				).not.toBeInTheDocument();
+			} );
+
+			it( 'regenerates an untouched letter written for a non-default refund status', async () => {
+				const notOwedDispute = {
+					...regularDispute,
+					reason: 'credit_not_processed',
+					metadata: {
+						__product_type: 'physical_product',
+						__refund_status: 'refund_was_not_owed',
+					},
+				};
+				mockApiFetch.mockResolvedValue( notOwedDispute );
+				const letterSavedYesterday = await getLetterSavedYesterday();
+				mockApiFetch.mockResolvedValue( {
+					...notOwedDispute,
+					evidence: { uncategorized_text: letterSavedYesterday },
+				} );
+
+				const coverLetter = await openCoverLetter();
+
+				expect( coverLetter ).not.toHaveValue( letterSavedYesterday );
+				expect(
+					screen.queryByRole( 'button', {
+						name: 'Restore generated letter',
+					} )
+				).not.toBeInTheDocument();
+			} );
+
+			it( 'shows a submitted letter as it was sent', async () => {
+				const submittedLetter = await getLetterSavedYesterday();
+				mockApiFetch.mockResolvedValue( {
+					...regularDispute,
+					status: 'under_review',
+					evidence: { uncategorized_text: submittedLetter },
+				} );
+
+				const coverLetter = await openCoverLetter();
+
+				expect( coverLetter ).toHaveValue( submittedLetter );
+			} );
+
+			it( 'keeps flagging a letter the merchant edited', async () => {
+				const editedLetter = `${ await getLetterSavedYesterday() }\nP.S. Thank you.`;
+				mockApiFetch.mockResolvedValue( {
+					...regularDispute,
+					evidence: { uncategorized_text: editedLetter },
+				} );
+
+				const coverLetter = await openCoverLetter();
+
+				expect( coverLetter ).toHaveValue( editedLetter );
+				expect(
+					screen.getByRole( 'button', {
+						name: 'Restore generated letter',
+					} )
+				).toBeInTheDocument();
+			} );
+		} );
 
 		it( 'stays empty after the merchant clears it', async () => {
 			const coverLetter = await openCoverLetter();

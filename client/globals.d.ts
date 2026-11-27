@@ -48,6 +48,7 @@ declare global {
 		devMode: boolean;
 		devModeReason?: string;
 		isJetpackConnected: boolean;
+		autoStartTestDriveOnboarding: boolean;
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;
@@ -310,6 +311,7 @@ declare global {
 	};
 
 	interface Window {
+		wcpayStripeJsOriginCheckDisabled?: boolean;
 		wcpaySettings: typeof wcpaySettings;
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;

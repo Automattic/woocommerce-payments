@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "10916d8266df106eb7e65a7f188fa167",
+    "content-hash": "7cdc4aa529f4c645548e4881105e06d7",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
-            "version": "v4.0.1",
+            "version": "v4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-a8c-mc-stats.git",
-                "reference": "805f9a0a2c711e7dbf770f16b98e1901585ec5d1"
+                "reference": "419d41bfde3e394a2527b1260507fb1877eb0e68"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-a8c-mc-stats/zipball/805f9a0a2c711e7dbf770f16b98e1901585ec5d1",
-                "reference": "805f9a0a2c711e7dbf770f16b98e1901585ec5d1",
+                "url": "https://api.github.com/repos/Automattic/jetpack-a8c-mc-stats/zipball/419d41bfde3e394a2527b1260507fb1877eb0e68",
+                "reference": "419d41bfde3e394a2527b1260507fb1877eb0e68",
                 "shasum": ""
             },
             "require": {
@@ -34,7 +34,7 @@
             "extra": {
                 "mirror-repo": "Automattic/jetpack-a8c-mc-stats",
                 "branch-alias": {
-                    "dev-trunk": "4.0.x-dev"
+                    "dev-trunk": "4.1.x-dev"
                 },
                 "changelogger": {
                     "link-template": "https://github.com/Automattic/jetpack-a8c-mc-stats/compare/v${old}...v${new}"
@@ -51,22 +51,22 @@
             ],
             "description": "Used to record internal usage stats for Automattic. Not visible to site owners.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-a8c-mc-stats/tree/v4.0.1"
+                "source": "https://github.com/Automattic/jetpack-a8c-mc-stats/tree/v4.1.0"
             },
-            "time": "2026-10-20T16:01:46+00:00"
+            "time": "2026-11-16T15:45:47+00:00"
         },
         {
             "name": "automattic/jetpack-admin-ui",
-            "version": "v0.14.8",
+            "version": "v0.14.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-admin-ui.git",
-                "reference": "d2d30d50940daf3e0155cd327fa5fcef16adb00b"
+                "reference": "3383c3f37c9a3943d1f8f2798299f3376d123c30"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-admin-ui/zipball/d2d30d50940daf3e0155cd327fa5fcef16adb00b",
-                "reference": "d2d30d50940daf3e0155cd327fa5fcef16adb00b",
+                "url": "https://api.github.com/repos/Automattic/jetpack-admin-ui/zipball/3383c3f37c9a3943d1f8f2798299f3376d123c30",
+                "reference": "3383c3f37c9a3943d1f8f2798299f3376d123c30",
                 "shasum": ""
             },
             "require": {
@@ -112,22 +112,22 @@
             ],
             "description": "Generic Jetpack wp-admin UI elements",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.14.8"
+                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.14.14"
             },
-            "time": "2026-10-20T16:03:21+00:00"
+            "time": "2026-11-09T16:45:57+00:00"
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v5.0.14",
+            "version": "v5.0.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "e78e8b4ad01add1208abb1401debd589cba369cc"
+                "reference": "6749d7a375121e82a0d549f478bacf9d1fa86d07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/e78e8b4ad01add1208abb1401debd589cba369cc",
-                "reference": "e78e8b4ad01add1208abb1401debd589cba369cc",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/6749d7a375121e82a0d549f478bacf9d1fa86d07",
+                "reference": "6749d7a375121e82a0d549f478bacf9d1fa86d07",
                 "shasum": ""
             },
             "require": {
@@ -169,22 +169,22 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v5.0.14"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v5.0.19"
             },
-            "time": "2026-10-20T16:03:11+00:00"
+            "time": "2026-11-04T18:42:25+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
-            "version": "v6.0.2",
+            "version": "v6.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-autoloader.git",
-                "reference": "18acbf9d5231961f7bcda63b9f12bef42dc4dcd8"
+                "reference": "d7ac81dbe5c7ef4ad32fffe32a584d6b111b2440"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/18acbf9d5231961f7bcda63b9f12bef42dc4dcd8",
-                "reference": "18acbf9d5231961f7bcda63b9f12bef42dc4dcd8",
+                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/d7ac81dbe5c7ef4ad32fffe32a584d6b111b2440",
+                "reference": "d7ac81dbe5c7ef4ad32fffe32a584d6b111b2440",
                 "shasum": ""
             },
             "require": {
@@ -232,9 +232,9 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v6.0.2"
+                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v6.0.4"
             },
-            "time": "2026-10-20T16:01:49+00:00"
+            "time": "2026-11-16T15:45:09+00:00"
         },
         {
             "name": "automattic/jetpack-config",
@@ -301,22 +301,22 @@
         },
         {
             "name": "automattic/jetpack-connection",
-            "version": "v9.13.0",
+            "version": "v9.17.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-connection.git",
-                "reference": "e3d20434de7f74d0b0a97d14eddece2608d692bb"
+                "reference": "83acc98f23331ae4418ac4addf036fd3f37f418d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/e3d20434de7f74d0b0a97d14eddece2608d692bb",
-                "reference": "e3d20434de7f74d0b0a97d14eddece2608d692bb",
+                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/83acc98f23331ae4418ac4addf036fd3f37f418d",
+                "reference": "83acc98f23331ae4418ac4addf036fd3f37f418d",
                 "shasum": ""
             },
             "require": {
                 "automattic/jetpack-a8c-mc-stats": "^4.0.1",
-                "automattic/jetpack-admin-ui": "^0.14.8",
-                "automattic/jetpack-assets": "^5.0.14",
+                "automattic/jetpack-admin-ui": "^0.14.14",
+                "automattic/jetpack-assets": "^5.0.19",
                 "automattic/jetpack-constants": "^4.0.1",
                 "automattic/jetpack-ip": "^0.7.1",
                 "automattic/jetpack-redirect": "^4.0.1",
@@ -338,7 +338,7 @@
                 "textdomain": "jetpack-connection",
                 "mirror-repo": "Automattic/jetpack-connection",
                 "branch-alias": {
-                    "dev-trunk": "9.13.x-dev"
+                    "dev-trunk": "9.17.x-dev"
                 },
                 "changelogger": {
                     "link-template": "https://github.com/Automattic/jetpack-connection/compare/v${old}...v${new}"
@@ -370,9 +370,9 @@
             ],
             "description": "Everything needed to connect to the Jetpack infrastructure",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-connection/tree/v9.13.0"
+                "source": "https://github.com/Automattic/jetpack-connection/tree/v9.17.2"
             },
-            "time": "2026-10-20T16:03:36+00:00"
+            "time": "2026-11-09T16:46:10+00:00"
         },
         {
             "name": "automattic/jetpack-constants",
@@ -964,16 +964,16 @@
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "v7.0.5",
+            "version": "v7.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-changelogger.git",
-                "reference": "9a71296eeab91596a032a3bad09898827011b218"
+                "reference": "033d725b5f53ab4d5baa0f4f27e499202a5f2276"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/9a71296eeab91596a032a3bad09898827011b218",
-                "reference": "9a71296eeab91596a032a3bad09898827011b218",
+                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/033d725b5f53ab4d5baa0f4f27e499202a5f2276",
+                "reference": "033d725b5f53ab4d5baa0f4f27e499202a5f2276",
                 "shasum": ""
             },
             "require": {
@@ -1025,9 +1025,9 @@
                 "keepachangelog"
             ],
             "support": {
-                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v7.0.5"
+                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v7.0.6"
             },
-            "time": "2026-10-20T16:01:37+00:00"
+            "time": "2026-11-02T18:04:56+00:00"
         },
         {
             "name": "clue/stdio-react",
@@ -1912,16 +1912,16 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v11.2.1",
+            "version": "v11.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "8cfdb86cad90da64441317e1bebe5f71a437a074"
+                "reference": "a897f9ad0552482e9d50d3937daab20dfb97265c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/8cfdb86cad90da64441317e1bebe5f71a437a074",
-                "reference": "8cfdb86cad90da64441317e1bebe5f71a437a074",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/a897f9ad0552482e9d50d3937daab20dfb97265c",
+                "reference": "a897f9ad0552482e9d50d3937daab20dfb97265c",
                 "shasum": ""
             },
             "require": {
@@ -1950,22 +1950,22 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v11.2.1"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v11.3.0"
             },
-            "time": "2026-10-09T20:26:55+00:00"
+            "time": "2026-11-12T00:45:07+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
-            "version": "v6.9.1",
+            "version": "v7.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/wordpress-stubs.git",
-                "reference": "f12220f303e0d7c0844c0e5e957b0c3cee48d2f7"
+                "reference": "6926c5156431a3ff909d43faa16a92a0bc0c2428"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/wordpress-stubs/zipball/f12220f303e0d7c0844c0e5e957b0c3cee48d2f7",
-                "reference": "f12220f303e0d7c0844c0e5e957b0c3cee48d2f7",
+                "url": "https://api.github.com/repos/php-stubs/wordpress-stubs/zipball/6926c5156431a3ff909d43faa16a92a0bc0c2428",
+                "reference": "6926c5156431a3ff909d43faa16a92a0bc0c2428",
                 "shasum": ""
             },
             "conflict": {
@@ -1975,13 +1975,13 @@
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
                 "nikic/php-parser": "^5.5",
                 "php": "^7.4 || ^8.0",
-                "php-stubs/generator": "^0.8.3",
+                "php-stubs/generator": "^0.9",
                 "phpdocumentor/reflection-docblock": "^6.0",
-                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan": "^2.2",
                 "phpunit/phpunit": "^9.5",
                 "symfony/polyfill-php80": "*",
-                "szepeviktor/phpcs-psr-12-neutron-hybrid-ruleset": "^1.1.1",
-                "wp-coding-standards/wpcs": "3.1.0 as 2.3.0"
+                "szepeviktor/phpcs-psr-12-neutron-hybrid-ruleset": "^1.2",
+                "wp-coding-standards/wpcs": "3.4.1 as 2.3.0"
             },
             "suggest": {
                 "paragonie/sodium_compat": "Pure PHP implementation of libsodium",
@@ -2002,9 +2002,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/wordpress-stubs/issues",
-                "source": "https://github.com/php-stubs/wordpress-stubs/tree/v6.9.1"
+                "source": "https://github.com/php-stubs/wordpress-stubs/tree/v7.1.2"
             },
-            "time": "2026-02-03T19:29:21+00:00"
+            "time": "2026-10-06T06:59:21+00:00"
         },
         {
             "name": "phpcompatibility/php-compatibility",
@@ -2491,11 +2491,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.1",
+            "version": "2.3.6",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
-                "reference": "6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/00cedebb76cc82c1592414fa4f616cefdccda16f",
+                "reference": "00cedebb76cc82c1592414fa4f616cefdccda16f",
                 "shasum": ""
             },
             "require": {
@@ -2551,7 +2551,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-08T21:09:11+00:00"
+            "time": "2026-11-15T19:58:26+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -5472,16 +5472,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v5.4.45",
+            "version": "v5.4.56",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "a454d47278cc16a5db371fe73ae66a78a633371e"
+                "reference": "8ff81e554b0d78653a146b35e344e0a022d7e838"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/a454d47278cc16a5db371fe73ae66a78a633371e",
-                "reference": "a454d47278cc16a5db371fe73ae66a78a633371e",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/8ff81e554b0d78653a146b35e344e0a022d7e838",
+                "reference": "8ff81e554b0d78653a146b35e344e0a022d7e838",
                 "shasum": ""
             },
             "require": {
@@ -5527,7 +5527,7 @@
             "description": "Loads and dumps YAML files",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/yaml/tree/v5.4.45"
+                "source": "https://github.com/symfony/yaml/tree/v5.4.56"
             },
             "funding": [
                 {
@@ -5539,11 +5539,15 @@
                     "type": "github"
                 },
                 {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
                     "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-25T14:11:13+00:00"
+            "time": "2026-11-03T13:19:21+00:00"
         },
         {
             "name": "szepeviktor/phpstan-wordpress",
@@ -5707,16 +5711,16 @@
         },
         {
             "name": "woocommerce/php-stubs",
-            "version": "v2026.10.23.4",
+            "version": "v2026.11.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/php-stubs.git",
-                "reference": "71b58e28da692342af5d3ca78d9d60e72eb450b5"
+                "reference": "4d46852a3678f7f7a738ef2b0f9b54728901d4c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/71b58e28da692342af5d3ca78d9d60e72eb450b5",
-                "reference": "71b58e28da692342af5d3ca78d9d60e72eb450b5",
+                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/4d46852a3678f7f7a738ef2b0f9b54728901d4c3",
+                "reference": "4d46852a3678f7f7a738ef2b0f9b54728901d4c3",
                 "shasum": ""
             },
             "type": "library",
@@ -5735,22 +5739,22 @@
             ],
             "support": {
                 "issues": "https://github.com/woocommerce/php-stubs/issues",
-                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.10.23.4"
+                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.11.19"
             },
-            "time": "2026-10-23T21:12:23+00:00"
+            "time": "2026-11-19T03:05:39+00:00"
         },
         {
             "name": "woocommerce/qit-cli",
-            "version": "1.3.3",
+            "version": "1.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/qit-cli.git",
-                "reference": "d9b2cd3586a9969681228a40608f14088fcaf4ea"
+                "reference": "9b4ff30f52fe911411b3f652c9abb602fc11ce27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/d9b2cd3586a9969681228a40608f14088fcaf4ea",
-                "reference": "d9b2cd3586a9969681228a40608f14088fcaf4ea",
+                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/9b4ff30f52fe911411b3f652c9abb602fc11ce27",
+                "reference": "9b4ff30f52fe911411b3f652c9abb602fc11ce27",
                 "shasum": ""
             },
             "require": {
@@ -5768,9 +5772,9 @@
             "description": "A command line interface for WooCommerce Quality Insights Toolkit (QIT).",
             "support": {
                 "issues": "https://github.com/woocommerce/qit-cli/issues",
-                "source": "https://github.com/woocommerce/qit-cli/tree/1.3.3"
+                "source": "https://github.com/woocommerce/qit-cli/tree/1.3.4"
             },
-            "time": "2026-10-28T13:16:29+00:00"
+            "time": "2026-11-13T16:34:35+00:00"
         },
         {
             "name": "woocommerce/woocommerce-sniffs",

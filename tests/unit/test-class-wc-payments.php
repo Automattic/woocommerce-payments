@@ -6,6 +6,9 @@
  */
 
 use WCPay\WooPay\WooPay_Session;
+use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
+use WCPay\Constants\Payment_Method;
 
 /**
  * WC_Payments unit tests.
@@ -54,6 +57,119 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$upgrade_run_count = did_action( 'woocommerce_woocommerce_payments_updated' );
 		WC_Payments::install_actions();
 		$this->assertEquals( $upgrade_run_count + 1, did_action( 'woocommerce_woocommerce_payments_updated' ) );
+	}
+
+	/**
+	 * @dataProvider cart_block_bnpl_capability_statuses
+	 *
+	 * @param string $status Capability status.
+	 * @param bool   $should_enqueue Whether BNPL messaging should load.
+	 */
+	public function test_cart_block_only_enqueues_bnpl_script_for_active_method( $status, $should_enqueue ) {
+		$previous_post   = $GLOBALS['post'] ?? null;
+		$GLOBALS['post'] = get_post( // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulate a cart block for this test.
+			self::factory()->post->create( [ 'post_content' => '<!-- wp:woocommerce/cart /-->' ] )
+		);
+
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'is_enabled' )->willReturn( true );
+		$gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::AFTERPAY ] );
+		$gateway->method( 'get_upe_enabled_payment_method_statuses' )->willReturn(
+			[ 'afterpay_clearpay_payments' => [ 'status' => $status ] ]
+		);
+		$gateway->method( 'get_payment_method_capability_key_map' )->willReturn(
+			[ Payment_Method::AFTERPAY => 'afterpay_clearpay_payments' ]
+		);
+		WC_Payments::set_gateway( $gateway );
+
+		try {
+			WC_Payments::enqueue_cart_scripts();
+
+			$this->assertTrue( wp_script_is( 'WCPAY_CART', 'enqueued' ) );
+			$this->assertTrue( wp_script_is( 'WCPAY_BNPL_CART_BLOCK', 'registered' ) );
+			$this->assertStringEndsWith( '/dist/bnpl-cart-block.js', wp_scripts()->registered['WCPAY_BNPL_CART_BLOCK']->src );
+			$this->assertSame( $should_enqueue, wp_script_is( 'WCPAY_BNPL_CART_BLOCK', 'enqueued' ) );
+			$this->assertTrue( wp_style_is( 'WCPAY_CART_BLOCK', 'enqueued' ) );
+			$this->assertStringEndsWith( '/dist/cart-block.css', wp_styles()->registered['WCPAY_CART_BLOCK']->src );
+		} finally {
+			$GLOBALS['post'] = $previous_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restore the cart page context.
+			wp_dequeue_script( 'WCPAY_CART' );
+			wp_deregister_script( 'WCPAY_CART' );
+			wp_dequeue_script( 'WCPAY_BNPL_CART_BLOCK' );
+			wp_deregister_script( 'WCPAY_BNPL_CART_BLOCK' );
+			wp_dequeue_style( 'WCPAY_CART_BLOCK' );
+			wp_deregister_style( 'WCPAY_CART_BLOCK' );
+		}
+	}
+
+	public function cart_block_bnpl_capability_statuses() {
+		return [
+			'approved' => [ 'active', true ],
+			'rejected' => [ 'rejected', false ],
+		];
+	}
+
+	/**
+	 * @dataProvider bnpl_availability_prices
+	 *
+	 * @param int  $price_in_cents Cart total sent by the product page.
+	 * @param bool $expected_is_available Expected AJAX response flag.
+	 */
+	public function test_bnpl_availability_ignores_rejected_methods( $price_in_cents, $expected_is_available ) {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::AFFIRM, Payment_Method::AFTERPAY ] );
+		$gateway->method( 'get_upe_enabled_payment_method_statuses' )->willReturn(
+			[
+				'affirm_payments'            => [ 'status' => 'active' ],
+				'afterpay_clearpay_payments' => [ 'status' => 'rejected' ],
+			]
+		);
+		$gateway->method( 'get_payment_method_capability_key_map' )->willReturn(
+			[
+				Payment_Method::AFFIRM   => 'affirm_payments',
+				Payment_Method::AFTERPAY => 'afterpay_clearpay_payments',
+			]
+		);
+		WC_Payments::set_gateway( $gateway );
+
+		$_POST                = [
+			'price'    => $price_in_cents,
+			'currency' => Currency_Code::UNITED_STATES_DOLLAR,
+			'country'  => Country_Code::UNITED_STATES,
+		];
+		$_REQUEST['security'] = wp_create_nonce( 'wcpay-is-bnpl-available' );
+
+		// wp_send_json_*() only goes through wp_die(), which can be intercepted, on AJAX requests.
+		$die_handler = function () {
+			return function () {
+				throw new WPDieException();
+			};
+		};
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', $die_handler );
+
+		ob_start();
+		try {
+			WC_Payments::ajax_check_bnpl_availability();
+		} catch ( WPDieException $e ) {
+			unset( $e );
+		} finally {
+			$response = json_decode( ob_get_clean(), true );
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', $die_handler );
+			unset( $_REQUEST['security'] );
+			$_POST = [];
+		}
+
+		$this->assertTrue( $response['success'] );
+		$this->assertSame( $expected_is_available, $response['data']['is_available'] );
+	}
+
+	public function bnpl_availability_prices() {
+		return [
+			'below the active method minimum' => [ 2000, false ],
+			'within the active method limits' => [ 5000, true ],
+		];
 	}
 
 	public function test_it_registers_woopay_hooks_if_feature_flag_is_enabled_but_not_in_dev_mode() {
@@ -236,6 +352,59 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
 		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
 		$this->assertEquals( count( $woopayments_gateway_ids ), count( $result ) );
+	}
+
+	/**
+	 * @dataProvider scripts_using_wp_i18n
+	 *
+	 * @param string $script       Script path relative to the plugin, without extension.
+	 * @param array  $dependencies Extra dependencies passed by the caller.
+	 */
+	public function test_register_script_with_dependencies_sets_translations_for_scripts_using_wp_i18n( $script, $dependencies ) {
+		$handle = 'wcpay-test-i18n-script';
+
+		try {
+			WC_Payments::register_script_with_dependencies( $handle, $script, $dependencies );
+
+			$this->assertSame( 'woocommerce-payments', wp_scripts()->registered[ $handle ]->textdomain );
+		} finally {
+			wp_deregister_script( $handle );
+		}
+	}
+
+	public function scripts_using_wp_i18n() {
+		return [
+			'wp-i18n in the asset manifest' => [ 'tests/unit/fixtures/script-assets/i18n-script', [] ],
+			'wp-i18n passed by the caller'  => [ 'tests/unit/fixtures/script-assets/no-manifest-script', [ 'wp-i18n' ] ],
+		];
+	}
+
+	public function test_register_script_with_dependencies_leaves_scripts_without_wp_i18n_untouched() {
+		$handle = 'wcpay-test-no-i18n-script';
+
+		try {
+			WC_Payments::register_script_with_dependencies( $handle, 'tests/unit/fixtures/script-assets/no-manifest-script', [ 'jquery' ] );
+
+			$this->assertNull( wp_scripts()->registered[ $handle ]->textdomain );
+			$this->assertSame( [ 'jquery' ], wp_scripts()->registered[ $handle ]->deps );
+		} finally {
+			wp_deregister_script( $handle );
+		}
+	}
+
+	public function test_register_script_with_dependencies_leaves_a_handle_registered_by_another_plugin_untouched() {
+		$handle = 'wcpay-test-taken-script';
+		wp_register_script( $handle, 'https://example.org/other-plugin.js', [ 'jquery' ], '1.0', true );
+
+		try {
+			WC_Payments::register_script_with_dependencies( $handle, 'tests/unit/fixtures/script-assets/i18n-script' );
+
+			$this->assertSame( 'https://example.org/other-plugin.js', wp_scripts()->registered[ $handle ]->src );
+			$this->assertNull( wp_scripts()->registered[ $handle ]->textdomain );
+			$this->assertSame( [ 'jquery' ], wp_scripts()->registered[ $handle ]->deps );
+		} finally {
+			wp_deregister_script( $handle );
+		}
 	}
 
 	/**

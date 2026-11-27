@@ -33,6 +33,8 @@ services:
       - "${WORDPRESS_PORT:-8082}:80"
     env_file:
       - default.env
+    environment:
+      WORDPRESS_PORT: ${WORDPRESS_PORT:-8082}
     volumes:
       - ./docker/wordpress:/var/www/html/
       ## Shared volumes overlay wp-content subdirectories

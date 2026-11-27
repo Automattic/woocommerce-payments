@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Update validation rules for transaction, dispute and card reader IDs used in admin REST requests.

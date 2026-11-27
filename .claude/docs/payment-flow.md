@@ -1,6 +1,6 @@
 # Payment Flow — Detailed Reference
 
-**Last updated:** 2026-10-06
+**Last updated:** 2026-11-25
 
 This documents the exact call chain for payment operations in WooPayments. Read this when working on payment processing, refunds, or API communication.
 
@@ -10,7 +10,7 @@ This documents the exact call chain for payment operations in WooPayments. Read 
 
 **`WC_Payment_Gateway_WCPay::process_payment($order_id)`** _(called by WC Core)_
 - Validates fraud prevention token via `Fraud_Prevention_Service`
-- Checks rate limiter via `$this->failed_transaction_rate_limiter->is_limited()`
+- Checks the rate limiter and reserves an attempt via `$this->failed_transaction_rate_limiter->is_limited_or_reserve()`; a counted decline keeps it, and anything else releases it
 - Delegates to `process_payment_for_order($cart, $payment_information)`
 
 ### 2. Payment Processing
@@ -37,7 +37,7 @@ $request->set_payment_methods( $payment_methods );     // ['card'], ['card', 'li
 $response = $request->send();
 ```
 
-### Stripe Link Charge Quirk
+### Link Charge Quirk
 
 Stripe returns `payment_method_details.type = 'card'` (not `'link'`) in charge objects for Link payments, because Link wraps a stored card. To correctly identify Link:
 - **Don't** rely on `charge.payment_method_details.type` — it's `'card'` for Link

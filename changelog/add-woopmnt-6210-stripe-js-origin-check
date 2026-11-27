@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Verify that Stripe.js was served from Stripe before starting a payment. The wcpay_enforce_stripe_js_origin filter turns the check off.

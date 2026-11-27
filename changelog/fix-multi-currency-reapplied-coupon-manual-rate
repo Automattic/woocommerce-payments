@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Multi-Currency: convert coupons re-applied to an existing order with the merchant's manual exchange rate, not the automatic rate.

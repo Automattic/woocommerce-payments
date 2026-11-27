@@ -7,7 +7,10 @@
 
 namespace WCPay\Tests\Internal\Service;
 
+use Automattic\WooCommerce\Utilities\PluginUtil;
 use WCPAY_UnitTestCase;
+use WCPay\Core\Mode;
+use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
 
 /**
@@ -43,5 +46,18 @@ class ExampleServiceWithDependenciesTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_the_exception_method() {
 		$this->assertFalse( $this->sut->handle_exception() );
+	}
+
+	/**
+	 * Tests the exception method when nothing throws.
+	 */
+	public function test_the_exception_method_without_an_exception() {
+		$sut = new ExampleServiceWithDependencies(
+			$this->createMock( ExampleService::class ),
+			$this->createMock( Mode::class ),
+			$this->createMock( PluginUtil::class )
+		);
+
+		$this->assertNull( $sut->handle_exception() );
 	}
 }

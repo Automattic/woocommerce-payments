@@ -244,7 +244,7 @@ class WC_Payments_WooPay_Button_Handler {
 	 */
 	public function should_show_woopay_button() {
 		// WCPay is not available.
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$gateways = WC()->payment_gateways()->get_available_payment_gateways();
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
 			return false;
 		}
@@ -291,9 +291,19 @@ class WC_Payments_WooPay_Button_Handler {
 			return false;
 		}
 
+		// The cart checks below need a cart, and there is nothing to pay for without one.
+		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->express_checkout_helper->has_cart() ) {
+			return false;
+		}
+
 		// Cart has unsupported product type.
 		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
+			return false;
+		}
+
+		// Pay for Order page, but the Store API would reject the order as WooPay sends it.
+		if ( $this->express_checkout_helper->is_pay_for_order_page() && ! $this->express_checkout_helper->is_pay_for_order_supported_by_woopay() ) {
 			return false;
 		}
 

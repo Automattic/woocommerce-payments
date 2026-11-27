@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Modernize PHPStan configuration with WordPress-aware analysis and a scoped baseline

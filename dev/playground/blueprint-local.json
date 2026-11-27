@@ -1,0 +1,31 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"landingPage": "/wp-admin/admin.php?page=wc-admin&path=/payments/overview",
+	"preferredVersions": { "php": "8.3", "wp": "latest" },
+	"constants": {
+		"WCPAY_PLAYGROUND_PREVIEW": "demo",
+		"WP_DEBUG": true,
+		"WP_DEBUG_LOG": true,
+		"WP_DEBUG_DISPLAY": false
+	},
+	"steps": [
+		{ "step": "login", "username": "admin" },
+		{
+			"step": "installPlugin",
+			"pluginData": { "resource": "wordpress.org/plugins", "slug": "woocommerce" },
+			"options": { "activate": true }
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "url",
+				"url": "https://betadownload.jetpack.me/data/woocommerce-payments/develop/woocommerce-payments-dev.zip"
+			},
+			"options": { "activate": true }
+		},
+		{
+			"step": "runPHP",
+			"code": "<?php require '/wordpress/wp-load.php'; require WPMU_PLUGIN_DIR . '/wcpay-playground-preview/setup.php';"
+		}
+	]
+}

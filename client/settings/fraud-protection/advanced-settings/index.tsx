@@ -129,7 +129,9 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	const { saveSettings, isLoading, isSaving } = useSettings();
 
-	const cardObserver = useRef< IntersectionObserver >();
+	const cardObserver = useRef< IntersectionObserver | undefined >(
+		undefined
+	);
 
 	const [ currentProtectionLevel, updateProtectionLevel ] =
 		useCurrentProtectionLevel();
@@ -147,8 +149,9 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	// Render-time state adjustment avoids a cascading render from a sync effect
 	// while preserving the original initial-empty-then-populated render order
 	// (a11y-speak announcement queue depends on this).
-	const prevAdvancedSettingsRef =
-		useRef< typeof advancedFraudProtectionSettings >();
+	const prevAdvancedSettingsRef = useRef<
+		typeof advancedFraudProtectionSettings | undefined
+	>( undefined );
 	if ( prevAdvancedSettingsRef.current !== advancedFraudProtectionSettings ) {
 		prevAdvancedSettingsRef.current = advancedFraudProtectionSettings;
 		setProtectionSettingsUI(

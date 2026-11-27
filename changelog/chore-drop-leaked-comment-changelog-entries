@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Remove leaked Comment entries from the develop changelog so it matches trunk.

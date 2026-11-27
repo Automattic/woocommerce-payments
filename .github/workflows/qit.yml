@@ -1,5 +1,8 @@
 name: QIT Security and Malware Tests
 
+permissions:
+  contents: read
+
 on:
   pull_request
 

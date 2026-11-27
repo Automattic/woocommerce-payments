@@ -30,7 +30,6 @@ use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	API_Exception,
 	Invalid_Address_Exception,
 	Fraud_Prevention_Enabled_Exception,
-	Invalid_Phone_Number_Exception,
 	Rate_Limiter_Enabled_Exception,
 	Order_ID_Mismatch_Exception,
 	Order_Not_Found_Exception};
@@ -283,6 +282,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE = 'upe_process_redirect_retryable_decline';
 
+	const PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE = 'upe_process_redirect_cancelled_intent';
+
 	/**
 	 * Payment provider error code and decline code combinations after which the customer
 	 * can retry the payment with a different payment method, so the order is left in
@@ -348,7 +349,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Session_Rate_Limiter instance for limiting failed transactions.
 	 *
-	 * @var Session_Rate_Limiter
+	 * @var Session_Rate_Limiter|null
 	 */
 	protected $failed_transaction_rate_limiter;
 
@@ -883,6 +884,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
 			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
 		}
+
+		return null;
 	}
 
 	/**
@@ -974,6 +977,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function is_request_composed_by_woopay(): bool {
 		return WooPay_Session::is_request_vouched_by_woopay() || WooPay_Session::is_authenticated_by_blog_token_signature();
+	}
+
+	/**
+	 * Records that the order was completed through WooPay, only when WooPay proved it composed this
+	 * attempt. Any other payment attempt clears the meta, so it reflects the attempt that actually
+	 * paid the order rather than an earlier or unrelated one.
+	 *
+	 * @param WC_Order $order                         The order being paid.
+	 * @param bool     $is_request_composed_by_woopay Whether the request carries WooPay's proof.
+	 */
+	private function update_woopay_order_flag( WC_Order $order, bool $is_request_composed_by_woopay ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST['is_woopay'] ) && $is_request_composed_by_woopay ) {
+			$order->add_meta_data( 'is_woopay', '1', true );
+			$order->save_meta_data();
+		} elseif ( $order->meta_exists( 'is_woopay' ) ) {
+			$order->delete_meta_data( 'is_woopay' );
+			$order->save_meta_data();
+		}
 	}
 
 	/**
@@ -1454,7 +1476,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		// A subscription only reaches the gateway to change its payment method; refuse any other pay-for-order
-		// request for one. Returned as a failure, not thrown: a subscription rejects update_status( 'failed' ) in the catch.
+		// request for one. Returned as a failure, not thrown, so the catch can't set the subscription to failed.
 		if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) && ! $this->is_changing_payment_method_for_subscription() ) {
 			Logger::error( sprintf( 'Refused to process a payment for subscription #%d outside of the change payment method flow.', $order->get_id() ) );
 			wc_add_notice( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ), 'error' );
@@ -1465,7 +1487,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		// A card change passes the subscription itself. It lasts for years, so its declines count in the session only.
+		$rate_limited_order = function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ? null : $order;
+
+		// A subscription keeps the intent of its last successful card change, and nothing clears it. Remember
+		// which intent is attached before this attempt so the catch block can tell that earlier succeeded
+		// intent from one this attempt actually created.
+		$previous_intent_id = '';
+
 		try {
+			$previous_intent_id = $this->order_service->get_intent_id_for_order( $order );
+
 			$is_request_composed_by_woopay = $this->is_request_composed_by_woopay();
 			// Reject an unverified dry run instead of turning it into a payment attempt.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1476,12 +1508,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			if ( 20 < strlen( $order->get_billing_phone() ) ) {
-				throw new Invalid_Phone_Number_Exception(
-					__( 'Invalid phone number.', 'woocommerce-payments' ),
-					'invalid_phone_number'
-				);
-			}
 			// Check if session exists and we're currently not processing a WooPay request before
 			// instantiating `Fraud_Prevention_Service`.
 			//
@@ -1501,7 +1527,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
+			// Reserves an attempt: bump() keeps it for a decline, and the `finally` below releases it otherwise. If the
+			// request exits first, as a card change that needs 3DS does, the limiter releases it at shutdown.
+			if ( $this->failed_transaction_rate_limiter->is_limited_or_reserve( $rate_limited_order ) ) {
 				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
@@ -1547,6 +1575,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_order_paid;
 			}
 
+			$this->update_woopay_order_flag( $order, $is_request_composed_by_woopay );
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -1560,7 +1589,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Failed or surface a failure to the customer who has already been
 			// charged. Preserve the post-payment order status, record a
 			// diagnostic note, and complete the checkout normally.
-			if ( Intent_Status::SUCCEEDED === $this->order_service->get_intention_status_for_order( $order ) ) {
+			//
+			// A subscription's card change runs against the subscription, which keeps the succeeded intent of
+			// an earlier change. That stored status describes this attempt only when this attempt attached a
+			// new intent; a declined change throws before attaching one, leaving the intent id unchanged.
+			$is_earlier_card_change_intent = $this->is_changing_payment_method_for_subscription( $order )
+				&& $previous_intent_id === $this->order_service->get_intent_id_for_order( $order );
+
+			if ( ! $is_earlier_card_change_intent && Intent_Status::SUCCEEDED === $this->order_service->get_intention_status_for_order( $order ) ) {
 				$order->add_order_note(
 					sprintf(
 						/* translators: %s: error message from the downstream exception */
@@ -1603,7 +1639,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 */
 			if ( $e instanceof Process_Payment_Exception && 'duplicate_payment_amount_mismatch' === $e->get_error_code() ) {
 				$order->update_status( Order_Status::FAILED, $e->getMessage() );
-			} elseif ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+			} elseif ( ! $blocked_by_fraud_rules && ! $this->is_changing_payment_method_for_subscription( $order ) && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+				// A subscription has no failed status: WooCommerce would store it as pending, which stops its renewals.
 				$order->update_status( Order_Status::FAILED );
 			}
 
@@ -1614,7 +1651,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
-				$this->failed_transaction_rate_limiter->bump();
+				$this->failed_transaction_rate_limiter->bump( $rate_limited_order );
 			}
 
 			// The server rejects an express checkout confirmation token minted without setup_future_usage
@@ -1730,6 +1767,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'result'   => 'fail',
 				'redirect' => '',
 			];
+		} finally {
+			if ( $this->failed_transaction_rate_limiter ) {
+				$this->failed_transaction_rate_limiter->release();
+			}
 		}
 	}
 
@@ -2022,7 +2063,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $payment_token instanceof \WC_Payment_Token_WCPay_Link ) {
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1$s: Link brand name (Stripe Link or Onelink), %2$s: redacted email address for the Link payment method */
+							/* translators: %1$s: Link brand name (Link or Onelink), %2$s: redacted email address for the Link payment method */
 							__( 'Payment method is changed to: <strong>%1$s ending in %2$s</strong>.', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
@@ -2181,7 +2222,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
-				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
+				// For Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
 				if ( $this->should_send_mandate_data( $payment_information ) ) {
 					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
@@ -2228,7 +2269,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( ! empty( $woopay_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
 				$setup_intent_request = Get_Setup_Intention::create( $woopay_intent_id );
-				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
 
 				$intent_metadata          = $intent->get_metadata();
@@ -2672,8 +2713,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$error                  = $intent->get_last_setup_error();
 			}
 
+			// Cancelling an order cancels a payment still open, but the shopper can approve it at the provider
+			// and come back. The order already notes the cancel, and the shopper must not see it as received.
+			// A payment cancelled some other way still cancels its order below.
+			if ( Intent_Status::CANCELED === $status && $order->has_status( Order_Status::CANCELLED ) ) {
+				throw new Process_Payment_Exception(
+					__( 'This order was cancelled before its payment was completed, so you have not been charged.', 'woocommerce-payments' ),
+					self::PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE
+				);
+			}
+
 			if ( ! empty( $error ) ) {
-				Logger::log( 'Error when processing payment: ' . $error['message'] );
+				Logger::log( 'Error when processing payment: ' . ( $error['message'] ?? $error['code'] ?? '' ) );
 				$error_code = $this->is_retryable_decline( $error )
 					? self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE
 					: 'upe_payment_intent_error';
@@ -2737,6 +2788,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE === $e->get_error_code();
 
+			$is_cancelled_intent =
+				$e instanceof Process_Payment_Exception
+				&& self::PROCESS_REDIRECT_CANCELLED_INTENT_ERROR_CODE === $e->get_error_code();
+
 			if ( $is_retryable_decline && ! empty( $error ) ) {
 				// The payment provider declined the payment, but the customer can retry with a
 				// different payment method, so the order is left pending and the provider's error
@@ -2752,14 +2807,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
 			// Because the outcome of the payment intent is for another order, not for the order processed here.
 			// Retryable declines also leave the order pending so the customer can try a different payment method.
-			if ( ! $is_order_id_mismatched_exception && ! $is_retryable_decline ) {
+			// The cancelled order of a cancelled payment stays as it is.
+			if ( ! $is_order_id_mismatched_exception && ! $is_retryable_decline && ! $is_cancelled_intent ) {
 				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
 				$status    = $status ?? null;
 				$charge_id = $charge_id ?? null;
 
-				/* translators: localized exception message */
-				$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
-				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+				if ( ! empty( $error ) ) {
+					// Record the provider's decline details, matching the note the webhook adds for BNPL methods,
+					// so a failure reported by both flows results in a single note.
+					$this->order_service->mark_payment_declined( $order, $intent_id, $status, $charge_id, $error );
+				} else {
+					/* translators: localized exception message */
+					$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
+					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );
+				}
 			}
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
@@ -2925,7 +2987,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
 		// If $gateway_id is `woocommerce_payments`, this must be the CC gateway.
-		// We only need to return single `card` payment method, adding `link` since Stripe Link is also supported.
+		// We only need to return single `card` payment method, adding `link` since Link is also supported.
 		$payment_methods = [ Payment_Method::CARD ];
 		if ( in_array( Payment_Method::LINK, $eligible_payment_methods, true ) ) {
 			$payment_methods[] = Payment_Method::LINK;
@@ -4654,12 +4716,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
+
+				// A new payment for the order stops the order naming an attempt left waiting, then cancels it.
+				// This request may have read the order just before that. What was fetched is about to be
+				// written to the order, and a cancelled intent would cancel the order, so the order must still
+				// name the intent now. That is read from the table, since no cache of this request knows what
+				// another one wrote, right before the first of those writes: the exchange rate above can take a
+				// request of its own.
+				if ( $intent_id !== $this->order_service->get_stored_intent_id( $order ) ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'intent_id_mismatch'
+					);
+				}
+
 				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
-				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
 				$this->ensure_intent_belongs_to_order( $intent, $order );
 				$status = $intent->get_status();
@@ -5230,53 +5306,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
-		$upe_enabled_payment_methods = $this->get_upe_enabled_payment_method_ids_based_on_manual_capture();
-		if ( is_wc_endpoint_url( 'order-pay' ) ) {
-			$force_currency_check = true;
-		}
+		return $this->filter_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check, false );
+	}
 
-		$enabled_payment_methods = [];
-		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
-
-		foreach ( $upe_enabled_payment_methods as $payment_method_id ) {
-			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
-			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
-				// When creating a payment intent, we need to ensure the currency is matching
-				// with the payment methods which are sent with the payment intent request, otherwise
-				// Stripe returns an error.
-
-				// In order to allow payment methods to be displayed in admin pages (e.g. blocks editor),
-				// we need to skip the currency check (unless force_currency_check is true).
-				// force_currency_check = 0 is_admin = 0 -> skip_currency_check = 0.
-				// force_currency_check = 0 is_admin = 1 -> skip_currency_check = 1.
-				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
-				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
-
-				$skip_currency_check       = ! $force_currency_check && is_admin();
-				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
-					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
-					if ( 'active' === $status ) {
-						$enabled_payment_methods[] = $payment_method_id;
-					}
-				}
-			}
-		}
-
-		// if credit card payment method is not enabled, we don't use stripe link.
-		if (
-			! in_array( CardDefinition::get_id(), $enabled_payment_methods, true ) &&
-			in_array( LinkDefinition::get_id(), $enabled_payment_methods, true ) ) {
-			$link_stripe_id          = LinkDefinition::get_id();
-			$enabled_payment_methods = array_filter(
-				$enabled_payment_methods,
-				static function ( $method ) use ( $link_stripe_id ) {
-					return $link_stripe_id !== $method;
-				}
-			);
-		}
-
-		return $enabled_payment_methods;
+	/**
+	 * Returns the payment method types that would function with the current checkout if the order total were within their amount limits.
+	 *
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() {
+		return $this->filter_payment_method_ids_enabled_at_checkout( null, false, true );
 	}
 
 	/**
@@ -5959,5 +5998,56 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return true;
 		}
 		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
+	}
+
+	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout.
+	 *
+	 * @param string|null $order_id             Order ID.
+	 * @param bool        $force_currency_check Whether the currency check is required even if is_admin().
+	 * @param bool        $skip_amount_limits   Whether to ignore the payment methods' amount limits.
+	 *
+	 * @return string[]
+	 */
+	private function filter_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check, $skip_amount_limits ) {
+		$upe_enabled_payment_methods = $this->get_upe_enabled_payment_method_ids_based_on_manual_capture();
+		if ( is_wc_endpoint_url( 'order-pay' ) ) {
+			$force_currency_check = true;
+		}
+
+		$enabled_payment_methods = [];
+		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
+
+		foreach ( $upe_enabled_payment_methods as $payment_method_id ) {
+			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
+			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
+				// When creating a payment intent, we need to ensure the currency is matching
+				// with the payment methods which are sent with the payment intent request, otherwise
+				// Stripe returns an error.
+
+				// In order to allow payment methods to be displayed in admin pages (e.g. blocks editor),
+				// we need to skip the currency check (unless force_currency_check is true).
+				// force_currency_check = 0 is_admin = 0 -> skip_currency_check = 0.
+				// force_currency_check = 0 is_admin = 1 -> skip_currency_check = 1.
+				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
+				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
+
+				$skip_currency_check       = ! $force_currency_check && is_admin();
+				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check || $skip_amount_limits ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
+					if ( 'active' === $status ) {
+						$enabled_payment_methods[] = $payment_method_id;
+					}
+				}
+			}
+		}
+
+		// if credit card payment method is not enabled, we don't use stripe link.
+		if ( ! in_array( CardDefinition::get_id(), $enabled_payment_methods, true ) ) {
+			$enabled_payment_methods = array_diff( $enabled_payment_methods, [ LinkDefinition::get_id() ] );
+		}
+
+		return $enabled_payment_methods;
 	}
 }

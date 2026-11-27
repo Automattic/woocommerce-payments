@@ -31,9 +31,10 @@ import { encodePathSegment } from 'utils/path-segment';
 import {
 	generateCoverLetter,
 	getBusinessDetails,
+	isSameCoverLetterIgnoringDate,
 } from './cover-letter-generator';
 import { useDisputeEvidence } from 'wcpay/data/disputes';
-import { useGetSettings } from 'wcpay/data/settings';
+import { useGetSettings, useSettings } from 'wcpay/data/settings';
 // The only dispatch made through this store handle invalidates getPaymentIntent,
 // which now lives in the payment-intents store.
 import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
@@ -45,6 +46,11 @@ import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
 import { resolveProductType } from './resolve-product-type';
+import {
+	resolveEvidenceStatuses,
+	refundStatuses,
+	duplicateStatuses,
+} from './resolve-evidence-status';
 import {
 	Button,
 	HorizontalRule,
@@ -135,11 +141,14 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 	const settings = useGetSettings();
+	const { isLoading: isLoadingSettings } = useSettings();
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
-	const [ refundStatus, setRefundStatus ] = useState(
-		'refund_has_been_issued'
+	const [ refundStatus, setRefundStatus ] = useState< string >(
+		refundStatuses[ 0 ]
 	);
-	const [ duplicateStatus, setDuplicateStatus ] = useState( 'is_duplicate' );
+	const [ duplicateStatus, setDuplicateStatus ] = useState< string >(
+		duplicateStatuses[ 0 ]
+	);
 
 	// Refs for heading elements to focus on step navigation
 	const stepHeadingRef = useRef< HTMLHeadingElement >( null );
@@ -157,6 +166,13 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Data loading ---
 	useEffect( () => {
+		// A saved letter counts as hand-edited when it differs from one generated now, and the
+		// generated letter includes the support email and phone from settings. Comparing before
+		// settings load would flag an untouched letter. A failed settings fetch still finishes
+		// resolving, so the form loads with empty settings instead of waiting forever.
+		if ( isLoadingSettings ) {
+			return;
+		}
 		const fetchDispute = async () => {
 			try {
 				setIsInitialLoading( true );
@@ -177,6 +193,12 @@ export default ( { query }: { query: { id: string } } ) => {
 					isFeatureFlagEnabled
 				);
 				setProductType( suggestedProductType );
+				const savedStatuses = resolveEvidenceStatuses(
+					d,
+					suggestedProductType
+				);
+				setRefundStatus( savedStatuses.refundStatus );
+				setDuplicateStatus( savedStatuses.duplicateStatus );
 				// Load saved product description from evidence or level3 line items
 				const level3ProductNames = d.charge?.level3?.line_items
 					?.map( ( item: any ) => item.product_description )
@@ -267,12 +289,15 @@ export default ( { query }: { query: { id: string } } ) => {
 							getBusinessDetails(),
 							settings,
 							fetchedBankName,
-							refundStatus,
-							duplicateStatus,
+							savedStatuses.refundStatus,
+							savedStatuses.duplicateStatus,
 							suggestedProductType
 						);
 						setIsCoverLetterManuallyEdited(
-							savedCoverLetter !== generatedContent
+							! isSameCoverLetterIgnoringDate(
+								savedCoverLetter,
+								generatedContent
+							)
 						);
 					}
 				} else if (
@@ -289,8 +314,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						getBusinessDetails(),
 						settings,
 						fetchedBankName,
-						refundStatus,
-						duplicateStatus,
+						savedStatuses.refundStatus,
+						savedStatuses.duplicateStatus,
 						suggestedProductType
 					);
 					setCoverLetter( generatedCoverLetter );
@@ -306,8 +331,9 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Load once per dispute: each run resets the form to the saved evidence, so re-running when
 		// settings or the status selections change would wipe what the merchant has typed. The
 		// evidence update effect regenerates the cover letter when those values change.
+		// isLoadingSettings flips to false once per page load, as nothing invalidates getSettings.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ disputeId ] );
+	}, [ disputeId, isLoadingSettings ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -371,9 +397,19 @@ export default ( { query }: { query: { id: string } } ) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- We only want to fetch the file details when uploadedFiles changes.
 	}, [ dispute?.evidence ] );
 
+	// --- Read-only logic ---
+	const readOnly =
+		dispute &&
+		dispute.status !== 'needs_response' &&
+		dispute.status !== 'warning_needs_response';
+
 	// Update cover letter when evidence changes
 	useEffect( () => {
 		if ( ! dispute || ! settings ) return;
+		// Show a submitted letter as the bank got it, not rebuilt with today's date.
+		if ( readOnly ) {
+			return;
+		}
 
 		// Get the document fields that are applicable for the current reason + product type
 		// This ensures we only include evidence for fields shown in the current UI
@@ -481,6 +517,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		duplicateStatus,
 		coverLetter,
 		productType,
+		readOnly,
 	] );
 
 	// --- Step logic ---
@@ -660,10 +697,16 @@ export default ( { query }: { query: { id: string } } ) => {
 				} )
 			);
 
-			// Update metadata with the current productType
+			// Save the choices that pick the document layout, so it shows the same slots on reload.
 			const updatedMetadata = {
 				...dispute.metadata,
 				__product_type: productType,
+				...( dispute.reason === 'credit_not_processed' && {
+					__refund_status: refundStatus,
+				} ),
+				...( dispute.reason === 'duplicate' && {
+					__duplicate_status: duplicateStatus,
+				} ),
 			};
 
 			// Save to the dispute the server returned, not the ID from the page URL.
@@ -697,12 +740,6 @@ export default ( { query }: { query: { id: string } } ) => {
 			handleSaveError( err, submit );
 		}
 	};
-
-	// --- Read-only logic ---
-	const readOnly =
-		dispute &&
-		dispute.status !== 'needs_response' &&
-		dispute.status !== 'warning_needs_response';
 
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {

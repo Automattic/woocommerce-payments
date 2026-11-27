@@ -182,45 +182,64 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * Add the Pay for order params to the JS config.
 	 */
 	public function add_pay_for_order_params_to_js_config() {
-		global $wp;
-		$order_id = $wp->query_vars['order-pay'] ?? null;
-
-		if ( ! $order_id ) {
+		// phpcs:disable WordPress.Security.NonceVerification
+		if ( ! isset( $_GET['pay_for_order'] ) ) {
 			return;
 		}
 
-		$order = wc_get_order( $order_id );
+		// This runs on wp_enqueue_scripts, before WooCommerce checks the key on the_content, and
+		// the config is printed in the page head. Without the key, the visitor gets no order data.
+		$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-		// phpcs:disable WordPress.Security.NonceVerification
-		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id ) ) {
-			add_filter(
-				'wcpay_payment_fields_js_config',
-				function ( $js_config ) use ( $order ) {
-					$session       = wc()->session;
-					$session_email = '';
-
-					if ( is_a( $session, WC_Session::class ) ) {
-						$customer      = $session->get( 'customer' );
-						$session_email = is_array( $customer ) && isset( $customer['email'] ) ? $customer['email'] : '';
-					}
-
-					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email', FILTER_SANITIZE_EMAIL ) ) ) : $session_email;
-
-					$js_config['order_id'] = $order->get_id();
-					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
-					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-					$js_config['key']           = sanitize_text_field( wp_unslash( $_GET['key'] ) );
-					$js_config['billing_email'] = current_user_can( 'read_private_shop_orders' ) ||
-						( get_current_user_id() !== 0 && $order->get_customer_id() === get_current_user_id() )
-						? $order->get_billing_email()
-						: $user_email;
-
-					return $js_config;
-				}
-			);
+		if ( null === $order ) {
+			return;
 		}
+
+		if ( $this->may_see_order_billing_email( $order ) ) {
+			$billing_email = $order->get_billing_email();
+		} else {
+			$session       = wc()->session;
+			$session_email = '';
+
+			if ( is_a( $session, WC_Session::class ) ) {
+				$customer      = $session->get( 'customer' );
+				$session_email = is_array( $customer ) && isset( $customer['email'] ) ? $customer['email'] : '';
+			}
+
+			$billing_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email', FILTER_SANITIZE_EMAIL ) ) ) : $session_email;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$pay_for_order = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
 		// phpcs:enable WordPress.Security.NonceVerification
+
+		add_filter(
+			'wcpay_payment_fields_js_config',
+			function ( $js_config ) use ( $order, $pay_for_order, $billing_email ) {
+				$js_config['order_id']      = $order->get_id();
+				$js_config['pay_for_order'] = $pay_for_order;
+				// The link's key matched this exactly.
+				$js_config['key']           = $order->get_order_key();
+				$js_config['billing_email'] = $billing_email;
+
+				return $js_config;
+			}
+		);
+	}
+
+	/**
+	 * Whether the pay page may give the visitor the order's billing email.
+	 *
+	 * The express checkout and WooPay buttons load the order from the Store API, which wants a
+	 * guest order's billing email on every request. See WC_Payments_Utils::may_see_order_billing_details().
+	 * This prints in the page head, before WooCommerce checks the visitor, so a check that can't run says no.
+	 *
+	 * @param WC_Order $order The order, already authorized by its key.
+	 *
+	 * @return bool
+	 */
+	private function may_see_order_billing_email( WC_Order $order ): bool {
+		return WC_Payments_Utils::may_see_order_billing_details( $order );
 	}
 
 	/**

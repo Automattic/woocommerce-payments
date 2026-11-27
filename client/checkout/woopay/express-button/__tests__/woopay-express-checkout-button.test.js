@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { screen, render, waitFor } from '@testing-library/react';
+import { act, screen, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -14,12 +14,14 @@ import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ) )
 );
 jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
-	showErrorMessage: () => null,
+	...jest.requireActual( 'wcpay/checkout/woopay/express-button/utils' ),
+	showErrorMessage: jest.fn(),
 } ) );
 jest.mock( 'wcpay/checkout/woopay/connect/woopay-connect-iframe', () => ( {
 	WooPayConnectIframe: () => null,
@@ -83,6 +85,12 @@ jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
 global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );
 
+const runPendingTimersAndPromises = async () => {
+	await act( async () => {
+		jest.runAllTimers();
+	} );
+};
+
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
 		type: 'default',
@@ -104,6 +112,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 	afterEach( () => {
 		jest.clearAllMocks();
+		jest.useRealTimers();
 	} );
 
 	test( 'renders as a link when first-party auth is enabled', () => {
@@ -203,6 +212,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 	} );
 
 	test( 'does not prefetch session data by default', async () => {
+		jest.useFakeTimers();
 		getConfig.mockImplementation( ( v ) => {
 			switch ( v ) {
 				case 'wcAjaxUrl':
@@ -229,10 +239,9 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		await waitFor( () => {
-			expect( request ).not.toHaveBeenCalled();
-			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
-		} );
+		await runPendingTimersAndPromises();
+		expect( request ).not.toHaveBeenCalled();
+		expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 	} );
 
 	test( 'should request session data on button click', async () => {
@@ -281,6 +290,76 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 	} );
 
+	describe( 'when the store refuses the session', () => {
+		const STORE_MESSAGE =
+			'WooPay couldn’t load this order. Please reload the page and try again.';
+
+		const clickButton = async ( context ) => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ {
+						...buttonSettings,
+						context,
+					} }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+				/>
+			);
+
+			await userEvent.click(
+				screen.queryByRole( 'link', { name: 'WooPay' } )
+			);
+		};
+
+		test( "shows the store's message", async () => {
+			request.mockResolvedValueOnce( {
+				success: false,
+				data: STORE_MESSAGE,
+				code: 'woopay_pay_for_order_unavailable',
+			} );
+
+			await clickButton( 'pay_for_order' );
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'pay_for_order',
+					'WooPay couldn’t load this order. Please reload the page and try again.'
+				);
+			} );
+		} );
+
+		test( 'keeps the generic message for other refusals, such as an expired nonce', async () => {
+			request.mockResolvedValueOnce( {
+				success: false,
+				data: 'You aren’t authorized to do that.',
+			} );
+
+			await clickButton( 'pay_for_order' );
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'pay_for_order',
+					'Something went wrong. Please try again.'
+				);
+			} );
+		} );
+
+		test( 'shows a generic message when the store sends none', async () => {
+			request.mockResolvedValueOnce( {} );
+
+			await clickButton( 'pay_for_order' );
+
+			await waitFor( () => {
+				expect( showErrorMessage ).toHaveBeenCalledWith(
+					'pay_for_order',
+					'Something went wrong. Please try again.'
+				);
+			} );
+		} );
+	} );
+
 	test( 'call `expressCheckoutIframe` on button click when `isPreview` is false', async () => {
 		getConfig.mockImplementation( ( v ) => {
 			return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
@@ -308,6 +387,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 	} );
 
 	test( 'should not call `expressCheckoutIframe` or request session data on button click when `isPreview` is true', async () => {
+		jest.useFakeTimers();
 		render(
 			<WoopayExpressCheckoutButton
 				isPreview={ true }
@@ -323,10 +403,9 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 		await userEvent.click( expressButton );
 
-		await waitFor( () => {
-			expect( request ).not.toHaveBeenCalled();
-			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
-		} );
+		await runPendingTimersAndPromises();
+		expect( request ).not.toHaveBeenCalled();
+		expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 	} );
 
 	describe( 'Preferred Card Display', () => {
@@ -483,6 +562,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 	describe( 'Product Page', () => {
 		test( 'does not prefetch session data by default', async () => {
+			jest.useFakeTimers();
 			render(
 				<WoopayExpressCheckoutButton
 					isPreview={ false }
@@ -493,9 +573,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			await waitFor( () => {
-				expect( request ).not.toHaveBeenCalled();
-			} );
+			await runPendingTimersAndPromises();
+			expect( request ).not.toHaveBeenCalled();
 		} );
 
 		test( 'should show an alert when clicking the button when add to cart button is disabled', async () => {
@@ -572,6 +651,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 
 		test( 'do not call `addToCart` on express button click on product page when validation fails', async () => {
+			jest.useFakeTimers();
 			getConfig.mockImplementation( ( v ) => {
 				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 			} );
@@ -597,9 +677,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 			expect( mockAddToCart ).not.toHaveBeenCalled();
 
-			await waitFor( () => {
-				expect( expressCheckoutIframe ).not.toHaveBeenCalled();
-			} );
+			await runPendingTimersAndPromises();
+			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
 } );

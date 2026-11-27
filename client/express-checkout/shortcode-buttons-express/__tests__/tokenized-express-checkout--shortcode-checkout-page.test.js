@@ -29,6 +29,11 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', () => {
 	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
+		// The Stripe.js origin check needs a genuine tag before Stripe is created.
+		const stripeJsTag = document.createElement( 'script' );
+		stripeJsTag.id = 'stripe-js';
+		stripeJsTag.src = 'https://js.stripe.com/v3/';
+		document.head.appendChild( stripeJsTag );
 		apiFetch.mockClear();
 		apiFetch.mockImplementation( async () =>
 			Promise.resolve( {
@@ -114,6 +119,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 	afterEach( async () => {
 		delete global.Stripe;
+		document.getElementById( 'stripe-js' )?.remove();
 		// removing all the registered event handlers so they don't leak between tests.
 		global.$( document.body ).off();
 	} );
@@ -124,7 +130,10 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
+		$( document.body ).trigger( 'updated_checkout' );
+		await new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
 
+		expect( apiFetch ).not.toHaveBeenCalled();
 		expect( global.Stripe ).not.toHaveBeenCalled();
 		expect( recordUserEvent ).not.toHaveBeenCalled();
 		expect(
@@ -652,6 +661,127 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			await refresh();
 
 			expect( global.jQuery.unblockUI ).not.toHaveBeenCalled();
+		} );
+
+		it( 'should reject address and rate changes from a sheet still open on the old button', async () => {
+			openWallet();
+			const onStaleAddressChange = stripeElementMock.__getRegisteredEvent(
+				'shippingaddresschange'
+			);
+			const onStaleRateChange =
+				stripeElementMock.__getRegisteredEvent( 'shippingratechange' );
+			await refresh();
+			const newElements = stripeInstance.elements.mock.results[ 1 ].value;
+			newElements.update = jest.fn();
+			apiFetch.mockClear();
+			const addressEvent = {
+				name: 'Jane Doe',
+				address: { country: 'US', postal_code: '94110' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+			const rateEvent = {
+				shippingRate: { id: 'flat_rate:1' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+
+			await onStaleAddressChange( addressEvent );
+			await onStaleRateChange( rateEvent );
+
+			expect( addressEvent.reject ).toHaveBeenCalledTimes( 1 );
+			expect( addressEvent.resolve ).not.toHaveBeenCalled();
+			expect( rateEvent.reject ).toHaveBeenCalledTimes( 1 );
+			expect( rateEvent.resolve ).not.toHaveBeenCalled();
+			expect( apiFetch ).not.toHaveBeenCalled();
+			expect( newElements.update ).not.toHaveBeenCalled();
+			expect(
+				screen.getByText(
+					'Please reopen the payment window and try again.'
+				)
+			).toBeInTheDocument();
+		} );
+
+		it( 'should not place an order from a sheet still open on the old button', async () => {
+			openWallet();
+			const onStaleConfirm =
+				stripeElementMock.__getRegisteredEvent( 'confirm' );
+			await refresh();
+			const newElements = stripeInstance.elements.mock.results[ 1 ].value;
+			newElements.submit = jest.fn( () => Promise.resolve( {} ) );
+			apiFetch.mockClear();
+			const confirmEvent = { paymentFailed: jest.fn() };
+
+			await onStaleConfirm( confirmEvent );
+
+			expect( newElements.submit ).not.toHaveBeenCalled();
+			expect( apiFetch ).not.toHaveBeenCalled();
+			expect( confirmEvent.paymentFailed ).toHaveBeenCalledTimes( 1 );
+			expect(
+				screen.getByText(
+					'Please reopen the payment window and try again.'
+				)
+			).toBeInTheDocument();
+		} );
+
+		it( 'should handle address, rate and payment events from the current button', async () => {
+			const currentElements =
+				stripeInstance.elements.mock.results[ 0 ].value;
+			currentElements.update = jest.fn();
+			currentElements.submit = jest.fn( () =>
+				Promise.resolve( { error: { message: 'Submit failed' } } )
+			);
+			openWallet();
+			apiFetch.mockClear();
+			const addressEvent = {
+				name: 'Jane Doe',
+				address: { country: 'US', postal_code: '94110' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+			const rateEvent = {
+				shippingRate: { id: 'flat_rate:1' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+			const confirmEvent = { paymentFailed: jest.fn() };
+
+			await stripeElementMock.__getRegisteredEvent(
+				'shippingaddresschange'
+			)( addressEvent );
+			await stripeElementMock.__getRegisteredEvent(
+				'shippingratechange'
+			)( rateEvent );
+			await stripeElementMock.__getRegisteredEvent( 'confirm' )(
+				confirmEvent
+			);
+
+			expect( addressEvent.resolve ).toHaveBeenCalledTimes( 1 );
+			expect( addressEvent.reject ).not.toHaveBeenCalled();
+			expect( rateEvent.resolve ).toHaveBeenCalledTimes( 1 );
+			expect( rateEvent.reject ).not.toHaveBeenCalled();
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					path: expect.stringContaining(
+						'/wc/store/v1/cart/update-customer'
+					),
+				} )
+			);
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					path: expect.stringContaining(
+						'/wc/store/v1/cart/select-shipping-rate'
+					),
+				} )
+			);
+			expect( currentElements.update ).toHaveBeenCalledTimes( 2 );
+			expect( currentElements.submit ).toHaveBeenCalledTimes( 1 );
+			expect( confirmEvent.paymentFailed ).not.toHaveBeenCalled();
+			expect(
+				screen.queryByText(
+					'Please reopen the payment window and try again.'
+				)
+			).not.toBeInTheDocument();
 		} );
 
 		it( 'should still mount the new button when Stripe already destroyed the old one', async () => {

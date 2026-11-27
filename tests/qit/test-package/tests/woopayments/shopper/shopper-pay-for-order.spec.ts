@@ -66,12 +66,9 @@ test.describe(
 					);
 					await shopper.placeOrder( shopperPage );
 
-					// Error message can vary between "Your card was declined" and "Your payment was not processed"
 					await expect(
 						shopperPage
-							.getByText(
-								/Your card was declined|Your payment was not processed/
-							)
+							.getByText( 'Your card was declined' )
 							.first()
 					).toBeVisible();
 

@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\{ Amount_Too_Small_Exception, API_Exception, Connection_Exception };
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
+use WCPay\Constants\Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -966,6 +967,41 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Get the selected BNPL methods whose account capability is active.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway WooPayments gateway.
+	 * @return string[] Active BNPL payment method IDs.
+	 */
+	public static function get_active_bnpl_payment_method_ids( WC_Payment_Gateway_WCPay $gateway ): array {
+		$enabled_bnpl_methods = array_intersect(
+			$gateway->get_upe_enabled_payment_method_ids(),
+			Payment_Method::BNPL_PAYMENT_METHODS
+		);
+
+		if ( [] === $enabled_bnpl_methods ) {
+			return [];
+		}
+
+		$statuses           = $gateway->get_upe_enabled_payment_method_statuses();
+		$capability_key_map = $gateway->get_payment_method_capability_key_map();
+
+		return array_values(
+			array_filter(
+				$enabled_bnpl_methods,
+				static function ( $payment_method_id ) use ( $statuses, $capability_key_map ) {
+					$capability_key = $capability_key_map[ $payment_method_id ] ?? null;
+
+					if ( null === $capability_key ) {
+						return false;
+					}
+
+					return 'active' === ( $statuses[ $capability_key ]['status'] ?? null );
+				}
+			)
+		);
+	}
+
+	/**
 	 * Check if any BNPL method is available for a given country, currency, and price.
 	 *
 	 * @param array  $enabled_methods Array of enabled BNPL methods.
@@ -1445,6 +1481,9 @@ class WC_Payments_Utils {
 	 * The WooCommerce Stripe Gateway registers Stripe.js under the same handle, so a store running both
 	 * plugins only loads it once, from whichever plugin registers first. With the Dahlia flag on, the URL
 	 * and the (empty) version match what that plugin registers, so either way the page gets the same tag.
+	 *
+	 * The origin check's off switch rides on the handle as an inline flag, so it reaches every page
+	 * that loads Stripe.js whichever plugin registered it.
 	 */
 	public static function register_stripe_js() {
 		wp_register_script(
@@ -1454,6 +1493,31 @@ class WC_Payments_Utils {
 			WC_Payments_Features::is_stripe_js_dahlia_enabled() ? null : '3.0',
 			true
 		);
+
+		/**
+		 * Filters whether checkout verifies that Stripe.js was served from js.stripe.com.
+		 *
+		 * Return false when a script optimizer rewrites the Stripe.js tag and the check blocks checkout.
+		 *
+		 * @since 11.4.0
+		 *
+		 * @param bool $enforce Whether to enforce the check. Default true.
+		 */
+		$enforce = apply_filters( 'wcpay_enforce_stripe_js_origin', true );
+
+		// Only a strict false turns the check off, so a callback returning nothing leaves it on.
+		if ( false !== $enforce ) {
+			return;
+		}
+
+		// Checkout, blocks and express checkout all register the handle on one request.
+		$flag   = 'window.wcpayStripeJsOriginCheckDisabled = true;';
+		$before = wp_scripts()->get_data( 'stripe', 'before' );
+		if ( is_array( $before ) && in_array( $flag, $before, true ) ) {
+			return;
+		}
+
+		wp_add_inline_script( 'stripe', $flag, 'before' );
 	}
 
 	/**
@@ -1469,25 +1533,113 @@ class WC_Payments_Utils {
 		// Not get_query_var(): a secondary WP_Query left unreset would hide the routed request's
 		// own order. `??` because $wp is unset off a routed request, e.g. cron and WP-CLI.
 		global $wp;
-		$order = wc_get_order( absint( $wp->query_vars['order-pay'] ?? 0 ) );
 
-		// The ID comes from the URL, so it can resolve to a refund, which has no order key.
-		if ( ! $order instanceof WC_Order ) {
+		// WooCommerce reads `?order-pay=` on every page, but only its pay page checks who may see the order.
+		// Adding a payment method never pays one. Not is_add_payment_method_page(): any page with
+		// the My Account shortcode renders that form.
+		if ( is_wc_endpoint_url( 'add-payment-method' ) ) {
 			return null;
 		}
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
-		// is_string() first: wc_clean() hands back an array for ?key[]=x, and key_is_valid() fatals on one.
-		if ( ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
-			return null;
-		}
-
-		if ( ! $order->key_is_valid( wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
-			return null;
-		}
+		$key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : null;
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
+		return self::get_authorized_pay_for_order( $wp->query_vars['order-pay'] ?? 0, $key );
+	}
+
+	/**
+	 * Returns the order a caller may pay, given the order ID and key from its payment link.
+	 *
+	 * For requests that carry the payment link's order ID and key in their own parameters
+	 * rather than in the routed URL. See get_authorized_order_from_payment_link() for why
+	 * the key is required.
+	 *
+	 * @param mixed $order_id The order ID from the payment link.
+	 * @param mixed $key      The order key from the payment link.
+	 *
+	 * @return WC_Order|null Null when the caller may not pay that order.
+	 */
+	public static function get_authorized_pay_for_order( $order_id, $key ): ?WC_Order {
+		// key_is_valid() fatals on anything but a string, and ?key[]=x arrives as an array.
+		if ( ! is_string( $key ) ) {
+			return null;
+		}
+
+		$order = wc_get_order( absint( $order_id ) );
+
+		// The ID comes from the caller, so it can resolve to a refund, which has no order key.
+		if ( ! $order instanceof WC_Order ) {
+			return null;
+		}
+
+		if ( ! $order->key_is_valid( $key ) ) {
+			return null;
+		}
+
 		return current_user_can( 'pay_for_order', $order->get_id() ) ? $order : null;
+	}
+
+	/**
+	 * Whether the visitor may see the billing details and total of an order they hold the payment link for.
+	 *
+	 * Follows WooCommerce's pay page, which shows a guest order's pay form without asking for
+	 * the email in the first minutes after the order is created, or when the merchant turns email
+	 * verification off. Its order-received page shows the billing details under the same rule.
+	 * Orders that no longer need payment get no pay form, so no details.
+	 *
+	 * @param WC_Order    $order          The order, already authorized by its key.
+	 * @param string|null $supplied_email The email the visitor proved on WooCommerce's verify form, if any.
+	 * @param bool        $if_unchecked   The answer when WooCommerce's email check is missing (before 8.6) or fails.
+	 *
+	 * @return bool
+	 */
+	public static function may_see_order_billing_details( WC_Order $order, ?string $supplied_email = null, bool $if_unchecked = false ): bool {
+		if ( current_user_can( 'read_private_shop_orders' ) ) {
+			return true;
+		}
+
+		if ( 0 !== get_current_user_id() && $order->get_customer_id() === get_current_user_id() ) {
+			return true;
+		}
+
+		if ( ! $order->needs_payment() ) {
+			return false;
+		}
+
+		try {
+			// WooCommerce 8.6+.
+			return ! \Automattic\WooCommerce\Internal\Utilities\Users::should_user_verify_order_email( $order->get_id(), $supplied_email, 'order-pay' );
+		} catch ( \Throwable $e ) {
+			// Users is internal to WooCommerce and may change, and its filters run third-party code.
+			return $if_unchecked;
+		}
+	}
+
+	/**
+	 * The email posted from WooCommerce's verify-email form, which shows the pay form on the same request.
+	 *
+	 * @return string|null Null when the request isn't a submission of that form.
+	 */
+	public static function get_email_from_verify_form(): ?string {
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- the nonce is only compared, the email is sanitized below.
+		$nonce        = wp_unslash( $_POST['check_submission'] ?? '' );
+		$posted_email = wp_unslash( $_POST['email'] ?? '' );
+		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( ! is_string( $nonce ) ) {
+			return null;
+		}
+
+		if ( ! is_string( $posted_email ) ) {
+			return null;
+		}
+
+		if ( ! wp_verify_nonce( $nonce, 'wc_verify_email' ) ) {
+			return null;
+		}
+
+		return sanitize_email( $posted_email );
 	}
 
 	/**
