@@ -1096,14 +1096,16 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider provider_upload_file_over_site_limit
 	 *
-	 * @param array $file_params The file params PHP gives the request.
+	 * @param array  $file_params The file params PHP gives the request.
+	 * @param string $ini_setting The PHP setting that rejected the file.
 	 */
-	public function test_upload_file_over_site_limit_names_the_limit( array $file_params ) {
-		$upload_limit = 1024 * 1024;
-		$limit_filter = function () use ( $upload_limit ) {
-			return $upload_limit;
+	public function test_upload_file_over_site_limit_names_the_limit( array $file_params, string $ini_setting ) {
+		// Multisite media quotas lower wp_max_upload_size() but don't apply to evidence.
+		$media_quota_filter = function () {
+			return 1;
 		};
-		add_filter( 'upload_size_limit', $limit_filter );
+		add_filter( 'upload_size_limit', $media_quota_filter );
+		$php_limit = size_format( wp_convert_hr_to_bytes( ini_get( $ini_setting ) ) );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_file_params( $file_params );
@@ -1114,17 +1116,17 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->payments_api_client->upload_file( $request );
 			$this->fail( 'Expected an API_Exception.' );
 		} catch ( API_Exception $e ) {
-			$this->assertSame( 'This file exceeds the maximum upload size of 1 MB for this site.', $e->getMessage() );
+			$this->assertSame( "This file exceeds the maximum upload size of $php_limit for this site.", $e->getMessage() );
 			$this->assertSame( 'wcpay_evidence_file_max_size', $e->get_error_code() );
 		} finally {
-			remove_filter( 'upload_size_limit', $limit_filter );
+			remove_filter( 'upload_size_limit', $media_quota_filter );
 		}
 	}
 
 	public function provider_upload_file_over_site_limit(): array {
 		return [
-			'over upload_max_filesize' => [ [ 'file' => [ 'error' => UPLOAD_ERR_INI_SIZE ] ] ],
-			'over post_max_size'       => [ [] ],
+			'over upload_max_filesize' => [ [ 'file' => [ 'error' => UPLOAD_ERR_INI_SIZE ] ], 'upload_max_filesize' ],
+			'over post_max_size'       => [ [], 'post_max_size' ],
 		];
 	}
 

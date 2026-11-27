@@ -808,7 +808,7 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 			return mockCreateErrorNotice;
 		};
 
-		it( 'shows the error message as it is', async () => {
+		it( "shows the plugin's own error message as it is", async () => {
 			uploadError(
 				'wcpay_evidence_file_max_size',
 				'This file exceeds the maximum upload size of 1 MB for this site.'
@@ -818,6 +818,19 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 
 			expect( createErrorNotice ).toHaveBeenCalledWith(
 				'This file exceeds the maximum upload size of 1 MB for this site.'
+			);
+		} );
+
+		it( "prefixes an error the plugin didn't write", async () => {
+			uploadError(
+				'invalid_json',
+				'The response is not a valid JSON response.'
+			);
+
+			const createErrorNotice = await uploadFile();
+
+			expect( createErrorNotice ).toHaveBeenCalledWith(
+				'Failed to upload file. (The response is not a valid JSON response.)'
 			);
 		} );
 	} );

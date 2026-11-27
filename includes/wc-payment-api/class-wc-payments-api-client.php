@@ -858,11 +858,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$file_error = empty( $file_params ) ? UPLOAD_ERR_INI_SIZE : $file_params['file']['error'];
 
 		if ( UPLOAD_ERR_INI_SIZE === $file_error ) {
+			// Name the PHP limit that rejected the file. wp_max_upload_size() is also capped by
+			// multisite media quotas, which don't apply to evidence because it goes to Stripe.
+			$limit = wp_convert_hr_to_bytes( (string) ini_get( empty( $file_params ) ? 'post_max_size' : 'upload_max_filesize' ) );
 			throw new API_Exception(
 				sprintf(
 					/* translators: %s: the site's maximum upload size, such as "2 MB". */
 					__( 'This file exceeds the maximum upload size of %s for this site.', 'woocommerce-payments' ),
-					size_format( wp_max_upload_size() )
+					size_format( $limit )
 				),
 				'wcpay_evidence_file_max_size',
 				400
@@ -870,6 +873,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		if ( UPLOAD_ERR_OK !== $file_error ) {
+			// Some of these, such as a missing temp folder, are host problems that retrying won't fix.
+			Logger::warning( 'Dispute evidence upload failed with PHP upload error ' . $file_error );
 			throw new API_Exception(
 				__( "The file couldn't be uploaded. Please try again.", 'woocommerce-payments' ),
 				'wcpay_evidence_file_php_upload_error',
