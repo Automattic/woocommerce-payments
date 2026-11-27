@@ -279,4 +279,102 @@ class WC_Payments_Payment_Method_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->payment_method_service->get_card_info( $original_card_info, $order );
 	}
+
+	public function test_get_card_info_refetches_details_cached_for_another_payment_method() {
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'get_payment_method' )->willReturn( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( 'pm_new_card' );
+
+		$this->mock_order_service
+			->method( 'get_payment_method_details' )
+			->willReturn(
+				[
+					'id'   => 'pm_old_card',
+					'type' => 'card',
+					'card' => [
+						'brand' => 'mastercard',
+						'last4' => '4444',
+					],
+				]
+			);
+
+		$new_payment_method_details = [
+			'id'   => 'pm_new_card',
+			'type' => 'card',
+			'card' => [
+				'brand' => 'visa',
+				'last4' => '0341',
+			],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( 'pm_new_card' )
+			->willReturn( $new_payment_method_details );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'store_payment_method_details' )
+			->with( $order, $new_payment_method_details );
+
+		$result = $this->payment_method_service->get_card_info( [], $order );
+
+		$this->assertSame(
+			[
+				'brand' => 'visa',
+				'last4' => '0341',
+			],
+			$result
+		);
+	}
+
+	/**
+	 * @dataProvider provider_cached_details_kept
+	 */
+	public function test_get_card_info_keeps_cached_details( $cached_payment_method_id ) {
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'get_payment_method' )->willReturn( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->method( 'get_meta' )
+			->with( '_payment_method_id' )
+			->willReturn( 'pm_current_card' );
+
+		$payment_method_details = [
+			'type' => 'card',
+			'card' => [
+				'brand' => 'visa',
+				'last4' => '4242',
+			],
+		];
+		if ( null !== $cached_payment_method_id ) {
+			$payment_method_details['id'] = $cached_payment_method_id;
+		}
+
+		$this->mock_order_service
+			->method( 'get_payment_method_details' )
+			->willReturn( $payment_method_details );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_payment_method' );
+
+		$result = $this->payment_method_service->get_card_info( [], $order );
+
+		$this->assertSame(
+			[
+				'brand' => 'visa',
+				'last4' => '4242',
+			],
+			$result
+		);
+	}
+
+	public function provider_cached_details_kept(): array {
+		return [
+			'same payment method'          => [ 'pm_current_card' ],
+			'charge details without an ID' => [ null ],
+		];
+	}
 }

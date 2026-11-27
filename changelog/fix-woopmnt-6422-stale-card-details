@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop a renewal order showing a card the customer replaced or deleted.

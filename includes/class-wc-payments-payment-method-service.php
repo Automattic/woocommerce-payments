@@ -69,8 +69,16 @@ class WC_Payments_Payment_Method_Service {
 		}
 
 		$payment_method_details = $this->order_service->get_payment_method_details( $order );
+		$payment_method_id      = $order->get_meta( '_payment_method_id' );
+
+		// A subscription can move to another card after its details were cached.
+		// A charge's details have no ID and always describe the card that paid, so they stay.
+		$cached_payment_method_id = $payment_method_details['id'] ?? null;
+		if ( $cached_payment_method_id && $payment_method_id && $cached_payment_method_id !== $payment_method_id ) {
+			$payment_method_details = null;
+		}
+
 		if ( ! $payment_method_details ) {
-			$payment_method_id = $order->get_meta( '_payment_method_id' );
 			if ( ! $payment_method_id ) {
 				return $card_info;
 			}
