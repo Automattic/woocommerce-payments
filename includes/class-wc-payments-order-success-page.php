@@ -10,6 +10,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Status;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 
 /**
  * Class handling order success page.
@@ -38,6 +39,7 @@ class WC_Payments_Order_Success_Page {
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'replace_order_received_text_for_failed_orders' ], 11 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 		add_action( 'woocommerce_email_order_details', [ $this, 'add_multibanco_payment_instructions_to_order_on_hold_email' ], 10, 4 );
+		add_filter( 'woocommerce_get_order_item_totals', [ $this, 'show_link_funding_source_in_order_totals' ], 10, 2 );
 		add_action( 'wp_footer', [ $this, 'output_footer_scripts' ] );
 	}
 
@@ -205,6 +207,7 @@ class WC_Payments_Order_Success_Page {
 		// Link payments go through the card gateway (woocommerce_payments), so the gateway's
 		// payment method is 'card'. Detect Link from the stored payment method details, or from
 		// the order's last payment token for orders without them.
+		$funding_source_label = null;
 		if ( Payment_Method::CARD === $payment_method->get_id() ) {
 			$payment_method_details = WC_Payments::get_order_service()->get_payment_method_details( $order );
 			$is_link                = Payment_Method::LINK === ( $payment_method_details['type'] ?? null );
@@ -214,7 +217,8 @@ class WC_Payments_Order_Success_Page {
 			}
 			$link_pm = $is_link ? WC_Payments::get_payment_method_by_id( Payment_Method::LINK ) : null;
 			if ( $link_pm ) {
-				$payment_method = $link_pm;
+				$payment_method       = $link_pm;
+				$funding_source_label = LinkDefinition::get_funding_source_label( $payment_method_details );
 			}
 		}
 
@@ -224,7 +228,7 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		// If this is an LPM (BNPL or local payment method) order, return the html for the payment method name.
-		$name_output = $this->show_lpm_payment_method_name( $gateway, $payment_method );
+		$name_output = $this->show_lpm_payment_method_name( $gateway, $payment_method, $funding_source_label );
 
 		if ( false !== $name_output ) {
 			return $name_output;
@@ -330,10 +334,11 @@ class WC_Payments_Order_Success_Page {
 	 *
 	 * @param WC_Payment_Gateway_WCPay                 $gateway the gateway being shown.
 	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
+	 * @param string|null                              $label optional text shown after the logo.
 	 *
 	 * @return string|false
 	 */
-	public function show_lpm_payment_method_name( $gateway, $payment_method ) {
+	public function show_lpm_payment_method_name( $gateway, $payment_method, $label = null ) {
 		$account_country = $gateway->get_account_country();
 		$method_logo_url = apply_filters_deprecated(
 			'wc_payments_thank_you_page_bnpl_payment_method_logo_url',
@@ -370,6 +375,11 @@ class WC_Payments_Order_Success_Page {
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-lpm-logo wc-payment-lpm-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
 			<img alt="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" title="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<?php
+			if ( is_string( $label ) ) {
+				echo esc_html( $label );
+			}
+			?>
 		</div>
 		<?php
 		return ob_get_clean();
@@ -590,6 +600,38 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Shows what funded a Link payment in the order totals' "Payment method" row.
+	 * The row is used by emails, the order received page and My account > Orders.
+	 *
+	 * @param array|mixed    $total_rows The order totals rows.
+	 * @param WC_Order|mixed $order      The order.
+	 *
+	 * @return array|mixed
+	 */
+	public function show_link_funding_source_in_order_totals( $total_rows, $order ) {
+		if ( ! isset( $total_rows['payment_method']['value'] ) ) {
+			return $total_rows;
+		}
+
+		if ( ! $order instanceof WC_Order ) {
+			return $total_rows;
+		}
+
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $order->get_payment_method() ) {
+			return $total_rows;
+		}
+
+		$payment_method_details = WC_Payments::get_order_service()->get_payment_method_details( $order );
+		if ( null === LinkDefinition::get_funding_source( $payment_method_details ) ) {
+			return $total_rows;
+		}
+
+		$total_rows['payment_method']['value'] = LinkDefinition::get_title_with_funding_source( $this->get_account_country(), $payment_method_details );
+
+		return $total_rows;
 	}
 
 	/**

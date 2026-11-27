@@ -18,6 +18,9 @@ use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
  */
 class LinkDefinition implements PaymentMethodDefinitionInterface {
 
+	const FUNDING_SOURCE_BANK_ACCOUNT = 'bank_account';
+	const FUNDING_SOURCE_CARD         = 'card';
+
 	/**
 	 * Get the internal ID for the payment method
 	 *
@@ -79,6 +82,71 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_title_from_charge_details( string $_unused_account_country, array $_unused_payment_details ): ?string {
 		return null;
+	}
+
+	/**
+	 * Returns what funded a Link payment, from the charge's `funding_source_group`.
+	 * Stripe documents fixed codes per Link group; any other group (Klarna, stablecoins, new ones) returns null.
+	 *
+	 * @param array|null $payment_method_details The payment method details from the Stripe charge.
+	 *
+	 * @return string|null `bank_account`, `card`, or null when unknown.
+	 */
+	public static function get_funding_source( ?array $payment_method_details ): ?string {
+		$funding_source_group = $payment_method_details['link']['funding_source_group']
+			?? $payment_method_details['card']['wallet']['link']['funding_source_group']
+			?? null;
+
+		switch ( $funding_source_group ) {
+			case 'lfsg_000':
+				return self::FUNDING_SOURCE_CARD;
+			case 'lfsg_003':
+				return self::FUNDING_SOURCE_BANK_ACCOUNT;
+			default:
+				return null;
+		}
+	}
+
+	/**
+	 * Get the label for what funded a Link payment, shown next to the Link logo.
+	 *
+	 * @param array|null $payment_method_details The payment method details from the Stripe charge.
+	 *
+	 * @return string|null The label, or null when the funding source is unknown.
+	 */
+	public static function get_funding_source_label( ?array $payment_method_details ): ?string {
+		switch ( self::get_funding_source( $payment_method_details ) ) {
+			case self::FUNDING_SOURCE_BANK_ACCOUNT:
+				return __( 'Bank account', 'woocommerce-payments' );
+			case self::FUNDING_SOURCE_CARD:
+				return __( 'Card', 'woocommerce-payments' );
+			default:
+				return null;
+		}
+	}
+
+	/**
+	 * Get the Link title with what funded the payment, e.g. "Link (bank account)".
+	 * Falls back to the plain title when the funding source is unknown.
+	 *
+	 * @param string|null $account_country        The merchant's account country.
+	 * @param array|null  $payment_method_details The payment method details from the Stripe charge.
+	 *
+	 * @return string
+	 */
+	public static function get_title_with_funding_source( ?string $account_country, ?array $payment_method_details ): string {
+		$title = self::get_title( $account_country );
+
+		switch ( self::get_funding_source( $payment_method_details ) ) {
+			case self::FUNDING_SOURCE_BANK_ACCOUNT:
+				/* translators: %s: Link brand name (Link or Onelink) */
+				return sprintf( __( '%s (bank account)', 'woocommerce-payments' ), $title );
+			case self::FUNDING_SOURCE_CARD:
+				/* translators: %s: Link brand name (Link or Onelink) */
+				return sprintf( __( '%s (card)', 'woocommerce-payments' ), $title );
+			default:
+				return $title;
+		}
 	}
 
 	/**

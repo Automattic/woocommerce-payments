@@ -312,7 +312,7 @@ class WC_Payments_Admin {
 			return $title;
 		}
 
-		return LinkDefinition::get_title( $this->wcpay_gateway->get_account_country() );
+		return LinkDefinition::get_title_with_funding_source( $this->wcpay_gateway->get_account_country(), $payment_method_details );
 	}
 
 	/**

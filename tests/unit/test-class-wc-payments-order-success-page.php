@@ -7,6 +7,7 @@
 
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Constants\Country_Code;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Status;
@@ -15,6 +16,11 @@ use WCPay\Constants\Order_Status;
  * WC_Payments_Order_Success_Page unit tests.
  */
 class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
+	const BANK_FUNDED_LINK_DETAILS = [
+		'type' => 'link',
+		'link' => [ 'funding_source_group' => 'lfsg_003' ],
+	];
+
 	/**
 	 * WC_Payments_Order_Success_Page Instance.
 	 *
@@ -220,6 +226,75 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		}
 
 		$this->assertStringContainsString( 'alt="Link"', $result );
+	}
+
+	public function test_show_woocommerce_payments_payment_method_name_shows_link_funding_source() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		WC_Payments::get_order_service()->store_payment_method_details( $order, self::BANK_FUNDED_LINK_DETAILS );
+		$order->save();
+
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		try {
+			$result = $this->payments_order_success_page->show_woocommerce_payments_payment_method_name( 'Card', $order );
+		} finally {
+			remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		}
+
+		$this->assertStringContainsString( 'alt="Link"', $result );
+		$this->assertStringContainsString( 'Bank account', $result );
+	}
+
+	public function test_order_totals_show_link_funding_source() {
+		$this->set_account_country( Country_Code::UNITED_STATES );
+		$order = $this->create_link_order( self::BANK_FUNDED_LINK_DETAILS );
+
+		$totals = $order->get_order_item_totals();
+
+		$this->assertSame( 'Link (bank account)', $totals['payment_method']['value'] );
+	}
+
+	/**
+	 * @dataProvider provider_order_totals_keep_payment_method_title
+	 */
+	public function test_order_totals_keep_payment_method_title( string $payment_method, array $payment_method_details ) {
+		$order = $this->create_link_order( $payment_method_details );
+		$order->set_payment_method( $payment_method );
+		$order->save();
+
+		$totals = $order->get_order_item_totals();
+
+		$this->assertSame( 'Link', $totals['payment_method']['value'] );
+	}
+
+	public function provider_order_totals_keep_payment_method_title(): array {
+		return [
+			'unknown funding source group' => [
+				'woocommerce_payments',
+				[
+					'type' => 'link',
+					'link' => [ 'funding_source_group' => 'lfsg_004' ],
+				],
+			],
+			'no funding source group'      => [ 'woocommerce_payments', [ 'type' => 'link' ] ],
+			'other gateway'                => [ 'cod', self::BANK_FUNDED_LINK_DETAILS ],
+		];
+	}
+
+	/**
+	 * Builds a Link order on the card gateway with the given stored payment method details.
+	 *
+	 * @param array $payment_method_details The charge's payment method details.
+	 * @return WC_Order
+	 */
+	private function create_link_order( array $payment_method_details ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method_title( 'Link' );
+		WC_Payments::get_order_service()->store_payment_method_details( $order, $payment_method_details );
+		$order->save();
+
+		return $order;
 	}
 
 	public function test_show_lpm_payment_method_name() {

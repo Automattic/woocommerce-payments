@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Show whether a Link payment was funded by a bank account or a card on order pages, emails and transaction details.

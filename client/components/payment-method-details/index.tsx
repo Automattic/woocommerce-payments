@@ -4,6 +4,7 @@
  * External dependencies
  */
 import React, { Fragment, ReactNode } from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -23,6 +24,23 @@ const shouldDisplayNetworkOverBrand = ( network?: string ) =>
 	[ 'cartes_bancaires', 'cb', 'eftpos', 'eftpos_au' ].includes(
 		network ?? ''
 	);
+
+/**
+ * Same codes as LinkDefinition::get_funding_source() in PHP.
+ *
+ * @param payment Payment charge object
+ * @return The funding source label, or an empty string when unknown.
+ */
+const getLinkFundingSourceLabel = ( payment: Payment ): string => {
+	switch ( payment.link?.funding_source_group ) {
+		case 'lfsg_000':
+			return __( 'Card', 'woocommerce-payments' );
+		case 'lfsg_003':
+			return __( 'Bank account', 'woocommerce-payments' );
+		default:
+			return '';
+	}
+};
 
 /**
  *
@@ -68,6 +86,14 @@ const formatDetails = ( payment: Payment ): ReactNode => {
 					{ paymentMethod.iban_last4 }
 				</Fragment>
 			);
+		case 'link': {
+			const fundingSourceLabel = getLinkFundingSourceLabel( payment );
+			return fundingSourceLabel ? (
+				<Fragment>&nbsp;{ fundingSourceLabel }</Fragment>
+			) : (
+				<Fragment />
+			);
+		}
 		case 'amazon_pay':
 			return paymentMethod.funding?.card?.last4 ? (
 				<Fragment>
