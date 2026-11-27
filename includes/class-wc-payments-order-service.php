@@ -1453,12 +1453,12 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function set_payment_mode_for_order( WC_Order $order ): void {
-		// Added in WooCommerce 11.4.
+		// Added in WooCommerce 11.5.
 		if ( ! method_exists( $order, 'set_payment_mode' ) ) {
 			return;
 		}
 
-		// Automattic\WooCommerce\Enums\PaymentMode values. The enum doesn't exist before WooCommerce 11.4.
+		// Automattic\WooCommerce\Enums\PaymentMode values. The enum doesn't exist before WooCommerce 11.5.
 		$payment_modes = [
 			Order_Mode::TEST       => 'test',
 			Order_Mode::PRODUCTION => 'live',

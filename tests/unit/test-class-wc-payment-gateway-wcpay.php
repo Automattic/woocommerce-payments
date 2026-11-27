@@ -943,7 +943,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_set_payment_method_title_for_order_keeps_the_payment_mode_on_a_gateway_change() {
 		if ( ! method_exists( WC_Order::class, 'set_payment_mode' ) ) {
-			$this->markTestSkipped( 'WC_Order::set_payment_mode() needs WooCommerce 11.4 or later.' );
+			$this->markTestSkipped( 'WC_Order::set_payment_mode() needs WooCommerce 11.5 or later.' );
 		}
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
