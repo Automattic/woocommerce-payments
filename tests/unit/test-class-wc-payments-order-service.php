@@ -206,6 +206,24 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	];
 
 	/**
+	 * Payment method details of a Link charge.
+	 */
+	const LINK_PAYMENT_METHOD_DETAILS = [
+		'type' => 'link',
+		'link' => [ 'country' => 'US' ],
+	];
+
+	/**
+	 * Intent of a Link authorization that later expired.
+	 */
+	const LINK_ATTEMPT_INTENT_ID = 'pi_test_link_attempt';
+
+	/**
+	 * Intent of a card retry on the same order.
+	 */
+	const CARD_RETRY_INTENT_ID = 'pi_test_card_retry';
+
+	/**
 	 * A timeline captured event, as the platform reports it once WooPayments has refunded its fee.
 	 */
 	const FEE_NOTE_CAPTURED_EVENT = [
@@ -666,12 +684,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_order_paid_with_other_gateway_loses_the_earlier_attempt() {
 		$order = $this->create_order_with_payment_details( self::OTHER_GATEWAY_ID );
 		$this->order_service->set_intention_status_for_order( $order, self::EARLIER_ATTEMPT_INTENT_STATUS );
+		$this->order_service->store_payment_method_details( $order, self::LINK_PAYMENT_METHOD_DETAILS );
 
 		$this->order_service->maybe_remove_payment_details_for_other_gateway( $order );
 
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( '', $order->get_meta( '_stripe_customer_id' ) );
 		$this->assertSame( '', $order->get_meta( '_payment_method_id' ) );
+		$this->assertSame( '', $order->get_meta( '_wcpay_payment_method_details' ) );
 		$this->assertSame( '', $order->get_meta( '_intent_id' ) );
 		$this->assertSame( '', $order->get_meta( '_intention_status' ) );
 		$this->assertSame( '', $order->get_meta( '_wcpay_mode' ) );
@@ -5597,6 +5617,59 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->attach_intent_info_to_order( $this->order, $another_intent );
 
 		$this->assertEquals( Intent_Status::SUCCEEDED, $this->order->get_meta( '_intention_status', true ) );
+	}
+
+	/**
+	 * A retry with no charge yet, such as a card waiting on 3DS, isn't the payment the stored details describe.
+	 */
+	public function test_attach_intent_without_charge_from_a_new_attempt_removes_earlier_payment_method_details() {
+		$link_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::LINK_ATTEMPT_INTENT_ID,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+				'charge' => [ 'payment_method_details' => self::LINK_PAYMENT_METHOD_DETAILS ],
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $link_intent );
+		$card_retry_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::CARD_RETRY_INTENT_ID,
+				'status' => Intent_Status::REQUIRES_ACTION,
+			],
+			false
+		);
+
+		$this->order_service->attach_intent_info_to_order( $this->order, $card_retry_intent );
+
+		$this->assertSame( '', wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_payment_method_details' ) );
+	}
+
+	public function test_attach_same_intent_without_charge_keeps_its_payment_method_details() {
+		$link_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::LINK_ATTEMPT_INTENT_ID,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+				'charge' => [ 'payment_method_details' => self::LINK_PAYMENT_METHOD_DETAILS ],
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $link_intent );
+		$link_intent_without_charge = WC_Helper_Intention::create_intention(
+			[
+				'id'     => self::LINK_ATTEMPT_INTENT_ID,
+				'status' => Intent_Status::REQUIRES_CAPTURE,
+			],
+			false
+		);
+
+		$this->order_service->attach_intent_info_to_order( $this->order, $link_intent_without_charge );
+
+		$this->assertSame(
+			[
+				'type' => 'link',
+				'link' => [ 'country' => 'US' ],
+			],
+			$this->order_service->get_payment_method_details( wc_get_order( $this->order->get_id() ) )
+		);
 	}
 
 	/**

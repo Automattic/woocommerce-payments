@@ -1494,6 +1494,7 @@ class WC_Payments_Order_Service {
 
 		$order->delete_meta_data( self::CUSTOMER_ID_META_KEY );
 		$order->delete_meta_data( self::PAYMENT_METHOD_ID_META_KEY );
+		$order->delete_meta_data( self::PAYMENT_METHOD_DETAILS_META_KEY );
 		$order->delete_meta_data( self::INTENT_ID_META_KEY );
 		$order->delete_meta_data( self::INTENTION_STATUS_META_KEY );
 		$order->delete_meta_data( self::WCPAY_MODE_META_KEY );
@@ -2391,6 +2392,11 @@ class WC_Payments_Order_Service {
 		$payment_transaction_id = $payment_transaction['id'] ?? '';
 		$outcome                = $charge ? $charge->get_outcome() : null;
 		$risk_level             = $outcome ? $outcome['risk_level'] : null;
+
+		// Without a charge, a new intent would keep showing an earlier attempt's details.
+		if ( null === $charge && $intent_id !== $this->get_intent_id_for_order( $order ) ) {
+			$order->delete_meta_data( self::PAYMENT_METHOD_DETAILS_META_KEY );
+		}
 
 		// next, save it in order meta.
 		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id, $risk_level );
