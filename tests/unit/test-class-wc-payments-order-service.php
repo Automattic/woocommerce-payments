@@ -2468,15 +2468,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Skips a test that needs WC_Order::set_payment_mode(), added in WooCommerce 11.5.
-	 */
-	private function skip_without_payment_mode(): void {
-		if ( ! method_exists( WC_Order::class, 'set_payment_mode' ) ) {
-			$this->markTestSkipped( 'WC_Order::set_payment_mode() needs WooCommerce 11.5 or later.' );
-		}
-	}
-
-	/**
 	 * Creates an order with a payment method and the payment details a WooPayments attempt stores,
 	 * including the mode it records with them.
 	 *
