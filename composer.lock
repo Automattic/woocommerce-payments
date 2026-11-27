@@ -2491,11 +2491,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.5",
+            "version": "2.3.6",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/645a1bd6bead15fc1b8474137467961d0fa30a79",
-                "reference": "645a1bd6bead15fc1b8474137467961d0fa30a79",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/00cedebb76cc82c1592414fa4f616cefdccda16f",
+                "reference": "00cedebb76cc82c1592414fa4f616cefdccda16f",
                 "shasum": ""
             },
             "require": {
@@ -2551,7 +2551,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-03T12:14:22+00:00"
+            "time": "2026-11-15T19:58:26+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -5711,16 +5711,16 @@
         },
         {
             "name": "woocommerce/php-stubs",
-            "version": "v2026.11.12",
+            "version": "v2026.11.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/php-stubs.git",
-                "reference": "be4aecc0cfb19d1a871b6939e7925adb6a137413"
+                "reference": "4d46852a3678f7f7a738ef2b0f9b54728901d4c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/be4aecc0cfb19d1a871b6939e7925adb6a137413",
-                "reference": "be4aecc0cfb19d1a871b6939e7925adb6a137413",
+                "url": "https://api.github.com/repos/woocommerce/php-stubs/zipball/4d46852a3678f7f7a738ef2b0f9b54728901d4c3",
+                "reference": "4d46852a3678f7f7a738ef2b0f9b54728901d4c3",
                 "shasum": ""
             },
             "type": "library",
@@ -5739,9 +5739,9 @@
             ],
             "support": {
                 "issues": "https://github.com/woocommerce/php-stubs/issues",
-                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.11.12"
+                "source": "https://github.com/woocommerce/php-stubs/tree/v2026.11.19"
             },
-            "time": "2026-11-12T03:13:52+00:00"
+            "time": "2026-11-19T03:05:39+00:00"
         },
         {
             "name": "woocommerce/qit-cli",
