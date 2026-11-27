@@ -3179,7 +3179,7 @@ class WC_Payments_Order_Service {
 			$remaining_total       += $refund_total + array_sum( $refund_tax );
 		}
 
-		if ( [] === $line_items || ! $this->amounts_match( $remaining_total, $amount ) ) {
+		if ( [] === $line_items || ! $this->amounts_match( $remaining_total, $amount, $order->get_currency() ) ) {
 			return [];
 		}
 
@@ -3187,16 +3187,19 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Whether two amounts are the same to the store's currency precision, such as the cent.
+	 * Whether two amounts are the same to the currency's precision, such as the cent.
 	 *
-	 * @param float $first  An amount.
-	 * @param float $second Another amount.
+	 * @param float  $first    An amount.
+	 * @param float  $second   Another amount.
+	 * @param string $currency The currency of both amounts.
 	 *
 	 * @return bool
 	 */
-	private function amounts_match( float $first, float $second ): bool {
-		// The smallest currency unit, such as 0.01 for a currency with two decimals.
-		$smallest_unit = 1 / ( 10 ** wc_get_price_decimals() );
+	private function amounts_match( float $first, float $second, string $currency ): bool {
+		// The smallest currency unit, such as 0.01 for a currency with two decimals. Three-decimal
+		// currencies are treated as two, which is close enough for this check.
+		$decimals      = WC_Payments_Utils::is_zero_decimal_currency( $currency ) ? 0 : 2;
+		$smallest_unit = 1 / ( 10 ** $decimals );
 
 		// Allow half a unit, so float rounding noise doesn't count as a difference.
 		return abs( $first - $second ) < $smallest_unit / 2;
