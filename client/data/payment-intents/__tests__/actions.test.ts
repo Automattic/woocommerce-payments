@@ -24,7 +24,16 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 // WP admin ships core/notices; @wordpress/notices is an external here, so stub it.
 registerStore( 'core/notices', {
-	reducer: ( state = [] ) => state,
+	reducer: (
+		state: string[] = [],
+		action: { type: string; content?: string }
+	) =>
+		action.type === 'CREATE_NOTICE' && action.content
+			? [ ...state, action.content ]
+			: state,
+	selectors: {
+		getNotices: ( state: string[] ) => state,
+	},
 	actions: {
 		createSuccessNotice: ( content: string ) => ( {
 			type: 'CREATE_NOTICE',
@@ -53,6 +62,11 @@ const refundCharge = ( target: Charge, reason: string | null ) =>
 		target,
 		reason
 	);
+
+const lastNotice = () =>
+	// The stub store's selectors are not typed on the registry's select.
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	( select( 'core/notices' ) as any ).getNotices().at( -1 );
 
 const hasResolvedWarnings = () =>
 	select( EARLY_FRAUD_WARNINGS_STORE_NAME ).hasFinishedResolution(
@@ -112,6 +126,43 @@ describe( 'refundCharge', () => {
 		mockApiFetch.mockRejectedValue( new Error( 'nope' ) );
 
 		await expect( refundCharge( charge, null ) ).resolves.toBeUndefined();
+	} );
+
+	it( 'tells the merchant why the refund failed', async () => {
+		mockApiFetch.mockRejectedValue( {
+			code: 'wcpay_refund_exceeds_order_remaining',
+			message:
+				'Order #42 already has $25.00 refunded in WooCommerce, which leaves $0.00 to refund.',
+		} );
+
+		await refundCharge( charge, null );
+
+		expect( lastNotice() ).toBe(
+			'There has been an error refunding the payment #pi_1. Order #42 already has $25.00 refunded in WooCommerce, which leaves $0.00 to refund.'
+		);
+	} );
+
+	it( 'shows an HTML-escaped reason as plain text', async () => {
+		mockApiFetch.mockRejectedValue( {
+			code: 'wcpay_refund_payment',
+			message: 'This charge can&#039;t be refunded right now.',
+		} );
+
+		await refundCharge( charge, null );
+
+		expect( lastNotice() ).toBe(
+			"There has been an error refunding the payment #pi_1. This charge can't be refunded right now."
+		);
+	} );
+
+	it( 'asks to try again later only when the failure has no reason', async () => {
+		mockApiFetch.mockRejectedValue( {} );
+
+		await refundCharge( charge, null );
+
+		expect( lastNotice() ).toBe(
+			'There has been an error refunding the payment #pi_1. Please try again later.'
+		);
 	} );
 
 	it( 'invalidates the active early fraud warnings so the Overview task stops showing a refunded payment', async () => {

@@ -37,7 +37,8 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Makes direct refund bypassing any order checks.
+	 * Refunds a charge. A charge with an order is refunded through the order, so WooCommerce's
+	 * checks apply and the refund is recorded on it; one without an order is refunded directly.
 	 *
 	 * @internal Not intended for usage in integrations or outside of WooCommerce Payments.
 	 * @param WP_REST_Request $request Full data about the request.
@@ -53,14 +54,16 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 		if ( $order_id ) {
 			$order = wc_get_order( $order_id );
 			if ( false !== $order && $order instanceof WC_Order ) {
-				$result = $this->process_order_refund( $order, $amount, $reason );
-				if ( is_wp_error( $result ) || false === $result ) {
-					return rest_ensure_response(
-						new WP_Error(
-							'wcpay_refund_payment',
-							__( 'Failed to create refund', 'woocommerce-payments' )
-						)
-					);
+				$refund_amount = WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() );
+
+				// wc_create_refund() rejects this with only "Invalid refund amount.", so say why here.
+				if ( $refund_amount > $order->get_remaining_refund_amount() ) {
+					return rest_ensure_response( $this->exceeds_order_remaining_error( $order ) );
+				}
+
+				$result = $this->process_order_refund( $order, $refund_amount, $reason );
+				if ( is_wp_error( $result ) ) {
+					return rest_ensure_response( new WP_Error( 'wcpay_refund_payment', $result->get_error_message() ) );
 				}
 				return rest_ensure_response( $result );
 			}
@@ -77,17 +80,39 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Builds the error for a refund larger than what WooCommerce has left to refund on the order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return WP_Error
+	 */
+	private function exceeds_order_remaining_error( WC_Order $order ): WP_Error {
+		$currency = $order->get_currency();
+
+		return new WP_Error(
+			'wcpay_refund_exceeds_order_remaining',
+			sprintf(
+				/* translators: %1$s: order number, %2$s: amount already refunded, %3$s: amount left to refund */
+				__( 'Order #%1$s already has %2$s refunded in WooCommerce, which leaves %3$s to refund. If a refund on the order was recorded without refunding the payment, delete it from the order and refund again.', 'woocommerce-payments' ),
+				$order->get_order_number(),
+				WC_Payments_Utils::format_currency( (float) $order->get_total_refunded(), $currency ),
+				WC_Payments_Utils::format_currency( (float) $order->get_remaining_refund_amount(), $currency )
+			),
+			[ 'status' => 400 ]
+		);
+	}
+
+	/**
 	 * Process refund for an order.
 	 *
 	 * @param WC_Order $order  The order to refund.
-	 * @param int      $amount Refund amount.
+	 * @param float    $amount Refund amount, in the order's currency.
 	 * @param string   $reason Refund reason.
-	 * @return WC_Order_Refund|WP_Error|false
+	 * @return WC_Order_Refund|WP_Error
 	 */
-	private function process_order_refund( WC_Order $order, $amount, $reason ) {
+	private function process_order_refund( WC_Order $order, float $amount, $reason ) {
 		return wc_create_refund(
 			[
-				'amount'         => WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+				'amount'         => $amount,
 				'reason'         => $reason,
 				'order_id'       => $order->get_id(),
 				'refund_payment' => true,

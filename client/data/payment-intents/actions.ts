@@ -6,6 +6,7 @@
 import { apiFetch } from '@wordpress/data-controls';
 import { controls } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
+import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal Dependencies
@@ -95,17 +96,23 @@ export function* refundCharge(
 			)
 		);
 	} catch ( error ) {
+		const failureReason = ( error as { message?: string } )?.message;
 		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
-			sprintf(
+			`${ sprintf(
 				// translators: %s payment intent id
 				__(
-					'There has been an error refunding the payment #%s. Please try again later.',
+					'There has been an error refunding the payment #%s.',
 					'woocommerce-payments'
 				),
 				paymentIntentId
-			)
+			) } ${
+				// Server messages can carry HTML entities, such as Stripe's `&#039;`.
+				failureReason
+					? decodeEntities( failureReason )
+					: __( 'Please try again later.', 'woocommerce-payments' )
+			}`
 		);
 	}
 }

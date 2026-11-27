@@ -67,12 +67,6 @@ parameters:
 			path: includes/admin/class-wc-rest-payments-refunds-controller.php
 
 		-
-			rawMessage: 'Method WC_REST_Payments_Refunds_Controller::process_order_refund() never returns false so it can be removed from the return type.'
-			identifier: return.unusedType
-			count: 1
-			path: includes/admin/class-wc-rest-payments-refunds-controller.php
-
-		-
 			rawMessage: Result of && is always false.
 			identifier: booleanAnd.alwaysFalse
 			count: 1
