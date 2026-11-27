@@ -103,6 +103,11 @@ const steps = [
 	},
 ];
 
+const ownUploadErrorCodes = [
+	'wcpay_evidence_file_max_size',
+	'wcpay_evidence_file_php_upload_error',
+];
+
 const getDisputePath = ( id: string ) =>
 	`/wc/v3/payments/disputes/${ encodePathSegment( id ) }`;
 
@@ -1018,12 +1023,20 @@ export default ( { query }: { query: { id: string } } ) => {
 				message: getErrorMessage( err ),
 			} );
 
-			// Display error as WordPress admin notice
+			// The plugin's own upload messages already say what went wrong. Others,
+			// from Stripe or apiFetch, get a prefix saying the upload failed.
+			const errorCode = ( err as { code?: unknown } | null )?.code;
 			createErrorNotice(
-				sprintf(
-					__( 'Failed to upload file. (%s)', 'woocommerce-payments' ),
-					getErrorMessage( err )
-				)
+				typeof errorCode === 'string' &&
+					ownUploadErrorCodes.includes( errorCode )
+					? getErrorMessage( err )
+					: sprintf(
+							__(
+								'Failed to upload file. (%s)',
+								'woocommerce-payments'
+							),
+							getErrorMessage( err )
+						)
 			);
 
 			// Force reload evidence components.

@@ -1434,6 +1434,39 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 	}
 
+	public function test_payment_method_ids_ignoring_amount_limits_include_methods_outside_their_limits() {
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
+
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_wcpay_account
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'card_payments'   => 'active',
+						'affirm_payments' => 'active',
+					],
+					'capability_requirements' => [
+						'card_payments'   => [],
+						'affirm_payments' => [],
+					],
+				]
+			);
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::CARD, Payment_Method::AFFIRM ];
+
+		WC()->session->init();
+		WC()->cart->empty_cart();
+		// Total is 10 USD, below Affirm's 35 USD minimum.
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 1 );
+		WC()->cart->calculate_totals();
+
+		$this->assertSame( [ 'card' ], array_values( $this->card_gateway->get_payment_method_ids_enabled_at_checkout() ) );
+		$this->assertSame( [ 'card', 'affirm' ], array_values( $this->card_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() ) );
+
+		WC()->cart->empty_cart();
+	}
+
 	/**
 	 * @dataProvider provider_klarna_limits_follow_customer_billing_country
 	 *
@@ -1677,6 +1710,30 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->assertSame( $link_gateway->get_payment_method_ids_enabled_at_checkout(), [] );
+	}
+
+	public function test_remove_duplicate_link_payment_methods_if_card_disabled() {
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
+
+		$link_gateway = $this->get_gateway( Payment_Method::LINK );
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
+			[
+				'capabilities' => [
+					'card_payments' => 'active',
+					'link_payments' => 'active',
+				],
+			]
+		);
+
+		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::LINK, Payment_Method::LINK, Payment_Method::CARD ];
+		$this->assertSame( [ 'link', 'link', 'card' ], $link_gateway->get_payment_method_ids_enabled_at_checkout() );
+		$this->assertSame( [ 'link', 'link', 'card' ], $link_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() );
+
+		$link_gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::LINK, Payment_Method::LINK ];
+		$this->assertSame( [], $link_gateway->get_payment_method_ids_enabled_at_checkout() );
+		$this->assertSame( [], $link_gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits() );
 	}
 
 	/**

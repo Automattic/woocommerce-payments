@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
@@ -584,6 +585,78 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
 
 		$this->assertTrue( WooPay_Session::is_valid_request_with_cart_token() );
+	}
+
+	/**
+	 * @dataProvider provider_checkout_phone_fields
+	 */
+	public function test_session_payload_carries_the_stores_phone_setting( string $phone_field ) {
+		$this->skip_without_the_phone_setting();
+		update_option( 'woocommerce_checkout_phone_field', $phone_field );
+
+		try {
+			$request = WooPay_Session::get_init_session_request();
+		} finally {
+			delete_option( 'woocommerce_checkout_phone_field' );
+		}
+
+		$this->assertSame( $phone_field, $request['store_data']['checkout_phone_field'] );
+	}
+
+	public function provider_checkout_phone_fields(): array {
+		return [
+			'required' => [ 'required' ],
+			'optional' => [ 'optional' ],
+			'hidden'   => [ 'hidden' ],
+		];
+	}
+
+	public function test_session_payload_carries_the_phone_setting_over_stale_checkout_block_attributes() {
+		$this->skip_without_the_phone_setting();
+		$checkout_page_id = self::factory()->post->create(
+			[
+				'post_type'    => 'page',
+				'post_content' => '<!-- wp:woocommerce/checkout {"requirePhoneField":true,"showPhoneField":true} /-->',
+			]
+		);
+		$previous_page_id = get_option( 'woocommerce_checkout_page_id' );
+		update_option( 'woocommerce_checkout_page_id', $checkout_page_id );
+		update_option( 'woocommerce_checkout_phone_field', 'hidden' );
+
+		try {
+			$request = WooPay_Session::get_init_session_request();
+		} finally {
+			update_option( 'woocommerce_checkout_page_id', $previous_page_id );
+			delete_option( 'woocommerce_checkout_phone_field' );
+		}
+
+		$this->assertSame( 'required', $request['store_data']['optional_fields_status']['phone'] );
+		$this->assertSame( 'hidden', $request['store_data']['checkout_phone_field'] );
+	}
+
+	public function test_session_payload_has_no_phone_setting_on_woocommerce_without_it() {
+		if ( method_exists( CartCheckoutUtils::class, 'get_phone_field_visibility' ) ) {
+			$this->markTestSkipped( 'This WooCommerce version has the phone setting.' );
+		}
+
+		update_option( 'woocommerce_checkout_phone_field', 'required' );
+
+		try {
+			$request = WooPay_Session::get_init_session_request();
+		} finally {
+			delete_option( 'woocommerce_checkout_phone_field' );
+		}
+
+		$this->assertNull( $request['store_data']['checkout_phone_field'] );
+	}
+
+	/**
+	 * Skips a test on WooCommerce versions before the Checkout block's phone setting (9.5).
+	 */
+	private function skip_without_the_phone_setting(): void {
+		if ( ! method_exists( CartCheckoutUtils::class, 'get_phone_field_visibility' ) ) {
+			$this->markTestSkipped( 'This WooCommerce version has no phone setting.' );
+		}
 	}
 
 	public function test_session_payload_carries_the_store_version() {

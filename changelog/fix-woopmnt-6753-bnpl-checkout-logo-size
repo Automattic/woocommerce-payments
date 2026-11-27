@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep the Affirm, Klarna and Afterpay logos at icon size on the classic checkout when the theme's CSS would stretch them.

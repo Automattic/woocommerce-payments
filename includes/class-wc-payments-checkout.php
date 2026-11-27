@@ -305,7 +305,9 @@ class WC_Payments_Checkout {
 
 			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-			if ( $order instanceof \WC_Order ) {
+			// The pay form needs the order's total. WooCommerce checks the visitor before rendering it,
+			// so a check that can't run here still sends the total.
+			if ( $order instanceof \WC_Order && WC_Payments_Utils::may_see_order_billing_details( $order, WC_Payments_Utils::get_email_from_verify_form(), true ) ) {
 				$payment_fields['isOrderPay'] = true;
 				$payment_fields['orderId']    = $order->get_id();
 				$order_currency               = $order->get_currency();
@@ -337,8 +339,11 @@ class WC_Payments_Checkout {
 	 * @return array
 	 */
 	public function get_enabled_payment_method_config() {
-		$settings                = [];
-		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$settings = [];
+		// Amount limits are left out so a method that the billing country or a coupon later brings within its limits is
+		// already registered on block checkout and has its Stripe element on shortcode checkout. The available gateways
+		// list still decides whether each method is shown.
+		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout_ignoring_amount_limits();
 
 		// When "express checkout in payment methods" setting is enabled, add express checkout
 		// methods to the list. They're not in upe_enabled_payment_method_ids by default since

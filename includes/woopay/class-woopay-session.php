@@ -8,6 +8,7 @@
 namespace WCPay\WooPay;
 
 use Automattic\Jetpack\Connection\Rest_Authentication;
+use Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils;
 use Automattic\WooCommerce\StoreApi\RoutesController;
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
@@ -726,6 +727,7 @@ class WooPay_Session {
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 				'optional_fields_status'         => self::get_option_fields_status(),
+				'checkout_phone_field'           => self::get_checkout_phone_field(),
 			],
 			'user_session'         => null,
 			'preloaded_requests'   => ! $is_pay_for_order ? [
@@ -1808,6 +1810,22 @@ class WooPay_Session {
 		];
 
 		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );
+	}
+
+	/**
+	 * Returns the phone field setting the store's checkout validates against: required, optional or hidden.
+	 *
+	 * `optional_fields_status` reads the Checkout block's attributes, which WooCommerce no longer
+	 * uses for this setting, so they can be stale.
+	 *
+	 * @return string|null The setting, or null on WooCommerce versions without it.
+	 */
+	private static function get_checkout_phone_field(): ?string {
+		if ( ! method_exists( CartCheckoutUtils::class, 'get_phone_field_visibility' ) ) { // @phpstan-ignore function.alreadyNarrowedType (the stubs describe the latest WooCommerce only)
+			return null;
+		}
+
+		return CartCheckoutUtils::get_phone_field_visibility();
 	}
 
 	/**
