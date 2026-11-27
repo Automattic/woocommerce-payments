@@ -69,6 +69,9 @@ test.describe(
 		} );
 
 		test.afterAll( async () => {
+			// A failed disconnected-state test would otherwise leave every later spec disconnected.
+			await disableActAsDisconnectedFromWCPay();
+
 			// Clean up contexts to prevent issues
 			if ( editorContext ) {
 				await editorContext.close();
@@ -102,17 +105,11 @@ test.describe(
 			// Ensure that we are disconnected from WCPay.
 			await goToConnect( adminPage );
 
-			// Ensure that we are disconnected from WCPay by checking we're NOT showing connected state
-			// In QIT environment, the disconnect state may show different UI than legacy tests
-			try {
-				// First, verify we're not showing "Account details" (connected state)
-				await expect(
-					adminPage.getByText( 'Account details' )
-				).not.toBeVisible( { timeout: 5000 } );
-			} catch {
-				// If we can't verify the disconnect state, the test is still valid
-				// since the main purpose is testing editor access during state changes
-			}
+			await expect(
+				adminPage.getByRole( 'button', {
+					name: 'Verify business details',
+				} )
+			).toBeVisible();
 
 			// Ensure that the editor can access wp-admin (Dashboard).
 			await checkEditorAccess( editorPage, '/wp-admin', 'Dashboard' );
