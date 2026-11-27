@@ -3179,12 +3179,26 @@ class WC_Payments_Order_Service {
 			$remaining_total       += $refund_total + array_sum( $refund_tax );
 		}
 
-		$minor_unit = 10 ** -wc_get_price_decimals();
-		if ( [] === $line_items || abs( $remaining_total - $amount ) >= $minor_unit / 2 ) {
+		if ( [] === $line_items || ! $this->amounts_match( $remaining_total, $amount ) ) {
 			return [];
 		}
 
 		return $line_items;
+	}
+
+	/**
+	 * Whether two amounts are the same to the store's currency precision, such as the cent.
+	 *
+	 * @param float $first  An amount.
+	 * @param float $second Another amount.
+	 *
+	 * @return bool
+	 */
+	private function amounts_match( float $first, float $second ): bool {
+		// Half the smallest currency unit, so float rounding noise doesn't count as a difference.
+		$tolerance = ( 10 ** -wc_get_price_decimals() ) / 2;
+
+		return abs( $first - $second ) < $tolerance;
 	}
 
 	/**
