@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Date filters on the transactions, payouts, disputes and documents lists and on reports now cover whole days in the store's timezone, including days on the other side of a daylight saving change.

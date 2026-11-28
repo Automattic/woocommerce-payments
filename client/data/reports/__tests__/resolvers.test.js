@@ -16,7 +16,6 @@ import {
 	updateReportsFeesSummary,
 } from '../actions';
 import { getReportsFees, getReportsFeesSummary } from '../resolvers';
-import { getUserTimeZone } from 'jest-utils/timezone';
 
 const errorResponse = { code: 'error' };
 
@@ -51,7 +50,6 @@ const expectedFilterParams = {
 	order_id: '123',
 	deposit_id: 'po_123',
 	'search[0]': 'txn_123',
-	user_timezone: getUserTimeZone(),
 };
 
 const expectApiFetchPath = ( control, expectedPath, expectedParams ) => {

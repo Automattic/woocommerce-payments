@@ -20,7 +20,7 @@ import {
 	updateReportsFeesSummary,
 	updateReportsBalanceSummary,
 } from './actions';
-import { formatDateValue, getUserTimeZone } from 'utils';
+import { formatDateValue } from 'utils';
 
 // The Fees REST schema declares `type` as an array (see Reports controller).
 // URL helpers and DataViews can hand us a scalar string, so normalize at the
@@ -48,7 +48,6 @@ const formatQueryFilters = ( query ) => ( {
 	// Keep customer email out of GET query strings; the Fees UI does not expose
 	// this filter, and URLs can be persisted in logs/history.
 	search: query.search,
-	user_timezone: getUserTimeZone(),
 } );
 
 const getReportsFeesRows = ( results ) => {
