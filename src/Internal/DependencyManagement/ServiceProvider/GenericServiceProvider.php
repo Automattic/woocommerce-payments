@@ -18,6 +18,7 @@ use WCPay\Internal\Service\DisputeReadinessService;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\SessionService;
+use WCPay\Internal\PluginManagement\ChunkTranslations;
 use WCPay\Internal\PluginManagement\TranslationsLoader;
 
 /**
@@ -36,6 +37,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		Level3Service::class,
 		DisputeReadinessService::class,
 		TranslationsLoader::class,
+		ChunkTranslations::class,
 	];
 
 	/**
@@ -69,6 +71,9 @@ class GenericServiceProvider extends AbstractServiceProvider {
 
 		$container->addShared( TranslationsLoader::class )
 			->addArgument( Logger::class )
+			->addArgument( HooksProxy::class );
+
+		$container->addShared( ChunkTranslations::class )
 			->addArgument( HooksProxy::class );
 	}
 }
